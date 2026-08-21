@@ -1,0 +1,54 @@
+{{ 'product-media.css' | asset_url | stylesheet_tag }}
+
+<div class="product-gallery" id="ProductGallery">
+
+  {%- if product.images.size > 1 -%}
+    <div class="product-thumbnails">
+      <div class="thumbnail-container">
+        {%- for image in product.images -%}
+          <div
+            class="thumbnail-item{% if forloop.first %} active{% endif %}"
+            data-index="{{ forloop.index0 }}"
+            data-image-src="{{ image | image_url: width: 787 }}"
+            data-image-alt="{{ image.alt | default: product.title | escape }}"
+            tabindex="0"
+            role="button"
+            aria-label="View image {{ forloop.index }}"
+            aria-pressed="{{ forloop.first | json }}"
+          >
+            <div class="thumbnail-wrapper">
+              <img
+                src="{{ image | image_url: width: 84, height: 84, crop: 'center' }}"
+                alt="{{ image.alt | default: product.title | escape }}"
+                width="84"
+                height="84"
+                loading="lazy"
+                class="thumbnail-image"
+              >
+            </div>
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+  {%- endif -%}
+
+  <div class="product-gallery-main">
+    <div class="gallery-viewer" id="GalleryViewer">
+      <div class="main-image-container" id="MainImage">
+        {%- assign featured = product.selected_or_first_available_variant.featured_image | default: product.featured_image -%}
+        <img
+          src="{{ featured | image_url: width: 787 }}"
+          alt="{{ featured.alt | default: product.title | escape }}"
+          width="787"
+          height="787"
+          loading="eager"
+          class="main-image"
+          id="FeaturedImage"
+        >
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="{{ 'product-media.js' | asset_url }}" defer></script>

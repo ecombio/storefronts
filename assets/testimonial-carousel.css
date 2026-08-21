@@ -1,0 +1,332 @@
+/*
+  testimonial-carousel.css
+  ============================================
+  Section shell (heading, track, arrows) + testimonial card styling,
+  all in one file since this section doesn't split its card into a
+  separate snippet/asset pair the way video-section does. The shared
+  lightbox it opens for video testimonials is styled by
+  video-modal.css.
+*/
+
+.testimonial-carousel,
+.testimonial-carousel * {
+  box-sizing: border-box;
+}
+
+.testimonial-carousel {
+  padding-block: 32px;
+}
+
+.testimonial-carousel__header {
+  margin-bottom: 1.25rem;
+}
+
+.testimonial-carousel__heading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.testimonial-carousel__carousel {
+  position: relative;
+}
+
+.testimonial-carousel__track {
+  --items: 4;
+  --gap: 1rem;
+  display: flex;
+  gap: var(--gap);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--gap);
+  scrollbar-width: none;
+  width: 100%;
+}
+
+.testimonial-carousel__track::-webkit-scrollbar {
+  display: none;
+}
+
+.testimonial-carousel__arrow {
+  all: unset;
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #fff;
+  color: #111827;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 2px 8px rgba(17, 24, 39, 0.15);
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.testimonial-carousel__arrow--prev {
+  left: 0.75rem;
+}
+
+.testimonial-carousel__arrow--next {
+  right: 0.75rem;
+}
+
+.testimonial-carousel__arrow:hover {
+  background: #F3F4F6;
+}
+
+.testimonial-carousel__arrow:focus-visible {
+  outline: 2px solid #4F46E5;
+  outline-offset: 2px;
+}
+
+.testimonial-carousel__arrow[disabled] {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ---- card ---- */
+
+.testimonial-card {
+  flex: 0 0 calc((100% - (var(--gap) * (var(--items) - 1))) / var(--items));
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 14px;
+  overflow: hidden;
+  padding-bottom: 0.9rem;
+}
+
+.testimonial-card__media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  background: #111827;
+}
+
+.testimonial-card__photo,
+.testimonial-card__preview-video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.testimonial-card__photo--placeholder {
+  background: #E5E7EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.testimonial-card__placeholder-svg {
+  width: 60%;
+  height: 60%;
+  opacity: 0.6;
+}
+
+.testimonial-card__mute {
+  all: unset;
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(17, 24, 39, 0.55);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.testimonial-card__mute:hover {
+  background: rgba(17, 24, 39, 0.8);
+}
+
+.testimonial-card__mute:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.testimonial-card__mute-icon--unmuted {
+  display: none;
+}
+
+.testimonial-card__mute[aria-pressed="true"] .testimonial-card__mute-icon--muted {
+  display: none;
+}
+
+.testimonial-card__mute[aria-pressed="true"] .testimonial-card__mute-icon--unmuted {
+  display: block;
+}
+
+.testimonial-card__play-trigger {
+  all: unset;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.testimonial-card__play-trigger:focus-visible {
+  outline: 2px solid #4F46E5;
+  outline-offset: -2px;
+}
+
+.testimonial-card__play-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(17, 24, 39, 0.55);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.testimonial-card__play-icon svg {
+  margin-left: 2px;
+}
+
+.testimonial-card__play-trigger:hover .testimonial-card__play-icon,
+.testimonial-card__play-trigger:focus-visible .testimonial-card__play-icon {
+  background: rgba(17, 24, 39, 0.8);
+  transform: translate(-50%, -50%) scale(1.06);
+}
+
+/* ---- content ---- */
+
+.testimonial-card__product {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.75rem 0.9rem 0;
+}
+
+.testimonial-card__product-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.testimonial-card__price {
+  display: inline-flex;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.testimonial-card__price-current {
+  color: #111827;
+  font-weight: 600;
+}
+
+.testimonial-card__price-compare {
+  color: #9CA3AF;
+  text-decoration: line-through;
+}
+
+.testimonial-card__rating {
+  display: flex;
+  gap: 0.15rem;
+  padding: 0 0.9rem;
+  color: #E5E7EB;
+}
+
+.testimonial-card__star--filled {
+  color: #F5B400;
+}
+
+.testimonial-card__quote {
+  margin: 0;
+  padding: 0 0.9rem;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: #374151;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.testimonial-card__reviewer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0 0.9rem;
+  margin-top: 0.15rem;
+}
+
+.testimonial-card__reviewer-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.testimonial-card__reviewer-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  color: #6B7280;
+}
+
+.testimonial-card__reviewer-title svg {
+  color: #4F46E5;
+  flex-shrink: 0;
+}
+
+@media (max-width: 74.99rem) {
+  .testimonial-carousel__track {
+    --items: 3;
+  }
+}
+
+@media (max-width: 47.99rem) {
+  .testimonial-carousel__track {
+    --items: 2;
+  }
+}
+
+@media (max-width: 30rem) {
+  .testimonial-carousel__track {
+    --items: 1.15;
+  }
+
+  .testimonial-carousel__arrow {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .testimonial-carousel__track {
+    scroll-behavior: auto;
+  }
+
+  .testimonial-carousel__arrow,
+  .testimonial-card__play-icon {
+    transition: none;
+  }
+}

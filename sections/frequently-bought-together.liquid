@@ -1,0 +1,356 @@
+{%- comment -%}
+  sections/frequently-bought-together.liquid
+
+  Amazon-style "Frequently bought together" module.
+
+  Data source: Shopify's native product recommendations endpoint
+  (routes.product_recommendations_url), intent: complementary —
+  powered by the Shopify Search & Discovery app. This REPLACES the
+  old product.metafields.custom.frequently_bought_together list;
+  no per-product metafield to maintain anymore.
+
+  DEPENDENCY: intent=complementary only returns products once
+  Search & Discovery is installed and has complementary
+  recommendations trained/curated for a given product. No app (or
+  no coverage yet for this product) = empty response = module stays
+  hidden, same fallback behavior as sections/product-complementary.liquid.
+
+  Async pattern (same as product-complementary.liquid): on a normal
+  page load `recommendations` is blank, so this renders the main
+  item plus shimmer placeholders, hidden. frequently-bought-
+  together.js re-fetches THIS section via ?section_id=...&
+  product_id=...&intent=complementary — Shopify resolves
+  recommendations.products server-side and returns the fully
+  rendered #fbt-products-{{ section.id }} markup (main item, "+"
+  separators, complementary items, price splitting — all still
+  done in Liquid, nothing duplicated in JS). The JS swaps that
+  innerHTML in, reveals the section, and (re)runs its existing
+  checkbox/variant/total/add-to-cart wiring on the new nodes.
+
+  Layout independence: unchanged — still follows the "Section
+  layout" pattern from sections/example-width-section.liquid (width
+  class + --section-padding/--custom-width scoped to this section's
+  own fbt__ BEM namespace, independent of the theme's global
+  --page-margin / --page-width).
+
+  Price display: unchanged — dollars/cents are visually split by
+  slicing the last 3 characters off the `money`-filtered string.
+  Assumes a 2-decimal currency format; zero-decimal currencies
+  (JPY, KRW, etc.) should swap this back to a plain
+  {{ price | money }} call.
+{%- endcomment -%}
+
+{{ 'frequently-bought-together.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign limit = section.settings.products_to_show | default: 2
+
+  assign width_type = section.settings.section_width
+  if width_type == blank
+    assign width_class = 'fbt__default-width'
+  else
+    assign width_class = 'fbt__' | append: width_type
+  endif
+
+  assign show_recs = false
+  if recommendations.performed and recommendations.products_count > 0
+    assign show_recs = true
+  endif
+
+  assign main_variant = product.selected_or_first_available_variant
+  assign main_price_str = main_variant.price | default: 0 | money
+  assign main_price_len = main_price_str.size
+  assign main_whole_len = main_price_len | minus: 3
+-%}
+
+<div
+  class="{{ width_class }}"
+  style="
+    --section-padding: {{ section.settings.section_padding }}px;
+    {%- if width_type == 'custom-width' %}
+      --custom-width: {{ section.settings.custom_width }}rem;
+    {%- endif %}
+  "
+>
+  <div class="section" style="padding-block: var(--section-spacing, 48px);">
+  <section
+    class="fbt-section color-{{ section.settings.color_scheme }}"
+    id="fbt-section-{{ section.id }}"
+    data-fbt-section
+    data-section-id="{{ section.id }}"
+    data-recommendations-url="{{ routes.product_recommendations_url }}"
+    data-product-id="{{ product.id }}"
+    data-limit="{{ limit }}"
+    data-intent="complementary"
+    data-performed="{{ show_recs }}"
+    data-money-format="{{ shop.money_format | escape }}"
+    {%- unless show_recs %} hidden{% endunless -%}
+  >
+    {%- if section.settings.heading != blank -%}
+      <h2 class="fbt-heading">{{ section.settings.heading }}</h2>
+    {%- endif -%}
+
+    <div class="fbt-content">
+      <div class="fbt-products" id="fbt-products-{{ section.id }}" data-fbt-products>
+
+        {%- if show_recs -%}
+          {%- comment -%} Main product — always included, locked on {%- endcomment -%}
+          <div
+            class="fbt-item"
+            data-fbt-item
+            data-product-id="{{ product.id }}"
+            data-variant-id="{{ main_variant.id }}"
+            data-price="{{ main_variant.price | default: 0 }}"
+          >
+            <a href="{{ product.url }}" class="fbt-item-image" tabindex="-1">
+              {%- if product.featured_image -%}
+                <img
+                  src="{{ product.featured_image | image_url: width: 300 }}"
+                  alt="{{ product.featured_image.alt | escape }}"
+                  loading="lazy"
+                  width="150"
+                  height="150"
+                >
+              {%- else -%}
+                <div class="fbt-item-image--placeholder"></div>
+              {%- endif -%}
+
+              <span class="fbt-item-checkbox">
+                <input
+                  type="checkbox"
+                  id="fbt-check-main-{{ section.id }}"
+                  checked
+                  disabled
+                  aria-label="{{ product.title | escape }} (always included)"
+                >
+                <label for="fbt-check-main-{{ section.id }}"></label>
+              </span>
+            </a>
+
+            <div class="fbt-item-info">
+              <p class="fbt-item-title">
+                <span class="fbt-item-thisitem">This item:</span>
+                {{ product.title }}
+              </p>
+              <span class="fbt-item-price" data-fbt-price>
+                <span class="fbt-item-price__symbol">{{ main_price_str | slice: 0, 1 }}</span><span class="fbt-item-price__whole">{{ main_price_str | slice: 1, main_whole_len | minus: 1 }}</span><span class="fbt-item-price__decimal">{{ main_price_str | slice: main_whole_len, main_price_len }}</span>
+              </span>
+            </div>
+          </div>
+
+          {%- comment -%} Complementary products via Search & Discovery {%- endcomment -%}
+          {%- for rec_product in recommendations.products limit: limit -%}
+            {%- if rec_product != blank and rec_product.id != product.id -%}
+              <div class="fbt-plus" aria-hidden="true">+</div>
+
+              {%- assign related_variant = rec_product.selected_or_first_available_variant -%}
+              {%- assign related_price_str = related_variant.price | default: 0 | money -%}
+              {%- assign related_price_len = related_price_str.size -%}
+              {%- assign related_whole_len = related_price_len | minus: 3 -%}
+
+              <div
+                class="fbt-item"
+                data-fbt-item
+                data-product-id="{{ rec_product.id }}"
+                data-variant-id="{{ related_variant.id }}"
+                data-price="{{ related_variant.price | default: 0 }}"
+                {% if rec_product.available == false %}data-fbt-disabled="true"{% endif %}
+              >
+                <a href="{{ rec_product.url }}" class="fbt-item-image" tabindex="-1">
+                  {%- if rec_product.featured_image -%}
+                    <img
+                      src="{{ rec_product.featured_image | image_url: width: 300 }}"
+                      alt="{{ rec_product.featured_image.alt | escape }}"
+                      loading="lazy"
+                      width="150"
+                      height="150"
+                    >
+                  {%- else -%}
+                    <div class="fbt-item-image--placeholder"></div>
+                  {%- endif -%}
+
+                  <span class="fbt-item-checkbox">
+                    <input
+                      type="checkbox"
+                      id="fbt-check-{{ section.id }}-{{ forloop.index }}"
+                      data-fbt-checkbox
+                      {% if rec_product.available %}checked{% else %}disabled{% endif %}
+                    >
+                    <label for="fbt-check-{{ section.id }}-{{ forloop.index }}"></label>
+                  </span>
+                </a>
+
+                <div class="fbt-item-info">
+                  <a href="{{ rec_product.url }}" class="fbt-item-title fbt-item-title--link">{{ rec_product.title }}</a>
+
+                  {%- if rec_product.available == false -%}
+                    <span class="fbt-item-soldout">Currently unavailable</span>
+                  {%- else -%}
+                    {%- if rec_product.variants.size > 1 -%}
+                      <select class="fbt-variant-select" data-fbt-variant-select aria-label="{{ rec_product.title | escape }} variant">
+                        {%- for variant in rec_product.variants -%}
+                          <option
+                            value="{{ variant.id }}"
+                            data-price="{{ variant.price }}"
+                            {% unless variant.available %}disabled{% endunless %}
+                            {% if variant.id == related_variant.id %}selected{% endif %}
+                          >
+                            {{ variant.title }}{% unless variant.available %} - Sold out{% endunless %}
+                          </option>
+                        {%- endfor -%}
+                      </select>
+                    {%- endif -%}
+
+                    <span class="fbt-item-price" data-fbt-price>
+                      <span class="fbt-item-price__symbol">{{ related_price_str | slice: 0, 1 }}</span><span class="fbt-item-price__whole">{{ related_price_str | slice: 1, related_whole_len | minus: 1 }}</span><span class="fbt-item-price__decimal">{{ related_price_str | slice: related_whole_len, related_price_len }}</span>
+                    </span>
+                  {%- endif -%}
+                </div>
+              </div>
+            {%- endif -%}
+          {%- endfor -%}
+        {%- else -%}
+          {%- comment -%} Shimmer placeholders while the complementary fetch is in flight {%- endcomment -%}
+          {%- for i in (1..limit) -%}
+            <div class="fbt-plus" aria-hidden="true">+</div>
+            <div class="fbt-item fbt-item--placeholder" aria-hidden="true">
+              <div class="fbt-item-image">
+                <div class="fbt-item-image--shimmer"></div>
+              </div>
+              <div class="fbt-item-info">
+                <div class="fbt-placeholder-line fbt-placeholder-line--title"></div>
+                <div class="fbt-placeholder-line fbt-placeholder-line--price"></div>
+              </div>
+            </div>
+          {%- endfor -%}
+        {%- endif -%}
+      </div>
+
+      <div class="fbt-summary">
+        <div class="fbt-summary-total">
+          <span class="fbt-summary-label">{{ section.settings.total_label | default: 'Total price:' }}</span>
+          <span class="fbt-summary-price" data-fbt-total>{{ 0 | money }}</span>
+        </div>
+
+        <button
+          type="button"
+          class="fbt-add-button"
+          data-fbt-add-button
+          data-label-template="{{ section.settings.button_label | default: 'Add all [count] to Cart' }}"
+        >
+          <span data-fbt-button-text>{{ section.settings.button_label | default: 'Add all [count] to Cart' }}</span>
+          <svg class="fbt-spinner" data-fbt-spinner viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" fill="none" stroke-width="3"></circle>
+          </svg>
+        </button>
+
+        {%- if section.settings.shipping_note != blank -%}
+          <p class="fbt-note">
+            <svg class="fbt-note-icon" viewBox="0 0 20 20" aria-hidden="true">
+              <circle cx="10" cy="10" r="9" fill="none" stroke="currentColor" stroke-width="1.4"></circle>
+              <line x1="10" y1="9" x2="10" y2="14.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></line>
+              <circle cx="10" cy="6" r="1" fill="currentColor"></circle>
+            </svg>
+            <span>{{ section.settings.shipping_note }}</span>
+          </p>
+        {%- endif -%}
+
+        <div class="fbt-message" data-fbt-message role="status" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+  </div>
+</div>
+
+<script src="{{ 'frequently-bought-together.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Bought Together",
+  "tag": "section",
+  "class": "fbt-section-wrapper",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Frequently bought together"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "label": "Number of complementary products",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "text",
+      "id": "total_label",
+      "label": "Total price label",
+      "default": "Total price:"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "info": "Use [count] where the number of selected items should appear.",
+      "default": "Add all [count] to Cart"
+    },
+    {
+      "type": "text",
+      "id": "shipping_note",
+      "label": "Shipping note (optional)",
+      "default": "Some of these items ship sooner than the others."
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 60,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    }
+  ],
+  "presets": [
+    {
+      "name": "Bought Together"
+    }
+  ]
+}
+{% endschema %}

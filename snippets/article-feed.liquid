@@ -1,0 +1,13 @@
+{{ 'article-feed.css' | asset_url | stylesheet_tag }}
+{{ 'article-card.css' | asset_url | stylesheet_tag }}
+
+
+{% assign articles = collection.metafields.custom.posts.value %}
+
+{% if articles != blank %}
+  <div class="article-feed">
+    {% for article in articles %}
+      {% render 'article-card', article: article %}
+    {% endfor %}
+  </div>
+{% endif %}

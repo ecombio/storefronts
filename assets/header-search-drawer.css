@@ -1,0 +1,86 @@
+/* =============================================================
+   Header Search Drawer
+   File: assets/header-search-drawer.css
+   Loaded by: snippets/header-search-drawer.liquid
+
+   Additive search style: a trigger button that lives in the existing
+   .main-header__icons cluster (styled via .main-header__icon-btn, the
+   shared class already defined in main-header.css — reused here, not
+   redefined) plus a full-screen drawer that slides down from the top
+   of the viewport.
+
+   Fully independent of main-header__search-row (main-header.css) and
+   main-header__mobile-nav (header-hamburger.css) — nothing here reads
+   from or overrides either of those, and neither reads from this file.
+
+   Uses `top` (not `transform`) to animate the slide, matching the
+   convention already established in header-hamburger.css's mobile nav
+   drawer — transform on a fixed-position ancestor creates a new
+   containing block that would trap any nested fixed/sticky children,
+   so plain offset properties are the safer default for full-viewport
+   overlays in this theme.
+   ============================================================= */
+
+.header-search-drawer {
+  position: fixed;
+  top: -100%;
+  left: 0;
+  right: 0;
+  height: 100%;
+  max-height: 100vh;
+  overflow-y: auto;
+  background: #ffffff;
+  z-index: 500;
+  visibility: hidden;
+  transition: top 0.32s cubic-bezier(.4,0,.2,1), visibility 0.32s;
+}
+
+.header-search-drawer.is-open {
+  top: 0;
+  visibility: visible;
+}
+
+.header-search-drawer__bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e5e5;
+  position: sticky;
+  top: 0;
+  background: #ffffff;
+}
+
+.header-search-drawer__bar-inner {
+  flex: 1;
+  min-width: 0;
+}
+
+.header-search-drawer__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #1a1a1a;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+.header-search-drawer__close:hover { background: #f5f5f5; }
+.header-search-drawer__close:focus-visible {
+  outline: 2px solid #1a1a1a;
+  outline-offset: 2px;
+}
+
+/* Body scroll lock — applied by header-search-drawer.js. Named
+   distinctly from .nav-is-open (header-hamburger.css) so the two
+   drawers never fight over the same class if both are ever open. */
+body.search-drawer-is-open { overflow: hidden; }
+
+@media (prefers-reduced-motion: reduce) {
+  .header-search-drawer { transition: none; }
+}

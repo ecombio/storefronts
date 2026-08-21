@@ -1,0 +1,297 @@
+/* =============================================================================
+   Mega Menu  |  assets/mega-menu.css
+
+   Branding matches header-menu.css / header.css exactly (same accent
+   token, 14px rounded panels, same shadow/border treatment) — this file
+   is simply the MEGA MENU section relocated out of header-menu.css so
+   the mega menu's markup, styling, and behavior are self-contained and
+   loaded together from sections/header-menu.liquid.
+
+   Shown on:
+     - :hover  → pure CSS, mouse users (unchanged from before)
+     - .is-open on .menu-bar__item--has-mega → added by mega-menu.js for
+       click / keyboard users, since hover alone isn't keyboard-accessible
+     - :focus-within → keyboard users tabbing into links inside the panel
+       itself, in case mega-menu.js only toggles .is-open on click/Enter
+       rather than on every focus event
+
+   Pure CSS — no Liquid, no build step, no JS positioning math.
+
+   CHANGELOG (this revision):
+   - FIXED: panel used to anchor to its own trigger <li>
+     (.menu-bar__item), centered via `left: 50%; transform:
+     translateX(-50%)` relative to THAT element. Since triggers sit at
+     different horizontal positions across the bar, this made the
+     panel's position — and whether it overflowed the header's real
+     content width — different for every mega-menu, and previous
+     attempts to correct it with JS math added complexity for what is
+     fundamentally a CSS layout problem.
+   - FIX (this revision): anchor the panel to .menu-bar__container
+     instead of the trigger <li>. .menu-bar__item--has-mega is set to
+     position: static so it's skipped as a containing block, letting
+     the panel bubble up to .menu-bar__container (already position:
+     relative). That container sits in the exact same centered
+     1184px column as .main-header__inner (logo/search/icons), so
+     centering the panel inside it — width: min(1184px, 100vw - 48px);
+     left: 50%; transform: translateX(-50%) — makes the panel land in
+     precisely the same horizontal space as the rest of the header,
+     every time, regardless of which trigger opened it. No JS required.
+   ============================================================================= */
+
+/* Removes the trigger <li> as a positioning anchor so .mega-menu
+   (its absolutely-positioned child) bubbles up to .menu-bar__container
+   instead — see changelog above. Other menu-bar item types (link-list,
+   flyout) keep their default position: relative from header-menu.css. */
+.menu-bar__item--has-mega {
+  position: static;
+}
+
+.mega-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 400;
+  padding-top: 12px;
+  margin-top: -1px;
+  width: min(1184px, calc(100vw - 48px));
+}
+
+.menu-bar__item--has-mega:hover > .mega-menu,
+.menu-bar__item--has-mega.is-open > .mega-menu,
+.menu-bar__item--has-mega:focus-within > .mega-menu {
+  z-index: 9999;
+  display: block;
+}
+
+.mega-menu-items {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.10);
+  border: 1px solid #e5e7eb;
+  padding: 28px 32px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.mega-menu__text-columns {
+  display: grid;
+  grid-template-columns: repeat(var(--mega-col-count, 4), max-content);
+  gap: 28px 48px;
+  justify-content: space-between;
+}
+
+.mega-menu-items--with-products {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.mega-menu-items--with-products .mega-menu__text-columns {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Column content ── */
+
+.mega-menu-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.mega-menu-heading {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #111827;
+  text-decoration: none;
+  margin: 0 0 12px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e5e7eb;
+  transition: color 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+}
+
+.mega-menu-heading:hover,
+.mega-menu-heading:focus-visible {
+  color: var(--hdr-accent, #e11d27);
+  border-color: var(--hdr-accent, #e11d27);
+}
+
+.mega-menu-subheading {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #6b7280;
+  margin: 14px 0 6px;
+  white-space: nowrap;
+}
+
+.mega-menu-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 10px;
+}
+
+.mega-menu-link {
+  display: inline-block;
+  padding: 4px 0;
+  color: #374151;
+  text-decoration: none;
+  font-size: 13.5px;
+  line-height: 1.4;
+  transition: color 0.12s ease;
+  position: relative;
+  white-space: nowrap;
+}
+
+.mega-menu-link::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--hdr-accent, #e11d27);
+  transition: width 0.18s ease;
+}
+
+.mega-menu-link:hover,
+.mega-menu-link:focus-visible {
+  color: var(--hdr-accent, #e11d27);
+}
+
+.mega-menu-link:hover::after,
+.mega-menu-link:focus-visible::after {
+  width: 100%;
+}
+
+/* ── Products panel ── */
+
+.mega-menu__products {
+  width: 320px;
+  flex-shrink: 0;
+  padding-left: 32px;
+  margin-left: 32px;
+  border-left: 1px solid #e5e7eb;
+}
+
+.mega-menu__product-header {
+  margin-bottom: 14px;
+}
+
+.mega-menu__product-header .mega-menu-heading {
+  margin-bottom: 0;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.mega-menu__product-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.mega-menu__product-card {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.mega-menu__product-card:hover,
+.mega-menu__product-card:focus-visible {
+  transform: translateY(-2px);
+}
+
+.mega-menu__product-image {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #f3f4f6;
+}
+
+.mega-menu__product-image img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.mega-menu__product-card:hover .mega-menu__product-image img,
+.mega-menu__product-card:focus-visible .mega-menu__product-image img {
+  transform: scale(1.06);
+}
+
+.mega-menu__badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: var(--hdr-accent, #e11d27);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.mega-menu__product-info {
+  padding: 6px 2px 0;
+}
+
+.mega-menu__product-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 3px;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mega-menu__product-price {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.price--sale {
+  color: var(--hdr-accent, #e11d27);
+  font-weight: 700;
+}
+
+.price--compare {
+  color: #9ca3af;
+  margin-left: 4px;
+  text-decoration: line-through;
+  font-size: 11px;
+}
+
+/* ── Caret rotation when opened via click/keyboard (hover case already
+     handled generically by .menu-bar__item:hover in header-menu.css) ── */
+
+.menu-bar__item--has-mega.is-open > .menu-bar__link .icon-caret-down {
+  transform: rotate(180deg);
+}
+
+/* =============================================================================
+   REDUCED MOTION
+   ============================================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .mega-menu-link::after,
+  .mega-menu__product-card,
+  .mega-menu__product-image img,
+  .mega-menu-heading {
+    transition: none !important;
+  }
+}

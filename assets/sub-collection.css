@@ -1,0 +1,162 @@
+/* ============================================================
+   sub-collection.css
+   Horizontally-scrollable sub-collection carousel.
+   Modifiers: .sub-collections--square | .sub-collections--circle
+   ============================================================ */
+
+/* Wrapper --------------------------------------------------- */
+.sub-collections {
+  position: relative;
+  margin-block-end: 2rem;
+  /* Arrows are outside the track, so the wrapper needs side padding
+     to give them space without them overlapping the content.       */
+  padding-inline: 2.5rem;
+}
+
+/* Scrollable track ------------------------------------------ */
+.sub-collections__track {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;           /* Firefox */
+  padding-block: 0.25rem;          /* room for focus rings */
+}
+
+/* Centre the group when items don't fill the track.
+   A zero-width auto-margin pseudo-element on each end pushes
+   the items to the middle without causing the left-clip that
+   justify-content: center produces on overflowing flex rows. */
+.sub-collections__track::before,
+.sub-collections__track::after {
+  content: '';
+  flex: 1 0 0;
+}
+
+.sub-collections__track::-webkit-scrollbar {
+  display: none;                   /* Chrome / Safari */
+}
+
+/* Individual item ------------------------------------------- */
+.sub-collections__item {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: inherit;
+  scroll-snap-align: start;
+  width: 100px;
+  transition: opacity 0.2s ease;
+}
+
+.sub-collections__item:hover {
+  opacity: 0.7;
+}
+
+.sub-collections__item:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Media (image container) ----------------------------------- */
+.sub-collections__media {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: #f4f4f4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Shape modifiers */
+.sub-collections--square .sub-collections__media {
+  border-radius: 8px;
+}
+
+.sub-collections--circle .sub-collections__media {
+  border-radius: 50%;
+}
+
+/* Image */
+.sub-collections__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Title ----------------------------------------------------- */
+.sub-collections__title {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.3;
+  color: inherit;
+  word-break: break-word;
+}
+
+/* Nav buttons ----------------------------------------------- */
+/* Arrows sit in the wrapper's padding gutters, never inside
+   the track, so padding-inline on the track is not needed.   */
+.sub-collections__nav {
+  position: absolute;
+  top: calc(50% - 0.75rem);
+  transform: translateY(-50%);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 50%;
+  background: #fff;
+  color: #111;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.sub-collections__nav:hover {
+  background: #f4f4f4;
+  border-color: #bbb;
+}
+
+.sub-collections__nav:disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.sub-collections__nav--prev { left: 0; }
+.sub-collections__nav--next { right: 0; }
+
+/* Active / current state ------------------------------------ */
+.sub-collections__item--active .sub-collections__media {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.sub-collections__item--active .sub-collections__title {
+  font-weight: 700;
+}
+
+/* Responsive ------------------------------------------------ */
+@media (max-width: 768px) {
+  .sub-collections {
+    padding-inline: 2rem;
+  }
+
+  .sub-collections__item {
+    width: 80px;
+  }
+
+  .sub-collections__nav {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+}

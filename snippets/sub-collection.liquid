@@ -1,0 +1,79 @@
+{%- comment -%}
+  Snippet: sub-collections-carousel
+  Renders a horizontally-scrollable row of linked collection cards
+  driven by the collection metafield custom.sub_collections.
+
+  Automatically shows when sub-collections exist, hidden when empty —
+  no manual block picking required.
+
+  Accepts:
+    - collection  {Object}  Required. The current collection object.
+    - shape       {String}  Optional. 'square' | 'circle'. Default: 'square'.
+
+  Usage:
+    {% render 'sub-collections-carousel', collection: collection, shape: 'square' %}
+{%- endcomment -%}
+
+{%- liquid
+  assign sub_collections = collection.metafields.custom.sub_collections.value
+  assign shape = shape | default: 'square'
+-%}
+
+{%- if sub_collections != blank and sub_collections.size > 0 -%}
+  <div class="sub-collections sub-collections--{{ shape }}" data-sub-collections>
+
+    <div class="sub-collections__track" data-sub-collections-track>
+      {%- for sc in sub_collections -%}
+        {%- assign sc_image = sc.image -%}
+        <a href="{{ sc.url }}" class="sub-collections__item">
+
+          <span class="sub-collections__media">
+            {%- if sc_image != blank -%}
+              <img
+                src="{{ sc_image | image_url: width: 300 }}"
+                srcset="
+                  {{ sc_image | image_url: width: 150 }} 150w,
+                  {{ sc_image | image_url: width: 300 }} 300w,
+                  {{ sc_image | image_url: width: 450 }} 450w
+                "
+                sizes="120px"
+                alt="{{ sc_image.alt | default: sc.title | escape }}"
+                width="{{ sc_image.width }}"
+                height="{{ sc_image.height }}"
+                loading="lazy"
+                class="sub-collections__image"
+              >
+            {%- endif -%}
+          </span>
+
+          <span class="sub-collections__title">{{ sc.title }}</span>
+
+        </a>
+      {%- endfor -%}
+    </div>
+
+    {%- if sub_collections.size > 4 -%}
+      <button
+        type="button"
+        class="sub-collections__nav sub-collections__nav--prev"
+        data-sub-collections-prev
+        aria-label="Scroll left"
+      >
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      <button
+        type="button"
+        class="sub-collections__nav sub-collections__nav--next"
+        data-sub-collections-next
+        aria-label="Scroll right"
+      >
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    {%- endif -%}
+
+  </div>
+{%- endif -%}

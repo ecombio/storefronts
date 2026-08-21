@@ -1,0 +1,175 @@
+{%- comment -%}
+  sections/utility-bar.liquid
+
+  Split out of sections/header.liquid — used to render via snippets/utility-bar.liquid,
+  passed the header section's own settings. Now a standalone section, placed above or
+  below "Header" in config/header-group.json (same pattern as sections/announcement-bar.liquid).
+
+  NOTE: "Section width" / "Side padding" below are duplicated from the Header section's
+  own layout settings rather than shared — since this is now a sibling section it can no
+  longer read header.liquid's section.settings directly. Keep the two in sync manually if
+  you want this row to line up with the header row above/below it.
+
+  CHANGED — this section never had any sticky logic of its own, so joining the
+  header-group stack is a one-line addition: data-header-stack-member below.
+  header-group.js picks it up automatically (in DOM order, matching its position
+  in config/header-group.json's `order` array) with no other markup, settings,
+  or script changes needed here.
+{%- endcomment -%}
+
+{%- if section.settings.enable_bar -%}
+  {{ 'utility-bar.css' | asset_url | stylesheet_tag }}
+
+  {%- liquid
+    assign bar_style = section.settings.bar_style | default: 'hyper'
+    assign show_curr  = section.settings.show_currency
+    assign show_loc   = section.settings.show_locale
+
+    assign utility_width_type = section.settings.section_width
+    if utility_width_type == blank
+      assign utility_width_class = 'utility-bar__default-width'
+    elsif utility_width_type == 'full-width'
+      assign utility_width_class = 'utility-bar__full-width'
+    else
+      assign utility_width_class = 'utility-bar__custom-width'
+    endif
+  -%}
+
+  <div class="utility-bar utility-bar--{{ bar_style }} {{ utility_width_class }}"
+       role="navigation"
+       aria-label="Utility bar"
+       id="utility-bar"
+       data-header-stack-member
+       style="
+         --section-padding: {{ section.settings.section_padding }}px;
+         {%- if utility_width_type == 'custom-width' %}
+           --custom-width: {{ section.settings.custom_width }}rem;
+         {%- endif %}
+       ">
+
+    <div class="utility-bar__inner">
+
+      <div class="utility-bar__col utility-bar__col--left">
+        {%- render 'utility-links', settings: section.settings, count: 3 -%}
+      </div>
+
+      <div class="utility-bar__col utility-bar__col--right">
+        <div class="utility-bar__switchers">
+          {%- if show_curr -%}
+            {%- render 'currency-selector', form_id: 'utility-bar-currency-form' -%}
+          {%- endif -%}
+
+          {%- if show_loc -%}
+            {%- render 'locale-selector', form_id: 'utility-bar-locale-form' -%}
+          {%- endif -%}
+
+          {%- render 'region-picker' -%}
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="{{ 'utility-bar.js' | asset_url }}" defer></script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Utility bar",
+  "tag": "div",
+  "class": "utility-bar-section",
+  "settings": [
+    { "type": "header", "content": "Layout" },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "info": "Should match the Header section's own width setting, so the two rows line up.",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 24,
+      "info": "Should match the Header section's own side padding setting, so the two rows line up."
+    },
+
+    { "type": "header", "content": "Style" },
+    {
+      "type": "checkbox",
+      "id": "enable_bar",
+      "label": "Enable utility bar",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "bar_style",
+      "label": "Bar style",
+      "default": "hyper",
+      "options": [
+        { "value": "hyper", "label": "Hyper (white)" },
+        { "value": "focus", "label": "Focus (warm grey)" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_currency",
+      "label": "Show currency selector",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_locale",
+      "label": "Show language selector",
+      "default": true
+    },
+
+    { "type": "header", "content": "Links" },
+    { "type": "image_picker", "id": "link_1_icon", "label": "Link 1 icon (optional)" },
+    { "type": "text", "id": "link_1_label", "label": "Link 1 label", "default": "Track Order" },
+    { "type": "url", "id": "link_1_url", "label": "Link 1 URL" },
+
+    { "type": "image_picker", "id": "link_2_icon", "label": "Link 2 icon (optional)" },
+    { "type": "text", "id": "link_2_label", "label": "Link 2 label", "default": "Store Locator" },
+    { "type": "url", "id": "link_2_url", "label": "Link 2 URL" },
+
+    { "type": "image_picker", "id": "link_3_icon", "label": "Link 3 icon (optional)" },
+    { "type": "text", "id": "link_3_label", "label": "Link 3 label", "default": "Track Order" },
+    { "type": "url", "id": "link_3_url", "label": "Link 3 URL" }
+  ],
+  "presets": [
+    {
+      "name": "Utility bar",
+      "settings": {
+        "link_1_label": "Track Order",
+        "link_1_url": "/apps/track",
+        "link_2_label": "Store Locator",
+        "link_2_url": "/pages/stores",
+        "link_3_label": "Track Order",
+        "link_3_url": "/apps/track"
+      }
+    }
+  ]
+}
+{% endschema %}

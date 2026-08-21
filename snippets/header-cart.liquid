@@ -1,0 +1,41 @@
+{% comment %}
+  header-cart.liquid
+
+  Parameters:
+    show_label (boolean, optional) — pass `false` to render the
+    icon only, with no visible text label. Defaults to true when
+    omitted (unchanged behavior). Reads routes/cart from global
+    Liquid context otherwise; no other parameters required.
+{% endcomment %}
+{{ 'header-cart.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'header-cart.js' | asset_url }}" defer></script>
+
+<button
+  type="button"
+  class="ecombio-header__icon-link ecombio-header__cart"
+  aria-label="Open cart, {{ cart.item_count }} {{ cart.item_count | pluralize: 'item', 'items' }}"
+  aria-haspopup="dialog"
+  aria-controls="ecombio-cart-drawer"
+  data-ecombio-cart-trigger
+>
+  <span class="ecombio-header__cart-wrap">
+    <svg class="ecombio-icon" width="22" height="22" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"
+         aria-hidden="true" focusable="false">
+      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <path d="M16 10a4 4 0 0 1-8 0"/>
+    </svg>
+    <span
+      class="ecombio-header__cart-badge{% unless cart.item_count > 0 %} ecombio-header__cart-badge--hidden{% endunless %}"
+      data-ecombio-cart-count
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      {{ cart.item_count }}
+    </span>
+  </span>
+  {%- unless show_label == false -%}
+    <span class="ecombio-header__icon-label" aria-hidden="true">Cart</span>
+  {%- endunless -%}
+</button>

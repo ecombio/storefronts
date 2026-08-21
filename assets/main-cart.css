@@ -1,0 +1,540 @@
+/**
+ * cart-page.css
+ * Full-page cart layout. Scoped to .ecombio-cart-page — zero global side-effects.
+ * Consumes shared design tokens (--ecd-*) from cart-drawer.css.
+ * Architecture: BEM + CSS custom properties, mobile-first.
+ * Respects prefers-reduced-motion and prefers-color-scheme.
+ */
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   1. PAGE WRAPPER
+───────────────────────────────────────────────────────────────────────────── */
+
+.ecombio-cart-page {
+  position: relative;
+  padding:  40px 0 80px;
+}
+
+.ecombio-cart-page__inner {
+  max-width:  1200px;
+  margin:     0 auto;
+  padding:    0 var(--ecd-padding-x, 24px);
+  position:   relative;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   2. EMPTY STATE
+───────────────────────────────────────────────────────────────────────────── */
+
+.ecombio-cart-page__empty {
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  justify-content: center;
+  gap:             20px;
+  min-height:      360px;
+  text-align:      center;
+}
+
+.ecombio-cart-page__empty-icon {
+  color:   var(--ecd-border-color);
+  opacity: 0.75;
+}
+
+.ecombio-cart-page__empty-heading {
+  margin:      0;
+  font-size:   1.25rem;
+  font-weight: 600;
+  color:       var(--ecd-color-text);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   3. TWO-COLUMN LAYOUT
+───────────────────────────────────────────────────────────────────────────── */
+
+.ecombio-cart-page__layout {
+  display:   grid;
+  gap:       40px;
+  /* Items col is fluid; summary col is fixed-ish */
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 900px) {
+  .ecombio-cart-page__layout {
+    grid-template-columns: 1fr 340px;
+    align-items: start;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   4. HEADING
+───────────────────────────────────────────────────────────────────────────── */
+
+.ecombio-cart-page__heading {
+  margin:        0 0 24px;
+  font-size:     1.375rem;
+  font-weight:   600;
+  color:         var(--ecd-color-text);
+  display:       flex;
+  align-items:   baseline;
+  gap:           8px;
+  line-height:   1.2;
+}
+
+.ecombio-cart-page__count {
+  font-size:   1rem;
+  font-weight: 400;
+  color:       var(--ecd-color-text-muted);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   5. ITEMS TABLE
+───────────────────────────────────────────────────────────────────────────── */
+
+.ecombio-cart-page__table {
+  width:           100%;
+  border-collapse: collapse;
+  table-layout:    fixed;
+}
+
+/* Column widths */
+.ecombio-cart-page__th--product { width: auto; }
+.ecombio-cart-page__th--price   { width: 100px; }
+.ecombio-cart-page__th--qty     { width: 120px; }
+.ecombio-cart-page__th--total   { width: 100px; }
+.ecombio-cart-page__th--remove  { width: 44px;  }
+
+.ecombio-cart-page__thead {
+  border-bottom: 2px solid var(--ecd-border-color);
+}
+
+.ecombio-cart-page__th {
+  padding:        0 12px 12px;
+  font-size:      0.6875rem;
+  font-weight:    600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color:          var(--ecd-color-text-muted);
+  text-align:     left;
+  white-space:    nowrap;
+}
+
+.ecombio-cart-page__th--price,
+.ecombio-cart-page__th--total {
+  text-align: right;
+}
+
+.ecombio-cart-page__th--remove,
+.ecombio-cart-page__th--qty {
+  text-align: center;
+}
+
+/* Hide thead on small screens — data-label pseudo-headers take over */
+@media (max-width: 699px) {
+  .ecombio-cart-page__thead {
+    display: none;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   6. TABLE ROWS
+───────────────────────────────────────────────────────────────────────────── */
+
+.ecombio-cart-page__row {
+  border-bottom: 1px solid var(--ecd-border-color);
+  transition:    opacity 200ms ease;
+}
+
+.ecombio-cart-page__row.is-removing {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.ecombio-cart-page__td {
+  padding:        20px 12px;
+  vertical-align: middle;
+  color:          var(--ecd-color-text);
+  font-size:      0.875rem;
+}
+
+.ecombio-cart-page__td--price,
+.ecombio-cart-page__td--total {
+  text-align: right;
+}
+
+.ecombio-cart-page__td--qty,
+.ecombio-cart-page__td--remove {
+  text-align: center;
+}
+
+/* Responsive stacked layout */
+@media (max-width: 699px) {
+  .ecombio-cart-page__row {
+    display: block;
+    padding: 16px 0;
+  }
+
+  .ecombio-cart-page__td {
+    display:     flex;
+    align-items: center;
+    justify-content: space-between;
+    padding:     6px 0;
+  }
+
+  .ecombio-cart-page__td::before {
+    content:     attr(data-label);
+    font-size:   0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color:       var(--ecd-color-text-muted);
+    flex-shrink: 0;
+    margin-right:12px;
+  }
+
+  /* Product cell spans full width — no label needed */
+  .ecombio-cart-page__td--product {
+    display:     block;
+    padding-bottom: 12px;
+  }
+  .ecombio-cart-page__td--product::before { display: none; }
+
+  .ecombio-cart-page__td--remove {
+    justify-content: flex-end;
+  }
+  .ecombio-cart-page__td--remove::before { display: none; }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   7. PRODUCT CELL LAYOUT
+───────────────────────────────────────────────────────────────────────────── */
+
+.ecombio-cart-page__product {
+  display:     flex;
+  align-items: flex-start;
+  gap:         16px;
+}
+
+.ecombio-cart-page__item-image-link {
+  display:        block;
+  flex-shrink:    0;
+  width:          100px;
+  height:         100px;
+  border-radius:  var(--ecd-border-radius);
+  overflow:       hidden;
+  background:     var(--ecd-qty-bg);
+  text-decoration:none;
+}
+
+.ecombio-cart-page__item-image {
+  display:    block;
+  width:      100%;
+  height:     100%;
+  object-fit: cover;
+}
+
+.ecombio-cart-page__item-image--placeholder {
+  width:      100%;
+  height:     100%;
+  background: var(--ecd-qty-bg);
+}
+
+.ecombio-cart-page__item-meta {
+  display:        flex;
+  flex-direction: column;
+  gap:            4px;
+  min-width:      0;
+}
+
+.ecombio-cart-page__item-title {
+  font-size:       0.9375rem;
+  font-weight:     500;
+  line-height:     1.35;
+  color:           var(--ecd-color-text-link);
+  text-decoration: none;
+}
+
+.ecombio-cart-page__item-title:hover {
+  color:                var(--ecd-color-text-link-hover);
+  text-decoration:      underline;
+  text-underline-offset:2px;
+}
+
+.ecombio-cart-page__item-variant,
+.ecombio-cart-page__item-selling-plan {
+  margin:      0;
+  font-size:   0.8125rem;
+  color:       var(--ecd-color-text-muted);
+  line-height: 1.3;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   8. PRICE
+───────────────────────────────────────────────────────────────────────────── */
+
+.ecombio-cart-page__price {
+  display:     block;
+  font-size:   0.9375rem;
+  font-weight: 600;
+  color:       var(--ecd-color-text);
+}
+
+.ecombio-cart-page__price--was {
+  display:              block;
+  font-size:            0.8125rem;
+  font-weight:          400;
+  color:                var(--ecd-color-text-muted);
+  text-decoration-color:var(--ecd-color-text-muted);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   9. QUANTITY STEPPER
+───────────────────────────────────────────────────────────────────────────── */
+
+.ecombio-cart-page__qty {
+  display:       inline-flex;
+  align-items:   center;
+  background:    var(--ecd-qty-bg);
+  border-radius: var(--ecd-qty-border-radius);
+  overflow:      hidden;
+}
+
+.ecombio-cart-page__qty-btn {
+  appearance:      none;
+  border:          none;
+  background:      transparent;
+  cursor:          pointer;
+  color:           var(--ecd-qty-color);
+  padding:         0;
+  width:           34px;
+  height:          34px;
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  transition:      background 150ms ease;
+  flex-shrink:     0;
+}
+
+.ecombio-cart-page__qty-btn:hover {
+  background: var(--ecd-qty-hover-bg);
+}
+
+.ecombio-cart-page__qty-btn:focus-visible {
+  outline:        2px solid var(--ecd-accent);
+  outline-offset: -2px;
+}
+
+.ecombio-cart-page__qty-btn:disabled {
+  opacity: 0.4;
+  cursor:  not-allowed;
+}
+
+.ecombio-cart-page__qty-value {
+  min-width:   32px;
+  text-align:  center;
+  font-size:   0.875rem;
+  font-weight: 500;
+  color:       var(--ecd-qty-color);
+  line-height: 1;
+  user-select: none;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   10. REMOVE BUTTON
+───────────────────────────────────────────────────────────────────────────── */
+
+.ecombio-cart-page__remove {
+  appearance:      none;
+  border:          none;
+  background:      transparent;
+  padding:         6px;
+  cursor:          pointer;
+  color:           var(--ecd-remove-color);
+  display:         inline-flex;
+  align-items:     center;
+  justify-content: center;
+  border-radius:   4px;
+  transition:      color 150ms ease, background 150ms ease;
+}
+
+.ecombio-cart-page__remove:hover {
+  color:      var(--ecd-remove-hover);
+  background: rgba(192, 57, 43, 0.07);
+}
+
+.ecombio-cart-page__remove:focus-visible {
+  outline:        2px solid var(--ecd-accent);
+  outline-offset: 2px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   11. ORDER SUMMARY SIDEBAR
+───────────────────────────────────────────────────────────────────────────── */
+
+.ecombio-cart-page__summary {
+  background:    var(--ecd-bg-footer);
+  border:        1px solid var(--ecd-border-color);
+  border-radius: var(--ecd-border-radius);
+  padding:       24px;
+  display:       flex;
+  flex-direction:column;
+  gap:           16px;
+}
+
+/* Stick the summary on wide screens */
+@media (min-width: 900px) {
+  .ecombio-cart-page__summary {
+    position:  sticky;
+    top:       24px;
+  }
+}
+
+.ecombio-cart-page__summary-heading {
+  margin:      0;
+  font-size:   1rem;
+  font-weight: 600;
+  color:       var(--ecd-color-text);
+  line-height: 1.2;
+}
+
+.ecombio-cart-page__discounts {
+  list-style:     none;
+  margin:         0;
+  padding:        0;
+  display:        flex;
+  flex-direction: column;
+  gap:            6px;
+}
+
+.ecombio-cart-page__discount {
+  display:     flex;
+  align-items: center;
+  gap:         6px;
+  font-size:   0.8125rem;
+  color:       #2e7d32;
+}
+
+.ecombio-cart-page__discount-amount {
+  margin-left: auto;
+}
+
+.ecombio-cart-page__subtotal-row {
+  display:         flex;
+  justify-content: space-between;
+  align-items:     baseline;
+  font-size:       1rem;
+  font-weight:     600;
+  color:           var(--ecd-color-text);
+  padding-top:     4px;
+  border-top:      1px solid var(--ecd-border-color);
+}
+
+.ecombio-cart-page__tax-note {
+  margin:     0;
+  font-size:  0.75rem;
+  color:      var(--ecd-color-text-muted);
+  text-align: center;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   12. SHARED BUTTON PRIMITIVES (mirrored from cart-drawer.css, page-scoped)
+───────────────────────────────────────────────────────────────────────────── */
+
+.ecombio-cart-page .ecombio-btn {
+  display:         block;
+  width:           100%;
+  padding:         14px 20px;
+  border:          1.5px solid transparent;
+  border-radius:   var(--ecd-border-radius);
+  font-family:     var(--ecd-font-family);
+  font-size:       0.9375rem;
+  font-weight:     600;
+  letter-spacing:  0.02em;
+  text-align:      center;
+  text-decoration: none;
+  cursor:          pointer;
+  transition:      background 150ms ease, color 150ms ease, border-color 150ms ease;
+  line-height:     1.2;
+}
+
+.ecombio-cart-page .ecombio-btn:focus-visible {
+  outline:        2px solid var(--ecd-accent);
+  outline-offset: 3px;
+}
+
+.ecombio-cart-page .ecombio-btn--primary {
+  background:   var(--ecd-accent);
+  border-color: var(--ecd-accent);
+  color:        var(--ecd-accent-text);
+}
+
+.ecombio-cart-page .ecombio-btn--primary:hover {
+  background:   var(--ecd-accent-hover);
+  border-color: var(--ecd-accent-hover);
+}
+
+.ecombio-cart-page__continue {
+  display:              block;
+  text-align:           center;
+  font-size:            0.8125rem;
+  color:                var(--ecd-color-text-muted);
+  text-decoration:      underline;
+  text-underline-offset:2px;
+  transition:           color 150ms ease;
+}
+
+.ecombio-cart-page__continue:hover {
+  color: var(--ecd-color-text);
+}
+
+.ecombio-cart-page__continue:focus-visible {
+  outline:        2px solid var(--ecd-accent);
+  outline-offset: 2px;
+  border-radius:  2px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   13. LOADING OVERLAY
+───────────────────────────────────────────────────────────────────────────── */
+
+.ecombio-cart-page__loading {
+  position:            fixed;
+  inset:               0;
+  display:             flex;
+  align-items:         center;
+  justify-content:     center;
+  background:          rgba(255, 255, 255, 0.55);
+  z-index:             400;
+  backdrop-filter:     blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+@media (prefers-color-scheme: dark) {
+  .ecombio-cart-page__loading {
+    background: rgba(28, 28, 30, 0.6);
+  }
+}
+
+.ecombio-cart-page__loading[hidden] {
+  display: none;
+}
+
+.ecombio-cart-page__spinner {
+  width:            32px;
+  height:           32px;
+  border:           2.5px solid var(--ecd-spinner-track);
+  border-top-color: var(--ecd-spinner-color);
+  border-radius:    50%;
+  animation:        ecd-page-spin 650ms linear infinite;
+}
+
+@keyframes ecd-page-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ecombio-cart-page__spinner {
+    animation: none;
+    opacity:   0.4;
+  }
+}

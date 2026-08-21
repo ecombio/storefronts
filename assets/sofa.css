@@ -1,0 +1,271 @@
+/* ===========================================
+   Sofa Product Section
+   =========================================== */
+
+.sofa-section {
+  --sofa-panel-bg: #f4f4f4;
+  --sofa-gallery-bg: #ffffff;
+  --sofa-text-dark: #1a1a1a;
+  --sofa-text-muted: rgba(26, 26, 26, 0.5);
+  --sofa-accent: #1a1a1a;
+
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.sofa-container {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  background: var(--sofa-panel-bg);
+}
+
+/* ---------- Gallery (left) ---------- */
+.sofa-gallery {
+  background: var(--sofa-gallery-bg);
+  padding: 24px 24px 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sofa-gallery-main {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+}
+
+.sofa-gallery-main-images {
+  position: relative;
+  width: 100%;
+  height: 320px;
+}
+
+.sofa-gallery-main-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.sofa-gallery-main-image.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sofa-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--sofa-text-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.sofa-arrow:hover {
+  background: #ffffff;
+  transform: translateY(-50%) scale(1.05);
+}
+
+.sofa-arrow--prev { left: 12px; }
+.sofa-arrow--next { right: 12px; }
+
+.sofa-thumbs {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.sofa-thumb {
+  width: 84px;
+  height: 68px;
+  padding: 0;
+  border: 2px solid #e5e5e5;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #ffffff;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.sofa-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.sofa-thumb.is-active,
+.sofa-thumb:hover {
+  border-color: var(--sofa-text-dark);
+}
+
+/* ---------- Info panel (right) ---------- */
+.sofa-info {
+  position: relative;
+  padding: 40px 40px 40px 32px;
+  color: var(--sofa-text-dark);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sofa-menu-toggle {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--sofa-text-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.sofa-eyebrow-rule {
+  display: block;
+  width: 48px;
+  height: 3px;
+  background: rgba(26, 26, 26, 0.25);
+  border-radius: 2px;
+}
+
+.sofa-title {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.sofa-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.sofa-price {
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.sofa-price-compare {
+  font-size: 16px;
+  text-decoration: line-through;
+  color: var(--sofa-text-muted);
+}
+
+.sofa-rating {
+  display: flex;
+  gap: 4px;
+}
+
+.sofa-star {
+  color: rgba(26, 26, 26, 0.2);
+}
+
+.sofa-star.is-filled {
+  color: #f5b942;
+}
+
+.sofa-swatches {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.sofa-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  background-color: var(--swatch-color, #ccc);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.sofa-swatch.is-active {
+  border-color: var(--sofa-text-dark);
+  transform: scale(1.15);
+}
+
+.sofa-divider-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0;
+  max-width: 220px;
+}
+
+.sofa-divider-lines span {
+  display: block;
+  height: 2px;
+  background: rgba(26, 26, 26, 0.15);
+  border-radius: 1px;
+}
+
+.sofa-divider-lines span:nth-child(2) { width: 80%; }
+.sofa-divider-lines span:nth-child(3) { width: 60%; }
+
+.sofa-form {
+  margin-top: 8px;
+}
+
+.sofa-buy-btn {
+  background: var(--sofa-accent);
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 14px 40px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sofa-buy-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+.sofa-buy-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+  .sofa-container {
+    grid-template-columns: 1fr;
+  }
+
+  .sofa-gallery {
+    padding: 24px;
+  }
+
+  .sofa-info {
+    padding: 32px 28px;
+  }
+
+  .sofa-gallery-main-images {
+    height: 260px;
+  }
+}

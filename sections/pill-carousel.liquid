@@ -1,0 +1,376 @@
+{{ 'pill-carousel.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign width_type = section.settings.section_width
+  if width_type == blank
+    assign width_class = 'default-width'
+  else
+    assign width_class = width_type
+  endif
+-%}
+
+<div
+  class="pill-carousel-section {{ width_class }}"
+  style="
+    padding-top: {{ section.settings.padding_top }}px;
+    padding-bottom: {{ section.settings.padding_bottom }}px;
+    background-color: {{ section.settings.bg_color }};
+    color: {{ section.settings.text_color }};
+    --section-padding: {{ section.settings.section_padding }}px;
+    {%- if width_type == 'custom-width' %}
+      --custom-width: {{ section.settings.custom_width }}rem;
+    {%- endif %}
+  "
+>
+  <div class="pill-carousel-section__inner">
+
+    {%- if section.settings.heading != blank or section.settings.subheading != blank or section.settings.view_all_label != blank -%}
+      <div class="pill-carousel-section__header pill-carousel-section__header--align-{{ section.settings.heading_align }}">
+        <div class="pill-carousel-section__header-text">
+          {%- if section.settings.heading != blank -%}
+            <h2 class="pill-carousel-section__heading">{{ section.settings.heading }}</h2>
+          {%- endif -%}
+          {%- if section.settings.subheading != blank -%}
+            <p class="pill-carousel-section__subheading">{{ section.settings.subheading }}</p>
+          {%- endif -%}
+        </div>
+        {%- if section.settings.view_all_label != blank and section.settings.view_all_link != blank -%}
+          <a href="{{ section.settings.view_all_link }}" class="pill-carousel-section__view-all">
+            {{- section.settings.view_all_label -}}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" width="16" height="16">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </a>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <div
+      class="pill-carousel"
+      data-pill-carousel
+      style="
+        --pill-bg: {{ section.settings.pill_bg_color }};
+        --pill-text: {{ section.settings.pill_text_color }};
+        --pill-border-color: {{ section.settings.pill_border_color }};
+        --pill-active-bg: {{ section.settings.pill_active_bg_color }};
+        --pill-active-text: {{ section.settings.pill_active_text_color }};
+        --pill-fade-color: {{ section.settings.bg_color }};
+      "
+      data-pill-size="{{ section.settings.pill_size }}"
+    >
+      <div class="pill-carousel__track" data-pill-carousel-track>
+        {%- for block in section.blocks -%}
+          {%- liquid
+            assign collection = block.settings.collection
+            assign label = block.settings.label
+            assign icon = block.settings.icon
+
+            if collection != blank
+              if label == blank
+                assign label = collection.title
+              endif
+              assign link = collection.url
+            else
+              assign link = block.settings.link
+            endif
+
+            if label == blank
+              assign label = 'Category'
+            endif
+          -%}
+
+          <div class="pill-carousel__item" {{ block.shopify_attributes }}>
+            <a
+              href="{{ link | default: '#' }}"
+              class="pill-carousel__pill{% if block.settings.mark_as_active %} is-active{% endif %}"
+              {% if link == blank %}tabindex="-1" aria-disabled="true"{% endif %}
+              {% if block.settings.mark_as_active %}aria-current="true"{% endif %}
+            >
+              {%- if icon != blank -%}
+                <span class="pill-carousel__icon">
+                  <img
+                    src="{{ icon | image_url: width: 64 }}"
+                    srcset="{{ icon | image_url: width: 32 }} 32w, {{ icon | image_url: width: 64 }} 64w"
+                    alt=""
+                    loading="lazy"
+                    width="{{ icon.width }}"
+                    height="{{ icon.height }}"
+                  >
+                </span>
+              {%- endif -%}
+              <span class="pill-carousel__label">{{ label }}</span>
+            </a>
+          </div>
+
+        {%- else -%}
+          {%- for i in (1..6) -%}
+            <div class="pill-carousel__item">
+              <a href="#" class="pill-carousel__pill" tabindex="-1" aria-disabled="true">
+                <span class="pill-carousel__label">Category</span>
+              </a>
+            </div>
+          {%- endfor -%}
+        {%- endfor -%}
+      </div>
+
+      {%- if section.blocks.size > 0 -%}
+        <button type="button" class="pill-carousel__btn pill-carousel__btn--prev" data-pill-carousel-prev aria-label="Previous">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <button type="button" class="pill-carousel__btn pill-carousel__btn--next" data-pill-carousel-next aria-label="Next">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      {%- endif -%}
+    </div>
+
+    {%- if section.settings.rich_text != blank -%}
+      <div class="pill-carousel-section__rich-text pill-carousel-section__rich-text--align-{{ section.settings.heading_align }}">
+        {{ section.settings.rich_text }}
+      </div>
+    {%- endif -%}
+
+  </div>
+</div>
+
+<script src="{{ 'pill-carousel.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Pill carousel",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Header"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Shop by category"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading"
+    },
+    {
+      "type": "select",
+      "id": "heading_align",
+      "label": "Heading alignment",
+      "options": [
+        { "value": "start", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "end", "label": "Right" }
+      ],
+      "default": "start"
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "richtext",
+      "id": "rich_text",
+      "label": "Rich text",
+      "info": "Optional supporting copy shown below the pills",
+      "default": "<p>Add supporting copy here.</p>"
+    },
+    {
+      "type": "header",
+      "content": "View all link"
+    },
+    {
+      "type": "text",
+      "id": "view_all_label",
+      "label": "Link label",
+      "default": "View all",
+      "info": "Leave blank to hide"
+    },
+    {
+      "type": "url",
+      "id": "view_all_link",
+      "label": "Link URL"
+    },
+    {
+      "type": "header",
+      "content": "Pill style"
+    },
+    {
+      "type": "select",
+      "id": "pill_size",
+      "label": "Pill size",
+      "options": [
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "color",
+      "id": "pill_bg_color",
+      "label": "Pill background",
+      "default": "#F3F4F6"
+    },
+    {
+      "type": "color",
+      "id": "pill_text_color",
+      "label": "Pill text",
+      "default": "#374151"
+    },
+    {
+      "type": "color",
+      "id": "pill_border_color",
+      "label": "Pill border",
+      "info": "Set equal to the background color to hide the border",
+      "default": "#E5E7EB"
+    },
+    {
+      "type": "color",
+      "id": "pill_active_bg_color",
+      "label": "Active pill background",
+      "default": "#0A3161"
+    },
+    {
+      "type": "color",
+      "id": "pill_active_text_color",
+      "label": "Active pill text",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Section background color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Section text color",
+      "default": "#111111"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "pill",
+      "name": "Pill",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection",
+          "info": "Used for the link and label unless overridden below"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Custom label",
+          "info": "Leave blank to use the collection's title"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Custom link",
+          "info": "Only used if no collection is selected"
+        },
+        {
+          "type": "image_picker",
+          "id": "icon",
+          "label": "Icon",
+          "info": "Optional small icon shown before the label"
+        },
+        {
+          "type": "checkbox",
+          "id": "mark_as_active",
+          "label": "Mark as active",
+          "info": "Highlights this pill, e.g. to show the current category",
+          "default": false
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Pill carousel",
+      "blocks": [
+        { "type": "pill" },
+        { "type": "pill" },
+        { "type": "pill" },
+        { "type": "pill" },
+        { "type": "pill" },
+        { "type": "pill" }
+      ]
+    }
+  ]
+}
+{% endschema %}

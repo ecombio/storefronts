@@ -1,0 +1,155 @@
+{% comment %}
+  Mega Menu - Header Menu
+  File: snippets/mega-menu.liquid
+
+  Renders a top-level nav link that opens a full-width dropdown panel
+  built from a link_list: top-level links become columns, their child
+  links become the column's link list, and any grandchild links (a
+  third nesting level) render as an indented sub-list beneath their
+  parent link. Optionally shows up to 3 "trending" products pulled
+  from the first collection link found anywhere in the menu (top
+  level or nested one level).
+
+  The panel is position:fixed rather than absolutely positioned inside
+  .menu-bar__container, because that container has overflow-x:auto for
+  horizontal scrolling on crowded menu bars — an absolutely positioned
+  panel would get clipped by it. Fixed positioning escapes that
+  clipping the same way main-header-sticky.css does (see the note at
+  the top of that file). assets/mega-menu.js positions the panel's
+  `top` to the header's live bottom edge on open/resize/scroll, so it
+  works whether the header is sticky or not.
+
+  Desktop (≥1024px) only — see assets/mega-menu.css.
+
+  Params:
+    block — the mega-menu block from section.blocks
+{% endcomment %}
+
+{%- liquid
+  assign menu = block.settings.menu
+  assign link = block.settings.link
+  assign show_products = block.settings.show_products
+  assign panel_id = 'MegaMenuPanel-' | append: block.id
+
+  if link == blank and menu != blank and menu.links.size > 0
+    assign link = menu.links.first.url
+  endif
+
+  assign has_columns = false
+  if menu != blank and menu.links.size > 0
+    assign has_columns = true
+  endif
+
+  assign collection_link = blank
+  if show_products and has_columns
+    for top_link in menu.links
+      if collection_link == blank
+        if top_link.type == 'collection_link'
+          assign collection_link = top_link
+        else
+          for sub_link in top_link.links
+            if collection_link == blank and sub_link.type == 'collection_link'
+              assign collection_link = sub_link
+            endif
+          endfor
+        endif
+      endif
+    endfor
+  endif
+
+  assign nav_label = block.settings.label
+  if nav_label == blank and menu != blank and menu.title != blank
+    assign nav_label = menu.title
+  endif
+  if nav_label == blank and link contains '/collections/'
+    assign nav_collection_handle = link | split: '/collections/' | last | split: '/' | first | split: '?' | first
+    assign nav_matched_collection = collections[nav_collection_handle]
+    if nav_matched_collection != blank
+      assign nav_label = nav_matched_collection.title
+    endif
+  endif
+
+  if nav_label == blank
+    assign nav_label = 'Mega menu'
+  endif
+-%}
+
+<li class="menu-bar__item{% if has_columns %} menu-bar__item--mega-menu{% endif %}" {% if has_columns %}data-mega-menu{% endif %} {{ block.shopify_attributes }}>
+  <a
+    href="{{ link | default: '#' }}"
+    class="menu-bar__link{% if has_columns %} menu-bar__link--mega-menu{% endif %}"
+    {%- if has_columns %}
+    aria-haspopup="true"
+    aria-expanded="false"
+    aria-controls="{{ panel_id }}"
+    data-mega-menu-trigger
+    {% endif -%}
+  >
+    {%- if block.settings.icon != blank -%}
+      <span class="menu-bar__icon">{%- render 'menu-icon', icon: block.settings.icon -%}</span>
+    {%- endif -%}
+    {{ nav_label }}
+    {%- if has_columns -%}
+      <svg class="icon-caret-down" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+        <path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    {%- endif -%}
+  </a>
+
+  {%- if has_columns -%}
+    <div class="mega-menu__panel" id="{{ panel_id }}" data-mega-menu-panel>
+      <div class="mega-menu__panel-inner page-width--header">
+
+        <div class="mega-menu__columns">
+          {%- for top_link in menu.links -%}
+            <div class="mega-menu__column">
+              <a href="{{ top_link.url }}" class="mega-menu__column-title">{{ top_link.title }}</a>
+              {%- if top_link.links.size > 0 -%}
+                <ul class="mega-menu__column-list">
+                  {%- for sub_link in top_link.links -%}
+                    <li>
+                      <a href="{{ sub_link.url }}" class="mega-menu__column-link{% if sub_link.links.size > 0 %} mega-menu__column-link--parent{% endif %}">{{ sub_link.title }}</a>
+                      {%- if sub_link.links.size > 0 -%}
+                        <ul class="mega-menu__subcolumn-list">
+                          {%- for grandchild_link in sub_link.links -%}
+                            <li><a href="{{ grandchild_link.url }}" class="mega-menu__subcolumn-link">{{ grandchild_link.title }}</a></li>
+                          {%- endfor -%}
+                        </ul>
+                      {%- endif -%}
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              {%- endif -%}
+            </div>
+          {%- endfor -%}
+        </div>
+
+        {%- if collection_link != blank -%}
+          {%- assign featured_collection = collection_link.object -%}
+          <div class="mega-menu__products">
+            <p class="mega-menu__products-heading">Trending in {{ featured_collection.title }}</p>
+            <div class="mega-menu__products-grid">
+              {%- for product in featured_collection.products limit: 3 -%}
+                <a href="{{ product.url }}" class="mega-menu__product-card">
+                  <span class="mega-menu__product-image">
+                    {%- if product.featured_image -%}
+                      <img
+                        src="{{ product.featured_image | image_url: width: 200 }}"
+                        alt="{{ product.featured_image.alt | escape }}"
+                        width="56" height="56" loading="lazy">
+                    {%- endif -%}
+                  </span>
+                  <span class="mega-menu__product-info">
+                    <span class="mega-menu__product-title">{{ product.title }}</span>
+                    <span class="mega-menu__product-price">{{ product.price | money }}</span>
+                  </span>
+                </a>
+              {%- endfor -%}
+            </div>
+          </div>
+        {%- endif -%}
+
+      </div>
+    </div>
+  {%- endif -%}
+</li>

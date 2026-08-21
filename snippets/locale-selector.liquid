@@ -1,0 +1,31 @@
+{% comment %}
+  Language switcher for the utility bar.
+  Renders nothing if the shop only has one available language.
+  Accepts:
+    form_id — unique id for the {% form %} tag
+{% endcomment %}
+{%- if localization.available_languages.size > 1 -%}
+  <div class="utility-bar__switcher">
+    {%- form 'localization', id: form_id, return_to: request.path -%}
+      <label for="{{ form_id }}-select" class="visually-hidden">Language</label>
+      <div class="utility-bar__select-wrap">
+        <select id="{{ form_id }}-select"
+                name="locale_code"
+                class="utility-bar__select"
+                aria-label="Select language">
+          {%- for language in localization.available_languages -%}
+            <option value="{{ language.iso_code }}"
+              {%- if language.iso_code == localization.language.iso_code %} selected{% endif -%}>
+              {{ language.endonym_name | capitalize }}
+            </option>
+          {%- endfor -%}
+        </select>
+        <svg class="utility-bar__chevron" width="9" height="9" viewBox="0 0 20 20"
+             fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 8l5 5 5-5"/>
+        </svg>
+      </div>
+    {%- endform -%}
+  </div>
+{%- endif -%}

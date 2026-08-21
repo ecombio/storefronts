@@ -1,0 +1,67 @@
+{%- comment -%}
+  snippets/quickview-media.liquid
+  Left column (desktop) / top section (mobile) of the Quick View modal.
+
+  Renders:
+    • Main featured image  [data-qv-main-img]
+    • Thumbnail strip      [data-qv-thumb]  — hidden when ≤ 1 image, capped at 8
+
+  Parameters (passed via render tag):
+    qv_product   {Object}  required — Shopify product object
+    qv_featured  {Object}  required — product.featured_image (may be blank)
+    qv_images    {Array}   required — product.images
+
+  JS hooks:
+    [data-qv-main-img]  — src/alt swapped by thumb clicks and variant changes
+    [data-qv-thumb]     — thumbnail buttons; carries data-src + data-alt
+{%- endcomment -%}
+
+<div class="qv__media">
+
+  {%- comment -%}── Main image ──{%- endcomment -%}
+  <div class="qv__media-main">
+    {%- if qv_featured != blank -%}
+      <img
+        id="qv-main-img-{{ qv_product.id }}"
+        class="qv__main-img"
+        data-qv-main-img
+        src="{{ qv_featured | image_url: width: 800 }}"
+        alt="{{ qv_featured.alt | default: qv_product.title | escape }}"
+        width="800"
+        height="800"
+        loading="eager"
+      >
+    {%- else -%}
+      <div class="qv__main-img qv__main-img--placeholder" aria-hidden="true">
+        {{ 'product-1' | placeholder_svg_tag: 'qv__placeholder-svg' }}
+      </div>
+    {%- endif -%}
+  </div>
+
+  {%- comment -%}── Thumbnail strip — only when multiple images exist ──{%- endcomment -%}
+  {%- if qv_images.size > 1 -%}
+    <div class="qv__media-thumbs" role="list" aria-label="Product images">
+      {%- for img in qv_images limit: 8 -%}
+        <button
+          type="button"
+          class="qv__thumb{% if forloop.first %} is-active{% endif %}"
+          role="listitem"
+          data-qv-thumb
+          data-src="{{ img | image_url: width: 800 }}"
+          data-alt="{{ img.alt | default: qv_product.title | escape }}"
+          aria-label="View image {{ forloop.index }} of {{ qv_images.size | at_most: 8 }}"
+          aria-pressed="{{ forloop.first }}"
+        >
+          <img
+            src="{{ img | image_url: width: 120 }}"
+            alt=""
+            width="60"
+            height="60"
+            loading="lazy"
+          >
+        </button>
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+
+</div>{%- comment -%} /.qv__media {%- endcomment -%}

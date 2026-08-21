@@ -1,0 +1,194 @@
+{% comment %}
+  Snippet: article-summarizer.liquid
+  Usage:   {% render 'article-summarizer', article: article %}
+  Place directly after {{ article.content }} in your article template.
+
+  On click:
+    1. Resolves the prompt: uses article.metafields.custom.ai_summarizer if set,
+       otherwise falls back to a built-in default prompt.
+    2. Appends the prompt as ?q= to the AI URL so it pre-fills the chat input.
+    3. Also copies it to clipboard as a reliable fallback.
+    4. Shows a toast with clear next-step instructions.
+
+  No API keys. No backend. No streaming.
+{% endcomment %}
+
+{% assign excerpt = article.content | strip_html | strip_newlines | truncate: 2000 %}
+{% assign custom_prompt = article.metafields.custom.ai_summarizer | escape %}
+
+<div
+  class="ma-summarizer"
+  data-title="{{ article.title | escape }}"
+  data-excerpt="{{ excerpt | escape }}"
+  {% if custom_prompt != blank %}data-custom-prompt="{{ custom_prompt }}"{% endif %}
+>
+  <div class="ma-summarizer__inner">
+    <div class="ma-summarizer__header">
+      <span class="ma-summarizer__eyebrow">AI Summary</span>
+      <p class="ma-summarizer__heading">Too long? Get the gist in seconds.</p>
+      <p class="ma-summarizer__subtext">Pick an AI — the prompt loads automatically in the new tab.</p>
+    </div>
+
+    <div class="ma-summarizer__buttons">
+
+      <button
+        class="ma-summarizer__btn ma-summarizer__btn--claude"
+        data-ai="claude"
+        data-url="https://claude.ai/new"
+        type="button"
+        aria-label="Summarize with Claude"
+      >
+        <span class="ma-summarizer__btn-icon" aria-hidden="true">
+          <img src="https://cdn.jsdelivr.net/gh/glincker/thesvg@main/public/icons/claude/default.svg" width="18" height="18" alt="">
+        </span>
+        <span class="ma-summarizer__btn-label">
+          <span class="ma-summarizer__btn-name">Claude</span>
+          <span class="ma-summarizer__btn-hint">by Anthropic</span>
+        </span>
+        <span class="ma-summarizer__btn-arrow" aria-hidden="true">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </button>
+
+      <button
+        class="ma-summarizer__btn ma-summarizer__btn--chatgpt"
+        data-ai="chatgpt"
+        data-url="https://chatgpt.com/"
+        type="button"
+        aria-label="Summarize with ChatGPT"
+      >
+        <span class="ma-summarizer__btn-icon" aria-hidden="true">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/ChatGPT-Logo.svg" width="18" height="18" alt="">
+        </span>
+        <span class="ma-summarizer__btn-label">
+          <span class="ma-summarizer__btn-name">ChatGPT</span>
+          <span class="ma-summarizer__btn-hint">by OpenAI</span>
+        </span>
+        <span class="ma-summarizer__btn-arrow" aria-hidden="true">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </button>
+
+      <button
+        class="ma-summarizer__btn ma-summarizer__btn--gemini"
+        data-ai="gemini"
+        data-url="https://gemini.google.com/app"
+        type="button"
+        aria-label="Summarize with Gemini"
+      >
+        <span class="ma-summarizer__btn-icon" aria-hidden="true">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/1/1d/Google_Gemini_icon_2025.svg" width="18" height="18" alt="">
+        </span>
+        <span class="ma-summarizer__btn-label">
+          <span class="ma-summarizer__btn-name">Gemini</span>
+          <span class="ma-summarizer__btn-hint">by Google</span>
+        </span>
+        <span class="ma-summarizer__btn-arrow" aria-hidden="true">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </button>
+
+      <button
+        class="ma-summarizer__btn ma-summarizer__btn--grok"
+        data-ai="grok"
+        data-url="https://grok.com/"
+        type="button"
+        aria-label="Summarize with Grok"
+      >
+        <span class="ma-summarizer__btn-icon" aria-hidden="true">
+          <img src="https://cdn.jsdelivr.net/gh/glincker/thesvg@main/public/icons/grok/default.svg" width="18" height="18" alt="">
+        </span>
+        <span class="ma-summarizer__btn-label">
+          <span class="ma-summarizer__btn-name">Grok</span>
+          <span class="ma-summarizer__btn-hint">by xAI</span>
+        </span>
+        <span class="ma-summarizer__btn-arrow" aria-hidden="true">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </button>
+
+      <button
+        class="ma-summarizer__btn ma-summarizer__btn--perplexity"
+        data-ai="perplexity"
+        data-url="https://www.perplexity.ai/"
+        type="button"
+        aria-label="Summarize with Perplexity"
+      >
+        <span class="ma-summarizer__btn-icon" aria-hidden="true">
+          <img src="https://cdn.jsdelivr.net/gh/glincker/thesvg@main/public/icons/perplexity/default.svg" width="18" height="18" alt="">
+        </span>
+        <span class="ma-summarizer__btn-label">
+          <span class="ma-summarizer__btn-name">Perplexity</span>
+          <span class="ma-summarizer__btn-hint">by Perplexity AI</span>
+        </span>
+        <span class="ma-summarizer__btn-arrow" aria-hidden="true">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </button>
+
+      <button
+        class="ma-summarizer__btn ma-summarizer__btn--mistral"
+        data-ai="mistral"
+        data-url="https://chat.mistral.ai/"
+        type="button"
+        aria-label="Summarize with Mistral"
+      >
+        <span class="ma-summarizer__btn-icon" aria-hidden="true">
+          <img src="https://cdn.jsdelivr.net/gh/glincker/thesvg@main/public/icons/mistral/default.svg" width="18" height="18" alt="">
+        </span>
+        <span class="ma-summarizer__btn-label">
+          <span class="ma-summarizer__btn-name">Mistral</span>
+          <span class="ma-summarizer__btn-hint">by Mistral AI</span>
+        </span>
+        <span class="ma-summarizer__btn-arrow" aria-hidden="true">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </button>
+
+      <button
+        class="ma-summarizer__btn ma-summarizer__btn--deepseek"
+        data-ai="deepseek"
+        data-url="https://chat.deepseek.com/"
+        type="button"
+        aria-label="Summarize with DeepSeek"
+      >
+        <span class="ma-summarizer__btn-icon" aria-hidden="true">
+          <img src="https://cdn.jsdelivr.net/gh/glincker/thesvg@main/public/icons/deepseek/default.svg" width="18" height="18" alt="">
+        </span>
+        <span class="ma-summarizer__btn-label">
+          <span class="ma-summarizer__btn-name">DeepSeek</span>
+          <span class="ma-summarizer__btn-hint">by DeepSeek</span>
+        </span>
+        <span class="ma-summarizer__btn-arrow" aria-hidden="true">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </button>
+
+    </div>
+
+    <p class="ma-summarizer__footer">The prompt is also copied to your clipboard — paste it if it doesn't appear automatically.</p>
+  </div>
+</div>
+
+<div class="ma-summarizer-toast" id="ma-summarizer-toast" role="status" aria-live="polite">
+  <span class="ma-summarizer-toast__icon" aria-hidden="true">
+    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3 8l3.5 3.5L13 4.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </span>
+  <span class="ma-summarizer-toast__text"></span>
+</div>

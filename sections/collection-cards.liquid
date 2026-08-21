@@ -1,0 +1,331 @@
+{% comment %}
+  Section: Collection cards
+
+  This section is a REFERENCE IMPLEMENTATION — it exists to show how to
+  call snippets/collection-card.liquid correctly (see the render call in
+  the loop below) and to expose the layout/carousel settings a merchant
+  needs. It owns no card-level styling or behavior itself: all of that
+  lives in assets/collection-card.css and assets/collection-card.js,
+  loaded once by the snippet via the card_load_assets flag.
+
+  Files in this component:
+    sections/collection-cards.liquid   (this file)
+    assets/collection-cards.css        section layout: header, grid, carousel
+    assets/collection-cards.js         section behavior: carousel prev/next
+    snippets/collection-card.liquid    reusable card markup
+    assets/collection-card.css         card visual styling
+    assets/collection-card.js          card behavior: thumbnail hover preview
+{% endcomment %}
+
+{{ 'collection-cards.css' | asset_url | stylesheet_tag }}
+{{ 'collection-cards.js' | asset_url | script_tag }}
+
+{%- liquid
+  assign columns_desktop = section.settings.columns_desktop
+  assign columns_mobile = section.settings.columns_mobile
+  assign enable_carousel = section.settings.enable_carousel_desktop
+  assign enable_swipe_mobile = section.settings.enable_swipe_mobile
+  assign block_count = section.blocks.size
+-%}
+
+<div
+  class="collection-cards-section color-{{ section.settings.color_scheme }}"
+  id="CollectionCards-{{ section.id }}"
+  data-section-id="{{ section.id }}"
+  data-enable-carousel="{{ enable_carousel }}"
+  data-enable-swipe-mobile="{{ enable_swipe_mobile }}"
+>
+  <div class="page-width">
+
+    {%- if section.settings.subheading != blank or section.settings.heading != blank or section.settings.text != blank -%}
+      <div class="collection-cards-section__header collection-cards-section__header--{{ section.settings.text_alignment }} collection-cards-section__header--mobile-{{ section.settings.text_alignment_mobile }}">
+        <div class="collection-cards-section__header-text">
+          {%- if section.settings.subheading != blank -%}
+            <p class="collection-cards-section__subheading">{{ section.settings.subheading }}</p>
+          {%- endif -%}
+          {%- if section.settings.heading != blank -%}
+            <h2 class="collection-cards-section__heading collection-cards-section__heading--{{ section.settings.heading_size }}">
+              {{ section.settings.heading }}
+            </h2>
+          {%- endif -%}
+          {%- if section.settings.text != blank -%}
+            <div class="collection-cards-section__text collection-cards-section__text--{{ section.settings.description_size }} rte">
+              {{ section.settings.text }}
+            </div>
+          {%- endif -%}
+        </div>
+
+        {%- if enable_carousel -%}
+          <div class="collection-cards-section__nav" data-carousel-nav>
+            <button type="button" class="collection-cards-section__nav-btn" data-carousel-prev aria-label="Previous collections" disabled>
+              <svg width="8" height="14" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 1L1 7L7 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button type="button" class="collection-cards-section__nav-btn" data-carousel-next aria-label="Next collections">
+              <svg width="8" height="14" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L7 7L1 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- if block_count > 0 -%}
+      <div
+        class="collection-cards-grid"
+        data-carousel-track
+        style="
+          --columns-desktop: {{ columns_desktop }};
+          --columns-mobile: {{ columns_mobile }};
+          --column-gap: {{ section.settings.column_gap }}px;
+          --row-gap: {{ section.settings.row_gap }}px;
+        "
+      >
+        {%- for block in section.blocks -%}
+          <div class="collection-cards-grid__item" {{ block.shopify_attributes }}>
+            {%- comment -%}
+              Reference call: this is the contract any other section must
+              follow to reuse snippets/collection-card.liquid. Only the
+              first card in the loop passes card_load_assets: true so the
+              card's own CSS/JS are linked exactly once per page.
+            {%- endcomment -%}
+            {%- render 'collection-card',
+              card_collection: block.settings.collection,
+              card_custom_image: block.settings.custom_image,
+              card_custom_title: block.settings.custom_title,
+              card_image_ratio: section.settings.image_ratio,
+              card_show_count: section.settings.show_product_count,
+              card_color_scheme: section.settings.card_color_scheme,
+              card_id: block.id,
+              card_load_assets: forloop.first
+            -%}
+          </div>
+        {%- endfor -%}
+      </div>
+    {%- else -%}
+      <div class="collection-cards-section__empty">
+        {%- for i in (1..4) -%}
+          <div class="collection-cards-grid__item">
+            {%- render 'collection-card',
+              card_collection: null,
+              card_image_ratio: section.settings.image_ratio,
+              card_show_count: section.settings.show_product_count,
+              card_color_scheme: section.settings.card_color_scheme,
+              card_id: i,
+              card_load_assets: forloop.first
+            -%}
+          </div>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Collection cards",
+  "class": "section-collection-cards",
+  "settings": [
+    {
+      "type": "header",
+      "content": "General"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme"
+    },
+    {
+      "type": "header",
+      "content": "Section header"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment_mobile",
+      "label": "Text alignment on mobile",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Shop by category"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Heading size",
+      "options": [
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text"
+    },
+    {
+      "type": "select",
+      "id": "description_size",
+      "label": "Description size",
+      "options": [
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Number of columns on desktop",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "column_gap",
+      "label": "Column gap",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "row_gap",
+      "label": "Row gap",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Carousel"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_carousel_desktop",
+      "label": "Enable carousel on desktop",
+      "info": "Only applies when the number of collections exceeds the number of columns on desktop.",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Mobile layout"
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Number of columns on mobile",
+      "options": [
+        { "value": "1", "label": "1 column" },
+        { "value": "2", "label": "2 columns" }
+      ],
+      "default": "1"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_swipe_mobile",
+      "label": "Enable swipe on mobile",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Card settings"
+    },
+    {
+      "type": "color_scheme",
+      "id": "card_color_scheme",
+      "label": "Card color scheme"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image ratio",
+      "options": [
+        { "value": "adapt", "label": "Adapt to image" },
+        { "value": "portrait", "label": "Portrait" },
+        { "value": "square", "label": "Square" },
+        { "value": "landscape", "label": "Landscape" }
+      ],
+      "default": "square"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_count",
+      "label": "Show product count",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "collection",
+      "name": "Collection",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_image",
+          "label": "Custom featured image",
+          "info": "Leave blank to use the collection's featured image."
+        },
+        {
+          "type": "text",
+          "id": "custom_title",
+          "label": "Custom title",
+          "info": "Leave blank to use the collection's default name."
+        }
+      ]
+    }
+  ],
+  "max_blocks": 12,
+  "presets": [
+    {
+      "name": "Collection cards",
+      "blocks": [
+        { "type": "collection" },
+        { "type": "collection" },
+        { "type": "collection" },
+        { "type": "collection" }
+      ]
+    }
+  ]
+}
+{% endschema %}

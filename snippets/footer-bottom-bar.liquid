@@ -1,0 +1,50 @@
+{% comment %}
+  FOOTER BOTTOM BAR
+  Sticky mobile bottom navigation
+{% endcomment %}
+
+<div class="footer__mobile-bottom-bar">
+  <nav class="bottom-nav" aria-label="Mobile bottom navigation">
+    <ul class="bottom-nav__list">
+
+      <li class="bottom-nav__item">
+        <a href="/" class="bottom-nav__link {% if template == 'index' %}is-active{% endif %}">
+          <span class="bottom-nav__icon">{% render 'icon-home' %}</span>
+          <span class="bottom-nav__label">Home</span>
+        </a>
+      </li>
+
+      <li class="bottom-nav__item">
+        <a href="/collections/all" class="bottom-nav__link {% if template contains 'collection' or template contains 'product' %}is-active{% endif %}">
+          <span class="bottom-nav__icon">{% render 'icon-grid' %}</span>
+          <span class="bottom-nav__label">Shop</span>
+        </a>
+      </li>
+
+      <li class="bottom-nav__item">
+        <a href="#search" class="bottom-nav__link js-open-search">
+          <span class="bottom-nav__icon">{% render 'icon-search' %}</span>
+          <span class="bottom-nav__label">Search</span>
+        </a>
+      </li>
+
+      <li class="bottom-nav__item">
+        <a href="/account" class="bottom-nav__link {% if template contains 'account' %}is-active{% endif %}">
+          <span class="bottom-nav__icon">{% render 'icon-user' %}</span>
+          <span class="bottom-nav__label">Account</span>
+        </a>
+      </li>
+
+      <li class="bottom-nav__item">
+        <a href="/cart" class="bottom-nav__link {% if template == 'cart' %}is-active{% endif %}">
+          <span class="bottom-nav__icon">{% render 'icon-cart' %}</span>
+          <span class="bottom-nav__label">Cart</span>
+          {% if cart.item_count > 0 %}
+            <span class="bottom-nav__badge">{{ cart.item_count }}</span>
+          {% endif %}
+        </a>
+      </li>
+
+    </ul>
+  </nav>
+</div>

@@ -1,0 +1,102 @@
+{% comment %}
+  Mega Menu - Header Menu
+  Renders the full mega menu block (columns + optional trending products).
+{% endcomment %}
+
+{%- liquid
+  assign mega_menu = linklists[block.settings.menu]
+-%}
+
+<li class="menu-bar__item menu-bar__item--has-mega" {{ block.shopify_attributes }}>
+  <a href="{{ block.settings.link | default: mega_menu.links.first.url | default: '#' }}"
+     class="menu-bar__link menu-bar__link--caret mega-menu-trigger"
+     aria-haspopup="true"
+     aria-expanded="false"
+     data-mega-trigger>
+    {%- if block.settings.icon != blank -%}
+      <span class="menu-bar__icon">{%- render 'menu-icon', icon: block.settings.icon -%}</span>
+    {%- endif -%}
+    {{ block.settings.label | default: 'Shop' }}
+    <svg class="icon-caret-down" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path d="M16.25 7.5L10 13.75L3.75 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {%- if mega_menu != blank and mega_menu.links.size > 0 -%}
+    {%- assign mega_col_count = mega_menu.links.size -%}
+    {%- assign mega_collection = blank -%}
+    {%- if block.settings.show_products -%}
+      {%- for link in mega_menu.links -%}
+        {%- if link.type == 'collection_link' and mega_collection == blank -%}
+          {%- assign mega_collection = link.object -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+
+    <div class="mega-menu" role="region" data-mega-panel>
+      <div class="mega-menu-items{% if mega_collection != blank %} mega-menu-items--with-products{% endif %}">
+
+        <div class="mega-menu__text-columns" style="--mega-col-count: {{ mega_col_count }};">
+          {%- for link in mega_menu.links -%}
+            <div class="mega-menu-column">
+              <a href="{{ link.url }}"
+                 class="mega-menu-heading"
+                 {% if link.current %}aria-current="page"{% endif %}>
+                {{ link.title }}
+              </a>
+              {%- if link.links.size > 0 -%}
+                <ul class="mega-menu-list" role="list">
+                  {%- for sublink in link.links -%}
+                    <li>
+                      <a href="{{ sublink.url }}"
+                         class="mega-menu-link"
+                         {% if sublink.current %}aria-current="page"{% endif %}>
+                        {{ sublink.title }}
+                      </a>
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              {%- endif -%}
+            </div>
+          {%- endfor -%}
+        </div>
+
+        {%- if mega_collection != blank -%}
+          <div class="mega-menu__products">
+            <div class="mega-menu__product-header">
+              <span class="mega-menu-heading">Trending in {{ mega_collection.title }}</span>
+            </div>
+            <div class="mega-menu__product-grid">
+              {%- for product in mega_collection.products limit: 3 -%}
+                <a href="{{ product.url }}" class="mega-menu__product-card">
+                  <div class="mega-menu__product-image">
+                    <img src="{{ product.featured_image | image_url: width: 300 }}"
+                         alt="{{ product.featured_image.alt | default: product.title | escape }}"
+                         loading="lazy"
+                         width="300"
+                         height="300">
+                    {%- if product.compare_at_price > product.price -%}
+                      <span class="mega-menu__badge">Sale</span>
+                    {%- endif -%}
+                  </div>
+                  <div class="mega-menu__product-info">
+                    <p class="mega-menu__product-title">{{ product.title }}</p>
+                    <p class="mega-menu__product-price">
+                      {%- if product.compare_at_price > product.price -%}
+                        <span class="price--sale">{{ product.price | money }}</span>
+                        <span class="price--compare">{{ product.compare_at_price | money }}</span>
+                      {%- else -%}
+                        {{ product.price | money }}
+                      {%- endif -%}
+                    </p>
+                  </div>
+                </a>
+              {%- endfor -%}
+            </div>
+          </div>
+        {%- endif -%}
+
+      </div>
+    </div>
+  {%- endif -%}
+</li>

@@ -1,0 +1,131 @@
+/**
+ * main-athlete.css
+ * Styling for sections/main-athlete.liquid
+ *
+ * Owns the profile header only. Card/grid/load-more styling lives in
+ * assets/athlete-grid.css and assets/athlete-card.css, loaded by
+ * snippets/athlete-grid.liquid.
+ */
+
+.athlete-section {
+  padding-block: 2.5rem 4rem;
+}
+
+/* ---- Section layout (width + side padding) ----
+   Local to this section only — does NOT read from the global
+   --page-margin / --page-width variables, so this section's width
+   and padding settings never affect other sections. */
+
+.athlete-section__default-width {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: var(--section-padding);
+}
+
+.athlete-section__full-width {
+  width: 100%;
+  padding-inline: var(--section-padding);
+}
+
+.athlete-section__custom-width {
+  max-width: var(--custom-width);
+  margin-inline: auto;
+  padding-inline: var(--section-padding);
+}
+
+/* ---- Header / profile ---- */
+
+.athlete-section__header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding-bottom: 2.5rem;
+  margin-bottom: 2.5rem;
+  border-bottom: 1px solid var(--color-border, #e5e5e5);
+}
+
+.athlete-section__photo-wrapper {
+  flex-shrink: 0;
+}
+
+.athlete-section__photo,
+.athlete-section__photo--placeholder {
+  width: 160px;
+  height: 160px;
+  border-radius: 12px;
+  object-fit: cover;
+  background-color: var(--color-bg-secondary, #f3f4f6);
+}
+
+.athlete-section__intro {
+  min-width: 0;
+}
+
+.athlete-section__name {
+  font-size: var(--font-size-xl, 1.75rem);
+  font-weight: 700;
+  margin: 0 0 0.75rem 0;
+}
+
+.athlete-section__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0 0 1rem 0;
+  padding: 0;
+}
+
+.athlete-section__stat {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  background-color: var(--color-bg-secondary, #f3f4f6);
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  font-size: var(--font-size-xs, 0.8125rem);
+}
+
+.athlete-section__stat-label {
+  color: var(--color-text-muted, #6b7280);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.athlete-section__stat-value {
+  color: var(--color-text, #111);
+  font-weight: 600;
+}
+
+.athlete-section__bio {
+  font-size: var(--font-size-sm, 0.9375rem);
+  line-height: 1.6;
+  color: var(--color-text, #111);
+}
+
+.athlete-section__bio p:last-child {
+  margin-bottom: 0;
+}
+
+.athlete-section__empty--config {
+  padding: 2rem;
+  text-align: center;
+  border: 1px dashed var(--color-border, #d1d5db);
+  border-radius: 8px;
+  color: var(--color-text-muted, #6b7280);
+  font-size: var(--font-size-sm, 0.9375rem);
+}
+
+/* ---- Small screens ---- */
+
+@media screen and (max-width: 640px) {
+  .athlete-section__header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .athlete-section__stats {
+    justify-content: center;
+  }
+}

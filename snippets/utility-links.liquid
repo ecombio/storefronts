@@ -1,0 +1,42 @@
+{% comment %}
+  Renders the utility bar's left-hand link list from fixed setting slots
+  (no blocks — merchants edit labels/URLs directly in section settings).
+
+  Accepts:
+    settings — a settings hash containing link_{n}_label / link_{n}_url /
+               link_{n}_icon pairs
+    count    — how many link slots to check (default 3)
+
+  A slot only renders if both its label and URL are filled in, so merchants
+  can leave slots blank to show fewer links. The icon is optional per slot —
+  if link_{n}_icon is blank, the link renders as label-only, same as before.
+{% endcomment %}
+{%- liquid
+  assign count = count | default: 3
+-%}
+<ul class="utility-bar__links" role="list">
+  {%- for i in (1..count) -%}
+    {%- assign label_key = 'link_' | append: i | append: '_label' -%}
+    {%- assign url_key   = 'link_' | append: i | append: '_url' -%}
+    {%- assign icon_key  = 'link_' | append: i | append: '_icon' -%}
+    {%- assign label = settings[label_key] -%}
+    {%- assign url   = settings[url_key] -%}
+    {%- assign icon  = settings[icon_key] -%}
+    {%- if label != blank and url != blank -%}
+      <li>
+        <a href="{{ url }}" class="utility-bar__link">
+          {%- if icon != blank -%}
+            {{- icon | image_url: width: 32 | image_tag:
+                width: 14,
+                height: 14,
+                class: 'utility-bar__link-icon',
+                alt: '',
+                loading: 'lazy'
+            -}}
+          {%- endif -%}
+          <span class="utility-bar__link-label">{{- label | escape -}}</span>
+        </a>
+      </li>
+    {%- endif -%}
+  {%- endfor -%}
+</ul>

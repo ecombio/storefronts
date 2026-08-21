@@ -1,0 +1,342 @@
+.banner-carousel-section {
+  /* Same easing curve as the collection carousel so hover/interaction
+     motion feels consistent across carousel sections site-wide. */
+  --bc-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* A separate, springier curve just for the card lift/shadow/zoom (see
+     assets/banner-card.css) — deliberately its own thing rather than
+     reusing --bc-ease, so this section doesn't just feel like a reskinned
+     collection carousel. */
+  --bc-card-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.banner-carousel-section__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.banner-carousel-section__header--align-center {
+  justify-content: center;
+  text-align: center;
+  flex-direction: column;
+  align-items: center;
+}
+
+.banner-carousel-section__header--align-end {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.banner-carousel-section__heading-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.banner-carousel-section__heading {
+  margin: 0;
+  font-size: 2.2rem;
+  font-weight: 700;
+}
+
+.banner-carousel-section__subheading {
+  margin: 0;
+  font-size: 1.4rem;
+  opacity: 0.7;
+}
+
+/* View all — same chevron + animated underline treatment as the
+   collection carousel's "View all" link. */
+.banner-carousel-section__view-all,
+.banner-carousel-section__view-all:visited {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-decoration: none !important;
+  white-space: nowrap;
+  color: inherit !important;
+  padding-bottom: 2px;
+  border-bottom: 1px solid currentColor;
+  opacity: 0.85;
+  transition: opacity 0.2s var(--bc-ease), gap 0.2s var(--bc-ease);
+}
+
+.banner-carousel-section__view-all:hover {
+  opacity: 1;
+  gap: 10px;
+}
+
+.banner-carousel-section__view-all svg {
+  transition: transform 0.2s var(--bc-ease);
+}
+
+.banner-carousel-section__view-all:hover svg {
+  transform: translateX(2px);
+}
+
+@media screen and (min-width: 750px) {
+  .banner-carousel-section__heading {
+    font-size: 2.6rem;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .banner-carousel-section__heading {
+    font-size: 3rem;
+  }
+}
+
+/* Section width control — implements the pattern from
+   sections/example-width-section.liquid. Each class uses this section's
+   own local --section-padding / --custom-width variables (set inline via
+   the "Section layout" schema settings on the section root), independent
+   of the theme's global --page-margin / --page-width variables, so this
+   section can't be knocked out of alignment by unrelated global changes
+   elsewhere in the theme. */
+.banner-carousel-section__default-width {
+  max-width: 1184px;
+  margin-inline: auto;
+  padding-inline: var(--section-padding, 24px);
+}
+
+.banner-carousel-section__full-width {
+  max-width: none;
+  padding-inline: 0;
+}
+
+.banner-carousel-section__custom-width {
+  max-width: var(--custom-width, 80rem);
+  margin-inline: auto;
+  padding-inline: var(--section-padding, 24px);
+}
+
+.banner-carousel {
+  position: relative;
+  border-radius: 0;
+  --bc-fade-width: 28px;
+}
+
+.banner-carousel.has-overflow-start .banner-carousel__track {
+  -webkit-mask-image: linear-gradient(to right, transparent, black var(--bc-fade-width));
+  mask-image: linear-gradient(to right, transparent, black var(--bc-fade-width));
+}
+
+.banner-carousel.has-overflow-end .banner-carousel__track {
+  -webkit-mask-image: linear-gradient(to left, transparent, black var(--bc-fade-width));
+  mask-image: linear-gradient(to left, transparent, black var(--bc-fade-width));
+}
+
+.banner-carousel.has-overflow-start.has-overflow-end .banner-carousel__track {
+  -webkit-mask-image: linear-gradient(to right, transparent, black var(--bc-fade-width), black calc(100% - var(--bc-fade-width)), transparent);
+  mask-image: linear-gradient(to right, transparent, black var(--bc-fade-width), black calc(100% - var(--bc-fade-width)), transparent);
+}
+
+.banner-carousel-section__inner:not(.banner-carousel-section__full-width) .banner-carousel {
+  border-radius: 12px;
+}
+
+.banner-carousel__track {
+  display: flex;
+  width: 100%;
+  gap: var(--slide-gap, 0px);
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  transition: none;
+  /* overflow-x: auto forces overflow-y to compute to a non-visible value
+     too, which hard-clips box-shadow on the slide links since shadows
+     don't count toward scrollWidth/scrollHeight. This padding gives the
+     shadow room to render instead of getting clipped flush at the edge;
+     the negative margin on .banner-carousel below cancels it back out
+     so surrounding layout/spacing is unaffected.
+     Sized to contain banner-card.css's hover shadow (0 0 16px) plus the
+     6px hover lift (translateY(-6px) on .banner-carousel__link), which
+     needs the extra clearance on top: 16px blur + 6px lift = 22px. */
+  padding: 22px 16px 16px;
+  /* Without this, scroll-snap-type: x mandatory (below) can silently
+     correct scrollLeft to 0-past-padding on load so slide 1's edge sits
+     flush against the scrollport — collapsing the horizontal buffer
+     above and making the JS's atStart check in banner-carousel.js think
+     the user has scrolled when they haven't, which incorrectly flips on
+     the has-overflow-start fade mask against the very first card. */
+  scroll-padding-inline: 16px;
+}
+
+.banner-carousel__track::-webkit-scrollbar {
+  display: none;
+}
+
+.banner-carousel {
+  margin: -22px -16px -16px;
+}
+
+/* Arrows — visible at every breakpoint (not just tablet/desktop), same
+   as the collection carousel's nav buttons, with matching disabled and
+   hover-feedback states. */
+.banner-carousel__btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(127, 127, 127, 0.25);
+  background: var(--bc-btn-bg, #fff);
+  color: #121212;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 3;
+  box-shadow: 0 4px 14px -6px rgba(0, 0, 0, 0.25);
+  transition: border-color 0.2s var(--bc-ease), opacity 0.2s var(--bc-ease), transform 0.2s var(--bc-ease);
+}
+
+.banner-carousel__btn:hover {
+  border-color: currentColor;
+}
+
+.banner-carousel__btn[disabled] {
+  opacity: 0.35;
+  pointer-events: none;
+  cursor: default;
+  box-shadow: none;
+}
+
+.banner-carousel__btn:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.banner-carousel__btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.banner-carousel__btn--prev {
+  left: 12px;
+}
+
+.banner-carousel__btn--next {
+  right: 12px;
+}
+
+/* Dots */
+.banner-carousel__dots {
+  position: absolute;
+  bottom: 14px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  z-index: 3;
+}
+
+/* Author display:flex above beats the UA [hidden]{display:none} rule at
+   equal specificity, so the JS setting dotsWrapper.hidden = true did
+   nothing without this explicit override. */
+.banner-carousel__dots[hidden] {
+  display: none;
+}
+
+.banner-carousel__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: background 0.2s var(--bc-ease), transform 0.2s var(--bc-ease);
+}
+
+.banner-carousel__dot.is-active {
+  background: #fff;
+  transform: scale(1.2);
+}
+
+/* Animation toggle
+   ------------------------------------------------------------------
+   When section.settings.enable_animations is off, the section root
+   renders with data-animations="off". Cancels the View all hover
+   motion, arrow hover feedback, and dot scale — same pattern as the
+   collection carousel's toggle. Card-level animation toggling (link
+   lift + image zoom) lives in banner-card.css next to the rules it
+   cancels. */
+
+.banner-carousel-section[data-animations="off"] .banner-carousel-section__view-all,
+.banner-carousel-section[data-animations="off"] .banner-carousel-section__view-all svg,
+.banner-carousel-section[data-animations="off"] .banner-carousel__btn,
+.banner-carousel-section[data-animations="off"] .banner-carousel__dot {
+  transition: none;
+}
+
+.banner-carousel-section[data-animations="off"] .banner-carousel-section__view-all:hover {
+  gap: 6px;
+}
+
+.banner-carousel-section[data-animations="off"] .banner-carousel-section__view-all:hover svg {
+  transform: none;
+}
+
+.banner-carousel-section[data-animations="off"] .banner-carousel__dot.is-active {
+  transform: none;
+}
+
+/* Desktop */
+@media screen and (min-width: 990px) {
+  .banner-carousel__btn--prev {
+    left: 24px;
+  }
+
+  .banner-carousel__btn--next {
+    right: 24px;
+  }
+}
+
+/* Mobile-specific smaller nav buttons + tighter fade */
+@media screen and (max-width: 749px) {
+  .banner-carousel__btn {
+    width: 34px;
+    height: 34px;
+  }
+
+  .banner-carousel__btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .banner-carousel__btn--prev {
+    left: 8px;
+  }
+
+  .banner-carousel__btn--next {
+    right: 8px;
+  }
+
+  .banner-carousel {
+    --bc-fade-width: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .banner-carousel__track {
+    transition: none;
+  }
+
+  .banner-carousel-section__view-all,
+  .banner-carousel-section__view-all svg,
+  .banner-carousel__btn,
+  .banner-carousel__dot {
+    transition: none !important;
+  }
+}

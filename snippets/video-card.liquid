@@ -1,0 +1,93 @@
+{%- comment -%}
+  snippets/video-card.liquid
+  ============================================
+  Renders one carousel slot: thumbnail + play trigger.
+
+  Clicking the trigger doesn't reveal inline media in this slot —
+  assets/video-card.js dispatches a 'video-card:play' event carrying
+  this block's video data, and snippets/video-modal.liquid
+  (via assets/video-modal.js) plays it in a shared lightbox.
+
+  PARAMS (all required):
+    block            — a section block with settings: video,
+                        video_url, thumbnail, caption
+    placeholder_name — placeholder_svg_tag name to use when there's
+                        no thumbnail, no uploaded video, or no preview
+                        image
+    show_caption     — boolean, whether to render the caption <p>
+
+  Usage:
+    {% render 'video-card', block: block, placeholder_name: 'lifestyle-1', show_caption: true %}
+{%- endcomment -%}
+{%- liquid
+  assign has_native_video = false
+  assign has_external_video = false
+  if block.settings.video != blank
+    assign has_native_video = true
+  elsif block.settings.video_url != blank
+    assign has_external_video = true
+  endif
+
+  assign has_thumbnail = false
+  if block.settings.thumbnail != blank
+    assign has_thumbnail = true
+  endif
+-%}
+<div class="video-card" id="VideoCard-{{ block.id }}" data-video-card>
+  <div class="video-card__frame">
+
+    <button
+      type="button"
+      class="video-card__play-trigger"
+      data-video-card-trigger
+      aria-label="Play video{% if block.settings.caption != blank %}: {{ block.settings.caption | escape }}{% endif %}"
+      aria-haspopup="dialog"
+      data-video-caption="{{ block.settings.caption | escape }}"
+      {%- if has_native_video %}
+        data-video-type="native"
+        data-video-src="{{ block.settings.video.sources.last.url }}"
+      {%- elsif has_external_video %}
+        data-video-type="external"
+        data-provider="{{ block.settings.video_url.type }}"
+        data-video-id="{{ block.settings.video_url.id }}"
+      {%- else %}
+        disabled
+      {%- endif %}
+    >
+      {%- if has_thumbnail -%}
+        {{
+          block.settings.thumbnail
+          | image_url: width: 800
+          | image_tag:
+            loading: 'lazy',
+            class: 'video-card__thumbnail',
+            sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 80vw',
+            widths: '400,600,800,1000'
+        }}
+      {%- elsif has_native_video and block.settings.video.preview_image -%}
+        {{
+          block.settings.video.preview_image
+          | image_url: width: 800
+          | image_tag:
+            loading: 'lazy',
+            class: 'video-card__thumbnail',
+            sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 80vw',
+            widths: '400,600,800,1000'
+        }}
+      {%- else -%}
+        {{ placeholder_name | default: 'lifestyle-1' | placeholder_svg_tag: 'video-card__thumbnail video-card__thumbnail--placeholder' }}
+      {%- endif -%}
+
+      <span class="video-card__play-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="26" height="26" focusable="false">
+          <path d="M8 5v14l11-7z" fill="currentColor"/>
+        </svg>
+      </span>
+    </button>
+
+  </div>
+
+  {%- if show_caption and block.settings.caption != blank -%}
+    <p class="video-card__caption">{{ block.settings.caption }}</p>
+  {%- endif -%}
+</div>

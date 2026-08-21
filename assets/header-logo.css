@@ -1,0 +1,36 @@
+/* =============================================================
+   Header — Logo
+   File: assets/header-logo.css
+   Loaded by: snippets/header-logo.liquid
+
+   Extracted from assets/main-header.css. Styles the logo link
+   rendered in the main-header (.main-header__* namespace) —
+   the image variant, sized via the --logo-width custom property
+   set inline by the liquid snippet, and the text fallback used
+   when no logo image is configured.
+
+   Note: the ecombio-header__logo-* rules that also live in
+   main-header.css belong to a different header shell and are
+   NOT part of this file — header-logo.liquid does not use them.
+   ============================================================= */
+
+.main-header__logo-link {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+.main-header__logo-img {
+  display: block;
+  width: var(--logo-width, 140px);
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+.main-header__logo-text {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #1a1a1a;
+  white-space: nowrap;
+}

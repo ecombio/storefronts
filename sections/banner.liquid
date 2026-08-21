@@ -1,0 +1,251 @@
+{%- comment -%}
+  sections/banner.liquid
+
+  Full-bleed / contained image banner with an optional heading, text,
+  and button overlaid on the image.
+
+  Follows the same "Section layout" pattern established in
+  sections/example-width-section.liquid:
+    - Section width (Default / Full width / Custom width) and
+      Side padding are LOCAL to this section only. They never read
+      from the global --page-margin / --page-width variables in
+      snippets/css-variables.liquid, so adjusting this section's
+      width/padding can't affect any other section on the page.
+    - Width classes are scoped to this section's own BEM namespace
+      (banner__default-width / banner__full-width /
+      banner__custom-width) since the theme has no shared
+      global width-utility classes yet. Defined in assets/banner.css.
+
+  This section additionally adds its own "Corner style" control group:
+    - border_radius: none / small / medium / large / custom
+    - custom_radius: only shown when border_radius == 'custom'
+  Resolved to a single --banner-radius value (in px) below and applied
+  to the media wrapper (and inherited by the image/overlay), fully
+  independent of any other section's corner styling.
+{%- endcomment -%}
+
+{%- liquid
+  assign width_setting = section.settings.section_width
+  if width_setting == blank
+    assign width_suffix = 'default-width'
+  else
+    assign width_suffix = width_setting
+  endif
+  assign width_class = 'banner__' | append: width_suffix
+
+  case section.settings.border_radius
+    when 'none'
+      assign radius_value = 0
+    when 'small'
+      assign radius_value = 8
+    when 'medium'
+      assign radius_value = 20
+    when 'large'
+      assign radius_value = 40
+    when 'custom'
+      assign radius_value = section.settings.custom_radius
+    else
+      assign radius_value = 0
+  endcase
+
+  assign overlay_opacity = section.settings.overlay_opacity | divided_by: 100.0
+-%}
+
+<div
+  class="banner {{ width_class }}"
+  style="
+    --section-padding: {{ section.settings.section_padding }}px;
+    {%- if width_setting == 'custom-width' %}
+      --custom-width: {{ section.settings.custom_width }}rem;
+    {%- endif %}
+    --banner-radius: {{ radius_value }}px;
+    --banner-height: {{ section.settings.banner_height }}px;
+  "
+>
+  <div class="banner__wrapper" style="padding-block: var(--section-spacing);">
+    <div class="banner__media">
+      {%- if section.settings.image %}
+        {{
+          section.settings.image
+          | image_url: width: 3000
+          | image_tag:
+            loading: 'lazy',
+            widths: '375,550,750,1100,1500,2200,3000',
+            sizes: '100vw',
+            class: 'banner__img'
+        }}
+      {%- else %}
+        {{ 'lifestyle-1' | placeholder_svg_tag: 'banner__img banner__img--placeholder' }}
+      {%- endif %}
+
+      {%- if overlay_opacity > 0 %}
+        <div class="banner__overlay" style="opacity: {{ overlay_opacity }};"></div>
+      {%- endif %}
+    </div>
+
+    {%- if section.settings.heading != blank or section.settings.text != blank or section.settings.button_label != blank %}
+      <div class="banner__content banner__content--{{ section.settings.content_position }}">
+        {%- if section.settings.heading != blank %}
+          <h2 class="banner__heading">{{ section.settings.heading }}</h2>
+        {%- endif %}
+        {%- if section.settings.text != blank %}
+          <div class="banner__text">{{ section.settings.text }}</div>
+        {%- endif %}
+        {%- if section.settings.button_label != blank %}
+          <a
+            href="{{ section.settings.button_link | default: '#' }}"
+            class="banner__button button"
+          >
+            {{ section.settings.button_label }}
+          </a>
+        {%- endif %}
+      </div>
+    {%- endif %}
+  </div>
+</div>
+
+{{ 'banner.css' | asset_url | stylesheet_tag }}
+
+{% schema %}
+{
+  "name": "Banner",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Overlay opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "banner_height",
+      "label": "Banner height",
+      "min": 200,
+      "max": 800,
+      "step": 20,
+      "unit": "px",
+      "default": 500
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Image banner"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "select",
+      "id": "content_position",
+      "label": "Content position",
+      "options": [
+        { "value": "top-left", "label": "Top left" },
+        { "value": "top-center", "label": "Top center" },
+        { "value": "top-right", "label": "Top right" },
+        { "value": "middle-left", "label": "Middle left" },
+        { "value": "middle-center", "label": "Middle center" },
+        { "value": "middle-right", "label": "Middle right" },
+        { "value": "bottom-left", "label": "Bottom left" },
+        { "value": "bottom-center", "label": "Bottom center" },
+        { "value": "bottom-right", "label": "Bottom right" }
+      ],
+      "default": "middle-center"
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Corner style"
+    },
+    {
+      "type": "select",
+      "id": "border_radius",
+      "label": "Border radius",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" },
+        { "value": "custom", "label": "Custom" }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "range",
+      "id": "custom_radius",
+      "label": "Custom radius",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "default": 24,
+      "visible_if": "{{ section.settings.border_radius == 'custom' }}"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Banner"
+    }
+  ]
+}
+{% endschema %}

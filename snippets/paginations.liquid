@@ -1,0 +1,60 @@
+{%- comment -%}
+  Fallback pagination snippet.
+  Most Dawn-based themes already ship with snippets/pagination.liquid —
+  if yours does, skip adding this file to avoid a naming conflict.
+  Usage: {% render 'pagination', paginate: paginate %}
+{%- endcomment -%}
+
+<nav class="cat-feed-pagination" role="navigation" aria-label="Pagination">
+  <ul class="cat-feed-pagination__list">
+    {%- if paginate.previous -%}
+      <li><a href="{{ paginate.previous.url }}" class="cat-feed-pagination__link">Previous</a></li>
+    {%- endif -%}
+
+    {%- for part in paginate.parts -%}
+      <li>
+        {%- if part.is_link -%}
+          <a href="{{ part.url }}" class="cat-feed-pagination__link">{{ part.title }}</a>
+        {%- else -%}
+          {%- if part.title == paginate.current_page -%}
+            <span class="cat-feed-pagination__link cat-feed-pagination__link--current">{{ part.title }}</span>
+          {%- else -%}
+            <span class="cat-feed-pagination__link cat-feed-pagination__link--gap">{{ part.title }}</span>
+          {%- endif -%}
+        {%- endif -%}
+      </li>
+    {%- endfor -%}
+
+    {%- if paginate.next -%}
+      <li><a href="{{ paginate.next.url }}" class="cat-feed-pagination__link">Next</a></li>
+    {%- endif -%}
+  </ul>
+</nav>
+
+<style>
+  .cat-feed-pagination__list {
+    display: flex;
+    list-style: none;
+    gap: 0.4rem;
+    padding: 0;
+    margin: 0;
+  }
+  .cat-feed-pagination__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.2rem;
+    height: 2.2rem;
+    padding: 0 0.6rem;
+    border-radius: 6px;
+    border: 1px solid rgba(0,0,0,0.15);
+    text-decoration: none;
+    color: inherit;
+    font-size: 0.85rem;
+  }
+  .cat-feed-pagination__link--current {
+    background: #111;
+    border-color: #111;
+    color: #fff;
+  }
+</style>

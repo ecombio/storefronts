@@ -1,0 +1,358 @@
+/* =============================================================
+   Footer Newsletter
+   File: assets/footer-newsletter.css
+   Loaded by: sections/footer-newsletter.liquid
+
+   CLEANUP NOTES (see theme.md for the full token reference):
+
+   1. TOKENS RENAMED --hs-* → --fn-*, AND POINTED AT THE SHARED
+      --hdr-* TOKENS instead of hardcoding their own copies.
+      The previous --hs-* values had quietly drifted from the real
+      header tokens (e.g. --hs-border: #e5e3de vs. the actual
+      --hdr-border: #e5e5e5; --hs-text-muted: #6b6860 vs. the actual
+      --hdr-muted: #6b6b6b) — small enough to go unnoticed, but a
+      real visual mismatch against the header/footer above/below it.
+      The --hs- prefix itself also appears to be leftover from
+      scaffolding off header-search.css (see the old comment on
+      .footer-newsletter__input, which referenced "header-search
+      tokens" — this section isn't the search field). Renamed to
+      --fn-* to match the --fn-padding-top/--fn-padding-bottom
+      variables this file already sets inline from section settings,
+      so there's one consistent local prefix.
+
+   2. COLOR SCHEME CONFLICT: the section element also carries a
+      `color-{{ section.settings.color_scheme }}` class, implying it
+      inherits colors from the theme's global color-scheme system
+      (Settings > Colors, scheme-1..5). Hardcoding a second set of
+      colors locally would silently fight with whatever that global
+      class sets. This file no longer invents its own palette —
+      --fn-bg/--fn-text/--fn-border/--fn-text-muted all resolve to
+      the shared --hdr-* tokens as a fallback, so if/when this
+      section is wired up to genuinely use the color-scheme class's
+      own CSS variables instead, only these four lines need to
+      change.
+
+   3. BREAKPOINT ALIGNED: side-by-side layout used to switch at an
+      unrelated 750px. Every other breakpoint in the theme (header,
+      main-footer) switches at 640px/1024px — changed to 1024px so
+      the whole footer group reflows at the same point. If you
+      specifically want the two-column layout to kick in earlier
+      than the header's own desktop breakpoint, that's a deliberate
+      design call to make, not an accidental mismatch — flag it and
+      this can be split back out.
+
+   4. CONTAINER: .footer-newsletter__inner.footer-width still
+      redefines the same max-width/padding values as
+      main-footer.css's .footer-width, rather than assuming that
+      class is guaranteed loaded (Shopify sections should be
+      self-sufficient). Values now double-checked against
+      main-footer.css: 1184px / 24px / 12px under 640px — matches.
+      Keep these two in sync if either changes.
+
+   5. STATUS COLORS: success/error colors (green/red) were repeated
+      as raw hex across 3+ rules. Consolidated into --fn-success /
+      --fn-error so there's one place to change them.
+
+   6. FOCUS RING: --fn-border-focus now matches the site's brand
+      blue (same token used in header-search.css) instead of
+      --hdr-text (black) — the newsletter input was the last field
+      on the page still focusing black after header search was
+      updated. Falls back to the same #0A3161 (Old Glory Blue) if
+      --color-blue isn't defined on the page for some reason.
+   ============================================================= */
+
+.footer-newsletter {
+  --fn-bg: var(--hdr-bg, #ffffff);
+  --fn-border: var(--hdr-border, #e5e5e5);
+  --fn-border-focus: var(--color-blue, #0A3161);
+  --fn-text: var(--hdr-text, #111111);
+  --fn-text-muted: var(--hdr-muted, #6b6b6b);
+  --fn-radius-lg: 14px; /* newsletter-specific — intentionally larger than --hdr-radius-drop (12px) */
+  --fn-success: #2f7a3a;
+  --fn-error: #d02e2e;
+
+  padding-top: var(--fn-padding-top, 40px);
+  padding-bottom: var(--fn-padding-bottom, 40px);
+}
+
+.footer-newsletter__inner {
+  width: 100%;
+}
+
+/* Mirrors the header/footer container exactly — see note 4 above. */
+.footer-newsletter__inner.footer-width {
+  max-width: 100rem;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+@media (max-width: 639px) {
+  .footer-newsletter__inner.footer-width {
+    padding: 0 12px;
+  }
+}
+
+.footer-newsletter__content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.footer-newsletter__content--side-by-side {
+  align-items: center;
+}
+
+/* Aligned to the sitewide desktop breakpoint — see note 3 above. */
+@media (min-width: 1024px) {
+  .footer-newsletter__content--side-by-side {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 3rem;
+  }
+
+  .footer-newsletter__content--side-by-side .footer-newsletter__text {
+    flex: 1 1 45%;
+  }
+
+  .footer-newsletter__content--side-by-side .footer-newsletter__form-wrap {
+    flex: 1 1 45%;
+  }
+}
+
+.footer-newsletter__heading {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.15rem, 1rem + 0.6vw, 1.4rem);
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--fn-text);
+}
+
+.footer-newsletter__subheading {
+  margin: 0;
+  color: var(--fn-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  max-width: 32ch;
+}
+
+.footer-newsletter__subheading p {
+  margin: 0;
+}
+
+.footer-newsletter-form {
+  width: 100%;
+}
+
+/* Honeypot: hidden from sighted users and skipped in tab order, but
+   still present and legible to basic bots/scrapers that fill every
+   field. Using position (not display:none) so most naive bots that
+   check computed visibility still see an empty, fillable input. */
+.footer-newsletter__honeypot {
+  position: absolute !important;
+  left: -9999px !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.footer-newsletter__fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  max-width: 400px;
+}
+
+.footer-newsletter__content--side-by-side .footer-newsletter__fields {
+  margin-left: auto;
+}
+
+.footer-newsletter__field {
+  flex: 1 1 200px;
+  min-width: 140px;
+}
+
+.footer-newsletter__input {
+  width: 100%;
+  height: 2.75rem;
+  padding: 0 12px;
+  border: 1.5px solid var(--fn-border);
+  border-radius: var(--fn-radius-lg);
+  background: var(--fn-bg);
+  color: var(--fn-text);
+  font-size: 15px;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.footer-newsletter__input::placeholder {
+  color: var(--fn-text-muted);
+}
+
+.footer-newsletter__input:focus-visible {
+  outline: none;
+  border-color: var(--fn-border-focus);
+  box-shadow: 0 0 0 3px rgba(10, 49, 97, .18);
+}
+
+.footer-newsletter__input[aria-invalid="true"] {
+  border-color: var(--fn-error);
+  box-shadow: 0 0 0 1px var(--fn-error);
+}
+
+.footer-newsletter__submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+  height: 2.75rem;
+  padding: 0 1.375rem;
+  border: 1px solid var(--color-button, #111);
+  border-radius: var(--fn-button-radius, 8px);
+  background: var(--color-button, #111);
+  color: var(--color-button-text, #fff);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+}
+/* NOTE: --color-button / --color-button-text / --fn-button-radius are
+   assumed to come from the theme's global button/color-scheme system
+   (not defined in this file or in main-header.css). If that system
+   doesn't actually exist on this theme, the button falls back to the
+   hardcoded values above (#111 / #fff / 8px) rather than breaking. */
+
+.footer-newsletter__submit:hover {
+  opacity: 0.85;
+}
+
+.footer-newsletter__submit:active {
+  transform: scale(0.98);
+}
+
+.footer-newsletter__submit:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.footer-newsletter__submit[disabled] {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.footer-newsletter__spinner {
+  display: none;
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: footer-newsletter-spin 0.6s linear infinite;
+}
+
+.footer-newsletter__submit[disabled] .footer-newsletter__spinner {
+  display: inline-block;
+}
+
+@keyframes footer-newsletter-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer-newsletter__spinner {
+    animation-duration: 1.5s;
+  }
+}
+
+.footer-newsletter__trust {
+  margin: 0.6rem 0 0;
+  color: var(--fn-text-muted);
+  font-size: 0.8125rem;
+  max-width: 400px;
+}
+
+.footer-newsletter__content--side-by-side .footer-newsletter__trust {
+  margin-left: auto;
+}
+
+.footer-newsletter__consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+  color: var(--fn-text);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  opacity: 0.85;
+  cursor: pointer;
+}
+
+.footer-newsletter__consent input {
+  margin-top: 0.2em;
+  flex: 0 0 auto;
+}
+
+.footer-newsletter__message-region:empty {
+  display: none;
+}
+
+.footer-newsletter__message {
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+  border-radius: 4px;
+  border-left: 3px solid transparent;
+  font-size: 0.9rem;
+  animation: footer-newsletter-message-in 0.2s ease;
+}
+
+@keyframes footer-newsletter-message-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Backgrounds use plain rgba() rather than color-mix() with the
+   token above — color-mix() isn't supported in older Safari/Android
+   WebViews, which matters for a storefront. Border/text still pull
+   from --fn-success/--fn-error so there's one place to change the
+   actual color; only the background's transparency is hand-matched. */
+.footer-newsletter__message--success {
+  background: rgba(47, 122, 58, .12);
+  border-left-color: var(--fn-success);
+  color: var(--fn-success);
+}
+
+.footer-newsletter__message--error {
+  background: rgba(208, 46, 46, .1);
+  border-left-color: var(--fn-error);
+  color: var(--fn-error);
+}
+
+.footer-newsletter__inline-error {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--fn-error);
+}
+
+.footer-newsletter__inline-error[hidden] {
+  display: none;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  word-wrap: normal !important;
+}

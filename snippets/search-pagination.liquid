@@ -1,0 +1,31 @@
+{%- comment -%}
+  snippets/search-pagination.liquid
+  ------------------------------------------------------------------
+  Shared pagination nav for search result panels. Extracted from
+  product-results.liquid / article-results.liquid, which had
+  identical pagination markup aside from the &type= query param.
+
+  Expects:
+    - paginate  (object)  the active {% paginate %} object from the
+                          calling snippet
+    - type       (string)  'product' or 'article' — appended to each
+                          link as &type={{ type }}
+{%- endcomment -%}
+
+{%- if paginate.pages > 1 -%}
+  <nav class="pagination" aria-label="Pagination">
+    {%- if paginate.previous -%}
+      <a href="{{ paginate.previous.url }}&type={{ type }}" class="pagination__link">&larr; Previous</a>
+    {%- endif -%}
+    {%- for part in paginate.parts -%}
+      {%- if part.is_link -%}
+        <a href="{{ part.url }}&type={{ type }}" class="pagination__link">{{ part.title }}</a>
+      {%- else -%}
+        <span class="pagination__link pagination__link--current" aria-current="page">{{ part.title }}</span>
+      {%- endif -%}
+    {%- endfor -%}
+    {%- if paginate.next -%}
+      <a href="{{ paginate.next.url }}&type={{ type }}" class="pagination__link">Next &rarr;</a>
+    {%- endif -%}
+  </nav>
+{%- endif -%}

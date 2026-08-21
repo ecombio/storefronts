@@ -1,0 +1,1683 @@
+{% comment %}
+---------------------------------------------------------
+Copyright © 2023 Section Store. All rights reserved.
+Unauthorized copying, modification, distribution, or use
+of this code or any portion of it, is strictly prohibited.
+Violators will be prosecuted to the fullest extent of the law.
+For inquiries or permissions, contact daniel@section.store
+---------------------------------------------------------
+{% endcomment %}
+
+{%- liquid 
+  assign padding_horizontal = section.settings.padding_horizontal
+  assign padding_horizontal_mobile = section.settings.padding_horizontal_mobile
+  assign padding_top = section.settings.padding_top
+  assign padding_bottom = section.settings.padding_bottom
+  assign border_color = section.settings.border_color
+  assign border_thickness = section.settings.border_thickness
+  assign margin_top = section.settings.margin_top
+  assign margin_bottom = section.settings.margin_bottom
+  assign background_color = section.settings.background_color
+  assign background_gradient = section.settings.background_gradient
+  assign full_width = section.settings.full_width
+  assign content_width = section.settings.content_width
+  assign lazy = section.settings.lazy
+
+  assign image = section.settings.image
+  assign video = section.settings.video
+  assign video_url = section.settings.video_url
+  assign poster = section.settings.poster
+  assign controls= section.settings.controls
+  assign autoplay = section.settings.autoplay
+  assign loop = section.settings.loop
+
+  assign media = section.settings.media
+  assign media_ratio = section.settings.media_ratio
+  assign media_ratio_mobile = section.settings.media_ratio_mobile
+  assign media_border_thickness = section.settings.media_border_thickness
+  assign media_border_color = section.settings.media_border_color
+  assign media_radius = section.settings.media_radius
+  assign media_width = section.settings.media_width
+  assign media_width_mobile = section.settings.media_width_mobile
+  assign media_position = section.settings.media_position
+  assign media_position_mobile = section.settings.media_position_mobile
+
+  assign content_padding_horizontal_mobile = section.settings.content_padding_horizontal_mobile
+  assign content_padding_horizontal = section.settings.content_padding_horizontal
+  assign content_padding_vertical_mobile = section.settings.content_padding_vertical_mobile
+  assign content_padding_vertical = section.settings.content_padding_vertical
+
+  assign heading = section.settings.heading
+  assign heading_size = section.settings.heading_size
+  assign heading_size_mobile = section.settings.heading_size_mobile
+  assign heading_color = section.settings.heading_color
+  assign heading_custom = section.settings.heading_custom
+  assign heading_font = section.settings.heading_font
+  assign heading_height = section.settings.heading_height
+  assign heading_align = section.settings.heading_align
+  assign heading_align_mobile = section.settings.heading_align_mobile
+  assign heading_position = section.settings.heading_position
+  assign heading_position_mobile = section.settings.heading_position_mobile
+
+  assign sub_heading = section.settings.sub_heading
+  assign sub_heading_size = section.settings.sub_heading_size
+  assign sub_heading_size_mobile = section.settings.sub_heading_size_mobile
+  assign sub_heading_color = section.settings.sub_heading_color
+  assign sub_heading_custom = section.settings.sub_heading_custom
+  assign sub_heading_font = section.settings.sub_heading_font
+  assign sub_heading_height = section.settings.sub_heading_height
+  assign sub_heading_align = section.settings.sub_heading_align
+  assign sub_heading_align_mobile = section.settings.sub_heading_align_mobile
+  assign sub_heading_mt = section.settings.sub_heading_mt
+  assign sub_heading_position = section.settings.sub_heading_position
+  assign sub_heading_position_mobile = section.settings.sub_heading_position_mobile
+
+  assign text = section.settings.text
+  assign text_size = section.settings.text_size
+  assign text_size_mobile = section.settings.text_size_mobile
+  assign text_color = section.settings.text_color
+  assign text_custom = section.settings.text_custom
+  assign text_font = section.settings.text_font
+  assign text_height = section.settings.text_height
+  assign text_align = section.settings.text_align
+  assign text_align_mobile = section.settings.text_align_mobile
+  assign text_mt = section.settings.text_mt
+  assign text_position = section.settings.text_position
+  assign text_position_mobile = section.settings.text_position_mobile
+
+  assign button = section.settings.button
+  assign button_size = section.settings.button_size
+  assign button_size_mobile = section.settings.button_size_mobile
+  assign button_color = section.settings.button_color
+  assign button_hover_color = section.settings.button_hover_color
+  assign button_custom = section.settings.button_custom
+  assign button_font = section.settings.button_font
+  assign button_height = section.settings.button_height
+  assign button_align = section.settings.button_align
+  assign button_align_mobile = section.settings.button_align_mobile
+  assign button_url = section.settings.button_url
+  assign button_mt = section.settings.button_mt
+  assign button_padding_vertical = section.settings.button_padding_vertical
+  assign button_padding_vertical_mobile = section.settings.button_padding_vertical_mobile
+  assign button_padding_horizontal = section.settings.button_padding_horizontal
+  assign button_padding_horizontal_mobile = section.settings.button_padding_horizontal_mobile
+  assign button_radius = section.settings.button_radius
+  assign button_border_thickness = section.settings.button_border_thickness
+  assign button_border_color = section.settings.button_border_color
+  assign button_border_hover_color = section.settings.button_border_hover_color
+  assign button_bg_color = section.settings.button_bg_color
+  assign button_bg_hover_color = section.settings.button_bg_hover_color
+  assign button_use_arrow = section.settings.button_use_arrow
+  assign button_position = section.settings.button_position
+  assign button_position_mobile = section.settings.button_position_mobile
+  
+-%}
+
+{%- style -%}
+
+  {{  heading_font | font_face: font_display: 'swap' }}
+  {{  sub_heading_font | font_face: font_display: 'swap' }}
+  {{  text_font | font_face: font_display: 'swap' }}
+  {{  button_font | font_face: font_display: 'swap' }}
+  
+  .section-{{ section.id }} {
+    border-top: solid {{ border_color }} {{ border_thickness }}px;
+    border-bottom: solid {{ border_color }} {{ border_thickness }}px;
+    margin-top: {{ margin_top | times: 0.75 | round: 0 }}px;
+    margin-bottom: {{ margin_bottom | times: 0.75 | round: 0 }}px;
+  }
+  
+  .section-{{ section.id }}-settings {
+    margin: 0 auto;
+    padding-top: {{ padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ padding_bottom | times: 0.75 | round: 0 }}px;
+    padding-left: {{ padding_horizontal_mobile }}rem;
+    padding-right: {{ padding_horizontal_mobile }}rem;
+  }
+
+  .video-text-heading-{{ section.id }} {
+    order: {{ heading_position_mobile }};
+    text-align: {{ heading_align_mobile }};
+  }
+
+  .video-text-heading-{{ section.id }} * {
+    margin: 0;
+    font-size: {{ heading_size_mobile }}px;
+    color: {{ heading_color }};
+    line-height: {{ heading_height }}%;
+    text-transform: unset;
+  }
+
+  .video-text-items-{{ section.id }} {
+    display: flex;
+    align-items: center;
+  }
+
+  .video-text-media-{{ section.id }} {
+    width: {{ media_width_mobile }}%;
+    border-radius: {{ media_radius }}px;
+    border: {{ media_border_thickness }} solid {{ media_border_color }};
+    overflow: hidden;
+  }
+
+  .video-text-media-{{ section.id }} img,
+  .video-text-media-{{ section.id }} svg,
+  .video-text-media-{{ section.id }} iframe,
+  .video-text-media-{{ section.id }} video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: 0px;
+    box-shadow: none;
+  }
+
+  .video-text-media-{{ section.id }} svg {
+    background-color: #DDDDDD
+  }
+
+  .video-text-content-{{ section.id }} {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: {{ content_padding_vertical_mobile }}px {{ content_padding_horizontal_mobile }}px;
+  }
+
+  .video-text-subheading-{{ section.id }} {
+    order: {{ sub_heading_position_mobile }};
+    margin-top: {{ sub_heading_mt | times: 0.75 | round: 0 }}px;
+    text-align: {{ sub_heading_align_mobile }};
+  }
+
+  .video-text-subheading-{{ section.id }} * {
+    margin: 0;
+    font-size: {{ sub_heading_size_mobile }}px;
+    color: {{ sub_heading_color }};
+    line-height: {{ sub_heading_height }}%;
+    text-transform: unset;
+  }
+
+  .video-text-text-{{ section.id }} {
+    order: {{ text_position_mobile }};
+    margin-top: {{ text_mt | times: 0.75 | round: 0 }}px;
+    text-align: {{ text_align_mobile }};
+  }
+
+  .video-text-text-{{ section.id }} * {
+    margin: 0;
+    font-size: {{ text_size_mobile }}px;
+    color: {{ text_color }};
+    line-height: {{ text_height }}%;
+    text-transform: unset;
+  }
+
+  .video-text-button-{{ section.id }} {
+    order: {{ button_position_mobile }};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    max-width: fit-content;
+    margin: 0;
+    margin-top: {{ button_mt | times: 0.75 | round: 0 }}px;
+    font-size: {{ button_size_mobile }}px;
+    font-weight: 700;
+    color: {{ button_color }};
+    line-height: {{ button_height }}%;
+    text-align: center;
+    text-transform: unset;
+    text-decoration: none;
+    padding: {{ button_padding_vertical_mobile }}px {{ button_padding_horizontal_mobile }}px;
+    border-radius: {{ button_radius }}px;
+    border: {{ button_border_thickness }}px solid {{ button_border_color }};
+    background-color: {{ button_bg_color }};
+    transition: all 0.25s ease 0s;
+  }
+
+  .video-text-button-{{ section.id }}:hover {
+    color: {{ button_hover_color }};
+    border: {{ button_border_thickness }}px solid {{ button_border_hover_color }};
+    background-color: {{ button_bg_hover_color }};
+    transition: all 0.25s ease 0s;
+  }
+
+  .video-text-button-{{ section.id }} svg {
+    display: block;
+    width: 24px;
+    height: 24px;
+  }
+  
+  @media(min-width: 1024px) {
+
+    .section-{{ section.id }} {
+      margin-top: {{ margin_top }}px;
+      margin-bottom: {{ margin_bottom }}px;
+    }
+    
+    .section-{{ section.id }}-settings {
+      padding: 0 5rem;
+      padding-top: {{ padding_top }}px;
+      padding-bottom: {{ padding_bottom }}px;
+      padding-left: {{ padding_horizontal }}rem;
+      padding-right: {{ padding_horizontal }}rem;
+    }
+
+    .video-text-heading-{{ section.id }} {
+      order: {{ heading_position }};
+      text-align: {{ heading_align }};
+    }
+
+    .video-text-heading-{{ section.id }} * {
+      font-size: {{ heading_size }}px;
+    }
+
+    .video-text-media-{{ section.id }} {
+      width: 100%;
+      flex: 0 0 {{ media_width }}%;
+    }
+
+    .video-text-content-{{ section.id }} {
+      flex: 0 1 {{ 100 | minus: media_width }}%;
+      padding: {{ content_padding_vertical }}px {{ content_padding_horizontal }}px;
+    }
+
+    .video-text-subheading-{{ section.id }} {
+      order: {{ sub_heading_position }};
+      margin-top: {{ sub_heading_mt }}px;
+      text-align: {{ sub_heading_align }};
+    }
+
+    .video-text-subheading-{{ section.id }} * {
+      font-size: {{ sub_heading_size }}px;
+    }
+
+    .video-text-text-{{ section.id }} {
+      order: {{ text_position }};
+      margin-top: {{ text_mt }}px;
+      text-align: {{ text_align }};
+    }
+    
+    .video-text-text-{{ section.id }} *{
+      font-size: {{text_size }}px;
+    }
+
+    .video-text-button-{{ section.id }} {
+      order: {{ button_position }};
+      margin-top: {{ button_mt }}px;
+      padding: {{ button_padding_vertical }}px {{ button_padding_horizontal }}px;
+      font-size: {{ button_size }}px;
+    }
+    
+  }
+  
+{%- endstyle -%}
+
+{% unless full_width %}
+  <style>
+    .section-{{ section.id }}-settings {
+      max-width: {{ content_width }}rem;
+    }
+  </style>
+{% endunless %}
+
+{% if heading_custom %}
+  <style>
+    .video-text-heading-{{ section.id }} * {
+      font-family: {{ heading_font.family }}, {{ heading_font.fallback_families }};
+      font-weight: {{ heading_font.weight }};
+      font-style: {{ heading_font.style }};
+    }
+  </style>
+{% endif %}
+
+{% if sub_heading_custom %}
+  <style>
+    .video-text-subheading-{{ section.id }} * {
+      font-family: {{ sub_heading_font.family }}, {{ sub_heading_font.fallback_families }};
+      font-weight: {{ sub_heading_font.weight }};
+      font-style: {{ sub_heading_font.style }};
+    }
+  </style>
+{% endif %}
+
+{% if text_custom %}
+  <style>
+    .video-text-text-{{ section.id }} * {
+      font-family: {{ text_font.family }}, {{ text_font.fallback_families }};
+      font-weight: {{ text_font.weight }};
+      font-style: {{ text_font.style }};
+    }
+  </style>
+{% endif %}
+
+{% if button_custom %}
+  <style>
+    .video-text-button-{{ section.id }} {
+      font-family: {{ button_font.family }}, {{ button_font.fallback_families }};
+      font-weight: {{ button_font.weight }};
+      font-style: {{ button_font.style }};
+    }
+  </style>
+{% endif %}
+
+{% if button_align_mobile == "center" %}
+  <style>
+   .video-text-button-{{ section.id }} {
+      margin-left: auto;
+      margin-right: auto;
+    } 
+  </style>
+{% elsif button_align_mobile == "right" %}
+  <style>
+   .video-text-button-{{ section.id }} {
+      margin-left: auto;
+    } 
+  </style>
+{% endif %}
+
+{% if button_align == "center" %}
+  <style>
+    @media(min-width: 1024px) {
+     .video-text-button-{{ section.id }} {
+        margin-left: auto;
+        margin-right: auto;
+      } 
+    }
+  </style>
+{% elsif button_align == "right" %}
+  <style>
+    @media(min-width: 1024px) {
+     .video-text-button-{{ section.id }} {
+        margin-left: auto;
+      } 
+    }
+  </style>
+{% else %}
+  <style>
+    @media(min-width: 1024px) {
+     .video-text-button-{{ section.id }} {
+        margin-left: 0px;
+        margin-right: 0px;
+      } 
+    }
+  </style>
+{% endif %}
+
+{% if media_position_mobile == "first" %}
+  <style>
+    .video-text-items-{{ section.id }} {
+      flex-direction: column;
+    }
+  </style>
+{% else %}
+  <style>
+    .video-text-items-{{ section.id }} {
+      flex-direction: column-reverse;
+    }
+  </style>
+{% endif %}
+
+{% if media_position == "first" %}
+  <style>
+    @media(min-width: 1024px ){
+      .video-text-items-{{ section.id }} {
+        flex-direction: row;
+      } 
+    }
+  </style>
+{% else %}
+  <style>
+    @media(min-width: 1024px ){
+      .video-text-items-{{ section.id }} {
+        flex-direction: row-reverse;
+      } 
+    }
+  </style>
+{% endif %}
+
+{% if media_ratio_mobile == "portrait" %}
+  <style>
+    .video-text-media-{{ section.id }} {
+     aspect-ratio: 9.6/12; 
+    }
+  </style>
+{% elsif media_ratio_mobile == "landscape" %}
+  <style>
+    .video-text-media-{{ section.id }} {
+     aspect-ratio: 12/7; 
+    }
+  </style>
+{% elsif media_ratio_mobile == "square" %}
+  <style>
+    .video-text-media-{{ section.id }} {
+     aspect-ratio: 12/12; 
+    }
+  </style>
+{% endif %}
+
+{% if media_ratio == "portrait" %}
+  <style>
+    @media(min-width: 1024px) {
+     .video-text-media-{{ section.id }} {
+       aspect-ratio: 9.6/12; 
+      } 
+    }
+  </style>
+{% elsif media_ratio == "landscape" %}
+  <style>
+    @media(min-width: 1024px) {
+      .video-text-media-{{ section.id }} {
+       aspect-ratio: 12/7; 
+      }
+    }
+  </style>
+{% elsif media_ratio == "square" %}
+  <style>
+    @media(min-width: 1024px) {
+      .video-text-media-{{ section.id }} {
+       aspect-ratio: 12/12; 
+      }
+    }
+  </style>
+{% endif %}
+
+<div class="section-{{ section.id }} video-text-{{ section.id }}" style="background-color:{{ background_color }}; background-image: {{ background_gradient }};">
+    <div class="section-{{ section.id }}-settings">
+
+      <div class="video-text-items-{{ section.id }}">
+
+        <div class="video-text-media-{{ section.id }}">
+
+          {% if media == "image" %}
+            {% if image != blank %}
+              <img src="{{ image | image_url }}" al="{{ image.alt }}" {% if lazy %}loading="lazy"{% endif %}>
+            {% else %}
+              {{ 'image' | placeholder_svg_tag }}
+            {% endif %}
+          {% else %}
+            {% assign video_id =  video.id | default: video_url.id %}
+            {%- if video == null and video_url != null -%}
+              
+              {% if loop %}
+                {% assign loop = '&loop=1&playlist=' | append: video_id %}
+              {% endif %}
+
+              {% if autoplay %}
+                {% assign autoplay = '&mute=1&autoplay=1' %}
+              {% endif %}
+              
+              {%- if video_url.type == 'youtube' -%}
+                <iframe
+                  data-src="https://www.youtube.com/embed/{{ video_id }}?enablejsapi=1{{ autoplay }}{{ loop }}"
+                  class="js-youtube lazy"
+                  allow="autoplay; encrypted-media"
+                  allowfullscreen
+                  title="Fixed Video"
+                ></iframe>
+              {%- else -%}
+                <iframe
+                  data-src="https://player.vimeo.com/video/{{ video_id }}{{ autoplay }}{{ loop }}"
+                  class="js-vimeo lazy"
+                  allow="autoplay; encrypted-media"
+                  allowfullscreen
+                  title="Fixed Video"
+                ></iframe>
+            {% endif %}
+          
+          {% else %}
+
+            <video {% if poster != blank %}poster="{{ poster | image_url }}"{% endif %} data-src="{{ video.sources[1].url }}" playsinline {% if loop %}loop{% endif %} {% if autoplay %}autoplay muted{% endif %} {% if controls %}controls{% endif %} preload="none" class="lazy"></video>
+              
+          {% endif %}
+            
+        {% endif %}
+          
+        </div>
+
+        <div class="video-text-content-{{ section.id }}">
+
+          {% if heading != blank %}
+            <div class="video-text-heading-{{ section.id }}">{{ heading }}</div>
+          {% endif %}
+
+          {% if sub_heading != blank %}
+            <div class="video-text-subheading-{{ section.id }}">{{ sub_heading }}</div>
+          {% endif %}
+
+          {% if text != blank %}
+            <div class="video-text-text-{{ section.id }}">{{ text }}</div>
+          {% endif %}
+
+          {% if button != blank %}
+            <a href="{{ button_url }}" class="video-text-button-{{ section.id }}">
+              {{ button }}
+              {% if button_use_arrow %}
+                <svg viewBox="0 0 24 24" fill="none" class="ag-28w" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M4.09998 12H20.1M20.1 12L14.1 6M20.1 12L14.1 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              {% endif %}
+            </a>
+          {% endif %}
+          
+        </div>
+        
+      </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.min.js"></script>    
+
+<script>
+
+  function initVideoWithText3() {
+    let lazyLoadInstance = new LazyLoad();
+    window.addEventListener(
+      "LazyLoad::Initialized",
+      function (event) {
+        window.lazyLoadInstance = event.detail.instance;
+      },
+      false
+    );
+  }
+
+  document.addEventListener('DOMContentLoaded', initVideoWithText3);
+
+  if (Shopify.designMode) {
+    document.addEventListener('shopify:section:unload', initVideoWithText3);
+    document.addEventListener('shopify:section:load', initVideoWithText3);
+  }
+  
+</script>
+
+{% schema %}
+  {
+    "name": "SS - Video with Text #3",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Media Settings"
+      },
+      {
+        "type": "select",
+        "id": "media",
+        "label": "Media Selector",
+        "default": "video",
+        "options": [
+          {
+            "label": "Image",
+            "value": "image"
+          },
+          {
+            "label": "Video",
+            "value": "video"
+          }
+        ]
+      },
+      {
+        "type": "image_picker",
+        "id": "image",
+        "label": "Image"
+      },
+      {
+        "type": "video",
+        "id": "video",
+        "label": "Video from Shopify"
+      },
+      {
+        "type": "video_url",
+        "id": "video_url",
+        "label": "Video Embed from Url",
+        "accept": ["youtube", "vimeo"],
+        "default": "https://www.youtube.com/watch?v=_9VUPq3SxOc",
+        "info": "Shows when no Shopify-hosted video is selected."
+      },
+      {
+        "type": "image_picker",
+        "id": "poster",
+        "label": "Thumbnail image for Shopify-hosted video",
+        "info":"Use when autoplay is turned off to remove blurry image"
+      },
+      {
+        "type": "range",
+        "id": "media_width",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "unit": "%",
+        "label": "Media Width",
+        "default": 50
+      },
+      {
+        "type": "range",
+        "id": "media_width_mobile",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "unit": "%",
+        "label": "Media Width - Mobile",
+        "default": 100
+      },
+      {
+        "type": "select",
+        "id": "media_position",
+        "label": "Media Position",
+        "default": "first",
+        "options": [
+          {
+            "label": "First",
+            "value": "first"
+          },
+          {
+            "label": "Second",
+            "value": "second"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "media_position_mobile",
+        "label": "Media Position - Mobile",
+        "default": "first",
+        "options": [
+          {
+            "label": "First",
+            "value": "first"
+          },
+          {
+            "label": "Second",
+            "value": "second"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "media_ratio",
+        "label": "Media Aspect Ratio",
+        "default": "square",
+        "options": [
+          {
+            "label": "Original",
+            "value": "original"
+          },
+          {
+            "label": "Portrait",
+            "value": "portrait"
+          },
+          {
+            "label": "Square",
+            "value": "square"
+          },
+          {
+            "label": "Landscape",
+            "value": "landscape"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "media_ratio_mobile",
+        "label": "Media Aspect Ratio - Mobile",
+        "default": "landscape",
+        "options": [
+          {
+            "label": "Original",
+            "value": "original"
+          },
+          {
+            "label": "Portrait",
+            "value": "portrait"
+          },
+          {
+            "label": "Square",
+            "value": "square"
+          },
+          {
+            "label": "Landscape",
+            "value": "landscape"
+          }
+        ]
+      },
+      {
+         "type": "range",
+         "id": "media_border_thickness",
+         "min": 0,
+         "max": 10,
+         "step": 1,
+         "unit": "px",
+         "label": "Media Border Thickness",
+         "default": 0
+      },
+      {
+         "type": "range",
+         "id": "media_radius",
+         "min": 0,
+         "max": 100,
+         "step": 2,
+         "unit": "px",
+         "label": "Media Border Radius",
+         "default": 0
+      },
+      {
+        "type": "header",
+        "content": "Video Settings"
+      },
+      {
+        "type": "checkbox",
+        "id": "controls",
+        "label": "Show Controls on Video",
+        "info": "Only for Shopify-hosted video",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "autoplay",
+        "label": "Autoplay Video",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "loop",
+        "label": "Loop Video",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Content Settings"
+      },
+      {
+        "type": "range",
+        "id": "content_padding_vertical",
+        "min": 0,
+        "max": 100,
+        "step": 2,
+        "unit": "px",
+        "label": "Content Padding Vertical",
+        "default": 32
+      },
+      {
+        "type": "range",
+        "id": "content_padding_vertical_mobile",
+        "min": 0,
+        "max": 100,
+        "step": 2,
+        "unit": "px",
+        "label": "Content Padding Vertical - Mobile",
+        "default": 40
+      },
+      {
+         "type": "range",
+         "id": "content_padding_horizontal",
+         "min": 0,
+         "max": 100,
+         "step": 2,
+         "unit": "px",
+         "label": "Content Padding Horizontal",
+         "default": 100
+      },
+      {
+         "type": "range",
+         "id": "content_padding_horizontal_mobile",
+         "min": 0,
+         "max": 100,
+         "step": 2,
+         "unit": "px",
+         "label": "Content Padding Horizontal - Mobile",
+         "default": 12
+      },
+      {
+        "type": "header",
+        "content": "Heading"
+      },
+      {
+        "type": "richtext",
+        "id": "heading",
+        "label": "Heading",
+        "default": "<h2>VitalBoost: Your Nutritional Choice</h2>"
+      },
+      {
+        "type": "checkbox",
+        "id": "heading_custom",
+        "label": "Use Custom Font",
+        "default": false
+      },
+      {
+        "type": "font_picker",
+        "id": "heading_font",
+        "label": "Heading Font Family",
+        "default": "josefin_sans_n4"
+      },
+      {
+        "type": "range",
+        "id": "heading_size",
+        "min": 0,
+        "max": 72,
+        "step": 2,
+        "unit": "px",
+        "label": "Heading Size",
+        "default": 50
+      },
+      {
+        "type": "range",
+        "id": "heading_size_mobile",
+        "min": 0,
+        "max": 72,
+        "step": 2,
+        "unit": "px",
+        "label": "Heading Size - Mobile",
+        "default": 40
+      },
+      {
+        "type": "range",
+        "id": "heading_height",
+        "min": 50,
+        "max": 200,
+        "step": 10,
+        "unit": "%",
+        "label": "Heading Line Height",
+        "default": 110
+      },
+      {
+        "type": "select",
+        "id": "heading_align",
+        "label": "Heading Text Align",
+        "default": "left",
+        "options": [
+          {
+            "label": "Left",
+            "value": "left"
+          },
+          {
+            "label": "Center",
+            "value": "center"
+          },
+          {
+            "label": "Right",
+            "value": "right"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "heading_align_mobile",
+        "label": "Heading Text Align - Mobile",
+        "default": "center",
+        "options": [
+          {
+            "label": "Left",
+            "value": "left"
+          },
+          {
+            "label": "Center",
+            "value": "center"
+          },
+          {
+            "label": "Right",
+            "value": "right"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "heading_position",
+        "label": "Heading Position",
+        "default": "1",
+        "options": [
+          {
+            "label": "1",
+            "value": "1"
+          },
+          {
+            "label": "2",
+            "value": "2"
+          },
+          {
+            "label": "3",
+            "value": "3"
+          },
+          {
+            "label": "4",
+            "value": "4"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "heading_position_mobile",
+        "label": "Heading Position - Mobile",
+        "default": "1",
+        "options": [
+          {
+            "label": "1",
+            "value": "1"
+          },
+          {
+            "label": "2",
+            "value": "2"
+          },
+          {
+            "label": "3",
+            "value": "3"
+          },
+          {
+            "label": "4",
+            "value": "4"
+          }
+        ]
+      },
+      {
+        "type": "header",
+        "content": "Sub-Heading"
+      },
+      {
+        "type": "richtext",
+        "id": "sub_heading",
+        "label": "Sub-Heading",
+        "default": "<h4>Free One Year Supply of Vitamin D3+K2, 5 Travel Packs**</h4>"
+      },
+      {
+        "type": "checkbox",
+        "id": "sub_heading_custom",
+        "label": "Use Custom Font",
+        "default": false
+      },
+      {
+        "type": "font_picker",
+        "id": "sub_heading_font",
+        "label": "Sub-Heading Font Family",
+        "default": "josefin_sans_n4"
+      },
+      {
+        "type": "range",
+        "id": "sub_heading_size",
+        "min": 0,
+        "max": 72,
+        "step": 2,
+        "unit": "px",
+        "label": "Sub-Heading Size",
+        "default": 18
+      },
+      {
+        "type": "range",
+        "id": "sub_heading_size_mobile",
+        "min": 0,
+        "max": 72,
+        "step": 2,
+        "unit": "px",
+        "label": "Sub-Heading Size - Mobile",
+        "default": 18
+      },
+      {
+        "type": "range",
+        "id": "sub_heading_height",
+        "min": 50,
+        "max": 200,
+        "step": 10,
+        "unit": "%",
+        "label": "Sub-Heading Line Height",
+        "default": 150
+      },
+      {
+        "type": "select",
+        "id": "sub_heading_align",
+        "label": "Sub-Heading Text Align",
+        "default": "left",
+        "options": [
+          {
+            "label": "Left",
+            "value": "left"
+          },
+          {
+            "label": "Center",
+            "value": "center"
+          },
+          {
+            "label": "Right",
+            "value": "right"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "sub_heading_align_mobile",
+        "label": "Sub-Heading Text Align - Mobile",
+        "default": "center",
+        "options": [
+          {
+            "label": "Left",
+            "value": "left"
+          },
+          {
+            "label": "Center",
+            "value": "center"
+          },
+          {
+            "label": "Right",
+            "value": "right"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "sub_heading_mt",
+        "min": 0,
+        "max": 100,
+        "step": 2,
+        "unit": "px",
+        "label": "Sub-Heading Margin Top",
+        "default": 16
+      },
+      {
+        "type": "select",
+        "id": "sub_heading_position",
+        "label": "Sub-Heading Position",
+        "default": "3",
+        "options": [
+          {
+            "label": "1",
+            "value": "1"
+          },
+          {
+            "label": "2",
+            "value": "2"
+          },
+          {
+            "label": "3",
+            "value": "3"
+          },
+          {
+            "label": "4",
+            "value": "4"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "sub_heading_position_mobile",
+        "label": "Sub-Heading Position - Mobile",
+        "default": "2",
+        "options": [
+          {
+            "label": "1",
+            "value": "1"
+          },
+          {
+            "label": "2",
+            "value": "2"
+          },
+          {
+            "label": "3",
+            "value": "3"
+          },
+          {
+            "label": "4",
+            "value": "4"
+          }
+        ]
+      },
+      {
+        "type": "header",
+        "content": "Text"
+      },
+      {
+        "type": "richtext",
+        "id": "text",
+        "label": "Text",
+        "default": "<p>VitalBoost: A Daily Essential Nutrition supplement fostering physical and mental health. A scientifically formulated mix of vitamins, minerals, probiotics, and nutrients from whole foods, enhancing cognition and overall well-being</p>"
+      },
+      {
+        "type": "checkbox",
+        "id": "text_custom",
+        "label": "Use Custom Font",
+        "default": false
+      },
+      {
+        "type": "font_picker",
+        "id": "text_font",
+        "label": "Text Font Family",
+        "default": "josefin_sans_n4"
+      },
+      {
+        "type": "range",
+        "id": "text_size",
+        "min": 0,
+        "max": 72,
+        "step": 2,
+        "unit": "px",
+        "label": "Text Size",
+        "default": 18
+      },
+      {
+        "type": "range",
+        "id": "text_size_mobile",
+        "min": 0,
+        "max": 72,
+        "step": 2,
+        "unit": "px",
+        "label": "Text Size - Mobile",
+        "default": 18
+      },
+      {
+        "type": "range",
+        "id": "text_height",
+        "min": 50,
+        "max": 200,
+        "step": 10,
+        "unit": "%",
+        "label": "Text Line Height",
+        "default": 150
+      },
+      {
+        "type": "select",
+        "id": "text_align",
+        "label": "Text Text Align",
+        "default": "left",
+        "options": [
+          {
+            "label": "Left",
+            "value": "left"
+          },
+          {
+            "label": "Center",
+            "value": "center"
+          },
+          {
+            "label": "Right",
+            "value": "right"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "text_align_mobile",
+        "label": "Text Align - Mobile",
+        "default": "center",
+        "options": [
+          {
+            "label": "Left",
+            "value": "left"
+          },
+          {
+            "label": "Center",
+            "value": "center"
+          },
+          {
+            "label": "Right",
+            "value": "right"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "text_mt",
+        "min": 0,
+        "max": 100,
+        "step": 2,
+        "unit": "px",
+        "label": "Text Margin Top",
+        "default": 40
+      },
+      {
+        "type": "select",
+        "id": "text_position",
+        "label": "Text Position",
+        "default": "2",
+        "options": [
+          {
+            "label": "1",
+            "value": "1"
+          },
+          {
+            "label": "2",
+            "value": "2"
+          },
+          {
+            "label": "3",
+            "value": "3"
+          },
+          {
+            "label": "4",
+            "value": "4"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "text_position_mobile",
+        "label": "Text Position - Mobile",
+        "default": "4",
+        "options": [
+          {
+            "label": "1",
+            "value": "1"
+          },
+          {
+            "label": "2",
+            "value": "2"
+          },
+          {
+            "label": "3",
+            "value": "3"
+          },
+          {
+            "label": "4",
+            "value": "4"
+          }
+        ]
+      },
+      {
+        "type": "header",
+        "content": "Button"
+      },
+      {
+        "type": "text",
+        "id": "button",
+        "label": "Button",
+        "default": "Unlock Offer"
+      },
+      {
+        "type": "url",
+        "id": "button_url",
+        "label": "Button URL"
+      },
+      {
+        "type": "checkbox",
+        "id": "button_custom",
+        "label": "Use Custom Font",
+        "default": false
+      },
+      {
+        "type": "font_picker",
+        "id": "button_font",
+        "label": "Button Font Family",
+        "default": "josefin_sans_n4"
+      },
+      {
+        "type": "range",
+        "id": "button_size",
+        "min": 0,
+        "max": 72,
+        "step": 2,
+        "unit": "px",
+        "label": "Button Size",
+        "default": 18
+      },
+      {
+        "type": "range",
+        "id": "button_size_mobile",
+        "min": 0,
+        "max": 72,
+        "step": 2,
+        "unit": "px",
+        "label": "Button Size - Mobile",
+        "default": 18
+      },
+      {
+        "type": "range",
+        "id": "button_height",
+        "min": 50,
+        "max": 200,
+        "step": 10,
+        "unit": "%",
+        "label": "Button Line Height",
+        "default": 100
+      },
+      {
+        "type": "select",
+        "id": "button_align",
+        "label": "Button Text Align",
+        "default": "left",
+        "options": [
+          {
+            "label": "Left",
+            "value": "left"
+          },
+          {
+            "label": "Center",
+            "value": "center"
+          },
+          {
+            "label": "Right",
+            "value": "right"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "button_align_mobile",
+        "label": "Button Text Align - Mobile",
+        "default": "center",
+        "options": [
+          {
+            "label": "Left",
+            "value": "left"
+          },
+          {
+            "label": "Center",
+            "value": "center"
+          },
+          {
+            "label": "Right",
+            "value": "right"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "button_mt",
+        "min": 0,
+        "max": 100,
+        "step": 2,
+        "unit": "px",
+        "label": "Button Margin Top",
+        "default": 32
+      },
+      {
+        "type": "range",
+        "id": "button_padding_vertical",
+        "min": 0,
+        "max": 100,
+        "step": 2,
+        "unit": "px",
+        "label": "Button Padding Vertical",
+        "default": 16
+      },
+      {
+        "type": "range",
+        "id": "button_padding_vertical_mobile",
+        "min": 0,
+        "max": 100,
+        "step": 2,
+        "unit": "px",
+        "label": "Button Padding Vertical - Mobile",
+        "default": 16
+      },
+      {
+         "type": "range",
+         "id": "button_padding_horizontal",
+         "min": 0,
+         "max": 100,
+         "step": 2,
+         "unit": "px",
+         "label": "Button Padding Horizontal",
+         "default": 26
+      },
+      {
+         "type": "range",
+         "id": "button_padding_horizontal_mobile",
+         "min": 0,
+         "max": 100,
+         "step": 2,
+         "unit": "px",
+         "label": "Button Padding Horizontal - Mobile",
+         "default": 26
+      },
+      {
+         "type": "range",
+         "id": "button_radius",
+         "min": 0,
+         "max": 100,
+         "step": 2,
+         "unit": "px",
+         "label": "Button Border Radius",
+         "default": 32
+      },
+      {
+         "type": "range",
+         "id": "button_border_thickness",
+         "min": 0,
+         "max": 10,
+         "step": 1,
+         "unit": "px",
+         "label": "Button Border Thickness",
+         "default": 0
+      },
+      {
+        "type": "checkbox",
+        "id": "button_use_arrow",
+        "label": "Button Use Arrow",
+        "default": true
+      },
+      {
+        "type": "select",
+        "id": "button_position",
+        "label": "Button Position",
+        "default": "4",
+        "options": [
+          {
+            "label": "1",
+            "value": "1"
+          },
+          {
+            "label": "2",
+            "value": "2"
+          },
+          {
+            "label": "3",
+            "value": "3"
+          },
+          {
+            "label": "4",
+            "value": "4"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "button_position_mobile",
+        "label": "Button Position - Mobile",
+        "default": "3",
+        "options": [
+          {
+            "label": "1",
+            "value": "1"
+          },
+          {
+            "label": "2",
+            "value": "2"
+          },
+          {
+            "label": "3",
+            "value": "3"
+          },
+          {
+            "label": "4",
+            "value": "4"
+          }
+        ]
+      },
+      {
+        "type": "header",
+        "content": "Button Colors"
+      },
+      {
+        "type": "color",
+        "label": "Button Color",
+        "id": "button_color",
+        "default": "#FFFFFF"
+      },
+      {
+        "type": "color",
+        "label": "Button Hover Color",
+        "id": "button_hover_color",
+        "default": "#FFFFFF"
+      },
+      {
+        "type": "color",
+        "label": "Button Background Color",
+        "id": "button_bg_color",
+        "default": "#2F7D39"
+      },
+      {
+        "type": "color",
+        "label": "Button Background Hover Color",
+        "id": "button_bg_hover_color",
+        "default": "#3E974A"
+      },
+      {
+        "type": "color",
+        "label": "Button Border Color",
+        "id": "button_border_color",
+        "default": "#000000"
+      },
+      {
+        "type": "color",
+        "label": "Button Border Hover Color",
+        "id": "button_border_hover_color",
+        "default": "#000000"
+      },
+      {
+        "type": "header",
+        "content": "Section Colors"
+      },
+      {
+        "type": "color",
+        "label": "Media Border Color",
+        "id": "media_border_color",
+        "default": "#000000"
+      },
+      {
+        "type": "color",
+        "label": "Heading Color",
+        "id": "heading_color",
+        "default": "#000000"
+      },
+      {
+        "type": "color",
+        "label": "Sub-Heading Color",
+        "id": "sub_heading_color",
+        "default": "#000000"
+      },
+      {
+        "type": "color",
+        "label": "Text Color",
+        "id": "text_color",
+        "default": "#000000"
+      },
+      {
+        "type": "color",
+        "label": "Section background",
+        "id": "background_color",
+        "default": "#FFFFFF"
+      },
+      {
+        "type": "color_background",
+        "id": "background_gradient",
+        "label": "Section background gradient"
+      },
+      {
+        "type": "color",
+        "label": "Border",
+        "id": "border_color",
+        "default": "#000000"
+      },
+      {
+        "type": "header",
+        "content": "Section margin (outside)"
+      },
+      {
+        "type": "range",
+        "id": "margin_top",
+        "min": 0,
+        "max": 100,
+        "step": 4,
+        "unit": "px",
+        "label": "Margin top",
+        "default": 0
+      },
+      {
+        "type": "range",
+        "id": "margin_bottom",
+        "min": 0,
+        "max": 100,
+        "step": 4,
+        "unit": "px",
+        "label": "Margin bottom",
+        "default": 0
+      },
+      {
+        "type": "header",
+        "content": "Section padding (inside)"
+      },
+      {
+        "type": "range",
+        "id": "padding_top",
+        "min": 0,
+        "max": 100,
+        "step": 4,
+        "unit": "px",
+        "label": "Padding top",
+        "default": 36
+      },
+      {
+         "type": "range",
+         "id": "padding_bottom",
+         "min": 0,
+         "max": 100,
+         "step": 4,
+         "unit": "px",
+         "label": "Padding bottom",
+         "default": 36
+      },
+      {
+        "type": "range",
+        "id": "padding_horizontal",
+        "min": 0,
+        "max": 30,
+        "step": 1,
+        "unit": "rem",
+        "label": "Padding sides",
+        "default": 0
+      },
+      {
+        "type": "range",
+        "id": "padding_horizontal_mobile",
+        "min": 0,
+        "max": 15,
+        "step": 0.5,
+        "unit": "rem",
+        "label": "Padding sides mobile",
+        "default": 0
+      },
+      {
+        "type": "header",
+        "content": "Section Settings"
+      },
+      {
+        "type": "checkbox",
+        "id": "full_width",
+        "label": "Full Width",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "content_width",
+        "min": 0,
+        "max": 400,
+        "step": 10,
+        "unit": "rem",
+        "label": "Section content width",
+        "default": 120
+      },
+      {
+        "type": "range",
+        "id": "border_thickness",
+        "min": 0,
+        "max": 50,
+        "step": 1,
+        "unit": "px",
+        "label": "Border thickness",
+        "default": 0
+      },
+      {
+        "type": "checkbox",
+        "id": "lazy",
+        "label": "Lazy load",
+        "info": "Lazy load images for speed optimisation",
+        "default": true
+      }
+    ],
+    "presets": [
+      {
+        "name": "SS - Video with Text #3"
+      }
+    ]
+  }
+{% endschema %}

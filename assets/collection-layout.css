@@ -1,0 +1,29 @@
+/* assets/collection-layout.css
+   Lays out product-filter + product-feed as sidebar + content.
+
+   These are now independent sibling sections (templates/collection.json),
+   not nested markup, so the grid has to be applied to their shared
+   parent — Shopify's <main> wrapper — using :has() to scope it only
+   to pages where both sections are present.
+
+   NOTE: replace `main` below with your theme's actual main-content
+   selector if it isn't a bare <main> element (e.g. `.main-content`,
+   `#MainContent`).
+*/
+
+main:has(> .shopify-section.section-product-filter) {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* Fallback for browsers without :has() support: sections simply
+   stack full-width, filter above feed — still usable, just not
+   side-by-side. */
+
+@media (max-width: 989px) {
+  main:has(> .shopify-section.section-product-filter) {
+    grid-template-columns: 1fr;
+  }
+}

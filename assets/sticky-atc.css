@@ -1,0 +1,352 @@
+/* ─── Sticky ATC Bar ──────────────────────────────────────────
+   assets/sticky-atc.css
+   Bottom-of-viewport bar. Hidden by default; JS adds .is-visible
+   once #BuyNow scrolls out of view.
+──────────────────────────────────────────────────────────────── */
+
+.sticky-atc {
+  position:         fixed;
+  bottom:           0;
+  left:             0;
+  right:            0;
+  z-index:          300;
+  background-color: var(--color-background, #fff);
+  border-top:       1px solid var(--color-border, #E5E5E5);
+
+  /* hidden state */
+  transform:        translateY(100%);
+  opacity:          0;
+  pointer-events:   none;
+  transition:       transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                    opacity   0.3s ease;
+  will-change:      transform;
+}
+
+.sticky-atc.is-visible {
+  transform:      translateY(0);
+  opacity:        1;
+  pointer-events: auto;
+}
+
+/* ─── Inner layout ────────────────────────────────────────── */
+.sticky-atc__inner {
+  display:     flex;
+  align-items: center;
+  gap:         24px;
+  max-width:   1820px;
+  margin:      0 auto;
+  padding:     12px 50px;
+}
+
+/* ─── Product (image + meta) ──────────────────────────────── */
+.sticky-atc__product {
+  display:     flex;
+  align-items: center;
+  gap:         12px;
+  flex-shrink: 0;
+  min-width:   0;
+}
+
+.sticky-atc__image-wrap {
+  width:         48px;
+  height:        48px;
+  flex-shrink:   0;
+  border-radius: 6px;
+  overflow:      hidden;
+  border:        1px solid var(--color-border, #E5E5E5);
+}
+
+.sticky-atc__image {
+  width:      100%;
+  height:     100%;
+  object-fit: cover;
+  display:    block;
+}
+
+.sticky-atc__meta {
+  min-width: 0;
+}
+
+.sticky-atc__title {
+  font-family:   var(--font-family, 'Instrument Sans', sans-serif);
+  font-size:     14px;
+  font-weight:   600;
+  line-height:   20px;
+  color:         var(--color-text, #000);
+  white-space:   nowrap;
+  overflow:      hidden;
+  text-overflow: ellipsis;
+  max-width:     180px;
+  margin:        0;
+}
+
+.sticky-atc__price {
+  display:     flex;
+  align-items: center;
+  gap:         8px;
+  margin:      2px 0 0;
+}
+
+.sticky-atc__price-current {
+  font-family: var(--font-family, 'Instrument Sans', sans-serif);
+  font-size:   15px;
+  font-weight: 700;
+  color:       var(--color-text, #000);
+}
+
+.sticky-atc__price-current.sale-price {
+  color: var(--color-sale, #D32F2F);
+}
+
+.sticky-atc__price-compare {
+  font-size:       13px;
+  font-weight:     500;
+  color:           var(--color-text-secondary, #666);
+  text-decoration: line-through;
+}
+
+/* ─── Variants ────────────────────────────────────────────── */
+.sticky-atc__variants {
+  display:     flex;
+  align-items: center;
+  gap:         20px;
+  flex:        1;
+  flex-wrap:   wrap;
+  min-width:   0;
+}
+
+.sticky-atc__option {
+  display:        flex;
+  flex-direction: column;
+  gap:            6px;
+}
+
+.sticky-atc__option-label {
+  font-family: var(--font-family, 'Instrument Sans', sans-serif);
+  font-size:   12px;
+  font-weight: 600;
+  color:       var(--color-text, #000);
+  line-height: 1;
+}
+
+.sticky-atc__option-value {
+  font-weight: 400;
+}
+
+/* colour swatches */
+.sticky-atc__swatches {
+  display: flex;
+  gap:     6px;
+}
+
+.sticky-atc__swatch-label {
+  display:  block;
+  cursor:   pointer;
+  position: relative;
+}
+
+.sticky-atc__swatch-input {
+  position:       absolute;
+  opacity:        0;
+  pointer-events: none;
+  width:          0;
+  height:         0;
+}
+
+.sticky-atc__swatch {
+  display:       block;
+  width:         24px;
+  height:        24px;
+  border-radius: 4px;
+  border:        2px solid var(--color-border, #E5E5E5);
+  transition:    border-color 0.15s, box-shadow 0.15s;
+}
+
+.sticky-atc__swatch-input:checked + .sticky-atc__swatch {
+  border-color: var(--color-text, #000);
+  box-shadow:   0 0 0 1px var(--color-text, #000);
+}
+
+.sticky-atc__swatch-label:hover .sticky-atc__swatch {
+  border-color: #999;
+}
+
+/* pill buttons */
+.sticky-atc__buttons {
+  display: flex;
+  gap:     6px;
+}
+
+.sticky-atc__btn-label {
+  display:  inline-block;
+  cursor:   pointer;
+  position: relative;
+}
+
+.sticky-atc__radio {
+  position:       absolute;
+  opacity:        0;
+  pointer-events: none;
+  width:          0;
+  height:         0;
+}
+
+.sticky-atc__btn {
+  display:          block;
+  padding:          5px 12px;
+  border:           1px solid var(--color-border, #E5E5E5);
+  border-radius:    20px;
+  background-color: var(--color-background, #fff);
+  font-family:      var(--font-family, 'Instrument Sans', sans-serif);
+  font-size:        12px;
+  font-weight:      500;
+  color:            var(--color-text, #000);
+  transition:       all 0.15s;
+  white-space:      nowrap;
+}
+
+.sticky-atc__radio:checked + .sticky-atc__btn {
+  background-color: var(--color-text, #000);
+  color:            var(--color-background, #fff);
+  border-color:     var(--color-text, #000);
+}
+
+.sticky-atc__btn-label:hover .sticky-atc__btn {
+  border-color: var(--color-text, #000);
+}
+
+/* ─── Actions ─────────────────────────────────────────────── */
+.sticky-atc__actions {
+  display:     flex;
+  gap:         8px;
+  flex-shrink: 0;
+}
+
+.sticky-atc__bin-form {
+  margin: 0;
+}
+
+.sticky-atc__cta {
+  padding:       12px 20px;
+  border-radius: 8px;
+  font-family:   var(--font-family, 'Instrument Sans', sans-serif);
+  font-size:     14px;
+  font-weight:   600;
+  cursor:        pointer;
+  border:        1px solid transparent;
+  transition:    all 0.2s;
+  white-space:   nowrap;
+}
+
+.sticky-atc__cta:disabled {
+  opacity: 0.5;
+  cursor:  not-allowed;
+}
+
+.sticky-atc__cta--atc {
+  background-color: #F5F5F5;
+  color:            var(--color-text, #000);
+  border-color:     var(--color-border, #E5E5E5);
+}
+
+.sticky-atc__cta--atc:hover:not(:disabled) {
+  background-color: #E0E0E0;
+}
+
+.sticky-atc__cta--atc.success {
+  background-color: var(--color-success, #4CAF50) !important;
+  color:            #fff !important;
+  border-color:     var(--color-success, #4CAF50) !important;
+}
+
+.sticky-atc__cta--bin {
+  background-color: var(--color-text, #000);
+  color:            var(--color-background, #fff);
+}
+
+.sticky-atc__cta--bin:hover:not(:disabled) {
+  background-color: #333;
+}
+
+/* ─── Responsive ──────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .sticky-atc__inner {
+    padding: 12px 24px;
+    gap:     16px;
+  }
+
+  .sticky-atc__title {
+    max-width: 140px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sticky-atc__inner {
+    padding:   10px 16px;
+    gap:       10px;
+    flex-wrap: wrap;
+  }
+
+  /* On mobile: product + actions on one row, variants below */
+  .sticky-atc__product { flex: 1; }
+
+  .sticky-atc__variants {
+    order:  3;
+    width:  100%;
+    gap:    12px;
+  }
+
+  .sticky-atc__actions {
+    flex-shrink: 0;
+  }
+
+  .sticky-atc__title {
+    max-width: 120px;
+    font-size: 13px;
+  }
+
+  .sticky-atc__cta {
+    padding:   10px 14px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Single-column stack on very small screens */
+  .sticky-atc__inner {
+    flex-direction: column;
+    align-items:    stretch;
+  }
+
+  .sticky-atc__product {
+    flex: unset;
+  }
+
+  .sticky-atc__title {
+    max-width: none;
+  }
+
+  .sticky-atc__actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .sticky-atc__bin-form,
+  .sticky-atc__cta {
+    width: 100%;
+  }
+}
+
+/* ─── Reduced motion ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .sticky-atc {
+    transition:     opacity 0.15s ease;
+    transform:      translateY(0); /* no slide — always in-position, fade only */
+    opacity:        0;             /* start hidden until JS adds .is-visible */
+    pointer-events: none;
+  }
+  .sticky-atc.is-visible {
+    opacity:        1;
+    pointer-events: auto;
+  }
+}

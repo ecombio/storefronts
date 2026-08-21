@@ -1,0 +1,1699 @@
+{% comment %}
+---------------------------------------------------------
+Copyright © 2023 Section Store. All rights reserved.
+Unauthorized copying, modification, distribution, or use
+of this code or any portion of it, is strictly prohibited.
+Violators will be prosecuted to the fullest extent of the law.
+For inquiries or permissions, contact daniel@section.store
+---------------------------------------------------------
+{% endcomment %}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+
+{%- liquid 
+  assign padding_horizontal = section.settings.padding_horizontal
+  assign padding_horizontal_mobile = section.settings.padding_horizontal_mobile
+  assign padding_top = section.settings.padding_top
+  assign padding_bottom = section.settings.padding_bottom
+  assign border_color = section.settings.border_color
+  assign border_thickness = section.settings.border_thickness
+  assign margin_top = section.settings.margin_top
+  assign margin_bottom = section.settings.margin_bottom
+  assign background_color = section.settings.background_color
+  assign background_gradient = section.settings.background_gradient
+  assign lazy = section.settings.lazy
+
+  assign reviews_position = section.settings.reviews_position
+  assign reviews_meta = section.settings.reviews_meta
+  assign reviews_radius = section.settings.review_radius
+  assign reviews_bg_color = section.settings.reviews_bg_color
+
+  assign review_padding_vertical = section.settings.review_padding_vertical
+  assign review_padding_horizontal = section.settings.review_padding_horizontal
+  assign review_radius = section.settings.review_radius
+  assign review_border_thickness = section.settings.review_border_thickness
+  assign review_border_color = section.settings.review_border_color
+  assign review_bg_color = section.settings.review_bg_color
+
+  assign image_width = section.settings.image_width
+  assign image_radius = section.settings.image_radius
+  assign image_border_thickness = section.settings.image_border_thickness
+  assign image_border_color = section.settings.image_border_color
+  assign image_ratio = section.settings.image_ratio
+
+  assign stars_icon = section.settings.stars_icon
+  assign stars_color = section.settings.stars_color
+  assign stars_size = section.settings.stars_size
+
+  assign author_size = section.settings.author_size
+  assign author_size_mobile = section.settings.author_size_mobile
+  assign author_color = section.settings.author_color
+  assign author_custom = section.settings.author_custom
+  assign author_font = section.settings.author_font
+  assign author_height = section.settings.author_height
+
+  assign text_size = section.settings.text_size
+  assign text_size_mobile = section.settings.text_size_mobile
+  assign text_color = section.settings.text_color
+  assign text_custom = section.settings.text_custom
+  assign text_font = section.settings.text_font
+  assign text_height = section.settings.text_height
+  assign text_mt = section.settings.text_mt
+
+  assign arrow_size = section.settings.arrow_size
+  assign arrow_size_mobile = section.settings.arrow_size_mobile
+  assign arrow_icon_size = section.settings.arrow_icon_size
+  assign arrow_icon_size_mobile = section.settings.arrow_icon_size_mobile
+  assign arrow_color = section.settings.arrow_color
+  assign arrow_hover_color = section.settings.arrow_hover_color
+  assign arrow_bg_color = section.settings.arrow_bg_color
+  assign arrow_bg_hover_color = section.settings.arrow_bg_hover_color
+  assign arrow_border_thickness = section.settings.arrow_border_thickness
+  assign arrow_border_color = section.settings.arrow_border_color
+  assign arrow_border_hover_color = section.settings.arrow_border_hover_color
+  assign arrow_show_desktop = section.settings.arrow_show_desktop
+  assign arrow_show_mobile = section.settings.arrow_show_mobile
+
+  assign play_icon = section.settings.play_icon
+  assign play_icon_size = section.settings.play_icon_size
+  assign play_icon_color = section.settings.play_icon_color
+
+  assign modal_padding_horizontal = section.settings.modal_padding_horizontal
+  assign modal_padding_vertical = section.settings.modal_padding_vertical
+  assign modal_radius = section.settings.modal_radius
+  assign modal_border_thickness = section.settings.modal_border_thickness
+  assign modal_width = section.settings.modal_width
+  assign modal_width_mobile = section.settings.modal_width_mobile
+  assign modal_overlay = section.settings.modal_overlay
+  assign modal_border_color = section.settings.modal_border_color
+  assign modal_bg_color = section.settings.modal_bg_color
+
+  assign video_radius = section.settings.video_radius
+  assign video_border_thickness = section.settings.video_border_thickness
+  assign video_border_color = section.settings.video_border_color
+  assign video_ratio = section.settings.video_ratio
+  assign video_ratio_mobile = section.settings.video_ratio_mobile
+
+  assign modal_close_bg_color = section.settings.modal_close_bg_color
+  assign modal_close_icon_color = section.settings.modal_close_icon_color 
+  
+-%}
+
+{%- style -%}
+
+  {{  author_font | font_face: font_display: 'swap' }}
+  {{  text_font | font_face: font_display: 'swap' }}
+  
+  .section-{{ section.id }}-settings {
+    border: solid {{ border_color }} {{ border_thickness }}px;
+    margin-top: {{ margin_top | times: 0.75 | round: 0 }}px !important;
+    margin-bottom: {{ margin_bottom | times: 0.75 | round: 0 }}px !important;
+    padding-top: {{ padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ padding_bottom | times: 0.75 | round: 0 }}px;
+    padding-left: {{ padding_horizontal_mobile }}rem;
+    padding-right: {{ padding_horizontal_mobile }}rem;
+    border-radius: {{ reviews_radius }}px;
+  }
+
+  .reviews-items-{{ section.id }} {
+    position: relative;
+    background-color: {{ reviews_bg_color }};
+  }
+
+  .reviews-slider-{{ section.id }} * {
+    box-sizing: border-box;
+  }
+
+  .reviews-slider-{{ section.id }} .swiper-wrapper {
+    align-items: stretch;
+  }
+
+  .reviews-slider-{{ section.id }} .swiper-slide {
+    height: auto;
+  }
+
+  .reviews-item-{{ section.id }} {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: {{ review_padding_vertical | times: 0.75 | round: 0 }}px {{ review_padding_horizontal | times: 0.75 | round: 0 }}px;
+    border: {{ review_border_thickness }}px solid {{ review_border_color }};
+    background-color: {{ review_bg_color }};
+    border-radius: {{ review_radius }}px;
+  }
+
+  .reviews-content-{{ section.id }} {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+  }
+
+  .reviews-image-{{ section.id }} {
+    flex: 0 0 {{ image_width }}px;
+    border: {{ image_border_thickness }}px solid {{ image_border_color }};
+    border-radius: {{ image_radius }}px;
+    position: relative;
+  }
+
+  .reviews-image-{{ section.id }} img,
+  .reviews-image-{{ section.id }} svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: {{ image_radius }}px;
+  }
+
+  .reviews-image-{{ section.id }} > svg {
+    background-color: #DDDDDD;
+  }
+
+  .reviews-image-play-{{ section.id }} {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: {{ play_icon_size }}px;
+    height: {{ play_icon_size }}px;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+   .reviews-image-play-{{ section.id }} img,
+   .reviews-image-play-{{ section.id }} svg {
+     display: block;
+     object-fit: cover;
+     width: 100%;
+     height: 100%;
+   }
+
+  .reviews-image-play-{{ section.id }} svg path {
+    fill: {{ play_icon_color }};
+  }
+
+  .reviews-top-{{ section.id }} {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .testimonials-stars-{{ section.id }} {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .testimonials-stars-{{ section.id }} svg path {
+    fill: {{ stars_color }};
+  }
+
+  .testimonials-stars-{{ section.id }} svg,
+  .testimonials-stars-{{ section.id }} img {
+    display: block;
+    width: {{ stars_size }}px;
+    height: {{ stars_size }}px;
+    object-fit: cover;
+  }
+
+  .reviews-author-{{ section.id }} {
+    margin: 0px;
+    font-size: {{ author_size_mobile }}px;
+    color: {{ author_color }};
+    line-height: {{ author_height }}%;
+    text-transform: unset;
+    font-weight: 700;
+  }
+
+  .reviews-text-{{ section.id }} {
+    margin: 0px;
+    margin-top: {{ text_mt | times: 0.75 | round: 0 }}px;
+    font-size: {{ text_size_mobile }}px;
+    color: {{ text_color }};
+    line-height: {{ text_height }}%;
+    text-transform: unset;
+  }
+
+  .reviews-btn-prev-{{ section.id }},
+  .reviews-btn-next-{{ section.id }} {
+    display: flex;
+    position: absolute;
+    z-index: 2;
+    top: 50%;
+    transform: translateY(-50%);
+    width: {{ arrow_size_mobile }}px;
+    height: {{ arrow_size_mobile }}px;
+    border: {{ arrow_border_thickness }}px solid {{ arrow_border_color }};
+    border-radius: 50%;
+    background: {{ arrow_bg_color }};
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease 0s;
+    cursor: pointer;
+    -webkit-appearance: none;
+    box-shadow: 0px -2px 12px rgba(0, 0, 0, .08);
+  }
+
+  .reviews-btn-prev-{{ section.id }} {
+    left: -{{ arrow_size_mobile | times: 0.5 }}px !important;
+  }
+
+  .reviews-btn-next-{{ section.id }} {
+    right: -{{ arrow_size_mobile | times: 0.5 }}px !important;
+  }
+
+  .reviews-btn-prev-{{ section.id }} svg,
+  .reviews-btn-next-{{ section.id }} svg {
+    height: {{ arrow_icon_size_mobile }}px;
+    width: {{ arrow_icon_size_mobile }}px;
+  }
+
+  .reviews-btn-prev-{{ section.id }} svg {
+    transform: rotate(180deg);
+  }
+
+  .reviews-btn-prev-{{ section.id }} svg path,
+  .reviews-btn-next-{{ section.id }} svg path {
+    fill: {{ arrow_color }};
+    transition: all 0.3s ease 0s;
+  }
+
+  .reviews-btn-prev-{{ section.id }}:hover ,
+  .reviews-btn-next-{{ section.id }}:hover {
+    transition: all 0.3s ease 0s;
+    border: {{ arrow_border_thickness }}px solid {{ arrow_border_hover_color }};
+    background: {{ arrow_bg_hover_color }};
+  }
+
+  .reviews-btn-prev-{{ section.id }}:hover svg path,
+  .reviews-btn-next-{{ section.id }}:hover svg path {
+    fill: {{ arrow_hover_color }};
+    transition: all 0.3s ease 0s;
+  }
+
+  .reviews-btn-prev-{{ section.id }}.swiper-button-disabled,
+  .reviews-btn-next-{{ section.id }}.swiper-button-disabled {
+    opacity: 0;
+  }
+
+  .reviews-modal-{{ section.id }} {
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    position: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    overflow-y: scroll;
+    pointer-events: none;
+    background: rgba(0, 0, 0, {{ modal_overlay | times: 0.01 }});
+    padding: 20px;
+  }
+
+  .reviews-modal-{{ section.id }}.active {
+    opacity: 1;
+    z-index: 100;
+    pointer-events: all;
+    transition: all 250ms ease-in 0s;
+  }
+
+  .reviews-modal-inner-{{ section.id }} {
+    position: relative;
+    width: 100%;
+    max-width: {{ modal_width_mobile }}%;
+    padding: {{ modal_padding_vertical | times: 0.75 | round: 0 }}px {{ modal_padding_horizontal | times: 0.75 | round: 0 }}px;
+    border: {{ modal_border_thickness }}px solid {{ modal_border_color }};
+    background-color: {{ modal_bg_color }};
+    border-radius: {{ modal_radius }}px;
+  }
+
+  .reviews-video-{{ section.id }} {
+    height: 100%;
+    border: {{ video_border_thickness }}px solid {{ video_border_color }};
+    border-radius: {{ video_radius }}px;
+  }
+
+  .reviews-video-{{ section.id }} video,
+  .reviews-video-{{ section.id }} iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    box-shadow: none;
+    border: 0px;
+    border-radius: {{ video_radius }}px;
+  }
+
+  .reviews-video-close-wrapper-{{ section.id }} {
+    position: absolute;
+    display: flex;
+    align-items: flex-end;
+    flex-direction: column;
+    top: -11px;
+    right: -11px;
+  }
+
+  .reviews-video-close-{{ section.id }} {
+    box-shadow: 0 2px 4px #0003;
+    z-index: 2;
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    transform-origin: 50%;
+    background: {{ modal_close_bg_color }};
+    border-radius: 20px;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    position: relative;
+  }
+
+  .reviews-video-close-{{ section.id }} svg {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    width: 10px;
+    height: 10px;
+  }
+
+  .reviews-video-close-{{ section.id }} svg path {
+    fill: {{ modal_close_icon_color }};
+  }
+  
+  @media(min-width: 1024px) {
+    
+    .section-{{ section.id }}-settings {
+      margin-top: {{ margin_top }}px !important;
+      margin-bottom: {{ margin_bottom }}px !important;
+      padding-top: {{ padding_top }}px;
+      padding-bottom: {{ padding_bottom }}px;
+      padding-left: {{ padding_horizontal }}rem;
+      padding-right: {{ padding_horizontal }}rem;
+    }
+
+    .reviews-item-{{ section.id }} {
+      padding: {{ review_padding_vertical }}px {{ review_padding_horizontal }}px;
+    }
+
+    .reviews-author-{{ section.id }} {
+      font-size: {{ author_size }}px;
+    }
+
+    .reviews-text-{{ section.id }} {
+      margin-top: {{ text_mt }}px;
+      font-size: {{ text_size }}px;
+    }
+
+    .reviews-btn-prev-{{ section.id }},
+    .reviews-btn-next-{{ section.id }} {
+      width: {{ arrow_size }}px;
+      height: {{ arrow_size }}px;
+    }
+
+    .reviews-btn-prev-{{ section.id }} {
+      left: -{{ arrow_size | times: 0.5 }}px !important;
+    }
+  
+    .reviews-btn-next-{{ section.id }} {
+      right: -{{ arrow_size | times: 0.5 }}px !important;
+    }
+
+    .reviews-btn-prev-{{ section.id }} svg,
+    .reviews-btn-next-{{ section.id }} svg {
+      height: {{ arrow_icon_size }}px;
+      width: {{ arrow_icon_size }}px;
+    }
+
+    .reviews-modal-{{ section.id }} {
+      padding: 100px;
+    }
+
+    .reviews-modal-inner-{{ section.id }} {
+      max-width: {{ modal_width }}%;
+    }
+  }
+  
+{%- endstyle -%}
+
+{% if author_custom %}
+  <style>
+    .reviews-author-{{ section.id }} {
+      font-family: {{ author_font.family }}, {{ author_font.fallback_families }};
+      font-weight: {{ author_font.weight }};
+      font-style: {{ author_font.style }};
+    }
+  </style>
+{% endif %}
+
+{% if text_custom %}
+  <style>
+    .reviews-text-{{ section.id }} {
+      font-family: {{ text_font.family }}, {{ text_font.fallback_families }};
+      font-weight: {{ text_font.weight }};
+      font-style: {{ text_font.style }};
+    }
+  </style>
+{% endif %}
+
+{% if image_ratio == "portrait" %}
+  <style>
+    .reviews-image-{{ section.id }} {
+     aspect-ratio: 9.6/12; 
+    }
+  </style>
+{% elsif image_ratio == "landscape" %}
+  <style>
+    .reviews-image-{{ section.id }} {
+     aspect-ratio: 12/8; 
+    }
+  </style>
+{% elsif image_ratio == "square" %}
+  <style>
+    .reviews-image-{{ section.id }} {
+     aspect-ratio: 12/12; 
+    }
+  </style>
+{% endif %}
+
+{% if video_ratio_mobile == "portrait" %}
+  <style>
+    .reviews-video-{{ section.id }} {
+     aspect-ratio: 9.6/12; 
+    }
+  </style>
+{% elsif video_ratio_mobile == "landscape" %}
+  <style>
+    .reviews-video-{{ section.id }} {
+     aspect-ratio: 12/8; 
+    }
+  </style>
+{% elsif video_ratio_mobile == "square" %}
+  <style>
+    .reviews-video-{{ section.id }} {
+     aspect-ratio: 12/12; 
+    }
+  </style>
+{% endif %}
+
+{% if video_ratio == "portrait" %}
+  <style>
+    @media(min-width: 1024px) {
+     .reviews-video-{{ section.id }} {
+       aspect-ratio: 9.6/12; 
+      }
+    }
+  </style>
+{% elsif video_ratio == "landscape" %}
+  <style>
+    @media(min-width: 1024px) {
+      .reviews-video-{{ section.id }} {
+       aspect-ratio: 12/8; 
+      }
+    }
+  </style>
+{% elsif video_ratio == "square" %}
+  <style>
+     @media(min-width: 1024px) {
+      .reviews-video-{{ section.id }}{
+       aspect-ratio: 12/12; 
+      } 
+     }
+  </style>
+{% else %}
+  <style>
+     @media(min-width: 1024px) {
+      .reviews-video-{{ section.id }}{
+       aspect-ratio: auto; 
+      }
+     }
+  </style>
+{% endif %}
+
+{% if arrow_show_mobile %}
+  <style>
+    .reviews-btn-prev-{{ section.id }},
+    .reviews-btn-next-{{ section.id }} {
+      display: flex;
+    }
+  </style>
+{% else %}
+  <style>
+    .reviews-btn-prev-{{ section.id }},
+    .reviews-btn-next-{{ section.id }} {
+      display: none;
+    }
+  </style>
+{% endif %}
+
+{% if arrow_show_desktop %}
+  <style>
+    @media(min-width: 1024px) {
+      .reviews-btn-prev-{{ section.id }},
+      .reviews-btn-next-{{ section.id }} {
+        display: flex;
+      }
+    }
+  </style>
+{% else %}
+  <style>
+    @media(min-width: 1024px) {
+      .reviews-btn-prev-{{ section.id }},
+      .reviews-btn-next-{{ section.id }} {
+        display: none;
+      }
+    }
+  </style>
+{% endif %}
+
+<script>
+  (function () {
+    function moreLoadProductForm() {
+      var productForm = document.querySelector('#ss-reviews-2');
+      if (!productForm){
+        var productForm = document.querySelector('{% if reviews_position == "below_title" or reviews_position == "above_title" %}.product__title{% elsif reviews_position == "below_description" %}.product__description{% else %}.button--add-to-cart, .product .product-form, .product-single__add-to-cart, .shopify-payment-button, .shopify-payment-button__button, .ProductForm__BuyButtons, .add-to-cart{% endif %}');
+        if (!productForm) return;
+        }
+        const templateContent = document.querySelector(
+          '#ss-reviews-2-{{ section.id }}'
+        ).content;
+
+        productForm.insertAdjacentElement(
+          '{% if reviews_position == "below_buy" or reviews_position == "below_title" or reviews_position == "below_description" %}afterend{% else %}beforebegin{% endif %}',
+          templateContent.firstElementChild
+        );
+    }
+    function moreUnloadProductForm() {
+      const productForm = document.querySelector('.button--add-to-cart, .product .product-form, .product-single__add-to-cart, .shopify-payment-button, .shopify-payment-button__button, .ProductForm__BuyButtons');
+
+      if (!productForm) return;
+
+      const contentTemplateBuyWith = document.querySelector(
+        '#reviews-2-body-{{ section.id }}'
+      );
+
+      if (contentTemplateBuyWith) contentTemplateBuyWith.remove();
+
+    }
+    window.addEventListener('DOMContentLoaded', moreLoadProductForm);
+
+    // load and unload product form when in Shopify editor:
+    if (window.Shopify && Shopify.designMode) {
+      window.addEventListener('shopify:section:load', moreLoadProductForm);
+      window.addEventListener('shopify:section:unload', moreUnloadProductForm);
+    }
+  })();
+</script>
+
+<template class="section-{{ section.id }} reviews-{{ section.id }}"  id="ss-reviews-2-{{ section.id }}">
+    <div class="section-{{ section.id }}-settings" id="reviews-2-body-{{ section.id }}" style="background-color:{{ background_color }}; background-image: {{ background_gradient }};">
+      <div class="reviews-items-{{ section.id }}">
+        <div class="reviews-slider-{{ section.id }} swiper">
+          <div class="swiper-wrapper">
+            {% assign reviews_title = reviews_meta | handleize %}
+            {% assign reviews = product.metafields.custom[reviews_title].value %}
+            {% if reviews_meta != blank and reviews != blank %}
+              {% for review in reviews %}
+                <div class="swiper-slide">
+                  <div class="reviews-item-{{ section.id }}">
+                    <div class="reviews-image-{{ section.id }}">
+                      {% if review.image != blank %}
+                        <img src="{{ review.image | image_url }}" alt="{{ review.image.alt }}" {% if lazy %}loading="lazy"{% endif %}>
+                      {% else %}
+                        {{ 'image' | placeholder_svg_tag }}
+                      {% endif %}
+                      <div class="reviews-image-play-{{ section.id }}" id="reviews-{{ section.id }}-{{ forloop.index }}">
+                        {% if play_icon != blank %}
+                          <img src="{{ play_icon | image_url: width: 800 }}" alt="">
+                        {% else %}
+                          <svg fill="#000000" version="1.1" id="Capa_1" width="800px" height="800px" viewBox="0 0 408.221 408.221" xml:space="preserve">
+                            <g><g><path d="M204.11,0C91.388,0,0,91.388,0,204.111c0,112.725,91.388,204.11,204.11,204.11c112.729,0,204.11-91.385,204.11-204.11
+                                      C408.221,91.388,316.839,0,204.11,0z M286.547,229.971l-126.368,72.471c-17.003,9.75-30.781,1.763-30.781-17.834V140.012
+                                      c0-19.602,13.777-27.575,30.781-17.827l126.368,72.466C303.551,204.403,303.551,220.217,286.547,229.971z"/>
+                            </g></g>
+                          </svg>
+                        {% endif %}
+                      </div>
+                    </div>
+                    <div class="reviews-content-{{ section.id }}">
+                      <div class="reviews-top-{{ section.id }}">
+                        {% if review.author != blank %}
+                        <p class="reviews-author-{{ section.id }}">{{ review.author }}</p>
+                        {% endif %}
+                        {% if review.rating != 0 %}
+                          <div class="testimonials-stars-{{ section.id }}">
+                              {% if stars_icon != blank %}
+                                {% for item in (1..review.rating) %}
+                                  <img src="{{ stars_icon | image_url }}" alt="{{ stars_icon.alt }}">
+                                {% endfor %}
+                              {% else %}
+                                {% for item in (1..review.rating) %}
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="19" viewBox="0 0 20 19" fill="none">
+                                    <path d="M10 0L12.9389 5.95492L19.5106 6.90983L14.7553 11.5451L15.8779 18.0902L10 15L4.12215 18.0902L5.24472 11.5451L0.489435 6.90983L7.06107 5.95492L10 0Z" fill="#1F448C"></path>
+                                  </svg>
+                                {% endfor %}
+                              {% endif %}
+                          </div>
+                        {% endif %}
+                      </div>
+                      {% if review.text != blank %}
+                        <p class="reviews-text-{{ section.id }}">{{ review.text }}</p>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            {% else %}
+            {% for block in section.blocks %}
+              <div class="swiper-slide">
+                <div class="reviews-item-{{ section.id }}">
+                  <div class="reviews-image-{{ section.id }}">
+                    {% if block.settings.image != blank %}
+                      <img src="{{ block.settings.image | image_url }}" alt="{{ block.settings.image.alt }}" {% if lazy %}loading="lazy"{% endif %}>
+                    {% else %}
+                      {{ 'image' | placeholder_svg_tag }}
+                    {% endif %}
+                    <div class="reviews-image-play-{{ section.id }}" id="reviews-{{ section.id }}-{{ forloop.index }}">
+                      {% if play_icon != blank %}
+                        <img src="{{ play_icon | image_url: width: 800 }}" alt="">
+                      {% else %}
+                        <svg fill="#000000" version="1.1" id="Capa_1" width="800px" height="800px" viewBox="0 0 408.221 408.221" xml:space="preserve">
+                          <g><g><path d="M204.11,0C91.388,0,0,91.388,0,204.111c0,112.725,91.388,204.11,204.11,204.11c112.729,0,204.11-91.385,204.11-204.11
+                                    C408.221,91.388,316.839,0,204.11,0z M286.547,229.971l-126.368,72.471c-17.003,9.75-30.781,1.763-30.781-17.834V140.012
+                                    c0-19.602,13.777-27.575,30.781-17.827l126.368,72.466C303.551,204.403,303.551,220.217,286.547,229.971z"/>
+                          </g></g>
+                        </svg>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="reviews-content-{{ section.id }}">
+                    <div class="reviews-top-{{ section.id }}">
+                      {% if block.settings.author != blank %}
+                      <p class="reviews-author-{{ section.id }}">{{ block.settings.author }}</p>
+                      {% endif %}
+                      {% if block.settings.stars_count != 0 %}
+                        <div class="testimonials-stars-{{ section.id }}">
+                            {% if stars_icon != blank %}
+                              {% for item in (1..block.settings.stars_count) %}
+                                <img src="{{ stars_icon | image_url }}" alt="{{ stars_icon.alt }}">
+                              {% endfor %}
+                            {% else %}
+                              {% for item in (1..block.settings.stars_count) %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="19" viewBox="0 0 20 19" fill="none">
+                                  <path d="M10 0L12.9389 5.95492L19.5106 6.90983L14.7553 11.5451L15.8779 18.0902L10 15L4.12215 18.0902L5.24472 11.5451L0.489435 6.90983L7.06107 5.95492L10 0Z" fill="#1F448C"></path>
+                                </svg>
+                              {% endfor %}
+                            {% endif %}
+                        </div>
+                      {% endif %}
+                    </div>
+                    {% if block.settings.text != blank %}
+                      <p class="reviews-text-{{ section.id }}">{{ block.settings.text }}</p>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+            {% endif %}
+          </div>
+        </div>
+        <div class="reviews-btn-prev-{{ section.id }}">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+            <path d="m13.172 12-4.95-4.95 1.414-1.414L16 12l-6.364 6.364-1.414-1.414 4.95-4.95Z"></path>
+          </svg>
+        </div>
+        <div class="reviews-btn-next-{{ section.id }}">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+            <path d="m13.172 12-4.95-4.95 1.414-1.414L16 12l-6.364 6.364-1.414-1.414 4.95-4.95Z"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+</template>
+
+{% if reviews_meta != blank and reviews != blank %}
+  {% for review in reviews %}
+    <div class="reviews-modal-{{ section.id }}" data-id="reviews-{{ section.id }}-{{ forloop.index }}">
+      <div class="reviews-modal-inner-{{ section.id }}">
+        <div class="reviews-video-close-wrapper-{{ section.id }}">
+          <div class="reviews-video-close-{{ section.id }}">
+            <svg style="width: 10px !important; height: 10px !important;" width="11" height="10" viewBox="0 0 14 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13.0547 12.5938C12.8203 12.8281 12.3906 12.8281 12.1562 12.5938L7 7.39844L1.80469 12.5938C1.57031 12.8281 1.14062 12.8281 0.90625 12.5938C0.671875 12.3594 0.671875 11.9297 0.90625 11.6953L6.10156 6.5L0.90625 1.34375C0.671875 1.10938 0.671875 0.679688 0.90625 0.445312C1.14062 0.210938 1.57031 0.210938 1.80469 0.445312L7 5.64062L12.1562 0.445312C12.3906 0.210938 12.8203 0.210938 13.0547 0.445312C13.2891 0.679688 13.2891 1.10938 13.0547 1.34375L7.85938 6.5L13.0547 11.6953C13.2891 11.9297 13.2891 12.3594 13.0547 12.5938Z" fill="white"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="reviews-video-{{ section.id }}">
+          {{ review.video.value | video_tag: controls: true, playsinline: true }}
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+{% else %}                            
+  {% for block in section.blocks %}
+    <div class="reviews-modal-{{ section.id }}" data-id="reviews-{{ section.id }}-{{ forloop.index }}">
+      <div class="reviews-modal-inner-{{ section.id }}">
+        <div class="reviews-video-close-wrapper-{{ section.id }}">
+          <div class="reviews-video-close-{{ section.id }}">
+            <svg style="width: 10px !important; height: 10px !important;" width="11" height="10" viewBox="0 0 14 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13.0547 12.5938C12.8203 12.8281 12.3906 12.8281 12.1562 12.5938L7 7.39844L1.80469 12.5938C1.57031 12.8281 1.14062 12.8281 0.90625 12.5938C0.671875 12.3594 0.671875 11.9297 0.90625 11.6953L6.10156 6.5L0.90625 1.34375C0.671875 1.10938 0.671875 0.679688 0.90625 0.445312C1.14062 0.210938 1.57031 0.210938 1.80469 0.445312L7 5.64062L12.1562 0.445312C12.3906 0.210938 12.8203 0.210938 13.0547 0.445312C13.2891 0.679688 13.2891 1.10938 13.0547 1.34375L7.85938 6.5L13.0547 11.6953C13.2891 11.9297 13.2891 12.3594 13.0547 12.5938Z" fill="white"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="reviews-video-{{ section.id }}">
+          {% assign video_id =  block.settings.video.id | default: block.settings.video_url.id %}
+            {%- if block.settings.video == null and block.settings.video_url != null -%}
+                
+                {%- if block.settings.video_url.type == 'youtube' -%}
+                  <iframe
+                    src="https://www.youtube.com/embed/{{ video_id }}?enablejsapi=1"
+                    class="js-youtube"
+                    allow="autoplay; encrypted-media"
+                    allowfullscreen
+                    title="Fixed Video"
+                  ></iframe>
+                {%- else -%}
+                  <iframe
+                    src="https://player.vimeo.com/video/{{ video_id }}"
+                    class="js-vimeo"
+                    allow="autoplay; encrypted-media"
+                    allowfullscreen
+                    title="Fixed Video"
+                  ></iframe>
+              {% endif %}
+            
+            {% else %}
+                
+              {{ block.settings.video | video_tag: controls: true, playsinline: true }}
+                
+            {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+<script>
+  function initProductReviews() {
+    setTimeout(() => {
+      const slider = new Swiper('.reviews-slider-{{ section.id }}', {
+        speed: 200,
+        slidesPerView: 'auto',
+        navigation: {
+        nextEl: '.reviews-btn-next-{{ section.id }}',
+        prevEl: '.reviews-btn-prev-{{ section.id }}'
+      },
+      })
+
+      const btns = document.querySelectorAll('.reviews-image-play-{{ section.id }}');
+      const videos = document.querySelectorAll('.reviews-modal-{{ section.id }}');
+      btns.forEach(el => {
+        el.addEventListener('click', (e) => {
+          let id = el.id;
+          videos.forEach(element => {
+            let data_id = element.getAttribute('data-id');
+            let close = element.querySelector('.reviews-video-close-{{ section.id }}');
+            let video = element.querySelector('video');
+            let frame = element.querySelector('iframe');
+            let src;
+            if(frame) {
+              src = frame.src;
+            }
+            if(id == data_id ) {
+              document.body.style.overflow = 'hidden';
+              element.classList.add('active');
+              setTimeout(() => {
+                if(video) {
+                  video.play();
+                }
+                if(frame) {
+                  frame.src += "&autoplay=1&mute=1";
+                }
+              },200);
+            }
+            close.addEventListener('click', () => {
+              document.body.style.overflow = '';
+              element.classList.remove('active');
+              if(frame) {
+                frame.src = src; 
+              }
+              if(video) {
+                video.pause();
+              }
+            })
+            document.addEventListener('click', (e) => {
+              if(e.target == element ) {
+                document.body.style.overflow = '';
+                element.classList.remove('active');
+                if(frame) {
+                  frame.src = src; 
+                }
+                if(video) {
+                  video.pause();
+                }
+              }
+            })
+          })
+        })
+      })
+    },200)
+  }
+
+  document.addEventListener('DOMContentLoaded', initProductReviews);
+  
+  if (Shopify.designMode) {
+     document.addEventListener('shopify:section:unload', initProductReviews);
+     document.addEventListener('shopify:section:load', initProductReviews);
+  }
+  
+</script>
+
+{% schema %}
+  {
+    "name": "SS - Product Reviews #2",
+    "settings": [
+      {
+        "type": "header",
+        "content":"Save settings to see section in action"
+      },
+      {
+        "type": "header",
+         "content":"Custom placement",
+        "info": "Copy this code: <div id='ss-reviews-2'></div> - Click 'Add block' -> Custom Liquid/HTML -> Paste."
+      },
+      {
+        "type": "select",
+        "id": "reviews_position",
+        "label": "Reviews Position",
+        "default": "above_buy",
+        "options": [
+          {
+            "label": "Above Buy Buttons",
+            "value": "above_buy"
+          },
+          {
+            "label": "Below Buy Buttons",
+            "value": "below_buy"
+          },
+          {
+            "label": "Above Product Title",
+            "value": "above_title"
+          },
+          {
+            "label": "Below Product Title",
+            "value": "below_title"
+          },
+          {
+            "label": "Below Product Description",
+            "value": "below_description"
+          }
+        ]
+      },
+      {
+        "type": "header",
+        "content": "Reviews Settings"
+      },
+      {
+        "type": "text",
+        "id": "reviews_meta",
+        "label": "Reviews Metafield",
+        "info": "If you want to display reviews using a metafield, then enter the key of the Metafield [Watch tutorial on setup](https://www.loom.com/share/63996d1ae32744cc9e33576ab2c6e141?sid=fc4405b5-3128-4f13-bd01-50526d7e5160)"
+      },
+      {
+         "type": "range",
+         "id": "reviews_radius",
+         "min": 0,
+         "max": 100,
+         "step": 2,
+         "unit": "px",
+         "label": "Reviews Border Radius",
+         "default": 0
+      },
+      {
+        "type": "header",
+        "content": "Review Settings"
+      },
+      {
+        "type": "range",
+        "id": "review_padding_vertical",
+        "min": 0,
+        "max": 100,
+        "step": 2,
+        "unit": "px",
+        "label": "Review Padding Vertical",
+        "default": 8
+      },
+      {
+         "type": "range",
+         "id": "review_padding_horizontal",
+         "min": 0,
+         "max": 100,
+         "step": 2,
+         "unit": "px",
+         "label": "Review Padding Horizontal",
+         "default": 8
+      },
+      {
+         "type": "range",
+         "id": "review_radius",
+         "min": 0,
+         "max": 100,
+         "step": 2,
+         "unit": "px",
+         "label": "Review Border Radius",
+         "default": 8
+      },
+      {
+         "type": "range",
+         "id": "review_border_thickness",
+         "min": 0,
+         "max": 10,
+         "step": 1,
+         "unit": "px",
+         "label": "Review Border Thickness",
+         "default": 0
+      },
+      {
+        "type": "header",
+        "content": "Review Image Settings"
+      },
+      {
+         "type": "range",
+         "id": "image_width",
+         "min": 40,
+         "max": 200,
+         "step": 5,
+         "unit": "px",
+         "label": "Review Image Width",
+         "default": 60
+      },
+      {
+         "type": "range",
+         "id": "image_radius",
+         "min": 0,
+         "max": 100,
+         "step": 2,
+         "unit": "px",
+         "label": "Review Image Border Radius",
+         "default": 8
+      },
+      {
+         "type": "range",
+         "id": "image_border_thickness",
+         "min": 0,
+         "max": 10,
+         "step": 1,
+         "unit": "px",
+         "label": "Review Image Border Thickness",
+         "default": 0
+      },
+      {
+        "type": "select",
+        "id": "image_ratio",
+        "label": "Review Image Aspect Ratio",
+        "default": "square",
+        "options": [
+          {
+            "label": "Original",
+            "value": "original"
+          },
+          {
+            "label": "Portrait",
+            "value": "portrait"
+          },
+          {
+            "label": "Square",
+            "value": "square"
+          },
+          {
+            "label": "Landscape",
+            "value": "landscape"
+          }
+        ]
+      },
+      {
+        "type": "header",
+        "content": "Play Icon Settings"
+      },
+      {
+        "type": "image_picker",
+        "label": "Play Icon",
+        "id": "play_icon"
+      },
+      {
+         "type": "range",
+         "id": "play_icon_size",
+         "min": 20,
+         "max": 100,
+         "step": 5,
+         "unit": "px",
+         "label": "Play Icon Settings",
+         "default": 30
+      },
+      {
+        "type": "header",
+        "content": "Stars Settings"
+      },
+      {
+        "type": "image_picker",
+        "label": "Stars Icon",
+        "id": "stars_icon",
+        "info": "Replaces the default stars icon"
+      },
+      {
+        "type": "range",
+        "id": "stars_size",
+        "min": 10,
+        "max": 100,
+        "step": 2,
+        "label": "Stars Size",
+        "default": 14
+      },
+      {
+        "type": "header",
+        "content": "Review Author"
+      },
+      {
+        "type": "checkbox",
+        "id": "author_custom",
+        "label": "Use Custom Font",
+        "default": false
+      },
+      {
+        "type": "font_picker",
+        "id": "author_font",
+        "label": "Review Author Font Family",
+        "default": "josefin_sans_n4"
+      },
+      {
+        "type": "range",
+        "id": "author_size",
+        "min": 0,
+        "max": 72,
+        "step": 2,
+        "unit": "px",
+        "label": "Review Author Size",
+        "default": 14
+      },
+      {
+        "type": "range",
+        "id": "author_size_mobile",
+        "min": 0,
+        "max": 72,
+        "step": 2,
+        "unit": "px",
+        "label": "Review Author Size - Mobile",
+        "default": 14
+      },
+      {
+        "type": "range",
+        "id": "author_height",
+        "min": 50,
+        "max": 200,
+        "step": 10,
+        "unit": "%",
+        "label": "Card Author Line Height",
+        "default": 130
+      },
+      {
+        "type": "header",
+        "content": "Review Text"
+      },
+      {
+        "type": "checkbox",
+        "id": "text_custom",
+        "label": "Use Custom Font",
+        "default": false
+      },
+      {
+        "type": "font_picker",
+        "id": "text_font",
+        "label": "Review Text Font Family",
+        "default": "josefin_sans_n4"
+      },
+      {
+        "type": "range",
+        "id": "text_size",
+        "min": 0,
+        "max": 72,
+        "step": 2,
+        "unit": "px",
+        "label": "Review Text Size",
+        "default": 12
+      },
+      {
+        "type": "range",
+        "id": "text_size_mobile",
+        "min": 0,
+        "max": 72,
+        "step": 2,
+        "unit": "px",
+        "label": "Review Text Size - Mobile",
+        "default": 12
+      },
+      {
+        "type": "range",
+        "id": "text_height",
+        "min": 50,
+        "max": 200,
+        "step": 10,
+        "unit": "%",
+        "label": "Review Text Line Height",
+        "default": 130
+      },
+      {
+        "type": "range",
+        "id": "text_mt",
+        "min": 0,
+        "max": 100,
+        "step": 4,
+        "unit": "px",
+        "label": "Review Text Margin Top",
+        "default": 4
+      },
+      {
+        "type": "header",
+        "content": "Arrow Size"
+      },
+      {
+        "type": "range",
+        "id": "arrow_size",
+        "min": 10,
+        "max": 100,
+        "step": 2,
+        "unit": "px",
+        "label": "Arrow Size",
+        "default": 24
+      },
+      {
+        "type": "range",
+        "id": "arrow_size_mobile",
+        "min": 10,
+        "max": 100,
+        "step": 2,
+        "unit": "px",
+        "label": "Arrow Size - Mobile",
+        "default": 24
+      },
+      {
+        "type": "header",
+        "content": "Arrow Icon Size"
+      },
+      {
+        "type": "range",
+        "id": "arrow_icon_size",
+        "min": 10,
+        "max": 50,
+        "step": 2,
+        "unit": "px",
+        "label": "Arrow Icon Size",
+        "default": 16
+      },
+      {
+        "type": "range",
+        "id": "arrow_icon_size_mobile",
+        "min": 10,
+        "max": 50,
+        "step": 2,
+        "unit": "px",
+        "label": "Arrow Icon Size - Mobile",
+        "default": 16
+      },
+      {
+        "type": "header",
+        "content": "Arrow View"
+      },
+      {
+        "type": "range",
+        "id": "arrow_border_thickness",
+        "min": 0,
+        "max": 10,
+        "step": 1,
+        "unit": "px",
+        "label": "Arrow Border Thickness",
+        "default": 0
+      },
+      {
+        "type": "checkbox",
+        "id": "arrow_show_desktop",
+        "label": "Show on Desktop",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "arrow_show_mobile",
+        "label": "Show on Mobile",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Modal Settings"
+      },
+      {
+         "type": "range",
+         "id": "modal_width",
+         "min": 10,
+         "max": 100,
+         "step": 5,
+         "unit": "%",
+         "label": "Modal Width",
+         "default": 30
+      },
+      {
+         "type": "range",
+         "id": "modal_width_mobile",
+         "min": 10,
+         "max": 100,
+         "step": 5,
+         "unit": "%",
+         "label": "Modal Width - Mobile",
+         "default": 90
+      },
+      {
+        "type": "range",
+        "id": "modal_padding_vertical",
+        "min": 0,
+        "max": 100,
+        "step": 2,
+        "unit": "px",
+        "label": "Modal Padding Vertical",
+        "default": 16
+      },
+      {
+         "type": "range",
+         "id": "modal_padding_horizontal",
+         "min": 0,
+         "max": 100,
+         "step": 2,
+         "unit": "px",
+         "label": "Modal Padding Horizontal",
+         "default": 16
+      },
+      {
+         "type": "range",
+         "id": "modal_radius",
+         "min": 0,
+         "max": 100,
+         "step": 2,
+         "unit": "px",
+         "label": "Modal Border Radius",
+         "default": 16
+      },
+      {
+         "type": "range",
+         "id": "modal_border_thickness",
+         "min": 0,
+         "max": 10,
+         "step": 1,
+         "unit": "px",
+         "label": "Modal Border Thickness",
+         "default": 0
+      },
+      {
+        "type": "range",
+        "id": "modal_overlay",
+        "min": 0,
+        "max": 100,
+        "step": 10,
+        "unit": "%",
+        "label": "Modal Overlay",
+        "default": 50
+      },
+      {
+        "type": "header",
+        "content": "Review Video Settings"
+      },
+      {
+         "type": "range",
+         "id": "video_radius",
+         "min": 0,
+         "max": 100,
+         "step": 2,
+         "unit": "px",
+         "label": "Review Video Border Radius",
+         "default": 8
+      },
+      {
+         "type": "range",
+         "id": "video_border_thickness",
+         "min": 0,
+         "max": 10,
+         "step": 1,
+         "unit": "px",
+         "label": "Review Video Border Thickness",
+         "default": 0
+      },
+      {
+        "type": "select",
+        "id": "video_ratio",
+        "label": "Review Video Aspect Ratio",
+        "default": "original",
+        "options": [
+          {
+            "label": "Original",
+            "value": "original"
+          },
+          {
+            "label": "Portrait",
+            "value": "portrait"
+          },
+          {
+            "label": "Square",
+            "value": "square"
+          },
+          {
+            "label": "Landscape",
+            "value": "landscape"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "video_ratio_mobile",
+        "label": "Review Video Aspect Ratio - Mobile",
+        "default": "original",
+        "options": [
+          {
+            "label": "Original",
+            "value": "original"
+          },
+          {
+            "label": "Portrait",
+            "value": "portrait"
+          },
+          {
+            "label": "Square",
+            "value": "square"
+          },
+          {
+            "label": "Landscape",
+            "value": "landscape"
+          }
+        ]
+      },
+      {
+        "type": "header",
+        "content": "Reviews Colors"
+      },
+      {
+        "type": "color",
+        "label": "Review Background Color",
+        "id": "review_bg_color",
+        "default": "#F3F3F3"
+      },
+      {
+        "type": "color",
+        "label": "Review Border Color",
+        "id": "review_border_color",
+        "default": "#000000"
+      },
+      {
+        "type": "color",
+        "label": "Review Image Border Color",
+        "id": "image_border_color",
+        "default": "#000000"
+      },
+      {
+        "type": "color",
+        "label": "Review Image Border Color",
+        "id": "video_border_color",
+        "default": "#000000"
+      },
+      {
+        "type": "color",
+        "label": "Review Author Color",
+        "id": "author_color",
+        "default": "#000000"
+      },
+      {
+        "type": "color",
+        "label": "Review Text Color",
+        "id": "text_color",
+        "default": "#000000"
+      },
+      {
+        "type": "header",
+        "content": "Arrow Colors"
+      },
+      {
+        "type": "color",
+        "label": "Arrow color",
+        "id": "arrow_color",
+        "default": "#000000"
+      },
+      {
+        "type": "color",
+        "label": "Arrow Hover color",
+        "id": "arrow_hover_color",
+        "default": "#000000"
+      },
+      {
+        "type": "color",
+        "label": "Arrow Background color",
+        "id": "arrow_bg_color",
+        "default": "#F3F3F3"
+      },
+      {
+        "type": "color",
+        "label": "Arrow Background Hover color",
+        "id": "arrow_bg_hover_color",
+        "default": "#DDDDDD"
+      },
+      {
+        "type": "color",
+        "label": "Arrow Border color",
+        "id": "arrow_border_color",
+        "default": "#F3F3F3"
+      },
+      {
+        "type": "color",
+        "label": "Arrow Border Hover color",
+        "id": "arrow_border_hover_color",
+        "default": "#DDDDDD"
+      },
+      {
+        "type": "header",
+        "content": "Modal Colors"
+      },
+      {
+        "type": "color",
+        "label": "Modal Background Color",
+        "id": "modal_bg_color",
+        "default": "#FFFFFF"
+      },
+      {
+        "type": "color",
+        "label": "Modal Border Color",
+        "id": "modal_border_color",
+        "default": "#000000"
+      },
+      {
+        "type": "color",
+        "label": "Modal Close Background Color",
+        "id": "modal_close_bg_color",
+        "default": "#000000"
+      },
+      {
+        "type": "color",
+        "label": "Modal Close Icon Color",
+        "id": "modal_close_icon_color",
+        "default": "#FFFFFF"
+      },
+      {
+        "type": "header",
+        "content": "Section Colors"
+      },
+      {
+        "type": "color",
+        "label": "Default Stars Color",
+        "id": "stars_color",
+        "default": "#000000"
+      },
+      {
+        "type": "color",
+        "label": "Icon Play Color",
+        "id": "play_icon_color",
+        "default": "#FFFFFF"
+      },
+      {
+        "type": "color",
+        "label": "Section background",
+        "id": "background_color",
+        "default": "#F3F3F3"
+      },
+      {
+        "type": "color_background",
+        "id": "background_gradient",
+        "label": "Section background gradient"
+      },
+      {
+        "type": "color",
+        "label": "Border",
+        "id": "border_color",
+        "default": "#000000"
+      },
+      {
+        "type": "header",
+        "content": "Section margin (outside)"
+      },
+      {
+        "type": "range",
+        "id": "margin_top",
+        "min": 0,
+        "max": 100,
+        "step": 2,
+        "unit": "px",
+        "label": "Margin top",
+        "default": 10
+      },
+      {
+        "type": "range",
+        "id": "margin_bottom",
+        "min": 0,
+        "max": 100,
+        "step": 2,
+        "unit": "px",
+        "label": "Margin bottom",
+        "default": 10
+      },
+      {
+        "type": "header",
+        "content": "Section padding (inside)"
+      },
+      {
+        "type": "range",
+        "id": "padding_top",
+        "min": 0,
+        "max": 100,
+        "step": 2,
+        "unit": "px",
+        "label": "Padding top",
+        "default": 0
+      },
+      {
+         "type": "range",
+         "id": "padding_bottom",
+         "min": 0,
+         "max": 100,
+         "step": 2,
+         "unit": "px",
+         "label": "Padding bottom",
+         "default": 0
+      },
+      {
+        "type": "range",
+        "id": "padding_horizontal",
+        "min": 0,
+        "max": 30,
+        "step": 1,
+        "unit": "rem",
+        "label": "Padding sides",
+        "default": 0
+      },
+      {
+        "type": "range",
+        "id": "padding_horizontal_mobile",
+        "min": 0,
+        "max": 15,
+        "step": 0.5,
+        "unit": "rem",
+        "label": "Padding sides mobile",
+        "default": 0
+      },
+      {
+        "type": "header",
+        "content": "Section Settings"
+      },
+      {
+        "type": "range",
+        "id": "border_thickness",
+        "min": 0,
+        "max": 50,
+        "step": 1,
+        "unit": "px",
+        "label": "Border thickness",
+        "default": 0
+      },
+      {
+        "type": "checkbox",
+        "id": "lazy",
+        "label": "Lazy load",
+        "info": "Lazy load images for speed optimisation",
+        "default": true
+      }
+    ],
+    "blocks": [
+      {
+        "type": "review",
+        "name": "Review",
+        "settings": [
+          {
+            "type": "image_picker",
+            "id": "image",
+            "label": "Image"
+          },
+          {
+            "type": "video",
+            "id": "video",
+            "label": "Video from Shopify"
+          },
+          {
+            "type": "video_url",
+            "id": "video_url",
+            "label": "Video Embed from Url",
+            "accept": ["youtube", "vimeo"],
+            "default": "https://www.youtube.com/watch?v=_9VUPq3SxOc",
+            "info": "Shows when no Shopify-hosted video is selected."
+          },
+          {
+            "type": "text",
+            "id": "author",
+            "label": "Author",
+            "default": "Author"
+          },
+          {
+            "type": "range",
+            "id": "stars_count",
+            "min": 0,
+            "max": 5,
+            "step": 1,
+            "label": "Stars Count",
+            "default": 5
+          },
+          {
+            "type": "text",
+            "id": "text",
+            "label": "Text",
+            "default": "Text"
+          }
+        ]
+      }
+    ],
+    "presets": [
+      {
+        "name": "SS - Product Reviews (video)",
+        "blocks": [
+          {
+            "type": "review",
+            "settings": {
+              "author": "Lori",
+              "text": "Very pleased with this purchase! It's high-quality, easy to use, and reliable. Highly recommend for its efficiency and convenience."
+            }
+          },
+          {
+            "type": "review",
+            "settings": {
+              "author": "Jillian",
+              "text": "Extremely satisfied with this product! It offers excellent quality and simplicity. I recommend for its effectiveness and user-friendliness."
+            }
+          }
+        ]
+      }
+    ]
+  }
+{% endschema %}

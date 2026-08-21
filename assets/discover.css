@@ -1,0 +1,208 @@
+/**
+ * discover.css
+ * Handles the layout hierarchy: discover -> store-page -> context-switcher -> discoveries
+ */
+
+/* ── discover (Root Shell) ───────────────────────────── */
+.discover {
+  width: 100%;
+  padding: var(--spacing-section, 3rem) 0;
+}
+
+/* ── store-page ──────────────────────────────────────── */
+.store-page {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-container, 1.5rem);
+}
+
+/* ── context-switcher ────────────────────────────────── */
+.context-switcher {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  border-bottom: 1px solid var(--color-border, #e5e5e5);
+  margin-bottom: 2.5rem;
+  padding-top: 1rem;
+}
+
+.context-switcher__tab {
+  position: relative;
+  bottom: -1px;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: var(--font-size-md, 1rem);
+  font-weight: 500;
+  color: var(--color-text-muted, #6b7280);
+  transition: color 0.2s ease;
+}
+
+.context-switcher__tab::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 2px;
+  background: transparent;
+  transition: background 0.2s ease;
+}
+
+.context-switcher__tab:hover {
+  color: var(--color-text, #111);
+}
+
+.context-switcher__tab--active {
+  color: var(--color-text, #111);
+}
+
+.context-switcher__tab--active::after {
+  background: var(--color-primary, #111);
+}
+
+.context-switcher__tab:focus-visible {
+  outline: 2px solid var(--color-primary, #111);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+/* ── Discovery Panels (content-discovery & product-discovery) */
+.content-discovery[hidden],
+.product-discovery[hidden] {
+  display: none;
+}
+
+.content-discovery,
+.product-discovery {
+  animation: discoverFadeIn 0.3s ease forwards;
+}
+
+@keyframes discoverFadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Feeds ───────────────────────────────────────────── */
+.content-discovery__feed,
+.product-discovery__feed {
+  display: grid;
+  grid-template-columns: repeat(var(--store-page-columns, 4), 1fr);
+  gap: 2rem 1.5rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 1024px) {
+  .content-discovery__feed,
+  .product-discovery__feed {
+    grid-template-columns: repeat(min(var(--store-page-columns, 4), 3), 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .content-discovery__feed,
+  .product-discovery__feed {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem 1rem;
+  }
+}
+
+/* ── creative-blocks (In-Feed) ───────────────────────── */
+.creative-blocks {
+  width: 100%;
+}
+
+.creative-blocks__item {
+  display: flex;
+  position: relative;
+  width: 100%;
+  min-height: 240px;
+  margin-bottom: 2rem;
+  background: var(--color-bg-secondary, #f3f4f6);
+  border-radius: 8px;
+  overflow: hidden;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.creative-blocks__item img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.8;
+}
+
+.creative-blocks__content {
+  position: relative;
+  z-index: 1;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 4px;
+}
+
+.creative-blocks__content h3 {
+  margin: 0;
+  font-size: var(--font-size-lg, 1.5rem);
+  font-weight: 600;
+}
+
+/* ── promo-blocks (In-Feed) ──────────────────────────── */
+.promo-blocks {
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+/* ── Pagination ──────────────────────────────────────── */
+.discover__pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--color-border, #e5e5e5);
+}
+
+.discover__page-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  padding: 0 0.75rem;
+  font-size: var(--font-size-sm, 0.9375rem);
+  font-weight: 500;
+  color: var(--color-text, #111);
+  text-decoration: none;
+  border: 1px solid var(--color-border, #e5e5e5);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.discover__page-link:hover {
+  background: var(--color-bg-secondary, #f3f4f6);
+  border-color: var(--color-text-muted, #6b7280);
+}
+
+.discover__page-link--current {
+  background: var(--color-primary, #111);
+  border-color: var(--color-primary, #111);
+  color: #fff;
+  pointer-events: none;
+}
+
+/* ── Empty state ─────────────────────────────────────── */
+.discover__empty {
+  padding: 4rem 1rem;
+  text-align: center;
+  color: var(--color-text-muted, #6b7280);
+  font-size: var(--font-size-md, 1rem);
+  background: var(--color-bg-secondary, #f9fafb);
+  border-radius: 8px;
+  border: 1px dashed var(--color-border, #e5e5e5);
+}

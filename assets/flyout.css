@@ -1,0 +1,48 @@
+/* =============================================================================
+   ECOMBIO Flyout — Parent wrapper
+   File: assets/flyout.css
+   ============================================================================= */
+
+/* Override the generic .mega-menu positioning for the flyout variant */
+.mega-menu--flyout {
+  display: none;
+  position: absolute;
+  top: 100%;        /* flush under the menu bar — no gap */
+  left: 0;
+  right: 0;
+  width: auto;
+  max-width: 100%;
+  transform: none;  /* cancel the translateX(-50%) from .mega-menu */
+  padding-top: 0;   /* cancel the 6px gap from .mega-menu */
+  z-index: 200;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-top: none;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.10);
+}
+
+.mega-menu--flyout.mega-menu--open {
+  display: block;
+}
+
+/* Anchor to the full menu bar, not the individual <li> */
+.menu-bar__item--has-flyout {
+  position: static;
+}
+
+/* Inner flex wrapper — sidebar rail + stage */
+.flyout {
+  display: flex;
+  align-items: stretch;
+  min-height: 320px;
+  max-height: 560px;
+  overflow: hidden;
+}
+
+/* Stage: right-hand area holding all flyout-menu panels */
+.flyout__stage {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  position: relative;
+}

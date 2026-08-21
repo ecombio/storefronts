@@ -1,0 +1,58 @@
+<div class="footer-legal">
+  <p class="footer-legal__copy">
+    &copy; {{ 'now' | date: '%Y' }}
+    {%- if section.settings.legal_text != blank %} | {{ section.settings.legal_text }}{%- endif -%}
+  </p>
+
+  {%- if section.settings.menu != blank -%}
+    {%- assign legal_menu = linklists[section.settings.menu] -%}
+    {%- if legal_menu.links.size > 0 -%}
+      <nav class="footer-legal__nav" aria-label="Legal">
+        {%- for link in legal_menu.links -%}
+          <a href="{{ link.url }}" class="footer-legal__link">{{ link.title }}</a>
+        {%- endfor -%}
+      </nav>
+    {%- endif -%}
+  {%- endif -%}
+
+  <div class="footer-legal__locale">
+    {%- if section.settings.show_country_selector and localization.available_countries.size > 1 -%}
+      {%- form 'localization', id: 'FooterCountryForm' -%}
+        <div class="footer-legal__selector">
+          {%- if localization.current_country.currency.iso_code != blank -%}
+            <img
+              src="{{ localization.current_country | image_url: width: 28 }}"
+              alt="{{ localization.current_country.name }}"
+              width="20"
+              height="14"
+              loading="lazy"
+            >
+          {%- endif -%}
+          <select name="country_code" onchange="this.form.submit()" aria-label="{{ 'general.localization.country_label' | t }}">
+            {%- for country in localization.available_countries -%}
+              <option value="{{ country.iso_code }}" {% if country.iso_code == localization.current_country.iso_code %}selected{% endif %}>
+                {{ country.name }} ({{ country.currency.iso_code }})
+              </option>
+            {%- endfor -%}
+          </select>
+          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+      {%- endform -%}
+    {%- endif -%}
+
+    {%- if section.settings.show_language_selector and localization.available_languages.size > 1 -%}
+      {%- form 'localization', id: 'FooterLanguageForm' -%}
+        <div class="footer-legal__selector">
+          <select name="locale_code" onchange="this.form.submit()" aria-label="{{ 'general.localization.language_label' | t }}">
+            {%- for language in localization.available_languages -%}
+              <option value="{{ language.iso_code }}" {% if language.iso_code == localization.current_language.iso_code %}selected{% endif %}>
+                {{ language.endonym_name | capitalize }}
+              </option>
+            {%- endfor -%}
+          </select>
+          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+      {%- endform -%}
+    {%- endif -%}
+  </div>
+</div>

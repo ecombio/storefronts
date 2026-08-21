@@ -1,0 +1,19 @@
+<link rel="stylesheet" href="{{ 'product.css' | asset_url }}" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="{{ 'product.css' | asset_url }}"></noscript>
+<script src="{{ 'product.js' | asset_url }}" defer></script>
+
+{%- render 'breadcrumbs' -%}
+
+<div class="product-page" id="ProductSection">
+  <div class="product-layout">
+
+    <div class="product-col product-col--left">
+      {%- render 'product-media' -%}
+    </div>
+
+    <div class="product-col product-col--right">
+      {%- render 'product-detail' -%}
+    </div>
+
+  </div>
+</div>

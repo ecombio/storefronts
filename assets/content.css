@@ -1,0 +1,278 @@
+/* ============================================
+   CONTENT SECTION — sections/content.liquid
+   Two-column media + copy block with an order-swap
+   option (--reverse) and mobile stacking control.
+   Relies on tokens from theme.css + css-variables.liquid:
+   --font-primary--family, --radius-base, --transition-base,
+   --color-foreground, --color-background, --page-width.
+
+   WIDTH / PADDING: --section-padding and --custom-width are set
+   inline per-instance by the liquid file's own "Section width" /
+   "Side padding" settings — never derived from the global
+   --page-margin. See sections/example-width-section.liquid for the
+   full rationale. The three width classes below
+   (content-section__default-width / __full-width / __custom-width)
+   are applied to .content-section__inner rather than the outermost
+   .content-section, so the section's own background color/image can
+   still bleed full width while the content column stays constrained.
+   ============================================ */
+
+.content-section {
+  background-color: var(--content-bg, var(--color-background));
+  color: var(--content-text, var(--color-foreground));
+  overflow: hidden;
+}
+
+.content-section__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--content-gap, 64px);
+  padding-inline: var(--section-padding);
+}
+
+/* ── Width classes ─────────────────────────────────────────────
+   --section-padding and --custom-width are set inline per-instance
+   by the liquid file; never read from --page-margin / --page-width. */
+.content-section__default-width {
+  max-width: var(--page-width, 1280px);
+  margin-inline: auto;
+}
+
+.content-section__full-width {
+  max-width: none;
+}
+
+.content-section__custom-width {
+  max-width: var(--custom-width);
+  margin-inline: auto;
+}
+
+.content-section__inner--align-start {
+  align-items: flex-start;
+}
+
+.content-section__inner--align-center {
+  align-items: center;
+}
+
+.content-section__inner--align-end {
+  align-items: flex-end;
+}
+
+/* ── Column sizing ─────────────────────────────────────────────
+   Media column width is merchant-controlled via --content-media-width;
+   content column takes the remainder. ────────────────────────── */
+.content-section__media {
+  flex: 0 0 var(--content-media-width, 50%);
+  max-width: var(--content-media-width, 50%);
+  min-width: 0;
+}
+
+.content-section__content {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* ── Swap order ───────────────────────────────────────────────── */
+.content-section--reverse .content-section__inner {
+  flex-direction: row-reverse;
+}
+
+/* ============================================
+   MEDIA
+   ============================================ */
+.content-section__media-wrap {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius-base);
+  overflow: hidden;
+  background-color: var(--color-pill-bg);
+}
+
+.content-section__image,
+.content-section__video,
+.content-section__media-wrap iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  aspect-ratio: 4 / 5;
+}
+
+.content-section__media-wrap--video {
+  aspect-ratio: 16 / 9;
+}
+
+.content-section__media-wrap--video .content-section__video {
+  aspect-ratio: 16 / 9;
+}
+
+.content-section__media-wrap iframe {
+  aspect-ratio: 16 / 9;
+  border: 0;
+}
+
+.content-section__media-wrap--placeholder {
+  aspect-ratio: 4 / 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.content-section__placeholder {
+  width: 100%;
+  height: 100%;
+  color: var(--color-pill-text);
+}
+
+/* ============================================
+   CONTENT COLUMN
+   ============================================ */
+.content-section__content-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  max-width: 520px;
+}
+
+.content-section__eyebrow {
+  display: block;
+  width: 32px;
+  height: 4px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, var(--color-blue) 0%, var(--color-blue) 45%, var(--color-red) 55%, var(--color-red) 100%);
+}
+
+.content-section__subheading {
+  margin: 0;
+  font-family: var(--font-primary--family);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-blue);
+}
+
+.content-section__heading {
+  margin: 0;
+  font-family: var(--font-primary--family);
+  font-size: clamp(28px, 3.2vw, 42px);
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--content-text, var(--color-foreground));
+}
+
+.content-section__text {
+  font-family: var(--font-primary--family);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--content-text, var(--color-foreground));
+  opacity: 0.8;
+}
+
+.content-section__text p {
+  margin: 0 0 12px;
+}
+
+.content-section__text p:last-child {
+  margin-bottom: 0;
+}
+
+/* ============================================
+   BUTTONS
+   All three variants (primary / secondary / outline) share the
+   same hover treatment: a simple, uniform dim + press effect via
+   opacity/transform. No hover color-swapping (no red, no
+   black<->white inversion), so behavior stays consistent and
+   predictable across variants and across whatever theme colors a
+   merchant sets for --content-bg / --content-text.
+   ============================================ */
+.content-section__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.content-section .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-primary--family);
+  font-size: 15px;
+  font-weight: 600;
+  padding: 13px 28px;
+  border-radius: var(--radius-base);
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: opacity var(--transition-base), transform var(--transition-fast);
+}
+
+.content-section .button:hover {
+  opacity: 0.8;
+}
+
+.content-section .button:active {
+  opacity: 1;
+  transform: scale(0.98);
+}
+
+.content-section .button--primary {
+  background-color: var(--color-black);
+  color: var(--color-accent-text);
+}
+
+.content-section .button--secondary {
+  background-color: var(--color-pill-bg);
+  color: var(--color-pill-text);
+}
+
+.content-section .button--outline {
+  background-color: transparent;
+  color: var(--content-text, var(--color-foreground));
+  border-color: currentColor;
+}
+
+/* ============================================
+   RESPONSIVE — stack on mobile
+   ============================================ */
+@media screen and (max-width: 749px) {
+  .content-section__inner,
+  .content-section--reverse .content-section__inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 32px;
+  }
+
+  .content-section__media,
+  .content-section__content {
+    flex: 1 1 auto;
+    max-width: 100%;
+  }
+
+  /* Default DOM order is media, then content. When the merchant
+     unchecks "media first on mobile", flip it visually. */
+  .content-section--mobile-content-first .content-section__media {
+    order: 2;
+  }
+
+  .content-section--mobile-content-first .content-section__content {
+    order: 1;
+  }
+
+  .content-section__content-inner {
+    max-width: 100%;
+  }
+
+  .content-section__buttons {
+    width: 100%;
+  }
+
+  .content-section .button {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+}

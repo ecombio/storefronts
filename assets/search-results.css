@@ -1,0 +1,122 @@
+/* assets/search-results.css */
+
+.search-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.search-feed.is-loading {
+  position: relative;
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.search-feed.is-loading::after {
+  content: '';
+  position: absolute;
+  top: 2rem;
+  left: 50%;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-left: -0.875rem;
+  border: 3px solid var(--hs-accent-secondary, #4338CA);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: search-feed-spin 0.6s linear infinite;
+}
+
+@keyframes search-feed-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.search-feed__panel[hidden] {
+  display: none;
+}
+
+.search-empty {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--hs-text-muted, #6b6b6b);
+}
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.pagination__link {
+  padding: 0.5rem 0.85rem;
+  border: 1px solid var(--hs-border, #e5e5e5);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: var(--hs-text, #1a1a1a);
+  text-decoration: none;
+}
+
+.pagination__link:hover {
+  border-color: var(--hs-accent, #4F46E5);
+}
+
+.pagination__link--current {
+  background: var(--hs-accent, #4F46E5);
+  border-color: var(--hs-accent, #4F46E5);
+  color: var(--hs-accent-contrast, #fff);
+}
+
+#panel-products {
+  display: contents;
+}
+
+.search-results-grid {
+  display: grid;
+  grid-template-columns: repeat(min(var(--columns, 4), 4), minmax(0, 1fr));
+  gap: 1.5rem 1rem;
+}
+
+@media (max-width: 1024px) {
+  .search-results-grid {
+    grid-template-columns: repeat(min(var(--columns, 4), 3), minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .search-results-grid {
+    grid-template-columns: repeat(min(var(--columns, 4), 2), minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .search-results-grid {
+    grid-template-columns: repeat(min(var(--columns, 4), var(--mobile-columns, 1)), minmax(0, 1fr));
+    gap: 1rem 0.75rem;
+  }
+}
+
+#panel-articles {
+  display: contents;
+}
+
+.article-feed {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .article-feed {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .article-feed {
+    grid-template-columns: 1fr;
+  }
+}

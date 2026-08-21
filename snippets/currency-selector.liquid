@@ -1,0 +1,32 @@
+{% comment %}
+  Currency switcher for the utility bar.
+  Renders nothing if the shop only has one enabled currency.
+  Accepts:
+    form_id — unique id for the {% form %} tag (avoids ID collisions
+              if this snippet is ever rendered more than once per page)
+{% endcomment %}
+{%- if shop.enabled_currencies.size > 1 -%}
+  <div class="utility-bar__switcher">
+    {%- form 'currency', id: form_id, return_to: request.path -%}
+      <label for="{{ form_id }}-select" class="visually-hidden">Currency</label>
+      <div class="utility-bar__select-wrap">
+        <select id="{{ form_id }}-select"
+                name="currency"
+                class="utility-bar__select"
+                aria-label="Select currency">
+          {%- for currency in shop.enabled_currencies -%}
+            <option value="{{ currency.iso_code }}"
+              {%- if currency == cart.currency %} selected{% endif -%}>
+              {{ currency.iso_code }} &ndash; {{ currency.symbol }}
+            </option>
+          {%- endfor -%}
+        </select>
+        <svg class="utility-bar__chevron" width="9" height="9" viewBox="0 0 20 20"
+             fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 8l5 5 5-5"/>
+        </svg>
+      </div>
+    {%- endform -%}
+  </div>
+{%- endif -%}

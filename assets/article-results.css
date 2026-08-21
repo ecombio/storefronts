@@ -1,0 +1,23 @@
+/* assets/article-results.css
+   Owned by snippets/article-results.liquid.
+   Card-level styling lives in article-card.css — this file only owns
+   the grid container that arranges those cards.
+*/
+
+.article-feed {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .article-feed {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .article-feed {
+    grid-template-columns: 1fr;
+  }
+}

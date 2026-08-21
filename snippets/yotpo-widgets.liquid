@@ -1,0 +1,134 @@
+{% comment %}
+  snippets/yotpo-widgets.liquid
+
+  Unified Yotpo entry point, mirroring the widget_type switch used in
+  snippets/judgeme-widgets.liquid so call sites can swap review-app
+  vendors without changing how they render.
+
+  Instance IDs (Yotpo admin > On-Site Widgets > [widget] > Publish >
+  Show Instructions) -- the two marked "confirmed" are copied verbatim
+  from this store's actual Show Instructions output; the rest are
+  placeholders you need to fill in (and their markup below is a best
+  guess, NOT yet confirmed from admin -- see note at bottom):
+    - Star Rating / preview badge -> 1332841   (confirmed, markup matches admin exactly)
+    - Reviews Widget (full)       -> 1332840   (confirmed, markup matches admin exactly)
+    - Reviews Carousel            -> REPLACE_ME_CAROUSEL_INSTANCE_ID     (unconfirmed markup)
+    - Visual UGC Gallery/Album    -> REPLACE_ME_GALLERY_INSTANCE_ID     (unconfirmed markup)
+    - Q&A Widget                  -> REPLACE_ME_QA_INSTANCE_ID          (unconfirmed markup)
+    - Site Reviews / Reviews Hub  -> REPLACE_ME_SITE_REVIEWS_INSTANCE_ID (unconfirmed markup)
+
+  REQUIRED SETUP (once, not per-render): Yotpo's own instructions put
+  the loader script in theme.liquid, not in this snippet -- add this
+  once if it isn't already there:
+    <script src="https://cdn-widgetsrepository.yotpo.com/v1/loader/GVq3qDsSZ94vLoElcTQgzekz90KJDVehGX1oASx7" async></script>
+  Same reasoning as the Judge.me snippet: one global SDK load, many
+  local widget-instance divs. Loading it twice risks double-init, so
+  it stays out of this per-widget-type snippet on purpose.
+
+  Usage:
+    {% render 'yotpo-widgets', widget_type: 'yotpo_preview_badge', product: product %}
+    {% render 'yotpo-widgets', widget_type: 'yotpo_preview_badge', cart_item: item %}
+    {% render 'yotpo-widgets', widget_type: 'yotpo_review_widget', product: product %}
+    {% render 'yotpo-widgets', widget_type: 'yotpo_reviews_carousel' %}
+    {% render 'yotpo-widgets', widget_type: 'yotpo_visual_ugc_gallery', product: product %}
+    {% render 'yotpo-widgets', widget_type: 'yotpo_qa_widget', product: product %}
+    {% render 'yotpo-widgets', widget_type: 'yotpo_site_reviews' %}
+
+  Notes on which widgets need `product`:
+    - preview_badge, review_widget, visual_ugc_gallery, qa_widget are
+      product-scoped -- pass `product` (e.g. from a product template
+      or product card loop).
+    - reviews_carousel and site_reviews are store-wide/page-level --
+      no `product` needed, safe to render on homepage/collection/
+      dedicated reviews-page templates.
+
+  Assumption: Yotpo's main loader script (the one that scans the DOM
+  for `.yotpo-widget-instance` elements) is already included globally
+  (theme.liquid or an app embed block), same division of
+  responsibility as the Judge.me snippet -- this file only emits
+  markup + data attributes, it doesn't fetch Yotpo's JS itself. Flag
+  if that's not actually the case and I'll add a guarded loader here.
+{% endcomment %}
+
+{%- liquid
+  assign preview_instance_id      = '1332841'
+  assign review_instance_id       = '1332840'
+  assign carousel_instance_id     = 'REPLACE_ME_CAROUSEL_INSTANCE_ID'
+  assign gallery_instance_id      = 'REPLACE_ME_GALLERY_INSTANCE_ID'
+  assign qa_instance_id           = 'REPLACE_ME_QA_INSTANCE_ID'
+  assign site_reviews_instance_id = 'REPLACE_ME_SITE_REVIEWS_INSTANCE_ID'
+-%}
+
+<!-- Start of Yotpo code -->
+{%- if widget_type == 'yotpo_preview_badge' -%}
+
+  <div
+    class="yotpo-widget-instance"
+    data-yotpo-instance-id="{{ preview_instance_id }}"
+    data-yotpo-product-id="{{ product.id }}"
+    data-yotpo-cart-product-id="{{ cart_item.product.id }}"
+    data-yotpo-section-id="{{ template.name }}"
+  ></div>
+
+{%- elsif widget_type == 'yotpo_review_widget' -%}
+
+  <div style="clear:both"></div>
+  <div
+    id="yotpoReviewsWidget"
+    class="yotpo-widget-instance"
+    data-yotpo-instance-id="{{ review_instance_id }}"
+    data-yotpo-product-id="{{ product.id }}"
+    data-yotpo-name="{{ product.title | escape }}"
+    data-yotpo-url="{{ shop.url }}{{ product.url }}"
+    data-yotpo-image-url="{{ product.featured_image | product_img_url: 'large' | prepend: 'https:' | replace: '?', '%3F' | replace: '&', '%26' }}"
+    data-yotpo-price="{{ product.price | divided_by: 100.00 }}"
+    data-yotpo-currency="{{ shop.currency }}"
+    data-yotpo-description="{{ product.description | escape }}"
+  ></div>
+
+{%- elsif widget_type == 'yotpo_reviews_carousel' -%}
+
+  <div
+    class="yotpo-widget-instance"
+    data-yotpo-instance-id="{{ carousel_instance_id }}"
+    data-yotpo-section-id="{{ template.name }}"
+    data-auto-install="false"
+  ></div>
+
+{%- elsif widget_type == 'yotpo_visual_ugc_gallery' -%}
+
+  <div
+    class="yotpo-widget-instance"
+    data-yotpo-instance-id="{{ gallery_instance_id }}"
+    data-yotpo-product-id="{{ product.id }}"
+    data-yotpo-section-id="{{ template.name }}"
+    data-auto-install="false"
+  ></div>
+
+{%- elsif widget_type == 'yotpo_qa_widget' -%}
+
+  <div style="clear:both"></div>
+  <div
+    id="yotpoQAWidget"
+    class="yotpo-widget-instance"
+    data-yotpo-instance-id="{{ qa_instance_id }}"
+    data-yotpo-product-id="{{ product.id }}"
+    data-yotpo-section-id="{{ template.name }}"
+    data-yotpo-product-title="{{ product.title | escape }}"
+    data-yotpo-product-url="{{ product.url }}"
+    data-yotpo-product-image-url="{{ product.featured_image | image_url: width: 600 }}"
+    data-yotpo-product-description="{{ product.description | strip_html | truncate: 500 | escape }}"
+    data-auto-install="false"
+  ></div>
+
+{%- elsif widget_type == 'yotpo_site_reviews' -%}
+
+  <div
+    class="yotpo-widget-instance"
+    data-yotpo-instance-id="{{ site_reviews_instance_id }}"
+    data-yotpo-section-id="{{ template.name }}"
+    data-auto-install="false"
+  ></div>
+
+{%- endif -%}
+<!-- End of Yotpo code -->

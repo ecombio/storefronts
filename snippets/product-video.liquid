@@ -1,0 +1,87 @@
+{%- liquid
+  assign has_native_video = false
+  assign has_external_video = false
+  if block.settings.video != blank
+    assign has_native_video = true
+  elsif block.settings.video_url != blank
+    assign has_external_video = true
+  endif
+
+  assign has_thumbnail = false
+  if block.settings.thumbnail != blank
+    assign has_thumbnail = true
+  endif
+
+  assign placeholder_name = placeholder
+  if placeholder_name == blank
+    assign placeholder_name = 'lifestyle-1'
+  endif
+-%}
+<div class="product-video" data-product-video>
+  <div class="product-video__frame">
+
+    <button
+      type="button"
+      class="product-video__play-trigger"
+      data-video-play-trigger
+      aria-label="Play video{% if block.settings.caption != blank %}: {{ block.settings.caption | escape }}{% endif %}"
+      {% unless has_native_video or has_external_video %}disabled{% endunless %}
+    >
+      {%- if has_thumbnail -%}
+        {{
+          block.settings.thumbnail
+          | image_url: width: 800
+          | image_tag:
+            loading: 'lazy',
+            class: 'product-video__thumbnail',
+            sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 80vw',
+            widths: '400,600,800,1000'
+        }}
+      {%- elsif has_native_video and block.settings.video.preview_image -%}
+        {{
+          block.settings.video.preview_image
+          | image_url: width: 800
+          | image_tag:
+            loading: 'lazy',
+            class: 'product-video__thumbnail',
+            sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 80vw',
+            widths: '400,600,800,1000'
+        }}
+      {%- else -%}
+        {{ placeholder_name | placeholder_svg_tag: 'product-video__thumbnail product-video__thumbnail--placeholder' }}
+      {%- endif -%}
+
+      <span class="product-video__play-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="26" height="26" focusable="false">
+          <path d="M8 5v14l11-7z" fill="currentColor"/>
+        </svg>
+      </span>
+    </button>
+
+    <div class="product-video__media" data-video-media hidden>
+      {%- if has_native_video -%}
+        <div data-video-type="native">
+          {{
+            block.settings.video
+            | video_tag:
+              controls: true,
+              preload: 'none',
+              class: 'product-video__video-el',
+              image_size: '1100x'
+          }}
+        </div>
+      {%- elsif has_external_video -%}
+        <div
+          data-video-type="external"
+          data-provider="{{ block.settings.video_url.type }}"
+          data-video-id="{{ block.settings.video_url.id }}"
+        ></div>
+      {%- endif -%}
+    </div>
+
+  </div>
+
+  {%- if show_caption and block.settings.caption != blank -%}
+    <p class="product-video__caption">{{ block.settings.caption }}</p>
+  {%- endif -%}
+</div>

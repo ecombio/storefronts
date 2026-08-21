@@ -1,0 +1,109 @@
+.brand-directory {
+  padding: 40px 0;
+}
+.brand-directory__default-width {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: var(--section-padding);
+}
+.brand-directory__full-width {
+  width: 100%;
+  padding-inline: var(--section-padding);
+}
+.brand-directory__custom-width {
+  max-width: var(--custom-width);
+  margin-inline: auto;
+  padding-inline: var(--section-padding);
+}
+.brand-directory__header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+/* FIX: was `top: var(--main-header-bottom, 0px)` — that variable is
+   never set anywhere in the theme, so this always fell back to 0px
+   and the nav stuck to the true top of the viewport, underneath the
+   fixed header (z-index: 2147483647) whenever the header was visible.
+   header-group.js publishes --header-group-height on :root and keeps
+   it live via ResizeObserver — that's the correct value to read. */
+.brand-directory__alpha-nav {
+  position: sticky;
+  top: var(--header-group-height, 0px);
+  transition: top 0.3s ease;
+  z-index: 50;
+  background: #fff;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+  padding: 12px 0;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #eee;
+}
+
+/* FIX (new): the header is `position: fixed` and slides off-screen on
+   scroll-down via header-group.js, which mirrors that state onto
+   :root as `.header-group-hidden`. Without this rule, the nav would
+   still sit offset by the header's full height even while the header
+   is hidden, leaving a dead gap at the top of the viewport. This
+   collapses the offset to 0 the moment the header hides, and the
+   `transition: top 0.3s ease` above keeps it in sync with the
+   header's own 0.3s slide transition so neither one jumps ahead of
+   the other. */
+:root.header-group-hidden .brand-directory__alpha-nav {
+  top: 0;
+}
+
+.brand-directory__alpha-nav a,
+.brand-directory__alpha-nav span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 4px;
+  font-size: 0.85rem;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 3px;
+}
+.brand-directory__alpha-nav a:hover {
+  background: #f5f5f5;
+}
+.brand-directory__alpha-nav span.is-disabled {
+  color: #ccc;
+}
+.brand-directory__letter {
+  font-size: 1.4rem;
+  margin: 32px 0 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #eee;
+  /* FIX: was using --main-header-bottom here too — same swap, so
+     jump-to-letter links land below both the header and the alpha
+     nav instead of underneath them. */
+  scroll-margin-top: calc(var(--header-group-height, 0px) + var(--brand-nav-height, 60px) + 12px);
+}
+.brand-directory__row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  row-gap: 10px;
+  column-gap: 20px;
+}
+.brand-directory__item {
+  text-decoration: none;
+  color: #1a1a1a;
+  font-size: 0.95rem;
+}
+.brand-directory__item:hover {
+  text-decoration: underline;
+}
+@media screen and (max-width: 749px) {
+  .brand-directory__row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .brand-directory__alpha-nav {
+    transition: none;
+  }
+}

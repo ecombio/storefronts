@@ -1,0 +1,418 @@
+/* =============================================================
+   Header Hamburger + Mobile Nav Drawer
+   File: assets/header-hamburger.css
+   Loaded by: snippets/header-hamburger.liquid
+
+   Scope: the tablet/mobile drawer hamburger, the mobile nav drawer +
+   backdrop + close button, the accordion nested menu inside the
+   drawer, and the desktop-only sticky hamburger that re-expands
+   .menu-bar (owned by main-header.css) while the header is sticky.
+
+   This file is self-contained: everything it styles is rendered
+   directly by header-hamburger.liquid as unrolled loops over the same
+   `blocks` header-menu.liquid uses on desktop — there is no separate
+   recursive menu-list snippet anymore. The one exception is
+   .menu-bar itself (defined in main-header.css) — this file only
+   toggles its `.is-visible` class via header-hamburger.js, it doesn't
+   define .menu-bar's own layout.
+
+   UPDATED to match the current drawer markup (blocks-as-single-source
+   rewrite):
+     - Level classes are now --l0 (top level, per block) / --l1
+       (children, from block.settings.menu) / --l2 (grandchildren,
+       leaf items). The previous --l1/--l2/--l3 scheme (and its
+       matching indentation rules) was one level off relative to the
+       current markup and has been renumbered accordingly. There is
+       no --l3: two levels of nesting below the top is the max depth
+       the drawer renders.
+     - .main-header__mobile-nav-row has been removed. It only existed
+       to support the old recursive renderer's toggle+link combo rows;
+       the current markup renders a toggle OR a link per item, never
+       both, so this wrapper is never output.
+     - Link/toggle hover color now uses var(--hdr-accent) instead of a
+       hardcoded red, matching the accent variable header-menu.css and
+       highlight.css both use, so a theme accent change applies here too.
+     - The highlight item's color/weight/star treatment now lives
+       entirely in assets/highlight.css (shared with the desktop menu
+       bar's highlight link, since it's the same nav item rendered in
+       two places). This file only keeps the optional icon's spacing
+       rule (.main-header__mobile-nav-icon), mirroring .menu-bar__icon
+       in header-menu.css.
+
+   UPDATED: when a division's "Show Menu Bar" setting is on, that
+   division's drawer hamburger is now hidden — see the
+   "HIDE HAMBURGER WHEN SHOW MENU BAR IS ON" block near the bottom of
+   the hamburger section below. Previously both the hamburger/drawer
+   and the menu bar always showed together at that breakpoint; now the
+   menu bar takes over as that division's primary nav instead of
+   supplementing the drawer trigger. Mobile and tablet remain
+   independent, same as everywhere else in this header.
+   ============================================================= */
+
+/* ─────────────────────────────────────────────
+   MOBILE/TABLET HAMBURGER  (hidden on desktop ≥ 1024px)
+   Opens .main-header__mobile-nav below.
+   ───────────────────────────────────────────── */
+.main-header__hamburger {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 36px;
+  height: 36px;
+  padding: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+.main-header__hamburger:hover { background: #f5f5f5; }
+
+.main-header__hamburger-line {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: #1a1a1a;
+  border-radius: 2px;
+  transition: transform 0.22s ease, opacity 0.22s ease;
+  transform-origin: center;
+}
+
+/* Animates to ✕ when open */
+.main-header__hamburger.is-open .main-header__hamburger-line:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.main-header__hamburger.is-open .main-header__hamburger-line:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+.main-header__hamburger.is-open .main-header__hamburger-line:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+@media (min-width: 1024px) {
+  .main-header__hamburger { display: none; }
+}
+
+/* ─────────────────────────────────────────────
+   HIDE HAMBURGER WHEN "SHOW MENU BAR" IS ON
+   Each division's hamburger only hides for ITS OWN breakpoint, driven
+   by that division's own setting/class — same independence pattern as
+   everywhere else in this header:
+     Mobile (<640px)         → .main-header--menu-bar-mobile-visible
+     Tablet (640px–1023px)   → .main-header--menu-bar-tablet-visible
+   When a division's menu bar is showing, it IS that division's
+   primary nav, so the drawer hamburger is redundant there. The other
+   division's hamburger is unaffected either way. Note: this makes the
+   mobile nav drawer itself unreachable at that breakpoint too, since
+   there's no longer a trigger to open it there.
+   ───────────────────────────────────────────── */
+@media (max-width: 639px) {
+  .main-header--menu-bar-mobile-visible .main-header__hamburger {
+    display: none;
+  }
+}
+@media (min-width: 640px) and (max-width: 1023px) {
+  .main-header--menu-bar-tablet-visible .main-header__hamburger {
+    display: none;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   MOBILE NAV DRAWER
+   Two style variants, chosen via the mobile_drawer_style theme
+   setting and applied as a modifier class from header-hamburger.liquid:
+     --compact    280px panel, dimmed backdrop over the rest of the page
+     --full-width fills the screen, no backdrop
+   Shared rules (both variants) live first; variant-specific rules
+   follow below.
+   ───────────────────────────────────────────── */
+
+.main-header__mobile-nav {
+  position: fixed;
+  top: 0;
+  height: 100%;
+  background: #fff;
+  z-index: 300;
+  transition: left 0.28s cubic-bezier(.4,0,.2,1), visibility 0.28s;
+  visibility: hidden;
+  overflow-y: auto;
+  padding: 0 0 48px;
+}
+.main-header__mobile-nav.is-open {
+  left: 0;
+  visibility: visible;
+}
+
+/* ── Compact variant: 280px panel, dimmed backdrop ──
+   Slides via `left`, NOT `transform`. A `transform` on this element
+   would create a new containing block for its position:fixed ::before
+   backdrop below, trapping that backdrop inside this drawer's own
+   280px-wide box (collapsing it to zero width) instead of letting it
+   cover the viewport. `left` avoids that entirely. */
+.main-header__mobile-nav--compact {
+  left: -280px;
+  width: 280px;
+  border-right: 1px solid #e5e5e5;
+  box-shadow: 4px 0 24px rgba(0,0,0,.1);
+}
+
+/* Dimmed backdrop overlay — position:fixed here correctly resolves
+   against the viewport since the parent above doesn't use `transform`.
+   Covers everything to the right of the open drawer.
+   NOTE: because this is a ::before (not a real element), clicks on it
+   report e.target as .main-header__mobile-nav itself, NOT a distinct
+   node — header-hamburger.js's outside-click check accounts for this
+   by testing click coordinates rather than relying on .contains(), and
+   only runs at all when the compact variant is active. */
+.main-header__mobile-nav--compact::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  left: 280px;
+  background: rgba(0,0,0,.4);
+  opacity: 0;
+  transition: opacity 0.28s ease;
+  pointer-events: none;
+}
+.main-header__mobile-nav--compact.is-open::before {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── Full-width variant: fills the screen, no backdrop ── */
+.main-header__mobile-nav--full-width {
+  left: -100vw;
+  width: 100vw;
+}
+
+/* ── Drawer header row — holds the close (X) button, left-aligned ── */
+.main-header__mobile-nav-header {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  height: 56px;
+  padding: 0 8px;
+  flex-shrink: 0;
+  border-bottom: 1px solid #e5e5e5;
+  position: sticky;
+  top: 0;
+  background: #fff;
+}
+
+.main-header__mobile-nav-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #1a1a1a;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+.main-header__mobile-nav-close:hover { background: #f5f5f5; }
+.main-header__mobile-nav-close:focus-visible {
+  outline: 2px solid #1a1a1a;
+  outline-offset: 2px;
+}
+
+.main-header__mobile-nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Base (L0) link — top-level drawer item. No --l0 modifier class
+   needed since this is the unindented default every link inherits. */
+.main-header__mobile-nav-link {
+  display: flex;
+  align-items: center;
+  padding: 14px 24px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #1a1a1a;
+  text-decoration: none;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.main-header__mobile-nav-link:hover {
+  background: #f5f5f5;
+  color: var(--hdr-accent);
+}
+
+/* Highlight block (e.g. "On Sale") — full color/weight/star treatment
+   now lives in assets/highlight.css (shared with the desktop menu
+   bar's highlighted link), since it's the same nav item rendered
+   twice. This file only supplies the optional icon's spacing, mirroring
+   .menu-bar__icon in header-menu.css. */
+.main-header__mobile-nav-icon {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+.main-header__mobile-nav-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ── Content wrapper — groups search + the nav list below the fixed
+   header row, so both scroll together as one block ── */
+.main-header__mobile-nav-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.main-header__mobile-nav-search {
+  padding: 12px 24px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+@media (min-width: 1024px) {
+  .main-header__mobile-nav { display: none; }
+}
+
+/* Body scroll lock — applied by header-hamburger.js */
+body.nav-is-open { overflow: hidden; }
+
+/* ─────────────────────────────────────────────
+   NESTED SUBMENU ACCORDION
+   Rendered as unrolled loops directly in header-hamburger.liquid.
+   Items with children (block.settings.menu.links, or a link's own
+   .links) render as a toggle <button> instead of an <a> — tapping
+   expands/collapses the child <ul> rather than navigating. Only one
+   submenu per level stays open at a time (enforced in
+   header-hamburger.js); this file only styles the open/closed states.
+   ───────────────────────────────────────────── */
+.main-header__mobile-nav-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  color: #1a1a1a;
+  text-align: left;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.main-header__mobile-nav-toggle:hover {
+  background: #f5f5f5;
+  color: var(--hdr-accent);
+}
+.main-header__mobile-nav-toggle:focus-visible {
+  outline: 2px solid #1a1a1a;
+  outline-offset: -2px;
+}
+
+.main-header__mobile-nav-toggle-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.main-header__mobile-nav-chevron {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+.main-header__mobile-nav-toggle[aria-expanded="true"] .main-header__mobile-nav-chevron {
+  transform: rotate(90deg);
+}
+
+/* ── Nested sub-lists ── */
+.main-header__mobile-nav-sub {
+  background: #f9fafb;
+  border-top: 1px solid #e5e5e5;
+  border-bottom: 1px solid #e5e5e5;
+}
+.main-header__mobile-nav-sub[hidden] { display: none; }
+
+/* ── Indentation per depth level ──
+   L0 (top level) needs no extra indent — it's covered by the base
+   .main-header__mobile-nav-link / .main-header__mobile-nav-toggle
+   rules above. L1 = children, L2 = grandchildren (leaf items); the
+   drawer never nests deeper than that. */
+.main-header__mobile-nav-link--l1,
+.main-header__mobile-nav-list--l1 .main-header__mobile-nav-toggle {
+  padding-left: 36px;
+}
+.main-header__mobile-nav-link--l2,
+.main-header__mobile-nav-list--l2 .main-header__mobile-nav-toggle {
+  padding-left: 48px;
+  font-size: 14px;
+}
+
+/* ─────────────────────────────────────────────
+   STICKY HAMBURGER  (desktop only, ≥ 1024px)
+   Sits left of the logo. Re-expands .menu-bar (in main-header.css)
+   after it auto-collapses on sticky scroll. Mobile/tablet use the
+   drawer hamburger above instead — this must never show below 1024px,
+   which is why both this rule and the .menu-bar.is-visible reveal rule
+   in main-header.css are gated to min-width: 1024px.
+   ───────────────────────────────────────────── */
+.main-header-sticky__hamburger {
+  /* Hidden by default: not sticky yet, and hidden below 1024px, always */
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-right: 8px;
+}
+
+/* Reveal ONLY once the header has actually gone sticky, AND only on
+   desktop — main-header.js adds/removes .is-sticky on #main-header
+   purely based on scroll position, with no width check of its own, so
+   the width gate has to live here in CSS. */
+@media (min-width: 1024px) {
+  .main-header--sticky-enabled.is-sticky .main-header-sticky__hamburger {
+    display: flex;
+  }
+}
+
+.main-header-sticky__hamburger span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: #1a1a1a;
+  border-radius: 2px;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* Hamburger -> X */
+.main-header-sticky__hamburger.is-active span:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+.main-header-sticky__hamburger.is-active span:nth-child(2) {
+  opacity: 0;
+}
+.main-header-sticky__hamburger.is-active span:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+/* ─────────────────────────────────────────────
+   REDUCED MOTION
+   ───────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .main-header__hamburger-line,
+  .main-header__mobile-nav,
+  .main-header__mobile-nav-chevron,
+  .main-header-sticky__hamburger span {
+    transition: none;
+  }
+}

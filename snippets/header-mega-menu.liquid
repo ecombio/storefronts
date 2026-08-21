@@ -1,0 +1,122 @@
+{% comment %}
+  ECOMBIO Header — Mega Menu Panel
+  File: snippets/header-mega-menu.liquid
+
+  Renders the INSIDE of a .mega-menu panel (the outer <div class="mega-menu">
+  wrapper and hover/open behaviour live in snippets/ecombio-header-menu-bar.liquid
+  and assets/header-mega-menu.css / header.js — this snippet only builds the
+  column grid + optional trending-products panel).
+
+  Usage (snippets/ecombio-header-menu-bar.liquid):
+    {%- render 'header-mega-menu', menu: mega_menu, show_products: block.settings.show_products -%}
+
+  Menu structure expected:
+    Level 1 (top-level link in the linklist) → one column
+    Level 2 (its children)                   → either:
+                                                  - a direct link, or
+                                                  - a sub-heading with its own children (Level 3)
+
+  Params:
+    menu          {linklist} — required
+    show_products {boolean}  — optional, shows a "Trending now" product rail
+                                pulled from the menu's first-level link's
+                                linked collection (if it resolves to one)
+{% endcomment %}
+
+{%- assign mega_menu = menu -%}
+
+{%- if mega_menu and mega_menu.links.size > 0 -%}
+
+  {%- comment -%} Column count feeds --mega-col-count for the grid in header-mega-menu.css {%- endcomment -%}
+  {%- assign col_count = mega_menu.links.size -%}
+  {%- if col_count > 6 -%}{%- assign col_count = 6 -%}{%- endif -%}
+
+  {%- comment -%}
+    Try to resolve a collection for the trending-products rail:
+    use the first top-level link's URL if it points at a collection.
+  {%- endcomment -%}
+  {%- assign featured_collection = blank -%}
+  {%- if show_products -%}
+    {%- assign first_link = mega_menu.links.first -%}
+    {%- if first_link.type == 'collection_link' or first_link.object -%}
+      {%- assign featured_collection = first_link.object -%}
+    {%- endif -%}
+  {%- endif -%}
+
+  <div class="mega-menu-items{% if show_products and featured_collection %} mega-menu-items--with-products{% endif %}">
+
+    <div class="mega-menu__text-columns" style="--mega-col-count: {{ col_count }};">
+      {%- for column in mega_menu.links -%}
+        <div class="mega-menu-column">
+
+          {%- comment -%} Level 1 — column heading, links to its own URL {%- endcomment -%}
+          <a href="{{ column.url }}" class="mega-menu-heading">{{ column.title }}</a>
+
+          {%- for item in column.links -%}
+
+            {%- if item.links.size > 0 -%}
+              {%- comment -%} Level 2 with children — render as sub-heading + Level 3 list {%- endcomment -%}
+              <div class="mega-menu-subheading">{{ item.title }}</div>
+              <ul class="mega-menu-list">
+                {%- for link in item.links -%}
+                  <li>
+                    <a href="{{ link.url }}" class="mega-menu-link">{{ link.title }}</a>
+                  </li>
+                {%- endfor -%}
+              </ul>
+            {%- else -%}
+              {%- comment -%} Level 2 — direct link, no children {%- endcomment -%}
+              <ul class="mega-menu-list">
+                <li>
+                  <a href="{{ item.url }}" class="mega-menu-link">{{ item.title }}</a>
+                </li>
+              </ul>
+            {%- endif -%}
+
+          {%- endfor -%}
+
+        </div>
+      {%- endfor -%}
+    </div>
+
+    {%- comment -%} Optional trending-products rail {%- endcomment -%}
+    {%- if show_products and featured_collection and featured_collection.products.size > 0 -%}
+      <div class="mega-menu__products">
+        <div class="mega-menu__product-header">
+          <span class="mega-menu-heading">Trending Now</span>
+        </div>
+        <div class="mega-menu__product-grid">
+          {%- for product in featured_collection.products limit: 3 -%}
+            <a href="{{ product.url }}" class="mega-menu__product-card">
+              <div class="mega-menu__product-image">
+                {%- if product.featured_media -%}
+                  {{
+                    product.featured_media
+                    | image_url: width: 240
+                    | image_tag: loading: 'lazy', alt: product.title
+                  }}
+                {%- endif -%}
+                {%- if product.compare_at_price > product.price -%}
+                  <span class="mega-menu__badge">Sale</span>
+                {%- endif -%}
+              </div>
+              <div class="mega-menu__product-info">
+                <p class="mega-menu__product-title">{{ product.title }}</p>
+                <div class="mega-menu__product-price">
+                  {%- if product.compare_at_price > product.price -%}
+                    <span class="price--sale">{{ product.price | money }}</span>
+                    <span class="price--compare">{{ product.compare_at_price | money }}</span>
+                  {%- else -%}
+                    {{ product.price | money }}
+                  {%- endif -%}
+                </div>
+              </div>
+            </a>
+          {%- endfor -%}
+        </div>
+      </div>
+    {%- endif -%}
+
+  </div>
+
+{%- endif -%}

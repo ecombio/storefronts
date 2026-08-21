@@ -1,0 +1,236 @@
+/* Matches the site's header layout system (main-header.css / utility-bar.css)
+   rather than relying on .page-width, which currently has no rules. */
+.banner-image-section__inner:not(.banner-image-section__inner--full) {
+  max-width: 1184px;
+  margin-inline: auto;
+  padding-inline: 24px;
+}
+
+.banner-image-section__inner--full {
+  max-width: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+@media (max-width: 639px) {
+  .banner-image-section__inner:not(.banner-image-section__inner--full) {
+    padding-inline: 12px;
+  }
+}
+
+.banner-image {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0;
+}
+
+.banner-image-section__inner:not(.banner-image-section__inner--full) .banner-image {
+  border-radius: var(--banner-radius, 0px);
+}
+
+.banner-image__link {
+  position: relative;
+  display: block;
+  color: #fff;
+  text-decoration: none;
+}
+
+.banner-image__image-wrap {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: var(--banner-height-mobile, 200px);
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.banner-image__image,
+.banner-image__placeholder,
+.banner-image__placeholder-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.banner-image__image {
+  opacity: 0;
+  transition: opacity 0.4s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.banner-image__image.is-loaded {
+  opacity: 1;
+}
+
+.banner-image__link:hover .banner-image__image {
+  transform: scale(1.03);
+}
+
+.banner-image__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.banner-image__placeholder-svg {
+  width: auto;
+  height: 50%;
+  max-width: 50%;
+  object-fit: contain;
+  opacity: 0.55;
+}
+
+.banner-image__image--mobile,
+.banner-image__placeholder--mobile {
+  display: none;
+}
+
+.banner-image__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, var(--banner-overlay-opacity, 0));
+  pointer-events: none;
+}
+
+.banner-image__content {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 90%;
+  padding: 16px;
+}
+
+/* Content position */
+.banner-image__content--top-left,
+.banner-image__content--top-center,
+.banner-image__content--top-right {
+  top: 0;
+}
+
+.banner-image__content--bottom-left,
+.banner-image__content--bottom-center,
+.banner-image__content--bottom-right {
+  bottom: 0;
+}
+
+.banner-image__content--center {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  align-items: center;
+}
+
+.banner-image__content--top-left,
+.banner-image__content--bottom-left {
+  left: 0;
+}
+
+.banner-image__content--top-right,
+.banner-image__content--bottom-right {
+  right: 0;
+}
+
+.banner-image__content--top-center,
+.banner-image__content--bottom-center {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.banner-image__content--align-left {
+  align-items: flex-start;
+  text-align: left;
+}
+
+.banner-image__content--align-center {
+  align-items: center;
+  text-align: center;
+}
+
+.banner-image__content--align-right {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.banner-image__heading {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.banner-image__subheading {
+  font-size: 1.3rem;
+  opacity: 0.95;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.banner-image__button {
+  margin-top: 6px;
+  display: inline-block;
+  padding: 8px 18px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+/* Tablet */
+@media screen and (min-width: 750px) {
+  .banner-image__image-wrap {
+    height: var(--banner-height-desktop, 280px);
+  }
+
+  .banner-image__heading {
+    font-size: 2.8rem;
+  }
+
+  .banner-image__subheading {
+    font-size: 1.5rem;
+  }
+}
+
+/* Desktop */
+@media screen and (min-width: 990px) {
+  .banner-image__heading {
+    font-size: 3.6rem;
+  }
+
+  .banner-image__content {
+    max-width: 50%;
+    padding: 40px;
+  }
+}
+
+/* Mobile-specific image swap */
+@media screen and (max-width: 749px) {
+  .banner-image__image--desktop {
+    display: none;
+  }
+
+  .banner-image__image--mobile {
+    display: block;
+  }
+
+  .banner-image__placeholder--desktop {
+    display: none;
+  }
+
+  .banner-image__placeholder--mobile {
+    display: flex;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .banner-image__image {
+    transition: opacity 0.4s ease;
+  }
+
+  .banner-image__link:hover .banner-image__image {
+    transform: none;
+  }
+}

@@ -1,0 +1,200 @@
+{%- comment -%}
+  Newsletter Popup Section
+{%- endcomment -%}
+
+{{ 'newsletter-popup.css' | asset_url | stylesheet_tag }}
+
+{%- if section.settings.enable_popup -%}
+<div
+  id="newsletter-popup-{{ section.id }}"
+  class="newsletter-popup newsletter-popup--{{ section.settings.popup_position | default: 'center' }}{% if section.settings.hide_on_mobile %} newsletter-popup--hide-mobile{% endif %}"
+  data-delay="{{ section.settings.delay_seconds | default: 5 }}"
+  data-position="{{ section.settings.popup_position | default: 'center' }}"
+  data-frequency="{{ section.settings.frequency }}"
+  data-exit-intent="{{ section.settings.enable_exit_intent }}"
+  data-cookie-name="newsletter_popup_{{ section.id }}_closed"
+  style="display:none; --np-bg: {{ section.settings.bg_color }}; --np-text: {{ section.settings.text_color }};"
+>
+  <div class="newsletter-popup__overlay" data-newsletter-close></div>
+
+  <div class="newsletter-popup__modal">
+    <button type="button" class="newsletter-popup__close" data-newsletter-close aria-label="Close">&times;</button>
+
+    {%- if section.settings.image != blank -%}
+      <div class="newsletter-popup__image">
+        {{ section.settings.image | image_url: width: 600 | image_tag: loading: 'lazy', alt: section.settings.heading }}
+      </div>
+    {%- endif -%}
+
+    <div class="newsletter-popup__content">
+      <div class="newsletter-popup__text">
+        {%- if section.settings.heading != blank -%}
+          <h2 class="newsletter-popup__heading">{{ section.settings.heading }}</h2>
+        {%- endif -%}
+
+        {%- if section.settings.subtext != blank -%}
+          <div class="newsletter-popup__subtext">{{ section.settings.subtext }}</div>
+        {%- endif -%}
+      </div>
+
+      <div class="newsletter-popup__action">
+        {%- form 'customer', id: 'newsletter-popup-form', class: 'newsletter-popup__form' -%}
+          <input type="hidden" name="contact[tags]" value="newsletter,popup-signup">
+
+          {%- if form.posted_successfully? -%}
+            <p class="newsletter-popup__success">{{ section.settings.success_message | default: 'Thanks for subscribing!' }}</p>
+          {%- else -%}
+            <div class="newsletter-popup__field-row">
+              <input
+                type="email"
+                name="contact[email]"
+                placeholder="{{ section.settings.email_placeholder | default: 'Email address' }}"
+                required
+                class="newsletter-popup__input"
+              >
+              <button type="submit" class="newsletter-popup__button">
+                {{ section.settings.button_label | default: 'Subscribe' }}
+              </button>
+            </div>
+            {%- if form.errors -%}
+              <p class="newsletter-popup__error">{{ form.errors.messages.email }}</p>
+            {%- endif -%}
+          {%- endif -%}
+        {%- endform -%}
+
+        {%- if section.settings.disclaimer != blank -%}
+          <p class="newsletter-popup__disclaimer">{{ section.settings.disclaimer }}</p>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{{ 'newsletter-popup.js' | asset_url }}" defer></script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Newsletter Popup",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Popup behavior"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_popup",
+      "label": "Enable popup",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "popup_position",
+      "label": "Popup position",
+      "options": [
+        { "value": "center", "label": "Center of screen (with dimmed background)" },
+        { "value": "corner", "label": "Bottom-right corner" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "delay_seconds",
+      "label": "Delay before showing (seconds)",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "default": 5
+    },
+    {
+      "type": "select",
+      "id": "frequency",
+      "label": "Show frequency",
+      "options": [
+        { "value": "always", "label": "Every page load" },
+        { "value": "session", "label": "Once per session" },
+        { "value": "day", "label": "Once per day" }
+      ],
+      "default": "session"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_exit_intent",
+      "label": "Also trigger on exit intent (desktop)",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_on_mobile",
+      "label": "Hide on mobile",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image (optional)"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Join our newsletter"
+    },
+    {
+      "type": "richtext",
+      "id": "subtext",
+      "label": "Subtext",
+      "default": "<p>Sign up and get 10% off your first order.</p>"
+    },
+    {
+      "type": "text",
+      "id": "email_placeholder",
+      "label": "Email field placeholder",
+      "default": "Email address"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Subscribe"
+    },
+    {
+      "type": "text",
+      "id": "success_message",
+      "label": "Success message",
+      "default": "Thanks for subscribing!"
+    },
+    {
+      "type": "text",
+      "id": "disclaimer",
+      "label": "Disclaimer text (optional)",
+      "default": "You can unsubscribe at any time."
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#111111"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Newsletter Popup"
+    }
+  ]
+}
+{% endschema %}

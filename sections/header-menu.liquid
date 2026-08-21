@@ -1,0 +1,80 @@
+{% comment %}
+  Header Menu Bar (+ mobile/tablet hamburger toggle)
+  File: snippets/header-menu.liquid
+
+  Renders the desktop nav bar (.menu-bar), built from this section's
+  blocks (single-link, link-list, mega-menu, highlight, flyout, @app).
+
+  Below 1024px, the SAME .menu-bar is toggled open/closed by the
+  hamburger button rendered here (menu-bar-toggle.js adds/removes
+  .is-open on #main-header-menu-bar) instead of a separate drawer
+  snippet. header-menu.css handles the breakpoint-specific look:
+    - Mobile  (<640px)        -> full-screen overlay panel
+    - Tablet  (640px-1023px)  -> inline dropdown below the bar
+    - Desktop (>=1024px)      -> normal horizontal bar, hamburger hidden
+
+  This replaces the old snippets/header-hamburger.liquid drawer/
+  accordion system for primary nav. header-hamburger.liquid should be
+  trimmed down to ONLY the sticky-header hamburger (the one that
+  re-expands .menu-bar when the header is sticky, desktop-only) —
+  everything else in that file is now dead code once this is live.
+
+  Params:
+    blocks — section.blocks from sections/main-header.liquid
+{% endcomment %}
+
+{{ 'header-menu.css' | asset_url | stylesheet_tag }}
+{{ 'highlight.css'   | asset_url | stylesheet_tag }}
+{{ 'link-list.css'   | asset_url | stylesheet_tag }}
+{{ 'mega-menu-1.css'   | asset_url | stylesheet_tag }}
+{{ 'flyout-menu.css' | asset_url | stylesheet_tag }}
+
+{%- if blocks.size > 0 -%}
+
+  {%- comment -%}
+    Hamburger — mobile/tablet only (hidden >=1024px via CSS). Toggles
+    .is-open on #main-header-menu-bar; menu-bar-toggle.js owns the
+    click handler + outside-click/Escape close + scroll-lock on mobile.
+  {%- endcomment -%}
+  <button class="menu-bar__hamburger"
+          id="main-header-nav-toggle"
+          type="button"
+          aria-label="Open navigation"
+          aria-expanded="false"
+          aria-controls="main-header-menu-bar">
+    <span class="menu-bar__hamburger-line"></span>
+    <span class="menu-bar__hamburger-line"></span>
+    <span class="menu-bar__hamburger-line"></span>
+  </button>
+
+  <nav class="menu-bar" id="main-header-menu-bar" aria-label="Primary navigation">
+    <div class="menu-bar__container page-width--header">
+      <ul class="menu-bar__list">
+        {%- for block in blocks -%}
+          {%- case block.type -%}
+            {%- when 'single-link' -%}
+              {%- render 'single-link', block: block -%}
+
+            {%- when 'link-list' -%}
+              {%- render 'link-list', block: block -%}
+
+            {%- when 'mega-menu' -%}
+              {%- render 'mega-menu-1', block: block -%}
+
+            {%- when 'highlight' -%}
+              {%- render 'highlight', block: block -%}
+
+            {%- when 'flyout' -%}
+              {%- render 'flyout-menu', block: block -%}
+
+          {%- endcase -%}
+        {%- endfor -%}
+      </ul>
+    </div>
+  </nav>
+{%- endif -%}
+
+{{- 'link-list.js'       | asset_url | script_tag }}
+{{- 'mega-menu-1.js'       | asset_url | script_tag }}
+{{- 'flyout-menu.js'     | asset_url | script_tag }}
+{{- 'menu-bar-toggle.js' | asset_url | script_tag }}

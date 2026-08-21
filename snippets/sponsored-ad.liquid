@@ -1,0 +1,47 @@
+{% comment %}
+  snippets/sponsored-ads.liquid
+  [2] Dispatcher — routes a single in-feed ad block to its ad-unit renderer.
+
+  Takes ONE block and renders it. Row-matching (which block(s) target
+  row_index) and iteration over the full blocks array are NOT done here
+  — see KNOWN ISSUE below, this currently doesn't match how
+  collection-products.liquid calls this snippet.
+
+  Parameters:
+    block       {Object}  required — a section.blocks entry,
+                           type "sponsored-products" or "sponsored-brands"
+    collection  {Object}  optional — forwarded to sponsored-brands so it
+                           can pull products from a merchant-picked
+                           collection when source_mode == "collection"
+
+  KNOWN ISSUE (pre-existing, not introduced by the product-card refactor):
+    collection-products.liquid calls this snippet with
+    `blocks: blocks, row_index: row_index` (plural blocks array + a row
+    number), but this snippet's case statement only reads `block.type`
+    (singular) — `blocks` and `row_index` are never referenced anywhere
+    in this file. As written, this render call is a no-op: no ad block
+    will ever appear in the grid until either (a) this snippet gains a
+    loop that filters `blocks` by `block.settings.row == row_index` and
+    renders each match, or (b) collection-products.liquid is changed to
+    do that filtering itself and call this snippet once per matching
+    block (singular), matching the parameter docs above.
+
+  Children:
+    snippets/sponsored-products.liquid
+    snippets/sponsored-brands.liquid
+
+  Asset ownership: this snippet loads no CSS/JS of its own.
+    sponsored-ads.css and sponsored-ads.js are loaded once by
+    collection-products.liquid (shared chrome — Sponsored label, card
+    frame, rating row, CTA button — used by both children).
+{% endcomment %}
+
+{%- case block.type -%}
+
+  {%- when 'sponsored-products' -%}
+    {%- render 'sponsored-products', block: block -%}
+
+  {%- when 'sponsored-brands' -%}
+    {%- render 'sponsored-brands', block: block, collection: collection -%}
+
+{%- endcase -%}

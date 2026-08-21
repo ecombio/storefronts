@@ -1,0 +1,142 @@
+{%- comment -%}
+  snippets/announcement-bar.liquid
+  Self-contained: loads its own CSS/JS and decides internally whether
+  there's anything active to render.
+
+  Usage:
+    {%- render 'announcement-bar', settings: section.settings -%}
+
+  Expects `settings` to be the settings object of whatever section is
+  rendering it (e.g. section.settings from sections/main-header.liquid).
+  Reads the same ann_* schema keys documented in that section's schema.
+{%- endcomment -%}
+
+{%- liquid
+  assign ann_active_count = 0
+  if settings.ann_enable
+    for i in (1..5)
+      assign ann_type_key = 'ann_' | append: i | append: '_type'
+      assign ann_slide_type = settings[ann_type_key]
+      if ann_slide_type == 'announcement' or ann_slide_type == 'countdown'
+        assign ann_active_count = ann_active_count | plus: 1
+      endif
+    endfor
+  endif
+
+  assign ann_width_class = 'announcement-bar--full-width'
+  if settings.ann_section_width == 'boxed'
+    assign ann_width_class = 'announcement-bar--boxed'
+  elsif settings.ann_section_width == 'custom-width'
+    assign ann_width_class = 'announcement-bar--custom-width'
+  endif
+-%}
+
+{%- if settings.ann_enable and ann_active_count > 0 -%}
+  {{ 'announcement-bar.css' | asset_url | stylesheet_tag }}
+
+  <div
+    class="announcement-bar {{ ann_width_class }}{% if settings.ann_enable_close %} announcement-bar--dismissible{% endif %}"
+    role="region"
+    aria-label="Announcements"
+    data-announcement-bar
+    data-autorotate="{{ settings.ann_autorotate }}"
+    data-interval="{{ settings.ann_autorotate_speed | times: 1000 }}"
+    data-dismissible="{{ settings.ann_enable_close }}"
+    style="
+      --section-padding: {{ settings.ann_section_padding }}px;
+      {%- if settings.ann_section_width == 'custom-width' %}
+        --custom-width: {{ settings.ann_custom_width }}rem;
+      {%- endif %}
+    "
+  >
+    <div class="announcement-bar__track" data-track>
+      {%- assign ann_first_rendered = true -%}
+      {%- for i in (1..5) -%}
+        {%- assign ann_type_key = 'ann_' | append: i | append: '_type' -%}
+        {%- assign ann_slide_type = settings[ann_type_key] -%}
+
+        {%- if ann_slide_type == 'announcement' -%}
+          {%- assign ann_text_key = 'ann_' | append: i | append: '_text' -%}
+          {%- assign ann_link_key = 'ann_' | append: i | append: '_link' -%}
+          <div
+            class="announcement-bar__slide{% if ann_first_rendered %} is-active{% endif %}"
+            role="status"
+            aria-live="polite"
+          >
+            {%- if settings[ann_link_key] != blank -%}
+              <a href="{{ settings[ann_link_key] }}" class="announcement-bar__message announcement-bar__message--link">
+                {{ settings[ann_text_key] }}
+              </a>
+            {%- else -%}
+              <p class="announcement-bar__message">{{ settings[ann_text_key] }}</p>
+            {%- endif -%}
+          </div>
+          {%- assign ann_first_rendered = false -%}
+
+        {%- elsif ann_slide_type == 'countdown' -%}
+          {%- assign ann_text_key = 'ann_' | append: i | append: '_text' -%}
+          {%- assign ann_ctype_key = 'ann_' | append: i | append: '_countdown_type' -%}
+          {%- assign ann_end_key = 'ann_' | append: i | append: '_end_date' -%}
+          {%- assign ann_ever_key = 'ann_' | append: i | append: '_evergreen_minutes' -%}
+          {%- assign ann_btnlabel_key = 'ann_' | append: i | append: '_button_label' -%}
+          {%- assign ann_btnlink_key = 'ann_' | append: i | append: '_button_link' -%}
+          <div
+            class="announcement-bar__slide announcement-bar__slide--countdown{% if ann_first_rendered %} is-active{% endif %}"
+          >
+            {%- if settings[ann_text_key] != blank -%}
+              <span class="announcement-bar__countdown-label">{{ settings[ann_text_key] }}</span>
+            {%- endif -%}
+            <span
+              class="announcement-bar__countdown"
+              data-countdown
+              data-type="{{ settings[ann_ctype_key] }}"
+              data-end="{{ settings[ann_end_key] }}"
+              data-duration="{{ settings[ann_ever_key] }}"
+            >
+              <span class="countdown__unit"><span data-days>0</span><em>d</em></span>
+              <span class="countdown__sep">:</span>
+              <span class="countdown__unit"><span data-hours>0</span><em>h</em></span>
+              <span class="countdown__sep">:</span>
+              <span class="countdown__unit"><span data-minutes>0</span><em>m</em></span>
+              <span class="countdown__sep">:</span>
+              <span class="countdown__unit"><span data-seconds>0</span><em>s</em></span>
+            </span>
+            {%- if settings[ann_btnlabel_key] != blank -%}
+              <a href="{{ settings[ann_btnlink_key] }}" class="announcement-bar__btn">
+                {{ settings[ann_btnlabel_key] }}
+              </a>
+            {%- endif -%}
+          </div>
+          {%- assign ann_first_rendered = false -%}
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+
+    {%- if ann_active_count > 1 -%}
+      <button class="announcement-bar__arrow announcement-bar__arrow--prev" aria-label="Previous announcement">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="16" height="16" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+      <button class="announcement-bar__arrow announcement-bar__arrow--next" aria-label="Next announcement">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="16" height="16" aria-hidden="true">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+    {%- endif -%}
+
+    {%- if settings.ann_enable_close -%}
+      <button class="announcement-bar__close" aria-label="Close announcement bar" data-close>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="14" height="14" aria-hidden="true">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    {%- endif -%}
+  </div>
+
+  <script src="{{ 'announcement-bar.js' | asset_url }}" defer></script>
+{%- endif -%}

@@ -1,0 +1,282 @@
+{{ 'shoppable-video.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'shoppable-video.js' | asset_url }}" defer="defer"></script>
+
+<div class="shoppable-video section-{{ section.id }}-padding" data-shop-currency="{{ shop.currency }}">
+  <div class="shoppable-video__container">
+
+    {%- if section.settings.heading != blank or section.settings.subheading != blank -%}
+      <div class="shoppable-video__head">
+        {%- if section.settings.heading != blank -%}
+          <h2 class="shoppable-video__heading">{{ section.settings.heading }}</h2>
+        {%- endif -%}
+        {%- if section.settings.subheading != blank -%}
+          <p class="shoppable-video__subheading">{{ section.settings.subheading }}</p>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <div class="shoppable-video__row">
+      {%- if section.settings.show_arrows -%}
+        <button type="button" class="shoppable-video__arrow shoppable-video__arrow--prev js-sv-prev" aria-label="Scroll left">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      {%- endif -%}
+
+      <ul class="shoppable-video__track js-sv-track" role="list">
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'video' -%}
+            <li class="shoppable-video__tile js-sv-tile" {{ block.shopify_attributes }}>
+              <div class="shoppable-video__media js-video-modal-trigger" data-video-modal-trigger="{{ block.id }}" role="button" tabindex="0" aria-haspopup="dialog">
+
+                {%- if block.settings.video != blank -%}
+                  {{
+                    block.settings.video
+                    | video_tag:
+                      image_size: '800x',
+                      loop: true,
+                      muted: true,
+                      playsinline: true,
+                      controls: false,
+                      class: 'shoppable-video__el js-sv-video'
+                  }}
+                {%- elsif block.settings.cover_image != blank -%}
+                  {{ block.settings.cover_image | image_url: width: 800 | image_tag: loading: 'lazy', class: 'shoppable-video__cover', alt: block.settings.caption }}
+                {%- else -%}
+                  <div class="shoppable-video__placeholder">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7-11-7Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                  </div>
+                {%- endif -%}
+
+                <button type="button" class="shoppable-video__mute js-sv-mute" aria-label="Toggle sound" aria-pressed="false">
+                  <svg class="icon-muted" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 9v6h4l5 4V5L8 9H4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M17 8.5a5 5 0 0 1 0 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M19.5 6a8.5 8.5 0 0 1 0 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity="0.5"/></svg>
+                  <svg class="icon-unmuted" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" hidden><path d="M4 9v6h4l5 4V5L8 9H4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                </button>
+
+                <div class="shoppable-video__overlay">
+                  {%- if block.settings.handle != blank -%}
+                    <p class="shoppable-video__handle">{{ block.settings.handle }}</p>
+                  {%- endif -%}
+                  {%- if block.settings.caption != blank -%}
+                    <p class="shoppable-video__caption">{{ block.settings.caption }}</p>
+                  {%- endif -%}
+                </div>
+
+              </div>
+
+              {%- if block.settings.product_1 != blank -%}
+                {%- render 'modal-product', product: block.settings.product_1, uid: block.id -%}
+              {%- endif -%}
+
+              {%- render 'video-modal', block: block -%}
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+
+      {%- if section.settings.show_arrows -%}
+        <button type="button" class="shoppable-video__arrow shoppable-video__arrow--next js-sv-next" aria-label="Scroll right">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      {%- endif -%}
+    </div>
+
+  </div>
+</div>
+
+<style>
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top }}px;
+    padding-bottom: {{ section.settings.padding_bottom }}px;
+  }
+
+  .shoppable-video {
+    --sv-tile-width: {{ section.settings.tile_width }}px;
+    --sv-gap: {{ section.settings.tile_gap }}px;
+    --sv-radius: {{ section.settings.corner_radius }}px;
+    --sv-accent: {{ section.settings.accent_color }};
+    --sv-heading: {{ section.settings.heading_color }};
+    --sv-text: {{ section.settings.text_color }};
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Shoppable video",
+  "tag": "section",
+  "class": "shopify-section--shoppable-video",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Shop the Look"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "tile_width",
+      "min": 180,
+      "max": 360,
+      "step": 10,
+      "unit": "px",
+      "label": "Video width",
+      "default": 260
+    },
+    {
+      "type": "range",
+      "id": "tile_gap",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Space between videos",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "corner_radius",
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "label": "Corner roundness",
+      "default": 16
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show scroll arrows on desktop",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay_in_view",
+      "label": "Autoplay videos as they scroll into view",
+      "info": "Videos play muted and pause automatically when off-screen.",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 48
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading",
+      "default": "#0F0F1A"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Subheading",
+      "default": "#4B5563"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Shop button / accent",
+      "default": "#5B4FE0"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "video",
+      "name": "Video",
+      "settings": [
+        {
+          "type": "video",
+          "id": "video",
+          "label": "Video",
+          "info": "Upload a vertical (9:16) video for the best fit."
+        },
+        {
+          "type": "image_picker",
+          "id": "cover_image",
+          "label": "Cover image",
+          "info": "Shown as a fallback if no video is uploaded."
+        },
+        {
+          "type": "text",
+          "id": "handle",
+          "label": "Creator handle",
+          "default": "@yourbrand"
+        },
+        {
+          "type": "text",
+          "id": "caption",
+          "label": "Caption",
+          "default": "Our new arrivals are here 🎉"
+        },
+        {
+          "type": "header",
+          "content": "Modal content"
+        },
+        {
+          "type": "text",
+          "id": "modal_heading",
+          "label": "Modal heading",
+          "default": "Modal Heading"
+        },
+        {
+          "type": "text",
+          "id": "modal_text",
+          "label": "Modal text",
+          "default": "Modal Text"
+        },
+        {
+          "type": "header",
+          "content": "Tagged product"
+        },
+        {
+          "type": "product",
+          "id": "product_1",
+          "label": "Product"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 12,
+  "presets": [
+    {
+      "name": "Shoppable video",
+      "blocks": [
+        { "type": "video" },
+        { "type": "video" },
+        { "type": "video" }
+      ]
+    }
+  ]
+}
+{% endschema %}

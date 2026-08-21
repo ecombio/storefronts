@@ -1,0 +1,387 @@
+{%- comment -%}
+  sections/featured-blog.liquid
+
+  Renders recent articles from a merchant-selected blog as a
+  horizontally scrollable carousel of post cards. Follows the same
+  design system as sections/collection-carousel.liquid and
+  sections/custom-collections.liquid (section-width layout, prev/next
+  nav, drag-to-scroll track) with an fb- class prefix and its own
+  assets/featured-blog.css/js so it can sit on the same page as those
+  sections without collisions.
+
+  Article source is the native "blog" setting (a real Shopify blog),
+  not a metafield or metaobject — blog posts are a first-class
+  resource, so there's no need to proxy them through one.
+{%- endcomment -%}
+
+{{ 'featured-blog.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign width_type = section.settings.section_width
+  if width_type == blank
+    assign width_suffix = 'default-width'
+  else
+    assign width_suffix = width_type
+  endif
+  assign width_class = 'fb-section__' | append: width_suffix
+
+  assign blog = section.settings.blog
+  assign articles = blog.articles | default: empty
+  if articles != empty
+    assign articles = articles | slice: 0, section.settings.post_limit
+  endif
+-%}
+
+<div
+  class="fb-section"
+  style="
+    padding-top: {{ section.settings.padding_top }}px;
+    padding-bottom: {{ section.settings.padding_bottom }}px;
+    background-color: {{ section.settings.bg_color }};
+    color: {{ section.settings.text_color }};
+    --fb-card-bg: {{ section.settings.card_bg_color }};
+    --fb-accent: {{ section.settings.accent_color }};
+  "
+>
+  <div
+    class="fb-section__inner {{ width_class }}"
+    style="
+      --section-padding: {{ section.settings.section_padding }}px;
+      {%- if width_type == 'custom-width' %}
+        --custom-width: {{ section.settings.custom_width }}rem;
+      {%- endif %}
+    "
+  >
+
+    {%- if section.settings.heading != blank or section.settings.view_all_label != blank -%}
+      <div class="fb-section__header fb-section__header--align-{{ section.settings.heading_align }}">
+        <div class="fb-section__header-text">
+          {%- if section.settings.heading != blank -%}
+            <h2 class="fb-section__heading">{{ section.settings.heading }}</h2>
+          {%- endif -%}
+          {%- if section.settings.subheading != blank -%}
+            <p class="fb-section__subheading">{{ section.settings.subheading }}</p>
+          {%- endif -%}
+        </div>
+        {%- if section.settings.view_all_label != blank -%}
+          {%- assign view_all_url = section.settings.view_all_link | default: blog.url -%}
+          {%- if view_all_url != blank -%}
+            <a href="{{ view_all_url }}" class="fb-section__view-all">
+              {{- section.settings.view_all_label -}}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" width="16" height="16">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </a>
+          {%- endif -%}
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <div class="fb-carousel" data-fb-carousel style="--fb-btn-bg: {{ section.settings.bg_color }};">
+      <div class="fb-carousel__track" data-fb-carousel-track>
+        {%- for article in articles -%}
+          <div class="fb-carousel__item">
+            <a href="{{ article.url }}" class="fb-post-card">
+              {%- if section.settings.show_image -%}
+                <span class="fb-post-card__image-wrap fb-post-card__image-wrap--{{ section.settings.image_ratio }}">
+                  {%- if article.image != blank -%}
+                    <img
+                      class="fb-post-card__image"
+                      src="{{ article.image | image_url: width: 600 }}"
+                      srcset="{{ article.image | image_url: width: 400 }} 400w, {{ article.image | image_url: width: 600 }} 600w, {{ article.image | image_url: width: 800 }} 800w"
+                      sizes="(min-width: 990px) 320px, (min-width: 750px) 260px, 220px"
+                      alt="{{ article.image.alt | default: article.title | escape }}"
+                      loading="lazy"
+                      width="{{ article.image.width }}"
+                      height="{{ article.image.height }}"
+                    >
+                  {%- else -%}
+                    <span class="fb-post-card__placeholder">
+                      {{ 'lifestyle-1' | placeholder_svg_tag: 'fb-post-card__placeholder-svg' }}
+                    </span>
+                  {%- endif -%}
+                </span>
+              {%- endif -%}
+
+              <span class="fb-post-card__body">
+                {%- if section.settings.show_date or section.settings.show_author -%}
+                  <span class="fb-post-card__meta">
+                    {%- if section.settings.show_date -%}
+                      <span class="fb-post-card__date">{{ article.published_at | date: format: 'abbreviated_date' }}</span>
+                    {%- endif -%}
+                    {%- if section.settings.show_date and section.settings.show_author -%}
+                      <span class="fb-post-card__meta-sep" aria-hidden="true">&middot;</span>
+                    {%- endif -%}
+                    {%- if section.settings.show_author -%}
+                      <span class="fb-post-card__author">{{ article.author }}</span>
+                    {%- endif -%}
+                  </span>
+                {%- endif -%}
+
+                <span class="fb-post-card__title">{{ article.title }}</span>
+
+                {%- if section.settings.show_excerpt -%}
+                  <span class="fb-post-card__excerpt">
+                    {{- article.excerpt | default: article.content | strip_html | truncatewords: 22 -}}
+                  </span>
+                {%- endif -%}
+
+                <span class="fb-post-card__read-more">
+                  Read more
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" width="14" height="14">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </span>
+              </span>
+            </a>
+          </div>
+
+        {%- else -%}
+          {%- for i in (1..3) -%}
+            <div class="fb-carousel__item">
+              <a href="#" class="fb-post-card" tabindex="-1" aria-disabled="true">
+                {%- if section.settings.show_image -%}
+                  <span class="fb-post-card__image-wrap fb-post-card__image-wrap--{{ section.settings.image_ratio }}">
+                    <span class="fb-post-card__placeholder">
+                      {{ 'lifestyle-1' | placeholder_svg_tag: 'fb-post-card__placeholder-svg' }}
+                    </span>
+                  </span>
+                {%- endif -%}
+                <span class="fb-post-card__body">
+                  {%- if section.settings.show_date or section.settings.show_author -%}
+                    <span class="fb-post-card__meta">
+                      <span class="fb-post-card__date">Jan 1, 2026</span>
+                    </span>
+                  {%- endif -%}
+                  <span class="fb-post-card__title">Blog post title</span>
+                  {%- if section.settings.show_excerpt -%}
+                    <span class="fb-post-card__excerpt">This is where the post excerpt will appear once you publish articles to the selected blog.</span>
+                  {%- endif -%}
+                  <span class="fb-post-card__read-more">Read more</span>
+                </span>
+              </a>
+            </div>
+          {%- endfor -%}
+        {%- endfor -%}
+      </div>
+
+      {%- if articles.size > 0 -%}
+        <button type="button" class="fb-carousel__btn fb-carousel__btn--prev" data-fb-carousel-prev aria-label="Previous">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <button type="button" class="fb-carousel__btn fb-carousel__btn--next" data-fb-carousel-next aria-label="Next">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      {%- endif -%}
+    </div>
+
+  </div>
+</div>
+
+<script src="{{ 'featured-blog.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Featured blog",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Header"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "From the blog"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading"
+    },
+    {
+      "type": "select",
+      "id": "heading_align",
+      "label": "Heading alignment",
+      "options": [
+        { "value": "start",  "label": "Left"   },
+        { "value": "center", "label": "Center" },
+        { "value": "end",    "label": "Right"  }
+      ],
+      "default": "start"
+    },
+    {
+      "type": "header",
+      "content": "Blog"
+    },
+    {
+      "type": "blog",
+      "id": "blog",
+      "label": "Blog"
+    },
+    {
+      "type": "range",
+      "id": "post_limit",
+      "label": "Number of posts",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "default": 6
+    },
+    {
+      "type": "header",
+      "content": "View all link"
+    },
+    {
+      "type": "text",
+      "id": "view_all_label",
+      "label": "Link label",
+      "default": "View all",
+      "info": "Leave blank to hide. Links to the selected blog if no custom URL is set below."
+    },
+    {
+      "type": "url",
+      "id": "view_all_link",
+      "label": "Custom link URL"
+    },
+    {
+      "type": "header",
+      "content": "Post card content"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_image",
+      "label": "Show featured image",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image ratio",
+      "options": [
+        { "value": "landscape", "label": "Landscape" },
+        { "value": "square",    "label": "Square"    },
+        { "value": "portrait",  "label": "Portrait"  }
+      ],
+      "default": "landscape"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_date",
+      "label": "Show date",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_author",
+      "label": "Show author",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_excerpt",
+      "label": "Show excerpt",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "card_bg_color",
+      "label": "Card background",
+      "default": "#F7F7F7"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent (read more link)",
+      "default": "#0A3161"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 36
+    }
+  ],
+  "presets": [
+    {
+      "name": "Featured blog"
+    }
+  ]
+}
+{% endschema %}

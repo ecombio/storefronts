@@ -1,0 +1,136 @@
+/* ─── product-media.css ──────────────────────────────────────
+   Component styles for product-media.liquid (gallery + thumbnails).
+
+   Load order requirements:
+     1. critical.css        — resets `img { height: auto }`; this file
+                               overrides that on the main image (below).
+     2. product-detail.css  — owns the shared design tokens this file
+                               reads (--color-text, --color-text-secondary,
+                               --font-family). Must load before this file.
+     3. product-media.css   — this file.
+
+   --gallery-height is NOT defined here. It's set inline by
+   product-media.js (used to sync the thumbnail rail's max-height to the
+   rendered main image height). The var() fallback (600px) below is only
+   a pre-JS/no-JS safety net — don't remove it thinking it's unused.
+
+   z-index: this component currently has no stacked layers. If a zoom
+   overlay or badge is added later, slot it into the layer map documented
+   in product-detail.css (200 sticky header / 300 sticky ATC / 900+
+   description overlay) rather than picking an arbitrary value.
+   ─────────────────────────────────────────────────────────────── */
+
+/* ─── Gallery shell ───────────────────────────────────────── */
+.product-gallery {
+  position:    relative;
+  display:     flex;
+  gap:         12px;
+  align-items: flex-start;
+}
+
+/* ─── Thumbnail rail ──────────────────────────────────────── */
+.product-thumbnails {
+  width:           111px;
+  min-width:       106px;
+  flex-shrink:     0;
+  max-height:      var(--gallery-height, 600px); /* set by product-media.js */
+  overflow-y:      auto;
+  overflow-x:      hidden;
+  padding-right:   6px;
+  scrollbar-width: thin;
+  scrollbar-color: #ccc transparent;
+}
+
+.product-thumbnails::-webkit-scrollbar       { width: 3px; }
+.product-thumbnails::-webkit-scrollbar-track { background: transparent; }
+.product-thumbnails::-webkit-scrollbar-thumb { background: #ccc; border-radius: 99px; }
+
+.thumbnail-container {
+  display:        flex;
+  flex-direction: column;
+  gap:            8px;
+}
+
+.thumbnail-item {
+  width:         94px;
+  height:        94px;
+  flex-shrink:   0;
+  border-radius: 6px;
+  overflow:      hidden;
+  cursor:        pointer;
+  border:        1px solid transparent;
+  transition:    border-color 0.2s;
+}
+
+.thumbnail-item.active { border-color: var(--color-text); }
+.thumbnail-item:hover  { border-color: var(--color-text-secondary); }
+
+.thumbnail-wrapper {
+  width:  100%;
+  height: 100%;
+}
+
+.thumbnail-image {
+  width:      100%;
+  height:     100%;
+  object-fit: cover;
+  display:    block;
+}
+
+/* ─── Main image ──────────────────────────────────────────── */
+.product-gallery-main {
+  flex:      1;
+  min-width: 0;
+}
+
+.gallery-viewer {
+  width:         100%;
+  aspect-ratio:  1;
+  border-radius: 10px;
+  overflow:      hidden;
+  background:    radial-gradient(circle, white 0%, rgba(0, 0, 0, 0) 70%);
+}
+
+.main-image-container {
+  width:  100%;
+  height: 100%;
+}
+
+/* critical.css resets img height to auto — override for the gallery viewer */
+.gallery-viewer img.main-image {
+  width:      100%;
+  height:     100%;
+  object-fit: contain;
+  display:    block;
+}
+
+/* ─── Responsive ──────────────────────────────────────────── */
+/* Matches the .product-layout single-column breakpoint in product-detail.css.
+   ASSUMPTION: below 768px the fixed 111px vertical thumbnail rail is
+   cramped next to a full-width main image, so thumbnails move under
+   the image as a horizontal scroll strip. Adjust if a different mobile
+   pattern is intended. */
+@media (max-width: 768px) {
+  .product-gallery {
+    flex-direction: column;
+  }
+
+  .product-thumbnails {
+    order:         2;
+    width:         100%;
+    min-width:     0;
+    max-height:    none;
+    padding-right: 0;
+    padding-bottom: 6px;
+    overflow-x:    auto;
+    overflow-y:    hidden;
+  }
+
+  .thumbnail-container {
+    flex-direction: row;
+  }
+
+  .product-gallery-main {
+    order: 1;
+  }
+}

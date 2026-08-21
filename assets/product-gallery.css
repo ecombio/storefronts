@@ -1,0 +1,241 @@
+/* ============================================================
+   Example markup this file styles:
+
+   <div class="product-gallery" style="--product-gallery-columns: 3; --section-padding: 32px;">
+     <div class="product-gallery__header">
+       <h2 class="product-gallery__heading">Shop the edit</h2>
+       <a href="/collections/electric-bikes" class="product-gallery__view-all">Shop Now</a>
+     </div>
+     <ul class="product-gallery__grid" role="list">
+       <li class="product-gallery__item">
+         <div class="product-card">
+           <div class="product-card__img-zone">
+             <div class="product-card__image-wrapper">
+               <img src="https://placehold.co/600x600/f2f2f2/999999?text=Product+1" alt="Placeholder product 1" class="product-card__img product-card__img--primary" loading="lazy" width="600" height="600">
+             </div>
+           </div>
+           <div class="product-card__body">
+             <span class="product-card__vendor">Vendor</span>
+             <span class="product-card__title">Sample product 1</span>
+             <div class="product-card__reviews">
+               <span class="product-card__no-reviews">No reviews</span>
+             </div>
+             <div class="product-card__pricing">
+               <span class="product-card__price">$0.00</span>
+             </div>
+             <div class="product-card__bottom-row">
+               <button class="product-card__atc-btn" type="button" disabled aria-label="Placeholder — not a real product yet">
+                 <span data-atc-label>Add to cart</span>
+               </button>
+             </div>
+           </div>
+         </div>
+       </li>
+       <li class="product-gallery__item">
+         <div class="product-card">
+           <div class="product-card__img-zone">
+             <div class="product-card__image-wrapper">
+               <img src="https://placehold.co/600x600/f2f2f2/999999?text=Product+2" alt="Placeholder product 2" class="product-card__img product-card__img--primary" loading="lazy" width="600" height="600">
+             </div>
+           </div>
+           <div class="product-card__body">
+             <span class="product-card__vendor">Vendor</span>
+             <span class="product-card__title">Sample product 2</span>
+             <div class="product-card__reviews">
+               <span class="product-card__no-reviews">No reviews</span>
+             </div>
+             <div class="product-card__pricing">
+               <span class="product-card__price">$0.00</span>
+             </div>
+             <div class="product-card__bottom-row">
+               <button class="product-card__atc-btn" type="button" disabled aria-label="Placeholder — not a real product yet">
+                 <span data-atc-label>Add to cart</span>
+               </button>
+             </div>
+           </div>
+         </div>
+       </li>
+       <li class="product-gallery__item">
+         <div class="product-card">
+           <div class="product-card__img-zone">
+             <div class="product-card__image-wrapper">
+               <img src="https://placehold.co/600x600/f2f2f2/999999?text=Product+3" alt="Placeholder product 3" class="product-card__img product-card__img--primary" loading="lazy" width="600" height="600">
+             </div>
+           </div>
+           <div class="product-card__body">
+             <span class="product-card__vendor">Vendor</span>
+             <span class="product-card__title">Sample product 3</span>
+             <div class="product-card__reviews">
+               <span class="product-card__no-reviews">No reviews</span>
+             </div>
+             <div class="product-card__pricing">
+               <span class="product-card__price">$0.00</span>
+             </div>
+             <div class="product-card__bottom-row">
+               <button class="product-card__atc-btn" type="button" disabled aria-label="Placeholder — not a real product yet">
+                 <span data-atc-label>Add to cart</span>
+               </button>
+             </div>
+           </div>
+         </div>
+       </li>
+     </ul>
+   </div>
+   ============================================================ */
+
+/* ============================================================
+   product-gallery.css
+   Scope: .product-gallery
+   Fixed-count product grid — NOT a carousel.
+   No overflow-x, no scroll-snap, no arrows, no horizontal scroll
+   of any kind. All items are visible at once in a CSS grid.
+
+   Owns ONLY the grid/header/intro layout — individual card styling
+   still lives in product-card.css (never redeclare .product-card__*
+   here, same rule product-row.css follows).
+
+   Intentionally shares NO selectors with product-row.css. The two
+   files use fully separate class namespaces (.product-gallery vs
+   .product-row) so they can be loaded on the same page without any
+   risk of one overriding the other.
+   ============================================================ */
+
+.product-gallery {
+  padding: var(--section-padding, 2rem) 1rem;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* ── Header: heading + "view all" link, side by side ── */
+.product-gallery__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.product-gallery__heading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.product-gallery__view-all {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: inherit;
+  text-decoration: underline;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Intro variant: centered heading + supporting copy ── */
+.product-gallery--intro .product-gallery__header {
+  display: block;
+  text-align: center;
+  max-width: 640px;
+  margin-inline: auto;
+  margin-bottom: 1.5rem;
+}
+
+.product-gallery--intro .product-gallery__heading {
+  margin-bottom: 0.5rem;
+}
+
+.product-gallery__description {
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.product-gallery__empty {
+  font-size: 0.9rem;
+  color: #888;
+  text-align: center;
+  padding: 2rem 0;
+}
+
+/* ── Grid ──
+   --product-gallery-columns is set inline per-instance by
+   sections/product-gallery.liquid (from the "Columns" range
+   setting), the same way main-article.liquid sets --custom-width
+   inline from its own schema setting. Defaults to 3 if unset. */
+.product-gallery__grid {
+  display: grid;
+  /* minmax(200px, 1fr) — not plain 1fr — is the actual fix. A bare
+     1fr column can be crushed arbitrarily thin once .product-gallery__item
+     has min-width:0, which is what was clipping titles/review counts/
+     button labels at 3-up. 200px is the narrowest a .product-card can
+     go before its own text/button start overflowing, based on the
+     card's normal ~260px design width in product-row's carousel. */
+  grid-template-columns: repeat(var(--product-gallery-columns, 3), minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  /* Safety net only — this is NOT meant to make the gallery a
+     carousel. The breakpoints below handle normal responsive
+     reflow. This just stops a hard visual break (cards crushed
+     again) in the edge case where .product-gallery ends up nested
+     inside something narrower than 3 x 200px, e.g. a theme's
+     sidebar column, where viewport-width media queries alone can't
+     detect the actual available space. */
+  overflow-x: auto;
+}
+
+.product-gallery__item {
+  /* min-width intentionally left at its default (auto), NOT 0 — auto
+     lets the track respect the card's intrinsic minimum content size
+     instead of crushing it thinner than the text/buttons inside can
+     handle. Combined with minmax(200px, …) above, the grid will
+     overflow (scrollable) or wrap via the breakpoints below rather
+     than silently clipping card content. */
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+/* Applied by product-gallery.js via IntersectionObserver.
+   If JS never runs (blocked/fails), items stay hidden — so this
+   also has a no-JS fallback below. */
+.product-gallery__item.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* No-JS fallback: if the page has no 'js' class on <html> (set by
+   product-gallery.js on load), skip the reveal animation entirely
+   rather than leaving items permanently invisible. */
+html:not(.js) .product-gallery__item {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+/* ── Responsive ──
+   Grid never scrolls — it reflows to fewer columns instead. */
+@media (max-width: 989px) {
+  .product-gallery__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 589px) {
+  .product-gallery__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .product-gallery {
+    padding: 1.5rem 0.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-gallery__item {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

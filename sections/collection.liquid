@@ -1,0 +1,510 @@
+{{ 'collection.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  SECTION WIDTH / SIDE PADDING:
+  Handled locally per the pattern in sections/example-width-section.liquid.
+  This opts .collection-page OUT of the shared width recipe that
+  collection.css previously documented as being "kept in sync" with
+  the header / utility bar / menu bar / footer (all fixed at
+  max-width: 1184px, padding 0 24px / 0 12px under 639px). That sync
+  comment has been removed from collection.css — this section's width
+  and padding are now driven only by its own "Section layout" schema
+  settings below and no longer track those other containers.
+{%- endcomment -%}
+
+{%- liquid
+  assign active_tab = request.query_parameters['tab'] | default: 'products'
+  unless active_tab == 'products' or active_tab == 'articles'
+    assign active_tab = 'products'
+  endunless
+
+  assign width_type = section.settings.section_width
+  if width_type == blank
+    assign width_class = 'collection-page__default-width'
+  elsif width_type == 'full-width'
+    assign width_class = 'collection-page__full-width'
+  else
+    assign width_class = 'collection-page__custom-width'
+  endif
+-%}
+
+{%- render 'collection-hero', collection: collection -%}
+
+<section class="collection-section">
+  <div
+    class="collection-page {{ width_class }}"
+    data-collection-page
+    data-active-tab="{{ active_tab }}"
+    style="
+      --section-padding: {{ section.settings.section_padding }}px;
+      {%- if width_type == 'custom-width' %}
+        --custom-width: {{ section.settings.custom_width }}rem;
+      {%- endif %}
+    "
+  >
+
+    {%- render 'collection-toolbar', active_tab: active_tab -%}
+
+    <div class="collection-body">
+
+      {%- render 'collection-filter-1' -%}
+
+      <div class="collection-body__feed">
+        {%- render 'collection-feed', active_tab: active_tab -%}
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+{%- render 'after-items' -%}
+
+{%- if section.settings.show_related_articles -%}
+  {%- render 'related-articles', show_image: section.settings.show_article_images -%}
+{%- endif -%}
+
+{%- if section.settings.show_related_products -%}
+  {%- render 'related-products',
+    collection:     collection,
+    heading:        section.settings.related_products_heading,
+    limit:          section.settings.related_products_limit,
+    cards_desk:     section.settings.related_products_columns,
+    cards_mob:      2,
+    show_arrows:    true,
+    arrow_position: section.settings.related_products_arrow_position
+  -%}
+{%- endif -%}
+
+{%- comment -%} Shared backdrop for filter drawer + sort sheet {%- endcomment -%}
+<div class="collection-mobile-backdrop" aria-hidden="true"></div>
+
+<script src="{{ 'collection-filter.js' | asset_url }}" defer></script>
+<script src="{{ 'collection-feed.js' | asset_url }}" defer></script>
+<script src="{{ 'collection.js' | asset_url }}" defer></script>
+<script src="{{ 'promo-carousel.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "Collection",
+  "tag": "section",
+  "class": "section-collection",
+  "settings": [
+    {
+      "type": "text",
+      "id": "tab_products_label",
+      "label": "Products tab label",
+      "default": "Products"
+    },
+    {
+      "type": "text",
+      "id": "tab_articles_label",
+      "label": "Articles tab label",
+      "default": "Articles"
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "Columns",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "label": "Products per page",
+      "min": 4,
+      "max": 48,
+      "step": 4,
+      "default": 16
+    },
+    {
+      "type": "checkbox",
+      "id": "show_filters",
+      "label": "Show filters",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sort",
+      "label": "Show sort",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "header",
+      "content": "Sub-collections"
+    },
+    {
+      "type": "select",
+      "id": "sub_collection_shape",
+      "label": "Sub-collection image shape",
+      "options": [
+        { "value": "square", "label": "Square (rounded corners)" },
+        { "value": "circle", "label": "Circle" }
+      ],
+      "default": "square"
+    },
+    {
+      "type": "paragraph",
+      "content": "Add sub-collection blocks below. If a collection has no image, a default placeholder icon is shown automatically — or set a custom image per block."
+    },
+    {
+      "type": "header",
+      "content": "In-feed banners"
+    },
+    {
+      "type": "paragraph",
+      "content": "Add 'In-feed banner' blocks below to place promotional banners inside the product grid. Each banner has its own position number and size — set both per block."
+    },
+    {
+      "type": "header",
+      "content": "Promo carousels"
+    },
+    {
+      "type": "paragraph",
+      "content": "Add a 'Promo carousel' block to insert a product carousel into the grid. Set its collection directly on the block."
+    },
+    {
+      "type": "header",
+      "content": "Articles"
+    },
+    {
+      "type": "paragraph",
+      "content": "Articles shown here come from the collection's 'custom.posts' metafield. Manage which articles appear by editing that metafield on each collection."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_related_articles",
+      "label": "Show related articles",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_article_images",
+      "label": "Show images on related articles",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Related Products"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_related_products",
+      "label": "Show related products carousel",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "related_products_heading",
+      "label": "Heading",
+      "default": "You May Also Like"
+    },
+    {
+      "type": "range",
+      "id": "related_products_limit",
+      "label": "Max products to show",
+      "min": 4,
+      "max": 24,
+      "step": 2,
+      "default": 12
+    },
+    {
+      "type": "select",
+      "id": "related_products_columns",
+      "label": "Cards per row (desktop)",
+      "default": "4",
+      "options": [
+        { "value": "2", "label": "2" },
+        { "value": "3", "label": "3" },
+        { "value": "4", "label": "4" },
+        { "value": "5", "label": "5" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "related_products_arrow_position",
+      "label": "Arrow position",
+      "default": "bottom",
+      "options": [
+        { "value": "bottom", "label": "Below carousel" },
+        { "value": "side",   "label": "Either side" }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "type": "sub_collection",
+      "name": "Sub-collection",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
+        },
+        {
+          "type": "text",
+          "id": "custom_title",
+          "label": "Custom title",
+          "info": "Leave blank to use the collection's title"
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_image",
+          "label": "Custom image",
+          "info": "Leave blank to use the collection's featured image. If neither is set, a default placeholder is shown."
+        }
+      ]
+    },
+    {
+      "type": "promo_banner",
+      "name": "Promo Banner",
+      "settings": [
+        {
+          "type": "number",
+          "id": "position",
+          "label": "Position in product grid",
+          "info": "Banner appears before the Nth product on the current page. E.g. 5 inserts it right before the 5th product. A number larger than the total product count places it at the end. Leave blank or 0 to hide."
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image (desktop)"
+        },
+        {
+          "type": "image_picker",
+          "id": "mobile_image",
+          "label": "Image (mobile)",
+          "info": "Optional. Falls back to the desktop image if not set."
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading"
+        },
+        {
+          "type": "text",
+          "id": "subheading",
+          "label": "Subheading"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Button label"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link",
+          "info": "Makes the entire banner clickable"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Text color",
+          "default": "#ffffff"
+        },
+        {
+          "type": "select",
+          "id": "content_alignment",
+          "label": "Content alignment",
+          "info": "Aligns the heading, subheading, and button together",
+          "options": [
+            { "value": "left",   "label": "Left" },
+            { "value": "center", "label": "Center" },
+            { "value": "right",  "label": "Right" }
+          ],
+          "default": "left"
+        },
+        {
+          "type": "range",
+          "id": "overlay_opacity",
+          "label": "Image overlay darkness",
+          "min": 0,
+          "max": 80,
+          "step": 5,
+          "unit": "%",
+          "default": 20
+        },
+        {
+          "type": "header",
+          "content": "Size"
+        },
+        {
+          "type": "range",
+          "id": "column_span",
+          "label": "Width (columns spanned)",
+          "min": 1,
+          "max": 4,
+          "step": 1,
+          "default": 2,
+          "info": "Capped automatically on smaller screens so it never exceeds the live column count"
+        },
+        {
+          "type": "range",
+          "id": "row_span",
+          "label": "Height (rows spanned)",
+          "min": 1,
+          "max": 3,
+          "step": 1,
+          "default": 1
+        }
+      ]
+    },
+    {
+      "type": "promo_carousel",
+      "name": "Promo carousel",
+      "settings": [
+        {
+          "type": "number",
+          "id": "position",
+          "label": "Position in product grid",
+          "info": "Carousel appears before the Nth product on this page. A number larger than the total product count places it at the end. Leave blank or 0 to hide."
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading"
+        },
+        {
+          "type": "text",
+          "id": "subheading",
+          "label": "Subheading"
+        },
+        {
+          "type": "header",
+          "content": "Products"
+        },
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
+        },
+        {
+          "type": "range",
+          "id": "products_limit",
+          "label": "Products to show",
+          "min": 4,
+          "max": 24,
+          "step": 1,
+          "default": 12
+        },
+        {
+          "type": "range",
+          "id": "cards_per_row_desktop",
+          "label": "Cards per row (desktop)",
+          "min": 2,
+          "max": 5,
+          "step": 1,
+          "default": 3
+        },
+        {
+          "type": "range",
+          "id": "cards_per_row_mobile",
+          "label": "Cards per row (mobile)",
+          "min": 1,
+          "max": 3,
+          "step": 1,
+          "default": 2
+        },
+        {
+          "type": "checkbox",
+          "id": "show_arrows",
+          "label": "Show arrows",
+          "default": true
+        },
+        {
+          "type": "select",
+          "id": "arrow_position",
+          "label": "Arrow position",
+          "options": [
+            { "value": "top", "label": "Top" },
+            { "value": "bottom", "label": "Bottom" },
+            { "value": "side", "label": "Side" }
+          ],
+          "default": "bottom"
+        },
+        {
+          "type": "checkbox",
+          "id": "autoplay",
+          "label": "Autoplay",
+          "default": false
+        },
+        {
+          "type": "range",
+          "id": "autoplay_interval",
+          "label": "Autoplay interval (seconds)",
+          "min": 2,
+          "max": 10,
+          "step": 1,
+          "default": 4
+        },
+        {
+          "type": "header",
+          "content": "Banner"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_banner",
+          "label": "Show side banner",
+          "default": false
+        },
+        {
+          "type": "image_picker",
+          "id": "banner_image",
+          "label": "Banner image"
+        },
+        {
+          "type": "url",
+          "id": "banner_link",
+          "label": "Banner link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collection",
+      "blocks": []
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,238 @@
+/* assets/main-search.css */
+
+.main-search {
+  position: relative;
+}
+
+.search-page {
+  padding-inline: var(--section-padding, 24px);
+  margin-inline: auto;
+}
+
+.search-page__default-width {
+  max-width: 1184px;
+}
+
+.search-page__custom-width {
+  max-width: max(var(--custom-width, 100rem), 40rem);
+}
+
+.search-page__full-width {
+  max-width: 100%;
+}
+
+.search-hero {
+  padding-block: 40px 32px;
+}
+
+@media (max-width: 640px) {
+  .search-hero {
+    padding-block: 28px 20px;
+  }
+}
+
+.search-title {
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .search-title {
+    font-size: 1.5rem;
+  }
+}
+
+.search-result-count {
+  margin: 0.5rem 0 0;
+  color: var(--hs-text-muted, #6b6b6b);
+}
+
+@media (max-width: 640px) {
+  .search-result-count {
+    font-size: 0.875rem;
+  }
+}
+
+.search-hero__prompt {
+  padding-block: 4rem;
+  text-align: center;
+  color: var(--hs-text-muted, #6b6b6b);
+}
+
+.tab-switcher {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--hs-border, #e5e5e5);
+}
+
+.tab-switcher__tab {
+  padding: 0.75rem 1rem;
+  margin-bottom: -1px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--hs-text-muted, #6b6b6b);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.tab-switcher__tab:hover {
+  color: var(--hs-text, #1a1a1a);
+}
+
+.tab-switcher__tab--active {
+  color: var(--hs-text, #1a1a1a);
+  border-bottom-color: var(--hs-accent, #4F46E5);
+}
+
+.tab-switcher__tab:focus-visible {
+  outline: 2px solid var(--hs-accent, #4F46E5);
+  outline-offset: 2px;
+}
+
+.search-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border-bottom: 1px solid var(--hs-border, #e5e5e5);
+}
+
+.search-toolbar__filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: 1px solid var(--hs-border, #e5e5e5);
+  border-radius: 4px;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.search-toolbar__filter-toggle:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.search-toolbar__sort {
+  margin-inline-start: auto;
+}
+
+.search-toolbar__sort select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--hs-border, #e5e5e5);
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.search-mobile-bar {
+  display: none;
+  gap: 0.75rem;
+  padding-block: 0.75rem;
+  border-bottom: 1px solid var(--hs-border, #e5e5e5);
+}
+
+.search-mobile-bar__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: 1px solid var(--hs-border, #e5e5e5);
+  border-radius: 4px;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.search-mobile-bar__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .search-toolbar__sort {
+    display: none;
+  }
+
+  .search-mobile-bar {
+    display: flex;
+  }
+}
+
+.search-filter__active {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.search-filter__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.85rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--color-pill-bg);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-pill-text);
+  text-decoration: none;
+  transition: background var(--transition-fast);
+}
+
+.search-filter__pill:hover {
+  background: var(--color-atc-soldout-bg);
+}
+
+.search-filter__pill--clear {
+  padding: 0.4rem 0.85rem;
+  background: none;
+  border: 1.5px solid var(--color-blue);
+  border-radius: 999px;
+  color: var(--color-blue);
+  font-weight: 600;
+}
+
+.search-filter__pill--clear:hover {
+  background: var(--color-blue);
+  color: #fff;
+}
+
+.search-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+  padding-block: 1.5rem;
+}
+
+.search-body__feed {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .search-body {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.search-mobile-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 199;
+}
+
+@media (min-width: 769px) {
+  .search-mobile-backdrop.is-visible {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .search-mobile-backdrop.is-visible {
+    display: block;
+  }
+}

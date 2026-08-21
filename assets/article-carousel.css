@@ -1,0 +1,232 @@
+/**
+ * article-carousel.css
+ * Layout and carousel behavior for sections/article-carousel.liquid
+ */
+
+.article-carousel {
+  padding-block: clamp(1.25rem, 2.5vw, 2.5rem);
+  background: var(--color-background, #f4f1ea);
+}
+
+.article-carousel.color-inverse {
+  background: var(--color-background-inverse, #111111);
+  color: var(--color-text-inverse, #f4f1ea);
+}
+
+/* ---------- Section width / padding ----------
+   Local to this section, set inline per-instance from the "Section
+   layout" schema settings (section_width / custom_width /
+   section_padding) — see sections/example-width-section.liquid for
+   the pattern this follows. Intentionally decoupled from the global
+   --page-margin / --page-width variables so this section never moves
+   when Theme settings > Layout > Body side padding changes. */
+
+.article-carousel__container {
+  margin-inline: auto;
+  padding-inline: var(--section-padding, 1.5rem);
+}
+
+.article-carousel__default-width {
+  max-width: var(--page-width, 1320px);
+}
+
+.article-carousel__full-width {
+  max-width: none;
+}
+
+.article-carousel__custom-width {
+  max-width: var(--custom-width, 80rem);
+}
+
+/* ---------- Header row ---------- */
+
+.article-carousel__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.article-carousel__heading {
+  font-size: clamp(1.75rem, 2.5vw, 2.25rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.article-carousel__view-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  font-size: var(--font-size-sm, 0.9375rem);
+  font-weight: 600;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
+.article-carousel__view-all svg {
+  transition: transform 0.2s ease;
+}
+
+.article-carousel__view-all:hover svg {
+  transform: translateX(3px);
+}
+
+.article-carousel__view-all:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+
+/* ---------- Track ---------- */
+
+.article-carousel__viewport {
+  position: relative;
+  /* fade the track edges once it can scroll, without clipping focus rings */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black 24px,
+    black calc(100% - 24px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black 24px,
+    black calc(100% - 24px),
+    transparent 100%
+  );
+}
+
+.article-carousel__viewport[data-edge='start'] {
+  -webkit-mask-image: linear-gradient(to right, black calc(100% - 24px), transparent 100%);
+  mask-image: linear-gradient(to right, black calc(100% - 24px), transparent 100%);
+}
+
+.article-carousel__viewport[data-edge='end'] {
+  -webkit-mask-image: linear-gradient(to right, transparent 0, black 24px);
+  mask-image: linear-gradient(to right, transparent 0, black 24px);
+}
+
+.article-carousel__viewport[data-edge='none'] {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.article-carousel__track {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(260px, 1fr);
+  gap: 1.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem 0.25rem 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.article-carousel__track::-webkit-scrollbar {
+  display: none;
+}
+
+.article-carousel__slide {
+  scroll-snap-align: start;
+  min-width: 0;
+}
+
+/* Four cards visible at a time on desktop when there's room, matching
+   the reference "Popular Articles" layout; extra cards overflow into
+   the scrollable track above. */
+@media (min-width: 1000px) {
+  .article-carousel__track {
+    grid-auto-columns: calc((100% - 3 * 1.5rem) / 4);
+  }
+}
+
+@media (min-width: 700px) and (max-width: 999px) {
+  .article-carousel__track {
+    grid-auto-columns: calc((100% - 1.5rem) / 2);
+  }
+}
+
+@media (max-width: 699px) {
+  .article-carousel__track {
+    grid-auto-columns: minmax(78%, 320px);
+    scroll-snap-type: x mandatory;
+  }
+}
+
+/* ---------- Arrow controls ---------- */
+
+.article-carousel__controls {
+  display: flex;
+  justify-content: space-between;
+  position: absolute;
+  inset: 0;
+  padding-inline: 0.5rem;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.article-carousel__controls .article-carousel__arrow {
+  pointer-events: auto;
+  align-self: center;
+}
+
+.article-carousel__controls[hidden] {
+  display: none;
+}
+
+.article-carousel:hover .article-carousel__controls,
+.article-carousel:focus-within .article-carousel__controls {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .article-carousel__controls {
+    transition: none;
+  }
+}
+
+.article-carousel__arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border, #d8d4c8);
+  background: var(--color-bg, #fff);
+  color: var(--color-text, #111);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.article-carousel__arrow:hover:not(:disabled) {
+  background-color: var(--color-bg-secondary, rgba(0, 0, 0, 0.05));
+}
+
+.article-carousel__arrow:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.article-carousel__arrow:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .article-carousel__track {
+    scroll-behavior: auto;
+  }
+}

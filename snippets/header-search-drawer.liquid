@@ -1,0 +1,65 @@
+{% comment %}
+  Header Search Drawer
+  File: snippets/header-search-drawer.liquid
+
+  Additive search style: a search icon button in the header icon
+  cluster that opens a full-screen drawer sliding down from the top of
+  the viewport. Fully independent of main-header__search-row and
+  main-header__mobile-nav (header-hamburger.liquid) — enabling this
+  does not change either, and neither of those files is read or
+  modified by this one.
+
+  Rendered by sections/main-header.liquid only when
+  section.settings.enable_search_drawer is true.
+
+  Reuses snippets/header-search.liquid (variant: 'drawer') for the
+  actual form / predictive-search / empty-state behavior. That
+  snippet's JS (header-search.js) auto-attaches to any
+  [data-search-root] found anywhere in the DOM via
+  querySelectorAll('[data-search-root]') on init, so rendering it here
+  is enough — no extra wiring needed for search itself. This file only
+  owns opening/closing the wrapping drawer.
+
+  Params:
+    enable_predictive_search {boolean} — passed straight through to
+                                          the header-search snippet
+{% endcomment %}
+
+{{ 'header-search-drawer.css' | asset_url | stylesheet_tag }}
+
+<button type="button"
+        class="main-header__icon-btn header-search-drawer__trigger"
+        id="header-search-drawer-trigger"
+        aria-label="Open search"
+        aria-expanded="false"
+        aria-controls="header-search-drawer">
+  <svg class="main-header__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="11" cy="11" r="8"></circle>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+  </svg>
+  <span class="main-header__icon-label">Search</span>
+</button>
+
+<div class="header-search-drawer"
+     id="header-search-drawer"
+     role="dialog"
+     aria-modal="true"
+     aria-label="Search"
+     aria-hidden="true"
+     hidden>
+
+  <div class="header-search-drawer__bar">
+    <div class="header-search-drawer__bar-inner">
+      {%- render 'header-search', enable_predictive_search: enable_predictive_search, variant: 'drawer' -%}
+    </div>
+    <button type="button" class="header-search-drawer__close" id="header-search-drawer-close" aria-label="Close search">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+  </div>
+
+</div>
+
+<script src="{{ 'header-search-drawer.js' | asset_url }}" defer></script>

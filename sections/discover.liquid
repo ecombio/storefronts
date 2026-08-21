@@ -1,0 +1,503 @@
+{% comment %}
+  sections/discover.liquid
+
+  Blueprint Structure:
+  discover {
+    store-page {
+      context-switcher {
+        [1.0] content-discovery ("online-shopping")
+          [1.1] article-card ("feed")
+          [1.2] creative-blocks ("in-feed")
+        [2.0] product-discovery ("online-streaming")
+          [2.1] product-card ("feed")
+          [2.2] promo-blocks ("in-feed")
+            [2.2.1] promo-carousel
+            [2.2.2] promo-product
+      }
+    }
+  }
+{% endcomment %}
+
+{{ 'discover.css' | asset_url | stylesheet_tag }}
+{{ 'product-card.css' | asset_url | stylesheet_tag }}
+{{ 'article-card.css' | asset_url | stylesheet_tag }}
+{{ 'promo-carousel.css' | asset_url | stylesheet_tag }}
+{{ 'promo-product.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign columns = section.settings.columns | default: 4
+
+  if collection != blank
+    assign feed_collection = collection
+  elsif section.settings.collection != blank
+    assign feed_collection = section.settings.collection
+  endif
+
+  assign feed_blog = section.settings.blog
+
+  assign active_context = request.query_parameters['context'] | default: 'online-shopping'
+  unless active_context == 'online-shopping' or active_context == 'online-streaming'
+    assign active_context = 'online-shopping'
+  endunless
+-%}
+
+<section class="discover">
+  <div
+    class="store-page"
+    style="--store-page-columns: {{ columns }};"
+    data-store-page
+    data-active-context="{{ active_context }}"
+  >
+
+    {%- comment -%} ── CONTEXT SWITCHER ── {%- endcomment -%}
+    <div class="context-switcher" role="tablist">
+      <button
+        class="context-switcher__tab{% if active_context == 'online-shopping' %} context-switcher__tab--active{% endif %}"
+        role="tab"
+        aria-selected="{% if active_context == 'online-shopping' %}true{% else %}false{% endif %}"
+        aria-controls="content-discovery-{{ section.id }}"
+        id="tab-online-shopping-{{ section.id }}"
+        data-context-tab="online-shopping"
+        tabindex="{% if active_context == 'online-shopping' %}0{% else %}-1{% endif %}"
+      >
+        {{ section.settings.tab_content_label | default: 'Online Shopping' }}
+      </button>
+      
+      <button
+        class="context-switcher__tab{% if active_context == 'online-streaming' %} context-switcher__tab--active{% endif %}"
+        role="tab"
+        aria-selected="{% if active_context == 'online-streaming' %}true{% else %}false{% endif %}"
+        aria-controls="product-discovery-{{ section.id }}"
+        id="tab-online-streaming-{{ section.id }}"
+        data-context-tab="online-streaming"
+        tabindex="{% if active_context == 'online-streaming' %}0{% else %}-1{% endif %}"
+      >
+        {{ section.settings.tab_product_label | default: 'Online Streaming' }}
+      </button>
+    </div>
+
+    {%- comment -%} ── [1.0] CONTENT DISCOVERY ("online-shopping") ── {%- endcomment -%}
+    <div
+      class="content-discovery"
+      id="content-discovery-{{ section.id }}"
+      role="tabpanel"
+      aria-labelledby="tab-online-shopping-{{ section.id }}"
+      data-context-division="online-shopping"
+      {% if active_context != 'online-shopping' %}hidden{% endif %}
+    >
+      {%- if feed_blog != blank and feed_blog.articles != blank -%}
+        {%- paginate feed_blog.articles by section.settings.articles_per_page -%}
+
+          {%- assign content_row_index = 1 -%}
+          <div class="content-discovery__feed">
+            {%- for article in feed_blog.articles -%}
+              
+              {%- comment -%} [1.1] article-card {%- endcomment -%}
+              <div class="content-discovery__card-wrapper">
+                {%- render 'article-card', article: article -%}
+              </div>
+
+              {%- assign position_mod = forloop.index | modulo: columns -%}
+              {%- if position_mod == 0 and forloop.last == false -%}
+                </div>{{- '' -}}
+
+                {%- comment -%} [1.2] creative-blocks (in-feed) {%- endcomment -%}
+                <div class="creative-blocks">
+                  {%- for block in section.blocks -%}
+                    {%- if block.type == 'creative_banner' and block.settings.row == content_row_index -%}
+                      <div class="creative-blocks__item" {{ block.shopify_attributes }}>
+                        {%- if block.settings.image != blank -%}
+                          <img src="{{ block.settings.image | image_url: width: 1440 }}" loading="lazy" alt="{{ block.settings.heading | escape }}">
+                        {%- endif -%}
+                        <div class="creative-blocks__content">
+                          <h3>{{ block.settings.heading }}</h3>
+                        </div>
+                      </div>
+                    {%- endif -%}
+                  {%- endfor -%}
+                </div>
+
+                {%- assign content_row_index = content_row_index | plus: 1 -%}
+                <div class="content-discovery__feed">
+              {%- endif -%}
+
+            {%- endfor -%}
+          </div>
+
+          {%- comment -%} Trailing creative-blocks {%- endcomment -%}
+          <div class="creative-blocks">
+            {%- for block in section.blocks -%}
+              {%- if block.type == 'creative_banner' and block.settings.row == content_row_index -%}
+                <div class="creative-blocks__item" {{ block.shopify_attributes }}>
+                  {%- if block.settings.image != blank -%}
+                    <img src="{{ block.settings.image | image_url: width: 1440 }}" loading="lazy" alt="{{ block.settings.heading | escape }}">
+                  {%- endif -%}
+                  <div class="creative-blocks__content">
+                    <h3>{{ block.settings.heading }}</h3>
+                  </div>
+                </div>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+
+          {%- if paginate.pages > 1 -%}
+            <nav class="discover__pagination" aria-label="{{ 'general.pagination.label' | t }}">
+              {%- if paginate.previous -%}
+                <a href="{{ paginate.previous.url }}&context=online-shopping" class="discover__page-link">
+                  &larr; {{ 'general.pagination.previous' | t }}
+                </a>
+              {%- endif -%}
+              {%- for part in paginate.parts -%}
+                {%- if part.is_link -%}
+                  <a href="{{ part.url }}&context=online-shopping" class="discover__page-link">{{ part.title }}</a>
+                {%- else -%}
+                  <span class="discover__page-link discover__page-link--current" aria-current="page">{{ part.title }}</span>
+                {%- endif -%}
+              {%- endfor -%}
+              {%- if paginate.next -%}
+                <a href="{{ paginate.next.url }}&context=online-shopping" class="discover__page-link">
+                  {{ 'general.pagination.next' | t }} &rarr;
+                </a>
+              {%- endif -%}
+            </nav>
+          {%- endif -%}
+        {%- endpaginate -%}
+      {%- else -%}
+        <p class="discover__empty">No content found.</p>
+      {%- endif -%}
+    </div>
+
+    {%- comment -%} ── [2.0] PRODUCT DISCOVERY ("online-streaming") ── {%- endcomment -%}
+    <div
+      class="product-discovery"
+      id="product-discovery-{{ section.id }}"
+      role="tabpanel"
+      aria-labelledby="tab-online-streaming-{{ section.id }}"
+      data-context-division="online-streaming"
+      {% if active_context != 'online-streaming' %}hidden{% endif %}
+    >
+      {%- if feed_collection.products != blank -%}
+        {%- paginate feed_collection.products by section.settings.products_per_page -%}
+
+          {%- assign product_row_index = 1 -%}
+          <div class="product-discovery__feed">
+            {%- for product in feed_collection.products -%}
+              
+              {%- comment -%} [2.1] product-card {%- endcomment -%}
+              <div class="product-discovery__card-wrapper">
+                {%- render 'product-card', product: product -%}
+              </div>
+
+              {%- assign position_mod = forloop.index | modulo: columns -%}
+              {%- if position_mod == 0 and forloop.last == false -%}
+                </div>{{- '' -}}
+
+                {%- comment -%} [2.2] promo-blocks (in-feed) {%- endcomment -%}
+                <div class="promo-blocks">
+                  {%- for block in section.blocks -%}
+                    {%- if block.settings.row == product_row_index -%}
+                      {%- case block.type -%}
+                        {%- when 'promo_product' -%}
+                          {%- comment -%} [2.2.2] promo-product {%- endcomment -%}
+                          {%- render 'promo-product', block: block -%}
+                        {%- when 'promo_carousel' -%}
+                          {%- comment -%} [2.2.1] promo-carousel {%- endcomment -%}
+                          {%- render 'promo-carousel', block: block -%}
+                      {%- endcase -%}
+                    {%- endif -%}
+                  {%- endfor -%}
+                </div>
+
+                {%- assign product_row_index = product_row_index | plus: 1 -%}
+                <div class="product-discovery__feed">
+              {%- endif -%}
+
+            {%- endfor -%}
+          </div>
+
+          {%- comment -%} Trailing promo-blocks {%- endcomment -%}
+          <div class="promo-blocks">
+            {%- for block in section.blocks -%}
+              {%- if block.settings.row == product_row_index -%}
+                {%- case block.type -%}
+                  {%- when 'promo_product' -%}
+                    {%- render 'promo-product', block: block -%}
+                  {%- when 'promo_carousel' -%}
+                    {%- render 'promo-carousel', block: block -%}
+                {%- endcase -%}
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+
+          {%- if paginate.pages > 1 -%}
+            <nav class="discover__pagination" aria-label="{{ 'general.pagination.label' | t }}">
+              {%- if paginate.previous -%}
+                <a href="{{ paginate.previous.url }}&context=online-streaming" class="discover__page-link">
+                  &larr; {{ 'general.pagination.previous' | t }}
+                </a>
+              {%- endif -%}
+              {%- for part in paginate.parts -%}
+                {%- if part.is_link -%}
+                  <a href="{{ part.url }}&context=online-streaming" class="discover__page-link">{{ part.title }}</a>
+                {%- else -%}
+                  <span class="discover__page-link discover__page-link--current" aria-current="page">{{ part.title }}</span>
+                {%- endif -%}
+              {%- endfor -%}
+              {%- if paginate.next -%}
+                <a href="{{ paginate.next.url }}&context=online-streaming" class="discover__page-link">
+                  {{ 'general.pagination.next' | t }} &rarr;
+                </a>
+              {%- endif -%}
+            </nav>
+          {%- endif -%}
+        {%- endpaginate -%}
+      {%- else -%}
+        <p class="discover__empty">No products found.</p>
+      {%- endif -%}
+    </div>
+
+  </div>
+</section>
+
+<script>
+  (function () {
+    var page = document.querySelector('[data-store-page]');
+    if (!page) return;
+
+    var tabs      = page.querySelectorAll('[data-context-tab]');
+    var divisions = page.querySelectorAll('[data-context-division]');
+    var PARAM     = 'context';
+
+    function activateTab(targetKey, pushState = true) {
+      tabs.forEach(function (t) {
+        var active = t.dataset.contextTab === targetKey;
+        t.classList.toggle('context-switcher__tab--active', active);
+        t.setAttribute('aria-selected', active ? 'true' : 'false');
+        t.setAttribute('tabindex', active ? '0' : '-1');
+      });
+
+      divisions.forEach(function (div) {
+        if (div.dataset.contextDivision === targetKey) {
+          div.removeAttribute('hidden');
+        } else {
+          div.setAttribute('hidden', '');
+        }
+      });
+
+      page.dataset.activeContext = targetKey;
+
+      if (pushState) {
+        var url = new URL(window.location.href);
+        url.searchParams.set(PARAM, targetKey);
+        history.pushState({ context: targetKey }, '', url.toString());
+      }
+    }
+
+    tabs.forEach(function (tab, i) {
+      tab.addEventListener('click', function () {
+        var target = tab.dataset.contextTab;
+        if (target !== page.dataset.activeContext) {
+          activateTab(target);
+        }
+      });
+
+      tab.addEventListener('keydown', function (e) {
+        var next;
+        if (e.key === 'ArrowRight') next = tabs[i + 1] || tabs[0];
+        if (e.key === 'ArrowLeft')  next = tabs[i - 1] || tabs[tabs.length - 1];
+        if (next) { next.focus(); next.click(); }
+      });
+    });
+
+    window.addEventListener('popstate', function(e) {
+      var key = (e.state && e.state.context) 
+        ? e.state.context 
+        : new URL(window.location.href).searchParams.get(PARAM) || 'online-shopping';
+      activateTab(key, false);
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Discover",
+  "tag": "section",
+  "class": "section-discover",
+  "settings": [
+    {
+      "type": "text",
+      "id": "tab_content_label",
+      "label": "Content Tab Label",
+      "default": "Online Shopping"
+    },
+    {
+      "type": "text",
+      "id": "tab_product_label",
+      "label": "Product Tab Label",
+      "default": "Online Streaming"
+    },
+    {
+      "type": "header",
+      "content": "Product Discovery"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "Columns",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "label": "Products per page",
+      "min": 4,
+      "max": 48,
+      "step": 4,
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Content Discovery"
+    },
+    {
+      "type": "blog",
+      "id": "blog",
+      "label": "Blog"
+    },
+    {
+      "type": "range",
+      "id": "articles_per_page",
+      "label": "Articles per page",
+      "min": 4,
+      "max": 48,
+      "step": 4,
+      "default": 16
+    }
+  ],
+  "blocks": [
+    {
+      "type": "promo_product",
+      "name": "Promo Product",
+      "settings": [
+        {
+          "type": "number",
+          "id": "row",
+          "label": "Insert after row",
+          "info": "1 = after the first row of products, 2 = after the second row, etc."
+        },
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        },
+        {
+          "type": "checkbox",
+          "id": "sponsored",
+          "label": "Show 'Sponsored' label",
+          "default": true
+        },
+        {
+          "type": "text",
+          "id": "sponsor_name",
+          "label": "Sponsor name (optional)",
+          "info": "Defaults to \"Sponsored\" if left blank."
+        }
+      ]
+    },
+    {
+      "type": "promo_carousel",
+      "name": "Promo Carousel",
+      "settings": [
+        {
+          "type": "number",
+          "id": "row",
+          "label": "Insert after row",
+          "info": "1 = after the first row of products, 2 = after the second row, etc."
+        },
+        {
+          "type": "select",
+          "id": "content_type",
+          "label": "Carousel content",
+          "options": [
+            { "value": "banner", "label": "Banners" },
+            { "value": "product", "label": "Products" }
+          ],
+          "default": "product"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Carousel heading"
+        },
+        {
+          "type": "collection",
+          "id": "source_collection",
+          "label": "Source collection (for products)"
+        },
+        {
+          "type": "range",
+          "id": "item_count",
+          "label": "Items to show",
+          "min": 2,
+          "max": 12,
+          "step": 1,
+          "default": 6
+        },
+        {
+          "type": "range",
+          "id": "banner_count",
+          "label": "Number of banners",
+          "min": 1,
+          "max": 3,
+          "step": 1,
+          "default": 3
+        },
+        { "type": "image_picker", "id": "banner_1_image", "label": "Banner 1 image" },
+        { "type": "text", "id": "banner_1_heading", "label": "Banner 1 heading" },
+        { "type": "url", "id": "banner_1_link", "label": "Banner 1 link" },
+        { "type": "image_picker", "id": "banner_2_image", "label": "Banner 2 image" },
+        { "type": "text", "id": "banner_2_heading", "label": "Banner 2 heading" },
+        { "type": "url", "id": "banner_2_link", "label": "Banner 2 link" },
+        { "type": "image_picker", "id": "banner_3_image", "label": "Banner 3 image" },
+        { "type": "text", "id": "banner_3_heading", "label": "Banner 3 heading" },
+        { "type": "url", "id": "banner_3_link", "label": "Banner 3 link" }
+      ]
+    },
+    {
+      "type": "creative_banner",
+      "name": "Creative Block",
+      "settings": [
+        {
+          "type": "number",
+          "id": "row",
+          "label": "Insert after row (Content Grid)"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Background Image"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Discover our latest stories"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Discover"
+    }
+  ]
+}
+{% endschema %}

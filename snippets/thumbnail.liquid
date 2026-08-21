@@ -1,0 +1,57 @@
+{%- comment -%}
+  snippets/thumbnail.liquid
+  ============================================
+  Compact card: image + title + price/subtitle + an "Add to cart"
+  button. Named generically (not "product-thumbnail") because the
+  plan is to reuse this shape for more than tagged products later —
+  e.g. branded collab / influencer / creator channel cards — not
+  just plain product data.
+
+  Click handling for [data-thumbnail-add] is fully self-contained in
+  assets/thumbnail.js (event delegation on document), so nothing that
+  renders this snippet needs to wire anything up itself — just make
+  sure assets/thumbnail.css and assets/thumbnail.js are both loaded
+  on the page. Today's only caller is snippets/video-card.liquid's
+  "card outside video" CTA style.
+
+  PARAMS:
+    product     — required, a product object
+    variant     — optional, defaults to
+                  product.selected_or_first_available_variant
+    image_width — optional, defaults to 200
+
+  Usage:
+    {% render 'thumbnail', product: product %}
+{%- endcomment -%}
+{%- liquid
+  assign variant = variant | default: product.selected_or_first_available_variant
+  assign image_width = image_width | default: 200
+-%}
+<div class="thumbnail">
+  <a class="thumbnail__link" href="{{ product.url }}">
+    {%- if product.featured_image -%}
+      {{
+        product.featured_image
+        | image_url: width: image_width
+        | image_tag: loading: 'lazy', class: 'thumbnail__image', alt: product.title
+      }}
+    {%- endif -%}
+    <span class="thumbnail__info">
+      <span class="thumbnail__title">{{ product.title }}</span>
+      <span class="thumbnail__price">{{ variant.price | money }}</span>
+    </span>
+  </a>
+
+  {%- if variant.available -%}
+    <button
+      type="button"
+      class="thumbnail__add"
+      data-thumbnail-add
+      data-variant-id="{{ variant.id }}"
+    >
+      Add to cart
+    </button>
+  {%- else -%}
+    <button type="button" class="thumbnail__add" disabled>Sold out</button>
+  {%- endif -%}
+</div>

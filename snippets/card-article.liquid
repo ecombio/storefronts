@@ -1,0 +1,40 @@
+{% comment %}
+  snippets/card-article.liquid
+  Renders a single article card for use in collection-showroom related articles.
+
+  Expects:
+    article {Object} — a Shopify article object (from custom.posts metafield list)
+{% endcomment %}
+
+<a href="{{ article.url }}" class="card-article">
+
+  {%- if article.image -%}
+    <div class="card-article__image-wrapper">
+      {{
+        article.image
+        | image_url: width: 600
+        | image_tag:
+          loading: 'lazy',
+          widths: '300, 400, 600',
+          sizes: '(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw',
+          class: 'card-article__image',
+          alt: article.image.alt | default: article.title | escape
+      }}
+    </div>
+  {%- endif -%}
+
+  <div class="card-article__content">
+    {%- if article.blog -%}
+      <span class="card-article__blog">{{ article.blog.title }}</span>
+    {%- endif -%}
+
+    <h3 class="card-article__title">{{ article.title | escape }}</h3>
+
+    {%- if article.excerpt != blank -%}
+      <p class="card-article__excerpt">{{ article.excerpt | strip_html | truncate: 120 }}</p>
+    {%- endif -%}
+
+    <span class="card-article__read-more" aria-hidden="true">Read more &rarr;</span>
+  </div>
+
+</a>

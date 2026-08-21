@@ -1,0 +1,120 @@
+/* Section layout — independent width/padding, scoped to this section
+   (see sections/example-width-section.liquid for the shared pattern) */
+.blog-category__default-width,
+.blog-category__full-width,
+.blog-category__custom-width {
+  padding-inline: var(--section-padding, 28px);
+}
+
+.blog-category__default-width {
+  max-width: 1200px;
+  margin-inline: auto;
+}
+
+.blog-category__full-width {
+  width: 100%;
+}
+
+.blog-category__custom-width {
+  max-width: var(--custom-width, 80rem);
+  margin-inline: auto;
+}
+
+.blog-category-section {
+  padding-top: 40px;
+}
+
+/* When there's no heading, don't leave 40px of dead air above the
+   nav bar — let it sit flush under whatever's above it (your site
+   nav / header) instead of floating. */
+.blog-category-section--no-title {
+  padding-top: 0;
+}
+
+.blog-category-title {
+  margin: 0 0 24px;
+  text-align: center;
+}
+
+/* FIX: true nav-bar treatment. `width: 100vw` + the negative
+   margin-left bleeds the background edge-to-edge across the
+   viewport regardless of how deeply this sits inside a
+   width-constrained ancestor — same trick used to break a
+   centered container open to full width. The pill links
+   themselves live in .blog-category-pills__inner, which keeps
+   its own max-width/centering so the *content* still respects
+   the section's width setting even though the *bar* doesn't. */
+.blog-category-pills {
+  position: sticky;
+  top: var(--header-group-height, 0px);
+  transition: top 0.3s ease;
+  z-index: 50;
+
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+
+  background: var(--color-background-secondary, #f7f7f5);
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* Collapses the offset to 0 the moment header-group.js hides the
+   fixed header, so there's no dead gap at the top of the viewport
+   while scrolling down. Mirrors the header's own 0.3s transition. */
+:root.header-group-hidden .blog-category-pills {
+  top: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blog-category-pills {
+    transition: none;
+  }
+}
+
+.blog-category-pills__inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: var(--pill-alignment, center);
+  padding-block: 14px;
+}
+
+.blog-category-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 22px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 999px;
+  font-size: 0.9rem;
+  line-height: 1;
+  text-decoration: none;
+  color: inherit;
+  white-space: nowrap;
+  background: var(--color-background, #fff);
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.blog-category-pill:hover {
+  color: var(--color-background, #fff);
+  background-color: rgba(0, 0, 0, 0.85);
+  border-color: rgba(0, 0, 0, 0.85);
+}
+
+.blog-category-pill--empty {
+  border-style: dashed;
+  opacity: 0.6;
+  cursor: default;
+}
+
+.blog-category-pill.is-active {
+  background-color: rgba(0, 0, 0, 0.85);
+  color: var(--color-background, #fff);
+  border-color: rgba(0, 0, 0, 0.85);
+  font-weight: 600;
+}
+
+.blog-category-empty {
+  text-align: center;
+  opacity: 0.7;
+  padding: 20px 0;
+}

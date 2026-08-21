@@ -1,0 +1,335 @@
+{%- comment -%}
+  sections/advocacy.liquid
+
+  Centered text + button blocks ("advocacy" statements). Layout is
+  merchant-controlled:
+    - Two column: all blocks laid out side by side in a grid.
+    - One column: blocks become slides in a centered slideshow
+      (only one visible at a time), with optional arrows/dots/autoplay.
+
+  Each block is independent content (heading, text, button) so the
+  same blocks work in either layout — switching "Layout" in the
+  theme editor just changes how they're arranged, not what's in them.
+{%- endcomment -%}
+
+{{ 'advocacy.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }} {
+    padding-top: {{ section.settings.padding_top }}px;
+    padding-bottom: {{ section.settings.padding_bottom }}px;
+    {%- if section.settings.background_type == 'image' and section.settings.background_image != blank -%}
+      --advocacy-bg-image: url({{ section.settings.background_image | image_url: width: 2000 }});
+      --advocacy-overlay-opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }};
+      --advocacy-bg: #111111;
+    {%- elsif section.settings.background_color != blank -%}
+      --advocacy-bg: {{ section.settings.background_color }};
+    {%- endif -%}
+    {%- if section.settings.text_color != blank -%}
+      --advocacy-text: {{ section.settings.text_color }};
+    {%- elsif section.settings.background_type == 'image' -%}
+      --advocacy-text: #ffffff;
+    {%- endif -%}
+  }
+  @media screen and (max-width: 749px) {
+    .section-{{ section.id }} {
+      padding-top: {{ section.settings.padding_top_mobile }}px;
+      padding-bottom: {{ section.settings.padding_bottom_mobile }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div
+  class="advocacy section-{{ section.id }} advocacy--{{ section.settings.layout }}{% if section.settings.background_type == 'image' and section.settings.background_image != blank %} advocacy--has-image{% endif %}"
+  data-section-id="{{ section.id }}"
+  data-section-type="advocacy"
+  data-layout="{{ section.settings.layout }}"
+  {% if section.settings.layout == 'one_column' %}
+    data-autoplay="{{ section.settings.autoplay }}"
+    data-autoplay-speed="{{ section.settings.autoplay_speed | times: 1000 }}"
+  {% endif %}
+>
+  <div class="advocacy__inner page-width">
+
+    {%- if section.settings.layout == 'one_column' -%}
+
+      <div class="advocacy__slideshow" data-advocacy-slideshow tabindex="0" role="region" aria-roledescription="carousel" aria-label="{{ section.settings.heading | default: 'Advocacy' | escape }}">
+        <div class="advocacy__track" data-advocacy-track>
+          {%- for block in section.blocks -%}
+            <div
+              class="advocacy__slide{% if forloop.first %} is-active{% endif %}"
+              data-advocacy-slide
+              role="group"
+              aria-roledescription="slide"
+              aria-label="{{ forloop.index }} of {{ forloop.length }}"
+              {% unless forloop.first %}aria-hidden="true"{% endunless %}
+              {{ block.shopify_attributes }}
+            >
+              <span class="advocacy__eyebrow" aria-hidden="true"></span>
+              {%- if block.settings.heading != blank -%}
+                <h3 class="advocacy__heading">{{ block.settings.heading }}</h3>
+              {%- endif -%}
+              {%- if block.settings.text != blank -%}
+                <div class="advocacy__text rte">{{ block.settings.text }}</div>
+              {%- endif -%}
+              {%- if block.settings.button_label != blank -%}
+                <a
+                  {% if block.settings.button_link == blank %}role="link" aria-disabled="true"{% else %}href="{{ block.settings.button_link }}"{% endif %}
+                  class="button button--{{ block.settings.button_style }}"
+                >
+                  {{ block.settings.button_label | escape }}
+                </a>
+              {%- endif -%}
+            </div>
+          {%- endfor -%}
+        </div>
+
+        {%- if section.settings.show_arrows and section.blocks.size > 1 -%}
+          <button type="button" class="advocacy__arrow advocacy__arrow--prev" data-advocacy-prev aria-label="Previous">
+            <svg width="10" height="16" viewBox="0 0 10 16" fill="none" aria-hidden="true"><path d="M9 1L2 8L9 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button type="button" class="advocacy__arrow advocacy__arrow--next" data-advocacy-next aria-label="Next">
+            <svg width="10" height="16" viewBox="0 0 10 16" fill="none" aria-hidden="true"><path d="M1 1L8 8L1 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        {%- endif -%}
+
+        {%- if section.settings.show_dots and section.blocks.size > 1 -%}
+          <div class="advocacy__dots" data-advocacy-dots role="tablist">
+            {%- for block in section.blocks -%}
+              <button
+                type="button"
+                class="advocacy__dot{% if forloop.first %} is-active{% endif %}"
+                data-advocacy-dot
+                data-index="{{ forloop.index0 }}"
+                role="tab"
+                aria-label="Go to slide {{ forloop.index }}"
+                aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+              ></button>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+      </div>
+
+    {%- else -%}
+
+      <div class="advocacy__grid">
+        {%- for block in section.blocks -%}
+          <div class="advocacy__item" {{ block.shopify_attributes }}>
+            <span class="advocacy__eyebrow" aria-hidden="true"></span>
+            {%- if block.settings.heading != blank -%}
+              <h3 class="advocacy__heading">{{ block.settings.heading }}</h3>
+            {%- endif -%}
+            {%- if block.settings.text != blank -%}
+              <div class="advocacy__text rte">{{ block.settings.text }}</div>
+            {%- endif -%}
+            {%- if block.settings.button_label != blank -%}
+              <a
+                {% if block.settings.button_link == blank %}role="link" aria-disabled="true"{% else %}href="{{ block.settings.button_link }}"{% endif %}
+                class="button button--{{ block.settings.button_style }}"
+              >
+                {{ block.settings.button_label | escape }}
+              </a>
+            {%- endif -%}
+          </div>
+        {%- endfor -%}
+      </div>
+
+    {%- endif -%}
+
+  </div>
+</div>
+
+<script src="{{ 'advocacy.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Advocacy",
+  "tag": "section",
+  "class": "shopify-section--advocacy",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "options": [
+        { "value": "two_column", "label": "Two columns" },
+        { "value": "one_column", "label": "One column (slideshow)" }
+      ],
+      "default": "two_column"
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Autoplay slideshow",
+      "default": false,
+      "info": "Only applies to the one column slideshow layout."
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "label": "Autoplay speed",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "default": 5
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show arrows",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Show dots",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Section styling"
+    },
+    {
+      "type": "select",
+      "id": "background_type",
+      "label": "Background",
+      "options": [
+        { "value": "color", "label": "Color" },
+        { "value": "image", "label": "Image" }
+      ],
+      "default": "color"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "info": "Leave blank to inherit the theme's default background.",
+      "visible_if": "{{ section.settings.background_type == 'color' }}"
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background image",
+      "visible_if": "{{ section.settings.background_type == 'image' }}"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Image overlay darkness",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "default": 30,
+      "info": "Darkens the image so text stays legible.",
+      "visible_if": "{{ section.settings.background_type == 'image' }}"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "info": "Leave blank to inherit the theme's default text color. With an image background, white or another light color usually works best."
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding (desktop)",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding (desktop)",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Top padding (mobile)",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Bottom padding (mobile)",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    }
+  ],
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Advocacy item",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Ride further, worry less"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Share the message that matters most — a mission statement, a customer voice, a reason to believe.</p>"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Button label",
+          "default": "Learn more"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "Button link"
+        },
+        {
+          "type": "select",
+          "id": "button_style",
+          "label": "Button style",
+          "options": [
+            { "value": "primary", "label": "Primary" },
+            { "value": "secondary", "label": "Secondary" },
+            { "value": "outline", "label": "Outline" }
+          ],
+          "default": "primary"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Advocacy",
+      "blocks": [
+        { "type": "item" },
+        { "type": "item" }
+      ]
+    }
+  ]
+}
+{% endschema %}

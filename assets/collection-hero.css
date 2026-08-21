@@ -1,0 +1,50 @@
+/* =============================================================
+   Collection Hero
+   File: assets/collection-hero.css
+   Loaded by: snippets/collection-hero.liquid
+
+   Container mirrors the header's width recipe exactly:
+   .main-header__inner / .utility-bar__inner / .menu-bar / .footer-width
+   all use max-width: 1184px + margin: 0 auto + padding: 0 24px,
+   dropping to 0 12px under 639px. Keep in sync with those.
+   ============================================================= */
+
+.collection-header {
+  width: 100%;
+  max-width: 1184px;
+  margin: 0 auto;
+  padding: 40px 24px 32px;
+}
+
+@media (max-width: 639px) {
+  .collection-header {
+    padding: 28px 12px 20px;
+  }
+}
+
+.collection-description,
+.collection-description.rte {
+  color: var(--hs-text-muted) !important;
+}
+.collection-description.rte a {
+  color: var(--hs-accent, #4F46E5);
+}
+
+.collection-description p {
+  margin: 0 0 0.75rem;
+}
+
+.collection-description p:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 639px) {
+  .collection-title {
+    font-size: 1.5rem;
+  }
+
+  .collection-description {
+    font-size: 0.875rem;
+    max-width: none;
+  }
+}

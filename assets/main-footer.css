@@ -1,0 +1,372 @@
+.main-footer {
+  background: var(--hdr-bg);
+  border-top: 1px solid var(--hdr-border);
+  color: var(--hdr-text);
+  font-family: var(--hdr-font);
+}
+
+.footer-width {
+  width: 100%;
+  margin: 0 auto;
+  padding-inline: var(--section-padding, 24px);
+}
+
+.main-footer--default-width .footer-width {
+  max-width: 1184px;
+}
+
+.main-footer--full-width .footer-width {
+  max-width: none;
+}
+
+.main-footer--custom-width .footer-width {
+  max-width: var(--custom-width);
+}
+
+@media (max-width: 639px) {
+  .footer-width {
+    padding-inline: 12px;
+  }
+}
+
+.main-footer__menu {
+  padding: 48px 0 32px;
+  border-bottom: 1px solid var(--hdr-border);
+}
+
+.footer-menu__heading--top {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--hdr-text);
+  margin: 0 0 24px;
+}
+
+.footer-menu__columns {
+  display: grid;
+  gap: 32px;
+}
+
+.footer-menu__columns,
+.footer-menu__columns--4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.footer-menu__columns--5 {
+  grid-template-columns: repeat(5, 1fr);
+  gap: 32px 24px;
+}
+
+.footer-menu__columns--6 {
+  grid-template-columns: repeat(6, 1fr);
+  gap: 32px 20px;
+}
+
+.footer-menu__column {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer-menu__column--badges {
+  align-items: flex-start;
+}
+
+.footer-menu__heading {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--hdr-text);
+  margin: 0 0 14px;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.footer-menu__section-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--hdr-muted);
+  margin: 14px 0 6px;
+}
+
+.footer-menu__section-title:first-child {
+  margin-top: 0;
+}
+
+.footer-menu__link {
+  display: block;
+  padding: 6px 0;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--hdr-muted);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.footer-menu__link:hover {
+  color: var(--hdr-accent);
+}
+
+.footer-menu__badges {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.footer-menu__badge-link {
+  display: block;
+  position: relative;
+}
+
+.footer-menu__badge-img {
+  display: block;
+  height: 44px;
+  width: auto;
+}
+
+.footer-menu__badge-link--flip .footer-menu__badge-img--hover {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: auto;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.footer-menu__badge-link--flip:hover .footer-menu__badge-img--hover,
+.footer-menu__badge-link--flip:focus-visible .footer-menu__badge-img--hover {
+  opacity: 1;
+}
+
+.main-footer__content:not(:empty) {
+  padding: 32px 0;
+  border-bottom: 1px solid var(--hdr-border);
+}
+
+/* ─────────────────────────────────────────────
+   ORIGINAL STYLE — bottom icon bar
+   Only rendered when Footer style = "original"
+   ───────────────────────────────────────────── */
+
+.main-footer__icons {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-bottom: 24px;
+}
+
+/* ─────────────────────────────────────────────
+   SOCIALS + PAYMENTS
+   Shared between both footer styles. In "original"
+   these sit inside .main-footer__icons; in "columns"
+   they render inside a .footer-menu__column, hence
+   the margin-top for spacing under the column links.
+   ───────────────────────────────────────────── */
+
+.main-footer__socials {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footer-menu__column .main-footer__socials {
+  margin-top: 16px;
+}
+
+.main-footer__socials a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: var(--hdr-search-bg);
+  transition: background 0.15s ease;
+}
+
+.main-footer__socials a:hover {
+  background: var(--hdr-border);
+}
+
+.main-footer__socials img {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+.main-footer__payments {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.footer-menu__column .main-footer__payments {
+  margin-top: 16px;
+  gap: 8px;
+}
+
+.main-footer__payments img {
+  height: 22px;
+  width: auto;
+  display: block;
+}
+
+.footer-menu__column .main-footer__payments img {
+  height: 20px;
+}
+
+.main-footer__bottom {
+  padding: 24px 0 32px;
+}
+
+/* Columns style has no icon row here anymore (icons live in a menu
+   column instead) — .main-footer__menu's border-bottom already acts
+   as the divider, so drop the second border-top on bottom-inner and
+   collapse the padding instead of leaving an empty bordered gap. */
+.main-footer__bottom--compact {
+  padding-top: 12px;
+}
+
+.main-footer__bottom--compact .main-footer__bottom-inner {
+  padding-top: 0;
+  border-top: none;
+}
+
+.main-footer__bottom-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 20px;
+  border-top: 1px solid var(--hdr-border);
+}
+
+.main-footer__copyright p {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--hdr-muted);
+}
+
+.main-footer__policies {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.main-footer__policies a {
+  font-size: 0.8125rem;
+  color: var(--hdr-muted);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.main-footer__policies a:hover {
+  color: var(--hdr-accent);
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .footer-menu__columns,
+  .footer-menu__columns--4,
+  .footer-menu__columns--5,
+  .footer-menu__columns--6 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px 32px;
+  }
+
+  .main-footer__menu {
+    padding: 36px 0 24px;
+  }
+}
+
+@media (max-width: 639px) {
+  .main-footer__menu {
+    padding: 24px 0 8px;
+  }
+
+  .footer-menu__columns,
+  .footer-menu__columns--4,
+  .footer-menu__columns--5,
+  .footer-menu__columns--6 {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .main-footer__icons {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .main-footer__bottom-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 1023px) {
+  .js-footer-accordion .footer-menu__column {
+    border-bottom: 1px solid var(--hdr-border);
+  }
+
+  .js-footer-accordion .footer-menu__column:last-child {
+    border-bottom: none;
+  }
+
+  .js-footer-accordion .footer-menu__heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 14px 0;
+    margin: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+    color: var(--hdr-text);
+  }
+
+  .js-footer-accordion .footer-menu__heading:hover {
+    color: var(--hdr-accent);
+  }
+
+  .footer-menu__heading-chevron {
+    flex-shrink: 0;
+    margin-left: 12px;
+    transition: transform 0.2s ease;
+  }
+
+  .js-footer-accordion .footer-menu__heading[aria-expanded="true"] .footer-menu__heading-chevron {
+    transform: rotate(180deg);
+  }
+
+  .js-footer-accordion .footer-menu__column-body {
+    overflow: hidden;
+  }
+
+  .js-footer-accordion .footer-menu__column-body[hidden] {
+    display: none;
+  }
+
+  .js-footer-accordion .footer-menu__column-body {
+    padding-bottom: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer-menu__link,
+  .main-footer__socials a,
+  .main-footer__policies a,
+  .footer-menu__heading-chevron,
+  .footer-menu__badge-img--hover {
+    transition: none;
+  }
+}

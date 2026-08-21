@@ -1,0 +1,221 @@
+/* ─── Fonts ───────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap');
+
+/* ─── Tokens ──────────────────────────────────────────────── */
+/* Shared design tokens — main-product.css depends on these, so
+   product-detail.css must load first (it's the section stylesheet). */
+:root {
+  --font-family:          'Instrument Sans', sans-serif;
+  --color-text:           #000000;
+  --color-text-secondary: #666666;
+  --color-sale:           #D32F2F;
+  --color-border:         #E5E5E5;
+  --color-background:     #FFFFFF;
+  --color-background-alt: #EDEDED;
+  --color-success:        #4CAF50;
+}
+
+/* ─── Page ────────────────────────────────────────────────── */
+/* max-width + padding handled by .shopify-section grid in critical.css */
+.product-page {
+  font-family: var(--font-family);
+  color:        var(--color-text);
+}
+
+/* ─── Breadcrumbs ─────────────────────────────────────────── */
+/* horizontal padding from .shopify-section grid; vertical only here */
+.breadcrumbs {
+  padding: 20px 0;
+}
+
+.breadcrumbs-container {
+  display:     flex;
+  align-items: center;
+  font-size:   15px;
+  font-weight: 500;
+}
+
+.breadcrumbs a {
+  color:           var(--color-text);
+  text-decoration: none;
+  line-height:     24px;
+}
+
+.breadcrumbs a:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb-divider {
+  padding:     0 12px;
+  display:     flex;
+  align-items: center;
+}
+
+.divider-line {
+  width:            1px;
+  height:           14px;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.breadcrumb-current {
+  color:       var(--color-text-secondary);
+  line-height: 24px;
+}
+
+/* ─── Two-Column Layout ───────────────────────────────────── */
+.product-layout {
+  display:               grid;
+  grid-template-columns: 1fr 1fr;
+  gap:                   96px;
+  align-items:           start;
+  margin-bottom:         80px;
+}
+
+.product-col {
+  display:        flex;
+  flex-direction: column;
+  min-width:      0;
+}
+
+/*
+ * z-index layers on this page:
+ *   200  — sticky header          (.ecombio-sticky-header)
+ *   300  — sticky ATC bar         (.sticky-atc)
+ *   900  — description overlay    (.pd-overlay)
+ *   901  — description panels     (.pd-panel)
+ */
+.product-col--left {
+  position:   sticky;
+  top:        24px;
+  align-self: start;
+}
+
+/* Right col scrolls naturally — sticky caused clipping on short viewports */
+.product-col--scroll {
+  position: static;
+}
+
+.product-col__flow {
+  margin-top: 48px;
+}
+
+/* ─── Gallery ─────────────────────────────────────────────── */
+/* Moved to product-media.css (styles for product-media.liquid:
+   .product-gallery, .product-thumbnails, .thumbnail-*, .product-gallery-main,
+   .gallery-viewer, .main-image-container). It loads after this stylesheet,
+   since it depends on the tokens defined here. */
+
+/* ─── Vendor / Type (used by product-header snippets) ─────── */
+.product-vendor,
+.product-type {
+  font-size:   15px;
+  font-weight: 500;
+  line-height: 24px;
+  color:       var(--color-text-secondary);
+}
+
+.product-vendor a {
+  color:           var(--color-text);
+  text-decoration: none;
+}
+
+.product-vendor a:hover { text-decoration: underline; }
+
+/* ─── Specifications accordion ────────────────────────────── */
+.specifications-accordion,
+.accordion-item {
+  border-bottom: 1px solid var(--color-text);
+}
+
+.accordion-summary {
+  display:         flex;
+  justify-content: space-between;
+  align-items:     center;
+  padding:         16px 0 17px;
+  cursor:          pointer;
+  list-style:      none;
+}
+
+.accordion-summary::-webkit-details-marker { display: none; }
+
+.accordion-title {
+  font-size:   22px;
+  font-weight: 700;
+  line-height: 32px;
+  margin:      0;
+}
+
+.accordion-icon {
+  width:       20px;
+  height:      20px;
+  flex-shrink: 0;
+  transition:  transform 0.3s;
+}
+
+details[open] .accordion-icon.plus       { transform: rotate(45deg); }
+details[open] .accordion-icon:not(.plus) { transform: rotate(180deg); }
+
+.accordion-content { padding-bottom: 24px; }
+
+.specifications-description {
+  font-size:     15px;
+  line-height:   24px;
+  color:         var(--color-text-secondary);
+  margin-bottom: 24px;
+}
+
+.specifications-description p { margin: 0 0 4px 0; }
+
+.specifications-table { width: 100%; border-collapse: collapse; }
+
+.table-row { display: flex; }
+.table-row.alternate { background-color: var(--color-background-alt); }
+
+.table-cell {
+  flex:        1;
+  padding:     12px 16px;
+  font-size:   15px;
+  font-weight: 500;
+  line-height: 24px;
+}
+
+.table-cell.label { color: var(--color-text); }
+.table-cell.value { color: var(--color-text-secondary); }
+
+.product-accordion-section .accordion-item {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+/* ─── Utilities ───────────────────────────────────────────── */
+.visually-hidden {
+  position:    absolute;
+  width:       1px;
+  height:      1px;
+  padding:     0;
+  margin:      -1px;
+  overflow:    hidden;
+  clip:        rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ─── Responsive ──────────────────────────────────────────── */
+@media (max-width: 1200px) {
+  .product-layout { gap: 48px; }
+}
+
+@media (max-width: 768px) {
+  .breadcrumbs { padding: 16px 0; }
+
+  .product-layout {
+    grid-template-columns: 1fr;
+    gap:                   32px;
+  }
+
+  .product-col--left,
+  .product-col--right {
+    position: static;
+  }
+
+  .product-col__flow { margin-top: 32px; }
+}

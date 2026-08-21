@@ -1,0 +1,28 @@
+{%- comment -%}
+  snippets/block-accordion.liquid
+  Renders an accordion_block from article.metafields.custom.content_blocks
+
+  Expected block shape:
+  {
+    "type": "accordion_block",
+    "items": [
+      { "heading": "Question text", "content": "Answer text (can include HTML)" }
+    ]
+  }
+{%- endcomment -%}
+
+<div class="accordion">
+  {%- for item in block.items -%}
+    <details class="accordion__item">
+      <summary class="accordion__summary">
+        {{ item.heading }}
+        <svg class="accordion__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </summary>
+      <div class="accordion__content">
+        {{ item.content }}
+      </div>
+    </details>
+  {%- endfor -%}
+</div>

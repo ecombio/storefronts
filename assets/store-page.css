@@ -1,0 +1,81 @@
+/* assets/product-feed.css
+   Styles for sections/product-feed.liquid
+
+   Matches the markup actually emitted by that section:
+     .product-feed
+       .product-feed__grid
+       .product-feed__empty
+       .product-feed__pagination
+         .product-feed__page-link
+         .product-feed__page-link--current
+
+   Column count is set inline per-section via --product-feed-columns.
+*/
+
+.product-feed {
+  --product-feed-columns: 4;
+  --product-feed-gap: 1.5rem;
+}
+
+.product-feed__grid {
+  display: grid;
+  grid-template-columns: repeat(var(--product-feed-columns), minmax(0, 1fr));
+  gap: var(--product-feed-gap);
+}
+
+@media (max-width: 989px) {
+  .product-feed__grid {
+    grid-template-columns: repeat(
+      min(var(--product-feed-columns), 3),
+      minmax(0, 1fr)
+    );
+  }
+}
+
+@media (max-width: 749px) {
+  .product-feed__grid {
+    grid-template-columns: repeat(
+      min(var(--product-feed-columns), 2),
+      minmax(0, 1fr)
+    );
+    gap: 1rem;
+  }
+}
+
+.product-feed__empty {
+  padding: 4rem 1rem;
+  text-align: center;
+  color: var(--color-foreground-muted, #6b6b6b);
+}
+
+.product-feed__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.product-feed__page-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.25rem;
+  height: 2.25rem;
+  padding: 0 0.5rem;
+  border-radius: 999px;
+  text-decoration: none;
+  color: inherit;
+  font-size: 0.875rem;
+}
+
+a.product-feed__page-link:hover {
+  background: var(--color-background-secondary, #f1f1f1);
+}
+
+.product-feed__page-link--current {
+  background: var(--color-foreground, #111);
+  color: var(--color-background, #fff);
+  font-weight: 600;
+}

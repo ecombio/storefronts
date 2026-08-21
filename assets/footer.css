@@ -1,0 +1,303 @@
+/* =============================================
+   ECOMBIO FOOTER - Main Styles
+============================================= */
+
+.footer {
+  background-color: #111111;
+  color: #ffffff;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Light theme support */
+[data-theme-preset="focus"] .footer {
+  background-color: #f8f8f8;
+  color: #333333;
+}
+
+[data-theme-preset="focus"] .footer__top-heading,
+[data-theme-preset="focus"] .footer__body-heading {
+  color: #111111;
+}
+
+[data-theme-preset="focus"] .footer__bottom {
+  border-top-color: #e0e0e0;
+  color: #666666;
+}
+
+[data-theme-preset="focus"] .footer__legal a {
+  color: #666666;
+}
+
+[data-theme-preset="focus"] .footer__legal a:hover {
+  color: #111111;
+}
+
+.footer__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 56px 40px 40px;
+}
+
+/* ========== FOOTER TOP BAR ========== */
+.footer__top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-bottom: 40px;
+  margin-bottom: 40px;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.footer__top-heading {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.01em;
+}
+
+/* ========== FOOTER BODY NAV ========== */
+.footer__body-nav {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 40px 32px;
+  margin-bottom: 48px;
+}
+
+.footer__body-nav-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer__body-heading {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #ffffff;
+  margin: 0 0 16px;
+}
+
+.footer__body-nav a,
+.footer__nav-link {
+  color: #888888;
+  text-decoration: none;
+  font-size: 14px;
+  line-height: 1;
+  padding: 6px 0;
+  display: block;
+  transition: color 0.15s ease;
+}
+
+.footer__body-nav a:hover,
+.footer__nav-link:hover {
+  color: #ffffff;
+}
+
+/* ========== FOOTER BOTTOM BAR (Sticky Mobile) ========== */
+.footer__mobile-bottom-bar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  background: #111111;
+  border-top: 1px solid #2a2a2a;
+  padding: 8px 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.bottom-nav__list {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.bottom-nav__item {
+  flex: 1;
+  text-align: center;
+}
+
+.bottom-nav__link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: #666666;
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 500;
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+.bottom-nav__link:hover {
+  color: #aaaaaa;
+}
+
+.bottom-nav__link.is-active {
+  color: #00ff9d;
+}
+
+.bottom-nav__icon {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bottom-nav__badge {
+  position: absolute;
+  top: -4px;
+  right: calc(50% - 22px);
+  background: #00ff9d;
+  color: #111111;
+  font-size: 9px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+/* ========== STATIC BOTTOM COPYRIGHT ========== */
+.footer__bottom {
+  border-top: 1px solid #2a2a2a;
+  padding: 20px 40px;
+  font-size: 12px;
+  color: #555555;
+}
+
+.footer__bottom-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footer__legal {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.footer__legal a {
+  color: #555555;
+  text-decoration: none;
+  padding: 2px 8px;
+  border-radius: 4px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.footer__legal a:hover {
+  color: #ffffff;
+  background: #1e1e1e;
+}
+
+/* ========== MEGA MENU OVERRIDES (Dark Theme) ========== */
+.footer-mega-menu__heading {
+  color: #ffffff !important;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.footer-mega-menu__section-title {
+  color: #888888 !important;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 1024px) {
+  .footer__inner {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .footer__bottom {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .footer__body-nav {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px 24px;
+  }
+}
+
+@media (max-width: 749px) {
+  .footer__inner {
+    padding: 40px 20px 100px; /* bottom clearance for sticky bar */
+  }
+
+  .footer__top-bar {
+    padding-bottom: 28px;
+    margin-bottom: 28px;
+  }
+
+  .footer__body-nav {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 28px 20px;
+  }
+
+  .footer__bottom {
+    padding: 16px 20px;
+  }
+
+  .footer__bottom-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .footer__mobile-bottom-bar {
+    display: block;
+  }
+}
+
+@media (max-width: 400px) {
+  .footer__body-nav {
+    grid-template-columns: 1fr;
+  }
+}
+/* ============================================
+   STICKY FOOTER - Force to bottom (Strong)
+   ============================================ */
+
+html, body {
+  height: 100%;
+}
+
+body {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 100dvh !important;   /* better than 100vh */
+}
+
+main[role="main"],
+main {
+  flex: 1 0 auto !important;
+}
+
+/* Extra safety for your footer */
+footer[role="contentinfo"] {
+  margin-top: auto !important;
+}

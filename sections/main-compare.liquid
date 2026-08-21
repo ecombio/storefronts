@@ -1,0 +1,158 @@
+{{ 'main-compare.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign width_type = section.settings.section_width
+  if width_type == blank
+    assign width_class = 'compare__default-width'
+  elsif width_type == 'full-width'
+    assign width_class = 'compare__full-width'
+  else
+    assign width_class = 'compare__custom-width'
+  endif
+-%}
+
+<section
+  class="main-compare {{ width_class }}"
+  data-section-id="{{ section.id }}"
+  style="
+    --section-padding: {{ section.settings.section_padding }}px;
+    {%- if width_type == 'custom-width' %}
+      --custom-width: {{ section.settings.custom_width }}rem;
+    {%- endif %}
+  "
+>
+  <header class="compare-header">
+    <h1 class="compare-header__title">{{ page.title | default: 'Compare' }}</h1>
+    <p class="compare-header__count" data-compare-count-label aria-live="polite"></p>
+  </header>
+
+  <div class="compare-empty" data-compare-empty hidden>
+    <div class="compare-empty__icon" aria-hidden="true">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="m16 3 4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M20 7H4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="m8 21-4-4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M4 17h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <p class="compare-empty__message">{{ section.settings.empty_message | default: "You haven't added anything to compare yet." }}</p>
+    <a class="compare-empty__cta btn" href="{{ routes.all_products_collection_url }}">
+      Browse products
+    </a>
+  </div>
+
+  <div class="compare-table-wrap" data-compare-table-wrap hidden>
+    <table class="compare-table" data-compare-table>
+      <thead data-compare-thead></thead>
+      <tbody data-compare-tbody></tbody>
+    </table>
+  </div>
+
+  <div class="compare-actions" data-compare-actions hidden>
+    <button class="compare-actions__clear btn btn--plain" data-compare-page-clear type="button">
+      Clear compare
+    </button>
+  </div>
+</section>
+
+<script>
+  window.__comparePageSettings = {
+    enableAtc:   {{ section.settings.enable_atc   | json }},
+    showPrice:   {{ section.settings.show_price   | json }},
+    showVendor:  {{ section.settings.show_vendor  | json }},
+    showAvailability: {{ section.settings.show_availability | json }},
+    routes: {
+      cartAdd:  '{{ routes.cart_add_url }}.js',
+      products: '/products/'
+    }
+  };
+</script>
+<script src="{{ 'main-compare.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "Compare",
+  "class": "section-compare",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "header",
+      "content": "Table options"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_atc",
+      "label": "Show Add to Cart row",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_price",
+      "label": "Show price row",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "Show vendor row",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_availability",
+      "label": "Show availability row",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Empty state"
+    },
+    {
+      "type": "text",
+      "id": "empty_message",
+      "label": "Empty message",
+      "default": "You haven't added anything to compare yet."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Compare"
+    }
+  ]
+}
+{% endschema %}

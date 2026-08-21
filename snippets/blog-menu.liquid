@@ -1,0 +1,122 @@
+{%- liquid
+  assign custom_links_visible = 0
+  for link in custom_links
+    assign cl_label = link.fields.label.value
+    assign cl_url = link.fields.url.value
+    if cl_label != blank and cl_url != blank
+      assign custom_links_visible = custom_links_visible | plus: 1
+    endif
+  endfor
+  assign nav_items_total = blocks.size | plus: custom_links_visible
+-%}
+
+<nav
+  class="blog-menu{% if sticky %} blog-menu--sticky{% endif %}"
+  data-blog-menu
+  aria-label="{{ heading | default: 'Blog navigation' | escape }}"
+  style="
+    --blog-menu-bg: {{ background_color | default: '#ffffff' }};
+    --blog-menu-text: {{ text_color | default: '#111111' }};
+    --blog-menu-accent: {{ accent_color | default: '#0A3161' }};
+    --blog-menu-border: {{ border_color | default: '#e5e5e5' }};
+  "
+>
+  <div class="blog-menu__inner page-width">
+
+    {%- if heading != blank -%}
+      <div class="blog-menu__heading">{{ heading | escape }}</div>
+    {%- endif -%}
+
+    {%- if nav_items_total > 0 -%}
+      <button
+        type="button"
+        class="blog-menu__toggle"
+        data-blog-menu-toggle
+        aria-expanded="false"
+        aria-controls="blog-menu-list-{{ section_id }}"
+      >
+        <span class="blog-menu__toggle-label">{{ mobile_label | default: 'Menu' | escape }}</span>
+        <span class="blog-menu__toggle-icon" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
+      </button>
+
+      <ul class="blog-menu__list" id="blog-menu-list-{{ section_id }}" data-blog-menu-list>
+        {%- for block in blocks -%}
+
+          {%- case block.type -%}
+
+            {%- when 'single_link' -%}
+              <li class="blog-menu__item blog-menu__item--single" {{ block.shopify_attributes }}>
+                {%- if block.settings.url != blank -%}
+                  <a
+                    href="{{ block.settings.url }}"
+                    class="blog-menu__link"
+                    {% if block.settings.open_in_new_tab %}target="_blank" rel="noopener"{% endif %}
+                  >
+                    {{ block.settings.label | default: 'Link' | escape }}
+                  </a>
+                {%- else -%}
+                  <span class="blog-menu__link blog-menu__link--disabled">
+                    {{ block.settings.label | default: 'Link' | escape }}
+                  </span>
+                {%- endif -%}
+              </li>
+
+            {%- when 'link_list' -%}
+              {%- assign menu_handle = block.settings.menu -%}
+              {%- assign menu = linklists[menu_handle] -%}
+              <li class="blog-menu__item blog-menu__item--list{% if menu.links.size == 0 %} blog-menu__item--empty{% endif %}" {{ block.shopify_attributes }}>
+                <button
+                  type="button"
+                  class="blog-menu__link blog-menu__link--parent"
+                  data-blog-menu-dropdown-toggle
+                  aria-expanded="false"
+                  aria-haspopup="true"
+                >
+                  {{ block.settings.label | default: menu.title | default: 'More' | escape }}
+                  <span class="blog-menu__caret" aria-hidden="true"></span>
+                </button>
+
+                {%- if menu != blank and menu.links.size > 0 -%}
+                  <ul class="blog-menu__dropdown" data-blog-menu-dropdown>
+                    {%- for link in menu.links -%}
+                      <li class="blog-menu__dropdown-item">
+                        <a
+                          href="{{ link.url }}"
+                          class="blog-menu__dropdown-link{% if link.active %} blog-menu__dropdown-link--active{% endif %}"
+                        >
+                          {{ link.title | escape }}
+                        </a>
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                {%- endif -%}
+              </li>
+
+          {%- endcase -%}
+
+        {%- endfor -%}
+
+        {%- for link in custom_links -%}
+          {%- assign cl_label = link.fields.label.value -%}
+          {%- assign cl_url = link.fields.url.value -%}
+          {%- if cl_label != blank and cl_url != blank -%}
+            <li class="blog-menu__item blog-menu__item--single" data-metaobject-link>
+              <a
+                href="{{ cl_url }}"
+                class="blog-menu__link"
+                {% if link.fields.open_in_new_tab.value %}target="_blank" rel="noopener"{% endif %}
+              >
+                {{ cl_label | escape }}
+              </a>
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+
+  </div>
+</nav>

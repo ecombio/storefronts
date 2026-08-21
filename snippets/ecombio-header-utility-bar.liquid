@@ -1,0 +1,717 @@
+{% comment %}
+  ECOMBIO Header Utility Bar
+  File: snippets/ecombio-header-utility-bar.liquid
+
+  Renders a slim 32px bar above the main header.
+    Left  — utility links (pipe-delimited setting: "Label|/url, Label 2|/url-2")
+    Right — region picker (opens dropdown) + currency + language selectors
+
+  Region picker dropdown is teleported to <body> via JS to avoid
+  stacking context / overflow:hidden clipping from the header.
+
+  Usage (snippets/ecombio-header-top.liquid):
+    {%- render 'ecombio-header-utility-bar',
+          header_style:  header_style,
+          links:         links,
+          show_currency: show_currency,
+          show_locale:   show_locale
+    -%}
+{% endcomment %}
+
+{%- liquid
+  assign bar_style  = header_style | default: 'hyper'
+  assign show_curr  = show_currency | default: true
+  assign show_loc   = show_locale   | default: true
+  assign link_pairs = links | split: ','
+-%}
+
+<div class="ecombio-utility-bar ecombio-utility-bar--{{ bar_style }}"
+     role="navigation"
+     aria-label="Utility bar"
+     id="ecombio-utility-bar">
+
+  <div class="ecombio-utility-bar__inner">
+
+    {%- comment -%} ── LEFT: links ── {%- endcomment -%}
+    <div class="ecombio-utility-bar__col ecombio-utility-bar__col--left">
+      <ul class="ecombio-utility-bar__links" role="list">
+        {%- for pair in link_pairs -%}
+          {%- assign parts = pair | strip | split: '|' -%}
+          {%- if parts.size == 2 -%}
+            <li>
+              <a href="{{ parts[1] | strip | escape }}" class="ecombio-utility-bar__link">
+                {{- parts[0] | strip | escape -}}
+              </a>
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+    </div>
+
+    {%- comment -%} ── RIGHT: currency + locale + region picker ── {%- endcomment -%}
+    <div class="ecombio-utility-bar__col ecombio-utility-bar__col--right">
+      <div class="ecombio-utility-bar__switchers">
+
+        {%- if show_curr and shop.enabled_currencies.size > 1 -%}
+          <div class="ecombio-utility-bar__switcher">
+            {%- form 'currency', id: 'ecombio-currency-form', return_to: request.path -%}
+              <label for="ecombio-currency-select" class="visually-hidden">Currency</label>
+              <div class="ecombio-utility-bar__select-wrap">
+                <select id="ecombio-currency-select"
+                        name="currency"
+                        class="ecombio-utility-bar__select"
+                        aria-label="Select currency"
+                        onchange="this.form.submit()">
+                  {%- for currency in shop.enabled_currencies -%}
+                    <option value="{{ currency.iso_code }}"
+                      {%- if currency == cart.currency %} selected{% endif -%}>
+                      {{ currency.iso_code }} &ndash; {{ currency.symbol }}
+                    </option>
+                  {%- endfor -%}
+                </select>
+                <svg class="ecombio-utility-bar__chevron" width="9" height="9" viewBox="0 0 20 20"
+                     fill="none" stroke="currentColor" stroke-width="2.5"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M5 8l5 5 5-5"/>
+                </svg>
+              </div>
+            {%- endform -%}
+          </div>
+        {%- endif -%}
+
+        {%- if show_loc and localization.available_languages.size > 1 -%}
+          <div class="ecombio-utility-bar__switcher">
+            {%- form 'localization', id: 'ecombio-locale-form', return_to: request.path -%}
+              <label for="ecombio-locale-select" class="visually-hidden">Language</label>
+              <div class="ecombio-utility-bar__select-wrap">
+                <select id="ecombio-locale-select"
+                        name="locale_code"
+                        class="ecombio-utility-bar__select"
+                        aria-label="Select language"
+                        onchange="this.form.submit()">
+                  {%- for language in localization.available_languages -%}
+                    <option value="{{ language.iso_code }}"
+                      {%- if language.iso_code == localization.language.iso_code %} selected{% endif -%}>
+                      {{ language.endonym_name | capitalize }}
+                    </option>
+                  {%- endfor -%}
+                </select>
+                <svg class="ecombio-utility-bar__chevron" width="9" height="9" viewBox="0 0 20 20"
+                     fill="none" stroke="currentColor" stroke-width="2.5"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M5 8l5 5 5-5"/>
+                </svg>
+              </div>
+            {%- endform -%}
+          </div>
+        {%- endif -%}
+
+        {%- comment -%} ── Region picker trigger ── {%- endcomment -%}
+        <button type="button"
+                class="ecombio-utility-bar__region-btn"
+                aria-label="Choose location: {{ localization.country.name }}"
+                aria-expanded="false"
+                aria-controls="ecombio-region-dropdown"
+                id="ecombio-region-trigger">
+          <img src="https://cdn.shopify.com/shopifycloud/preview-bar/assets/{{ localization.country.iso_code | downcase }}.svg"
+               alt="{{ localization.country.name }} flag"
+               width="16" height="11"
+               class="ecombio-utility-bar__flag"
+               loading="eager">
+          <span class="ecombio-utility-bar__region-label">
+            {{ localization.language.endonym_name | capitalize }} ({{ localization.country.iso_code }})
+          </span>
+          <svg class="ecombio-utility-bar__chevron ecombio-region-trigger__chevron"
+               width="9" height="9" viewBox="0 0 20 20"
+               fill="none" stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 8l5 5 5-5"/>
+          </svg>
+        </button>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{%- comment -%}
+  Dropdown is placed here in DOM but immediately teleported to <body> by JS.
+  This escapes every stacking context in the header chain.
+{%- endcomment -%}
+<div class="ecombio-region-dropdown"
+     id="ecombio-region-dropdown"
+     role="dialog"
+     aria-modal="true"
+     aria-label="Choose location"
+     hidden>
+
+  <div class="ecombio-region-dropdown__header">
+    <p class="ecombio-region-dropdown__title">Choose location</p>
+    <button type="button"
+            class="ecombio-region-dropdown__close"
+            aria-label="Close location picker"
+            id="ecombio-region-close">
+      <svg width="14" height="14" viewBox="0 0 20 20" fill="none"
+           stroke="currentColor" stroke-width="2.5"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 4l12 12M16 4L4 16"/>
+      </svg>
+    </button>
+  </div>
+
+  <p class="ecombio-region-dropdown__subtitle">
+    Changing your location might affect your delivery address options, price, product availability, and currency.
+  </p>
+
+  <div class="ecombio-region-dropdown__search-wrap">
+    <input type="text"
+           class="ecombio-region-dropdown__search"
+           placeholder="Search your country"
+           aria-label="Search countries"
+           id="ecombio-region-search"
+           autocomplete="off">
+    <svg class="ecombio-region-dropdown__search-icon" width="14" height="14"
+         viewBox="0 0 20 20" fill="none" stroke="currentColor"
+         stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="9" cy="9" r="6"/><path d="M15 15l3 3"/>
+    </svg>
+  </div>
+
+  <div class="ecombio-region-dropdown__section-label">Current country &amp; language</div>
+
+  <div class="ecombio-region-dropdown__current">
+    <img src="https://cdn.shopify.com/shopifycloud/preview-bar/assets/{{ localization.country.iso_code | downcase }}.svg"
+         alt="{{ localization.country.name }}"
+         width="20" height="14"
+         class="ecombio-region-dropdown__flag">
+    <span class="ecombio-region-dropdown__current-country">{{ localization.country.name }}</span>
+
+    {%- if localization.available_languages.size > 1 -%}
+      {%- form 'localization', id: 'ecombio-region-locale-form', return_to: request.path -%}
+        <div class="ecombio-region-dropdown__lang-wrap">
+          <select name="locale_code"
+                  class="ecombio-region-dropdown__lang-select"
+                  aria-label="Select language for {{ localization.country.name }}"
+                  onchange="this.form.submit()">
+            {%- for language in localization.available_languages -%}
+              <option value="{{ language.iso_code }}"
+                {%- if language.iso_code == localization.language.iso_code %} selected{% endif -%}>
+                {{ language.endonym_name | capitalize }} ({{ localization.country.iso_code }})
+              </option>
+            {%- endfor -%}
+          </select>
+          <svg width="10" height="10" viewBox="0 0 20 20" fill="none"
+               stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 8l5 5 5-5"/>
+          </svg>
+        </div>
+      {%- endform -%}
+    {%- else -%}
+      <span class="ecombio-region-dropdown__lang-static">
+        {{ localization.language.endonym_name | capitalize }} ({{ localization.country.iso_code }})
+      </span>
+    {%- endif -%}
+  </div>
+
+  <div class="ecombio-region-dropdown__divider"></div>
+
+  {%- form 'localization', id: 'ecombio-region-country-form', return_to: request.path -%}
+    <input type="hidden" name="locale_code" value="{{ localization.language.iso_code }}">
+    <ul class="ecombio-region-dropdown__list" id="ecombio-region-list" role="list">
+      {%- for country in localization.available_countries -%}
+        {%- unless country.iso_code == localization.country.iso_code -%}
+          <li class="ecombio-region-dropdown__item" data-country="{{ country.name | downcase }}">
+            <button type="submit"
+                    name="country_code"
+                    value="{{ country.iso_code }}"
+                    class="ecombio-region-dropdown__country-btn"
+                    form="ecombio-region-country-form">
+              <img src="https://cdn.shopify.com/shopifycloud/preview-bar/assets/{{ country.iso_code | downcase }}.svg"
+                   alt="{{ country.name }}"
+                   width="20" height="14"
+                   class="ecombio-region-dropdown__flag"
+                   loading="lazy">
+              <span class="ecombio-region-dropdown__country-name">{{ country.name }}</span>
+              <span class="ecombio-region-dropdown__country-lang">
+                {{ localization.language.endonym_name | capitalize }} ({{ country.iso_code }})
+              </span>
+            </button>
+          </li>
+        {%- endunless -%}
+      {%- endfor -%}
+    </ul>
+  {%- endform -%}
+
+</div>
+
+{% stylesheet %}
+/* ─────────────────────────────────────────────
+   ECOMBIO UTILITY BAR
+   ───────────────────────────────────────────── */
+
+.ecombio-utility-bar {
+  width: 100%;
+  height: 32px;
+  display: none;
+  align-items: center;
+}
+@media (min-width: 768px) {
+  .ecombio-utility-bar {
+    display: flex;
+  }
+}
+
+.ecombio-utility-bar__inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  width: 100%;
+  max-width: 1184px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.ecombio-utility-bar__col--left {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.ecombio-utility-bar__col--right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* ── Links ── */
+.ecombio-utility-bar__links {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.ecombio-utility-bar__link {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 14px;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.15s ease;
+}
+.ecombio-utility-bar__links li:first-child .ecombio-utility-bar__link {
+  padding-left: 0;
+}
+
+/* ── Switchers ── */
+.ecombio-utility-bar__switchers {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.ecombio-utility-bar__switcher {
+  display: flex;
+  align-items: center;
+}
+.ecombio-utility-bar__select-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.ecombio-utility-bar__select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0 22px 0 8px;
+  height: 32px;
+  transition: color 0.15s ease;
+}
+.ecombio-utility-bar__chevron {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+/* ── Region trigger button ── */
+.ecombio-utility-bar__region-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 0 0 10px;
+  height: 32px;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: color 0.15s ease;
+}
+.ecombio-region-trigger__chevron {
+  position: static;
+  transform: none;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+.ecombio-region-trigger--open .ecombio-region-trigger__chevron {
+  transform: rotate(180deg);
+}
+.ecombio-utility-bar__flag {
+  display: block;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.ecombio-utility-bar__region-label {
+  white-space: nowrap;
+}
+
+/* ─────────────────────────────────────────────
+   REGION DROPDOWN
+   Teleported to <body> — positioned via JS
+   ───────────────────────────────────────────── */
+.ecombio-region-dropdown {
+  position: fixed;
+  width: 320px;
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.14);
+  z-index: 2147483647; /* max z-index — sits above everything */
+  padding: 20px 20px 8px;
+  animation: ecombio-dropdown-in 0.18s ease;
+}
+.ecombio-region-dropdown[hidden] {
+  display: none;
+}
+@keyframes ecombio-dropdown-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Header row */
+.ecombio-region-dropdown__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.ecombio-region-dropdown__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+}
+.ecombio-region-dropdown__close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6a6a6a;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.ecombio-region-dropdown__close:hover {
+  color: #1a1a1a;
+  background: #f5f5f5;
+}
+
+/* Subtitle */
+.ecombio-region-dropdown__subtitle {
+  font-size: 12px;
+  color: #6a6a6a;
+  line-height: 1.5;
+  margin: 0 0 14px;
+}
+
+/* Search */
+.ecombio-region-dropdown__search-wrap {
+  position: relative;
+  margin-bottom: 16px;
+}
+.ecombio-region-dropdown__search {
+  width: 100%;
+  height: 38px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 0 36px 0 12px;
+  font-size: 13px;
+  color: #1a1a1a;
+  background: #fafafa;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+}
+.ecombio-region-dropdown__search::placeholder { color: #aaa; }
+.ecombio-region-dropdown__search:focus {
+  border-color: #1a1a1a;
+  background: #fff;
+}
+.ecombio-region-dropdown__search-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #aaa;
+  pointer-events: none;
+}
+
+/* Section label */
+.ecombio-region-dropdown__section-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6a6a6a;
+  margin-bottom: 10px;
+}
+
+/* Current row */
+.ecombio-region-dropdown__current {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.ecombio-region-dropdown__flag {
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.ecombio-region-dropdown__current-country {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+  flex: 1;
+}
+.ecombio-region-dropdown__lang-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.ecombio-region-dropdown__lang-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #1a1a1a;
+  padding: 4px 26px 4px 8px;
+  cursor: pointer;
+  outline: none;
+}
+.ecombio-region-dropdown__lang-wrap svg {
+  position: absolute;
+  right: 7px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #6a6a6a;
+}
+.ecombio-region-dropdown__lang-static {
+  font-size: 11.5px;
+  color: #6a6a6a;
+}
+
+/* Divider */
+.ecombio-region-dropdown__divider {
+  height: 1px;
+  background: #f0f0f0;
+  margin: 4px 0 12px;
+}
+
+/* Country list */
+.ecombio-region-dropdown__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #e0e0e0 transparent;
+}
+.ecombio-region-dropdown__list::-webkit-scrollbar { width: 4px; }
+.ecombio-region-dropdown__list::-webkit-scrollbar-thumb {
+  background: #e0e0e0;
+  border-radius: 4px;
+}
+.ecombio-region-dropdown__item[hidden] { display: none; }
+
+.ecombio-region-dropdown__country-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 6px;
+  border-radius: 5px;
+  text-align: left;
+  transition: background 0.12s ease;
+}
+.ecombio-region-dropdown__country-btn:hover { background: #f5f5f5; }
+.ecombio-region-dropdown__country-name {
+  font-size: 13px;
+  color: #1a1a1a;
+  flex: 1;
+}
+.ecombio-region-dropdown__country-lang {
+  font-size: 11.5px;
+  color: #6a6a6a;
+  white-space: nowrap;
+}
+
+/* ─────────────────────────────────────────────
+   HYPER variant
+   ───────────────────────────────────────────── */
+.ecombio-utility-bar--hyper { background-color: #ffffff; }
+.ecombio-utility-bar--hyper .ecombio-utility-bar__link { color: #1a1a1a; }
+.ecombio-utility-bar--hyper .ecombio-utility-bar__link:hover { color: #c4301c; }
+.ecombio-utility-bar--hyper .ecombio-utility-bar__select { color: #1a1a1a; }
+.ecombio-utility-bar--hyper .ecombio-utility-bar__select:hover { color: #c4301c; }
+.ecombio-utility-bar--hyper .ecombio-utility-bar__select option { background: #fff; color: #1a1a1a; }
+.ecombio-utility-bar--hyper .ecombio-utility-bar__region-btn { color: #1a1a1a; }
+.ecombio-utility-bar--hyper .ecombio-utility-bar__region-btn:hover { color: #c4301c; }
+.ecombio-utility-bar--hyper .ecombio-utility-bar__chevron { color: #1a1a1a; }
+
+/* ─────────────────────────────────────────────
+   FOCUS variant
+   ───────────────────────────────────────────── */
+.ecombio-utility-bar--focus { background-color: #f5f4f2; }
+.ecombio-utility-bar--focus .ecombio-utility-bar__link { color: #6a6a6a; }
+.ecombio-utility-bar--focus .ecombio-utility-bar__link:hover { color: #1a1a1a; }
+.ecombio-utility-bar--focus .ecombio-utility-bar__select { color: #6a6a6a; }
+.ecombio-utility-bar--focus .ecombio-utility-bar__select:hover { color: #1a1a1a; }
+.ecombio-utility-bar--focus .ecombio-utility-bar__region-btn { color: #6a6a6a; }
+.ecombio-utility-bar--focus .ecombio-utility-bar__region-btn:hover { color: #1a1a1a; }
+.ecombio-utility-bar--focus .ecombio-utility-bar__chevron { color: #aaa; }
+
+/* ── Mobile ── */
+@media (max-width: 749px) {
+  .ecombio-utility-bar__links { display: none; }
+  .ecombio-utility-bar__inner { justify-content: flex-end; }
+}
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  var TRIGGER_ID  = 'ecombio-region-trigger';
+  var DROPDOWN_ID = 'ecombio-region-dropdown';
+  var CLOSE_ID    = 'ecombio-region-close';
+  var SEARCH_ID   = 'ecombio-region-search';
+  var LIST_ID     = 'ecombio-region-list';
+
+  var trigger  = document.getElementById(TRIGGER_ID);
+  var dropdown = document.getElementById(DROPDOWN_ID);
+  var closeBtn = document.getElementById(CLOSE_ID);
+  var search   = document.getElementById(SEARCH_ID);
+  var list     = document.getElementById(LIST_ID);
+
+  if (!trigger || !dropdown) return;
+
+  // ── Teleport dropdown to <body> to escape all stacking contexts ──
+  document.body.appendChild(dropdown);
+
+  // ── Position dropdown anchored below the trigger button ──
+  // position:fixed uses viewport coords — no scroll offset needed
+  function positionDropdown() {
+    var rect  = trigger.getBoundingClientRect();
+    var dropW = 320;
+    var left  = rect.right - dropW;
+    // Keep within viewport
+    if (left < 8) left = 8;
+    if (left + dropW > window.innerWidth - 8) left = window.innerWidth - dropW - 8;
+    dropdown.style.top  = (rect.bottom + 6) + 'px';
+    dropdown.style.left = left + 'px';
+  }
+
+  function openPicker() {
+    positionDropdown();
+    dropdown.hidden = false;
+    trigger.setAttribute('aria-expanded', 'true');
+    trigger.classList.add('ecombio-region-trigger--open');
+    if (search) search.focus();
+  }
+
+  function closePicker() {
+    dropdown.hidden = true;
+    trigger.setAttribute('aria-expanded', 'false');
+    trigger.classList.remove('ecombio-region-trigger--open');
+    if (search) { search.value = ''; filterList(''); }
+  }
+
+  function filterList(query) {
+    if (!list) return;
+    var items = list.querySelectorAll('.ecombio-region-dropdown__item');
+    var q = query.toLowerCase().trim();
+    items.forEach(function (item) {
+      var name = item.getAttribute('data-country') || '';
+      item.hidden = q.length > 0 && name.indexOf(q) === -1;
+    });
+  }
+
+  // Toggle
+  trigger.addEventListener('click', function (e) {
+    e.stopPropagation();
+    dropdown.hidden ? openPicker() : closePicker();
+  });
+
+  // Close button
+  if (closeBtn) closeBtn.addEventListener('click', closePicker);
+
+  // Click outside
+  document.addEventListener('click', function (e) {
+    if (!dropdown.hidden && !dropdown.contains(e.target) && e.target !== trigger) {
+      closePicker();
+    }
+  });
+
+  // Escape key
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !dropdown.hidden) {
+      closePicker();
+      trigger.focus();
+    }
+  });
+
+  // Reposition on scroll/resize while open
+  window.addEventListener('scroll', function () {
+    if (!dropdown.hidden) positionDropdown();
+  }, { passive: true });
+  window.addEventListener('resize', function () {
+    if (!dropdown.hidden) positionDropdown();
+  }, { passive: true });
+
+  // Search filter
+  if (search) {
+    search.addEventListener('input', function () {
+      filterList(this.value);
+    });
+  }
+
+  // Close after country selection
+  if (list) {
+    list.addEventListener('click', function (e) {
+      if (e.target.closest('.ecombio-region-dropdown__country-btn')) closePicker();
+    });
+  }
+})();
+{% endjavascript %}

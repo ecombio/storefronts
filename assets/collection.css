@@ -1,0 +1,143 @@
+/* collection.css
+   Page-level layout only: section wrapper, two-column body shell,
+   empty state, and pagination.
+
+   Toolbar              → collection-toolbar.css
+   Filter component     → collection-filter.css
+   Feed panels          → collection-feed.css
+   Product grid         → product-feed.css
+   Article grid         → article-feed.css
+
+   SECTION WIDTH / SIDE PADDING:
+   .collection-page no longer mirrors the header/utility-bar/footer
+   width recipe. It now defines its own local --section-padding and
+   --custom-width variables, set inline per-instance from this
+   section's own "Section layout" schema settings (see
+   sections/collection.liquid and sections/example-width-section.liquid
+   for the pattern and rationale). Bumping the global Body side
+   padding setting elsewhere in the theme will not move this page. */
+
+/* ---------- Section wrapper ---------- */
+.collection-section {
+  padding: 2rem 0 4rem;
+}
+
+.collection-page {
+  margin: 0 auto;
+  padding-inline: var(--section-padding, 24px);
+}
+
+.collection-page__default-width {
+  max-width: 1184px;
+}
+.collection-page__full-width {
+  max-width: none;
+}
+.collection-page__custom-width {
+  max-width: var(--custom-width);
+}
+
+/* ---------- Two-column body shell ---------- */
+/* Left column: filter sidebar
+   Right column: feed (products or articles)             */
+.collection-body {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* Collapsed when filters are hidden or toggled off */
+.collection-body--filters-hidden {
+  grid-template-columns: 1fr;
+}
+
+.collection-body__feed {
+  min-width: 0;
+}
+
+/* ---------- Empty state ---------- */
+.collection-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 4rem 1rem;
+  color: #6b6b6b;
+  font-size: 1rem;
+}
+
+/* ---------- Pagination ---------- */
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 2.5rem;
+}
+
+.pagination__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.25rem;
+  height: 2.25rem;
+  padding: 0 0.6rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #1a1a1a;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.pagination__link:hover {
+  background: #f0f0f0;
+}
+
+.pagination__link--current {
+  background: #1a1a1a;
+  color: #fff;
+}
+
+/* ---------- Mobile backdrop (shared by filter + sort sheet) ---------- */
+.collection-mobile-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 199;
+  background: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.collection-mobile-backdrop.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ---------- Responsive ---------- */
+
+/* Tablet — 768px to 1024px */
+@media (max-width: 1024px) {
+  .collection-body {
+    grid-template-columns: 220px 1fr;
+    gap: 1.5rem;
+  }
+}
+
+/* Mobile — up to 768px */
+@media (max-width: 768px) {
+  .collection-mobile-backdrop {
+    display: block;
+  }
+
+  .collection-page {
+    padding-bottom: 5rem; /* room for fixed mobile bar */
+  }
+
+  /* Collapse to single column — filter renders as drawer */
+  .collection-body {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}

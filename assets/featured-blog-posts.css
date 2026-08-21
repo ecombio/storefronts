@@ -1,0 +1,178 @@
+.featured-blog-posts {
+  padding-inline: var(--section-padding, 28px);
+  padding-block: 40px;
+  box-sizing: border-box;
+}
+
+.featured-blog-posts__header {
+  margin-bottom: 16px;
+}
+
+.featured-blog-posts__title {
+  font-family: var(--font-primary--family);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-black);
+  margin: 0;
+}
+
+.featured-blog-posts__carousel {
+  position: relative;
+}
+
+.featured-blog-posts__track {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  overflow-anchor: none;
+}
+.featured-blog-posts__track::-webkit-scrollbar {
+  display: none;
+}
+
+.featured-blog-posts__item {
+  flex: 0 0 calc(33.333% - 16px);
+  min-width: 260px;
+  scroll-snap-align: start;
+}
+
+.featured-blog-posts__card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--radius-base, 8px);
+  overflow: hidden;
+  border: 1px solid var(--color-border, #e5e5e5);
+  height: 100%;
+  transition: box-shadow var(--transition-base);
+}
+
+a.featured-blog-posts__card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.featured-blog-posts__card-image {
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--color-pill-bg, #f2f2f2);
+}
+
+.featured-blog-posts__card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.featured-blog-posts__card-placeholder-svg {
+  width: 100%;
+  height: 100%;
+  color: var(--color-border, #d8d8d8);
+}
+
+.featured-blog-posts__card-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.featured-blog-posts__card-tag {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-red, #b3312c);
+}
+
+.featured-blog-posts__card-title {
+  font-family: var(--font-primary--family);
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--color-black);
+  line-height: 1.35;
+}
+
+.featured-blog-posts__card-date {
+  font-size: 13px;
+  color: var(--color-pill-text, #6b6b6b);
+}
+
+/* Placeholder cards — blank block, or the default filler row shown when
+   no blocks have been added at all. Dashed border + muted copy make it
+   obvious in the editor (and to a merchant who hasn't set anything up
+   yet) that this slot is waiting for a real post. */
+.featured-blog-posts__card--placeholder {
+  border-style: dashed;
+  cursor: default;
+}
+
+.featured-blog-posts__card--placeholder .featured-blog-posts__card-title,
+.featured-blog-posts__card--placeholder .featured-blog-posts__card-date,
+.featured-blog-posts__card--placeholder .featured-blog-posts__card-tag {
+  color: var(--color-pill-text, #9a9a9a);
+}
+
+.featured-blog-posts__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-white, #ffffff);
+  border: 1px solid var(--color-border, #e5e5e5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-size: 16px;
+  color: var(--color-black);
+  transition: opacity 0.2s ease, border-color var(--transition-fast);
+}
+
+.featured-blog-posts__nav:hover {
+  border-color: var(--color-red);
+}
+
+.featured-blog-posts__nav--prev {
+  left: -8px;
+}
+
+.featured-blog-posts__nav--next {
+  right: -8px;
+}
+
+.featured-blog-posts__nav[disabled],
+.featured-blog-posts__carousel.no-scroll .featured-blog-posts__nav {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 989px) {
+  .featured-blog-posts__item {
+    flex-basis: calc(50% - 12px);
+  }
+}
+
+@media (max-width: 749px) {
+  .featured-blog-posts {
+    padding-block: 28px;
+  }
+
+  .featured-blog-posts__item {
+    flex-basis: 85%;
+    min-width: 240px;
+  }
+
+  .featured-blog-posts__nav {
+    display: none;
+  }
+}

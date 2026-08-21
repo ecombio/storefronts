@@ -1,0 +1,505 @@
+/* ============================================================
+   single-product.css
+   Scope: .single-product
+   Main product page layout: media gallery + sticky buy box.
+
+   SELF-CONTAINED: this file owns every class it uses, start to
+   finish. It does NOT reuse or depend on product-card.css,
+   product-row.css, or product-gallery.css — this is a different
+   page context (the PDP, not a merchandising card), so it gets its
+   own namespace (.single-product) and its own --single-product-*
+   custom properties rather than borrowing --product-card-*.
+   Loaded only by sections/single-product.liquid, at the section
+   level, same pattern main-article.liquid uses for its own CSS/JS.
+   ============================================================ */
+
+.single-product,
+.single-product *,
+.single-product *::before,
+.single-product *::after {
+  box-sizing: border-box;
+}
+
+/* ── Section width variants ──
+   Wired up by sections/single-product.liquid from its "Section
+   layout" schema settings (section_width, custom_width,
+   section_padding) — same pattern as .main-article__* in
+   main-article.css. These wrap .single-product and never read the
+   global --page-margin/--page-width, so this section stays
+   independent of Theme settings > Layout. */
+.single-product__default-width {
+  max-width: 1200px;
+  margin-inline: auto;
+}
+
+.single-product__full-width {
+  max-width: none;
+}
+
+.single-product__custom-width {
+  max-width: var(--custom-width);
+  margin-inline: auto;
+}
+
+.single-product {
+  --single-product-accent:         #111827;
+  --single-product-accent-hover:   #000000;
+  --single-product-sale:           #DC2626;
+  --single-product-save-bg:        #FEF3C7;
+  --single-product-save-text:      #D97706;
+  --single-product-border:         #E5E7EB;
+  --single-product-text:           #111827;
+  --single-product-text-secondary: #6B7280;
+  --single-product-surface:        #F9FAFB;
+  --single-product-radius:         10px;
+  --single-product-radius-sm:      6px;
+  --single-product-transition:     0.2s ease;
+  --single-product-gutter:         2.5rem;
+
+  max-width: 100%;
+  margin-inline: auto;
+  padding-inline: var(--section-padding, 1.5rem);
+  padding-block: var(--section-padding-block, 2.5rem);
+}
+
+.single-product__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: var(--single-product-gutter);
+  align-items: start;
+}
+
+/* Media-position setting flips which side the gallery sits on
+   without changing the DOM order (keeps gallery-before-info source
+   order for a11y/SEO regardless of visual position). */
+.single-product--media-right .single-product__media {
+  order: 2;
+}
+
+.single-product--media-right .single-product__info {
+  order: 1;
+}
+
+/* ── Media / gallery ── */
+.single-product__media {
+  min-width: 0;
+}
+
+.single-product__main-image-zone {
+  position: relative;
+  border-radius: var(--single-product-radius);
+  overflow: hidden;
+  background: var(--single-product-surface);
+  aspect-ratio: 1;
+}
+
+.single-product__main-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Optional click-to-zoom, toggled by single-product.js.
+   Cursor hints affordance; actual zoom is a CSS transform on the
+   image so no extra markup/network request is needed. */
+.single-product__main-image-zone[data-zoom-enabled] {
+  cursor: zoom-in;
+}
+
+.single-product__main-image-zone.is-zoomed {
+  cursor: zoom-out;
+}
+
+.single-product__main-image-zone.is-zoomed .single-product__main-image {
+  transform: scale(1.8);
+  transition: transform 0.15s ease;
+}
+
+.single-product__main-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F3F4F6;
+}
+
+.single-product__placeholder-svg {
+  width: 40%;
+  height: auto;
+  opacity: 0.22;
+}
+
+.single-product__badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: var(--single-product-sale);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 4px;
+  z-index: 1;
+}
+
+.single-product__thumbnails {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0.85rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.single-product__thumb-btn {
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  padding: 0;
+  border-radius: var(--single-product-radius-sm);
+  border: 2px solid transparent;
+  background: var(--single-product-surface);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color var(--single-product-transition);
+}
+
+.single-product__thumb-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.single-product__thumb-btn:hover {
+  border-color: var(--single-product-border);
+}
+
+.single-product__thumb-btn.is-active {
+  border-color: var(--single-product-accent);
+}
+
+/* ── Info / buy box ── */
+.single-product__info {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  min-width: 0;
+}
+
+.single-product--sticky-info .single-product__info {
+  position: sticky;
+  top: calc(var(--sticky-header-height, 0px) + 1.5rem);
+}
+
+.single-product__vendor {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--single-product-text-secondary);
+}
+
+.single-product__title {
+  margin: 0;
+  font-size: clamp(1.35rem, 2.4vw, 1.9rem);
+  font-weight: 700;
+  color: var(--single-product-text);
+  line-height: 1.25;
+}
+
+.single-product__sku {
+  font-size: 0.78rem;
+  color: var(--single-product-text-secondary);
+}
+
+.single-product__reviews {
+  font-size: 0.8rem;
+  min-height: 18px;
+}
+
+.single-product__pricing {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.single-product__price {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--single-product-text);
+}
+
+.single-product__price--sale {
+  color: var(--single-product-sale);
+}
+
+.single-product__price--compare {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--single-product-text-secondary);
+}
+
+.single-product__save-badge {
+  display: inline-block;
+  background: var(--single-product-save-bg);
+  color: var(--single-product-save-text);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.single-product__stock-message {
+  font-size: 0.82rem;
+  color: var(--single-product-text-secondary);
+}
+
+.single-product__stock-message[data-state="low"] {
+  color: var(--single-product-save-text);
+  font-weight: 600;
+}
+
+.single-product__stock-message[data-state="out"] {
+  color: var(--single-product-sale);
+  font-weight: 600;
+}
+
+/* ── Variant / option picker ── */
+.single-product__options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.single-product__option {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.single-product__option-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--single-product-text);
+}
+
+.single-product__option-label .single-product__option-value {
+  font-weight: 400;
+  color: var(--single-product-text-secondary);
+}
+
+.single-product__swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Native radio input, visually hidden but still focusable/operable
+   for keyboard + screen readers — the styled <label> is the visible
+   control, exactly the same pattern product-card.css uses for its
+   compare checkbox, just visually hidden rather than shown. */
+.single-product__swatch-input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.single-product__swatch-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  height: 40px;
+  padding: 0 0.9rem;
+  border-radius: var(--single-product-radius-sm);
+  border: 1px solid var(--single-product-border);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--single-product-text);
+  background: #fff;
+  cursor: pointer;
+  transition: border-color var(--single-product-transition), background var(--single-product-transition);
+}
+
+.single-product__swatch-input:checked + .single-product__swatch-label {
+  border-color: var(--single-product-accent);
+  background: var(--single-product-accent);
+  color: #fff;
+}
+
+.single-product__swatch-input:focus-visible + .single-product__swatch-label {
+  outline: 2px solid var(--single-product-accent);
+  outline-offset: 2px;
+}
+
+.single-product__swatch-label[data-unavailable="true"] {
+  color: var(--single-product-text-secondary);
+  background: repeating-linear-gradient(
+    -45deg, #fff, #fff 4px, #F3F4F6 4px, #F3F4F6 8px
+  );
+  text-decoration: line-through;
+}
+
+/* ── Quantity + Add to cart ── */
+.single-product__buy-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.7rem;
+  margin-top: 0.25rem;
+}
+
+.single-product__quantity {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--single-product-border);
+  border-radius: var(--single-product-radius-sm);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.single-product__qty-btn {
+  width: 38px;
+  height: 100%;
+  min-height: 46px;
+  border: none;
+  background: #fff;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--single-product-text);
+}
+
+.single-product__qty-btn:hover {
+  background: var(--single-product-surface);
+}
+
+.single-product__qty-input {
+  width: 42px;
+  height: 46px;
+  border: none;
+  border-left: 1px solid var(--single-product-border);
+  border-right: 1px solid var(--single-product-border);
+  text-align: center;
+  font-size: 0.9rem;
+  font-family: inherit;
+  color: var(--single-product-text);
+  -moz-appearance: textfield;
+}
+
+.single-product__qty-input::-webkit-outer-spin-button,
+.single-product__qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.single-product__atc-btn {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+  min-height: 46px;
+  padding: 0 1.25rem;
+  border-radius: var(--single-product-radius-sm);
+  border: none;
+  background: var(--single-product-accent);
+  color: #fff;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--single-product-transition);
+}
+
+.single-product__atc-btn:hover:not(:disabled) {
+  background: var(--single-product-accent-hover);
+}
+
+.single-product__atc-btn:disabled {
+  background: var(--single-product-border);
+  color: var(--single-product-text-secondary);
+  cursor: not-allowed;
+}
+
+.single-product__atc-btn.is-loading {
+  pointer-events: none;
+  opacity: 0.75;
+}
+
+.single-product__atc-btn.is-added {
+  background: #059669;
+}
+
+.single-product__atc-btn [data-atc-label] {
+  position: relative;
+  z-index: 1;
+}
+
+.single-product__form-error {
+  font-size: 0.82rem;
+  color: var(--single-product-sale);
+}
+
+.single-product__form-error:empty {
+  display: none;
+}
+
+/* ── Description ── */
+.single-product__description {
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: var(--single-product-text);
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--single-product-border);
+}
+
+.single-product__description img {
+  max-width: 100%;
+  border-radius: 4px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .single-product__inner {
+    grid-template-columns: 1fr;
+  }
+
+  .single-product--media-right .single-product__media,
+  .single-product--media-right .single-product__info {
+    order: initial;
+  }
+
+  .single-product--sticky-info .single-product__info {
+    position: static;
+  }
+}
+
+@media (max-width: 480px) {
+  .single-product__thumb-btn {
+    width: 58px;
+    height: 58px;
+  }
+
+  .single-product__buy-row {
+    flex-wrap: wrap;
+  }
+
+  .single-product__atc-btn {
+    flex-basis: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .single-product__atc-btn,
+  .single-product__thumb-btn,
+  .single-product__swatch-label,
+  .single-product__main-image-zone.is-zoomed .single-product__main-image {
+    transition: none;
+  }
+}

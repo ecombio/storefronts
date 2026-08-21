@@ -1,0 +1,80 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "collection": {
+      "type": "main-collection",
+      "blocks": {
+        "promo_banner_w9BJ6V": {
+          "type": "promo_banner",
+          "disabled": true,
+          "settings": {
+            "position": 7,
+            "heading": "",
+            "subheading": "",
+            "button_label": "",
+            "link": "",
+            "text_color": "#ffffff",
+            "content_alignment": "left",
+            "overlay_opacity": 20,
+            "column_span": 3,
+            "row_span": 1
+          }
+        }
+      },
+      "block_order": [
+        "promo_banner_w9BJ6V"
+      ],
+      "custom_css": [],
+      "settings": {
+        "tab_products_label": "Products",
+        "tab_articles_label": "Articles",
+        "columns": 3,
+        "products_per_page": 28,
+        "show_filters": true,
+        "show_sort": true,
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 28,
+        "sub_collection_shape": "square"
+      }
+    },
+    "related_articles_m6HtwH": {
+      "type": "related-articles",
+      "name": "Related Articles",
+      "settings": {
+        "heading": "Related Articles",
+        "show_image": true,
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 28
+      }
+    },
+    "related_products_G6DKhr": {
+      "type": "related-products",
+      "disabled": true,
+      "name": "Related products",
+      "settings": {
+        "heading": "You may also like",
+        "limit": 8,
+        "fallback_collection": "",
+        "fallback_heading": "",
+        "show_quickview": true,
+        "show_wishlist": true,
+        "show_vendor": true
+      }
+    }
+  },
+  "order": [
+    "collection",
+    "related_articles_m6HtwH",
+    "related_products_G6DKhr"
+  ]
+}

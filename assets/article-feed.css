@@ -1,0 +1,23 @@
+/* article-feed.css
+   Layout for the article feed grid.
+   Article card component styles live in article-card.css. */
+
+/* ---------- Article grid ---------- */
+.article-feed {
+  display: grid;
+  grid-template-columns: repeat(var(--columns, 4), 1fr);
+  gap: 1.5rem;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+  .article-feed {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .article-feed {
+    grid-template-columns: 1fr;
+  }
+}

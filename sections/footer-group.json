@@ -1,0 +1,84 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "footer",
+  "name": "t:general.footer",
+  "sections": {
+    "footer_newsletter_EEtGhh": {
+      "type": "footer-newsletter",
+      "name": "Footer Newsletter",
+      "settings": {
+        "layout": "side-by-side",
+        "heading": "Subscribe to our newsletter",
+        "subheading": "<p>Get the latest news, updates and offers straight to your inbox.</p>",
+        "placeholder": "Email address",
+        "button_label": "Subscribe",
+        "success_message": "Thanks for subscribing!",
+        "invalid_email_message": "Please enter a valid email address.",
+        "trust_text": "We respect your inbox. Unsubscribe anytime.",
+        "enable_consent": false,
+        "consent_required": true,
+        "consent_label": "I agree to receive marketing emails.",
+        "color_scheme": "",
+        "padding_top": 40,
+        "padding_bottom": 40
+      }
+    },
+    "main_footer_WTpn3f": {
+      "type": "main-footer",
+      "blocks": {
+        "badge_Bpxcgf": {
+          "type": "badge",
+          "settings": {
+            "image": "shopify://shop_images/bbb-accredited_double_badge.avif",
+            "link": "",
+            "alt": ""
+          }
+        },
+        "badge_VmtdT8": {
+          "type": "badge",
+          "settings": {
+            "image": "shopify://shop_images/certified-b-corporation.svg",
+            "link": "",
+            "alt": ""
+          }
+        }
+      },
+      "block_order": [
+        "badge_Bpxcgf",
+        "badge_VmtdT8"
+      ],
+      "name": "Main footer",
+      "settings": {
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 28,
+        "footer_style": "columns",
+        "menu_heading": "",
+        "menu": "backmarket",
+        "column_layout": "6",
+        "show_section_titles": true,
+        "social_column": "1",
+        "payment_column": "3",
+        "copyright_text": "© 2026 Eombio. All rights reserved.",
+        "social_instagram": "#",
+        "social_tiktok": "#",
+        "social_youtube": "#",
+        "social_x": "#",
+        "social_facebook": "#",
+        "social_linkedin": ""
+      }
+    }
+  },
+  "order": [
+    "footer_newsletter_EEtGhh",
+    "main_footer_WTpn3f"
+  ]
+}

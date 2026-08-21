@@ -1,0 +1,30 @@
+{%- comment -%}
+  snippets/feature-highlight-card.liquid
+  ============================================
+  Renders a single Featured highlight metaobject entry (image, heading,
+  description) inside sections/feature-highlights.liquid's carousel.
+  Expects `highlight` to be a `featured_highlight` metaobject reference.
+{%- endcomment -%}
+<div class="feature-highlights__frame">
+  {%- if highlight.image.value != blank -%}
+    {{
+      highlight.image.value
+      | image_url: width: 800
+      | image_tag:
+        loading: 'lazy',
+        class: 'feature-highlights__image',
+        sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 80vw',
+        widths: '400,600,800,1000'
+    }}
+  {%- else -%}
+    {{ 'lifestyle-1' | placeholder_svg_tag: 'feature-highlights__image feature-highlights__image--placeholder' }}
+  {%- endif -%}
+</div>
+
+{%- if highlight.heading.value != blank -%}
+  <h3 class="feature-highlights__item-heading">{{ highlight.heading.value }}</h3>
+{%- endif -%}
+
+{%- if highlight.description.value != blank -%}
+  <div class="feature-highlights__item-description">{{ highlight.description | metafield_tag }}</div>
+{%- endif -%}

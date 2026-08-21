@@ -1,0 +1,231 @@
+{{ 'product-with-text.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'product-with-text.js' | asset_url }}" defer="defer"></script>
+
+{%- comment -%}
+  sections/product-with-text.liquid
+  Two-column "text + single product" section (see reference:
+  "Recommended" heading and body copy beside one icon-card product).
+
+  SELF-CONTAINED / SECTION-LEVEL ASSETS: product-with-text.css and
+  product-with-text.js are loaded above, by this file only — same
+  pattern as main-article.liquid, single-product.liquid, and
+  product-grid.liquid. This section's card looks similar to
+  product-grid's tile by design intent, but does not read from
+  product-grid.css/js, product-card.css/js, or anything else —
+  it can be dropped into a template on its own with no other asset
+  as a prerequisite.
+
+  DEMO PRESET: heading/body now have real schema defaults, and the
+  preset passes matching settings, so "Add section" shows populated
+  copy immediately instead of an empty section. The product tile
+  itself still shows an "Add a Product block" placeholder until a
+  merchant manually picks a product — Shopify presets can't
+  pre-assign a live product reference, so that part can't be
+  demoed automatically.
+{%- endcomment -%}
+
+{%- liquid
+  assign width_type = section.settings.section_width
+  if width_type == blank
+    assign width_class = 'product-with-text__default-width'
+  else
+    assign width_class = 'product-with-text__' | append: width_type
+  endif
+
+  assign layout_class = ''
+  if section.settings.product_position == 'left'
+    assign layout_class = 'product-with-text--product-left'
+  endif
+
+  assign product_block = nil
+  for block in section.blocks
+    if block.type == 'product'
+      assign product_block = block
+    endif
+  endfor
+
+  assign product = product_block.settings.product
+-%}
+
+<div
+  class="{{ width_class }}"
+  style="
+    --section-padding: {{ section.settings.section_padding }}px;
+    {%- if width_type == 'custom-width' %}
+      --custom-width: {{ section.settings.custom_width }}rem;
+    {%- endif %}
+  "
+>
+<div class="product-with-text {{ layout_class }}">
+  <div class="product-with-text__inner">
+
+    <div class="product-with-text__text">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="product-with-text__heading">{{ section.settings.heading }}</h2>
+      {%- endif -%}
+
+      {%- if section.settings.body != blank -%}
+        <div class="product-with-text__body">
+          {{ section.settings.body }}
+        </div>
+      {%- endif -%}
+    </div>
+
+    <div class="product-with-text__product">
+      {%- if product_block == nil -%}
+        <p class="product-with-text__empty">Add a "Product" block to this section to show a product here.</p>
+      {%- else -%}
+        <a
+          href="{{ product.url | default: '#' }}"
+          class="product-with-text__card"
+          {% if product == blank %}aria-disabled="true" tabindex="-1"{% endif %}
+          {{ product_block.shopify_attributes }}
+        >
+          <span class="product-with-text__media">
+            {%- if product != blank and product.featured_image -%}
+              {{
+                product.featured_image
+                | image_url: width: 400
+                | image_tag: loading: 'lazy', class: 'product-with-text__img', alt: product.featured_image.alt | default: product.title
+              }}
+            {%- else -%}
+              {{ 'product-1' | placeholder_svg_tag: 'product-with-text__placeholder-svg' }}
+            {%- endif -%}
+          </span>
+
+          <span class="product-with-text__name">
+            {{- product.title | default: 'Product Name' -}}
+          </span>
+
+          <span class="product-with-text__price">
+            {%- if product != blank -%}
+              {%- if product.compare_at_price > product.price -%}
+                <s>{{ product.compare_at_price | money }}</s>
+                <span class="product-with-text__price--sale">{{ product.price | money }}</span>
+              {%- else -%}
+                {{ product.price | money }}
+              {%- endif -%}
+            {%- else -%}
+              {{ 2599 | money }}
+            {%- endif -%}
+          </span>
+
+          <span class="product-with-text__cta">
+            {{ section.settings.cta_label | default: 'See product' }}
+          </span>
+        </a>
+      {%- endif -%}
+    </div>
+
+  </div>
+</div>
+</div>
+
+{% schema %}
+{
+  "name": "Product with text",
+  "tag": "section",
+  "class": "shopify-section--product-with-text",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "select",
+      "id": "product_position",
+      "label": "Product position",
+      "options": [
+        { "value": "right", "label": "Right of text" },
+        { "value": "left", "label": "Left of text" }
+      ],
+      "default": "right"
+    },
+    {
+      "type": "header",
+      "content": "Text"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Recommended"
+    },
+    {
+      "type": "richtext",
+      "id": "body",
+      "label": "Body text",
+      "default": "<p>A hand-picked pick from our team, chosen for its quality and fit with what you're already shopping for.</p>"
+    },
+    {
+      "type": "header",
+      "content": "Card"
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "Button label",
+      "default": "See product"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "product",
+      "name": "Product",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product with text",
+      "settings": {
+        "heading": "Recommended",
+        "body": "<p>A hand-picked pick from our team, chosen for its quality and fit with what you're already shopping for.</p>",
+        "product_position": "right"
+      },
+      "blocks": [
+        { "type": "product" }
+      ]
+    }
+  ]
+}
+{% endschema %}

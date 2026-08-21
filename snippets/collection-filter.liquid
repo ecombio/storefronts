@@ -1,0 +1,248 @@
+{%- liquid
+  if collection
+    assign filters = collection.filters
+    assign form_action = collection.url
+    assign clear_url = collection.url
+    assign remove_suffix = ''
+  else
+    assign filters = search.filters
+    assign form_action = routes.search_url
+    assign clear_url = routes.search_url | append: '?q=' | append: search_terms | append: '&type=' | append: result_type
+    assign remove_suffix = '&type=' | append: result_type
+  endif
+-%}
+
+{{ 'collection-filter.css' | asset_url | stylesheet_tag }}
+
+<aside
+  class="collection-filter"
+  id="collection-filter"
+  aria-label="Product filters"
+>
+
+  <div class="collection-filter__header">
+    <span class="collection-filter__heading">Filters</span>
+    <button class="collection-filter__close-btn" type="button" aria-label="Close filters" data-filter-close>&times;</button>
+  </div>
+
+  <form method="get" action="{{ form_action }}" id="FilterForm">
+
+    {%- unless collection -%}
+      <input type="hidden" name="q" value="{{ search_terms }}">
+      <input type="hidden" name="type" value="{{ result_type }}">
+    {%- endunless -%}
+
+    {%- for filter in filters -%}
+      {%- assign group_body_id = 'CollectionFilterGroupBody-' | append: forloop.index -%}
+      <div class="collection-filter__group" data-filter-group>
+        <button
+          type="button"
+          class="collection-filter__group-toggle"
+          aria-expanded="true"
+          aria-controls="{{ group_body_id }}"
+          data-group-toggle
+        >
+          <span class="collection-filter__group-label">
+            {{ filter.label }}
+            {%- if filter.active_values.size > 0 -%}
+              <span class="collection-filter__group-badge">{{ filter.active_values.size }}</span>
+            {%- endif -%}
+          </span>
+          <svg class="collection-filter__group-chevron" width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true">
+            <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <div class="collection-filter__group-body" id="{{ group_body_id }}" data-group-body>
+          {%- case filter.type -%}
+            {%- when 'list' -%}
+              {%- for value in filter.values -%}
+                <label class="collection-filter__option
+                  {%- if value.active %} collection-filter__option--active{%- endif %}
+                  {%- if value.count == 0 and value.active == false %} collection-filter__option--disabled{%- endif %}">
+                  <input
+                    type="checkbox"
+                    class="collection-filter__option-checkbox"
+                    name="{{ value.param_name }}"
+                    value="{{ value.value }}"
+                    {%- if value.active %} checked{%- endif %}
+                    {%- if value.count == 0 and value.active == false %} disabled{%- endif %}
+                  >
+                  {{ value.label }} <span>({{ value.count }})</span>
+                </label>
+              {%- endfor -%}
+
+            {%- when 'price_range' -%}
+              {%- assign range_max_cents = filter.range_max -%}
+              {%- assign range_max_num = range_max_cents | divided_by: 100.0 -%}
+              {%- assign range_max_dollars = range_max_cents | divided_by: 100 -%}
+              {%- assign range_max_cents_part = range_max_cents | modulo: 100 | prepend: '00' | slice: -2, 2 -%}
+              {%- assign range_max_decimal = range_max_dollars | append: '.' | append: range_max_cents_part -%}
+
+              {%- assign min_val_decimal = blank -%}
+              {%- if filter.min_value.value -%}
+                {%- assign min_dollars = filter.min_value.value | divided_by: 100 -%}
+                {%- assign min_cents_part = filter.min_value.value | modulo: 100 | prepend: '00' | slice: -2, 2 -%}
+                {%- assign min_val_decimal = min_dollars | append: '.' | append: min_cents_part -%}
+              {%- endif -%}
+
+              {%- assign max_val_decimal = blank -%}
+              {%- if filter.max_value.value -%}
+                {%- assign max_dollars = filter.max_value.value | divided_by: 100 -%}
+                {%- assign max_cents_part = filter.max_value.value | modulo: 100 | prepend: '00' | slice: -2, 2 -%}
+                {%- assign max_val_decimal = max_dollars | append: '.' | append: max_cents_part -%}
+              {%- endif -%}
+
+              <div class="collection-filter__price-wrap" data-price-filter>
+                <div class="collection-filter__price-fields">
+                  <div class="collection-filter__price-field">
+                    <label class="collection-filter__price-label" for="CollectionFilterPriceMin-{{ forloop.index }}">Min</label>
+                    <div class="collection-filter__price-input-wrap">
+                      <span class="collection-filter__price-symbol">$</span>
+                      <input
+                        type="number"
+                        class="collection-filter__price-input"
+                        id="CollectionFilterPriceMin-{{ forloop.index }}"
+                        name="{{ filter.min_value.param_name }}"
+                        value="{{ min_val_decimal }}"
+                        min="0"
+                        max="{{ range_max_decimal }}"
+                        step="0.01"
+                        placeholder="0"
+                        data-price-input="min"
+                      >
+                    </div>
+                  </div>
+
+                  <span class="collection-filter__price-sep">&ndash;</span>
+
+                  <div class="collection-filter__price-field">
+                    <label class="collection-filter__price-label" for="CollectionFilterPriceMax-{{ forloop.index }}">Max</label>
+                    <div class="collection-filter__price-input-wrap">
+                      <span class="collection-filter__price-symbol">$</span>
+                      <input
+                        type="number"
+                        class="collection-filter__price-input"
+                        id="CollectionFilterPriceMax-{{ forloop.index }}"
+                        name="{{ filter.max_value.param_name }}"
+                        value="{{ max_val_decimal }}"
+                        min="0"
+                        max="{{ range_max_decimal }}"
+                        step="0.01"
+                        placeholder="{{ range_max_decimal }}"
+                        data-price-input="max"
+                      >
+                    </div>
+                  </div>
+                </div>
+
+                {%- assign bar_count = 16 -%}
+                {%- assign bin_width = range_max_num | divided_by: bar_count -%}
+                {%- if bin_width <= 0 -%}
+                  {%- assign bin_width = 1 -%}
+                {%- endif -%}
+
+                {%- assign max_bucket_count = 0 -%}
+                {%- assign bucket_counts_str = '' -%}
+                {%- for bucket in (1..bar_count) -%}
+                  {%- assign bucket_lower = bucket | minus: 1 | times: bin_width -%}
+                  {%- assign bucket_upper = bucket | times: bin_width -%}
+                  {%- assign bucket_count = 0 -%}
+                  {%- for product in collection.products limit: 50 -%}
+                    {%- assign p_price = product.price_min | divided_by: 100.0 -%}
+                    {%- if bucket == bar_count and p_price >= bucket_lower -%}
+                      {%- assign bucket_count = bucket_count | plus: 1 -%}
+                    {%- elsif p_price >= bucket_lower and p_price < bucket_upper -%}
+                      {%- assign bucket_count = bucket_count | plus: 1 -%}
+                    {%- endif -%}
+                  {%- endfor -%}
+                  {%- assign bucket_counts_str = bucket_counts_str | append: bucket_count | append: ',' -%}
+                  {%- if bucket_count > max_bucket_count -%}
+                    {%- assign max_bucket_count = bucket_count -%}
+                  {%- endif -%}
+                {%- endfor -%}
+                {%- assign bucket_counts = bucket_counts_str | split: ',' -%}
+
+                <div class="collection-filter__histogram" aria-hidden="true">
+                  {%- for bucket_count in bucket_counts -%}
+                    {%- assign bar_height = 6 -%}
+                    {%- if max_bucket_count > 0 -%}
+                      {%- assign bar_height = bucket_count | times: 100 | divided_by: max_bucket_count | at_least: 6 -%}
+                    {%- endif -%}
+                    <span class="collection-filter__histogram-bar" style="height: {{ bar_height }}%"></span>
+                  {%- endfor -%}
+                </div>
+
+                <div class="collection-filter__range-slider" data-range-slider>
+                  <div class="collection-filter__range-track"></div>
+                  <div class="collection-filter__range-track-active" data-range-active></div>
+                  <input
+                    type="range"
+                    class="collection-filter__range-input collection-filter__range-input--min"
+                    min="0"
+                    max="{{ range_max_decimal }}"
+                    step="0.01"
+                    value="{{ min_val_decimal | default: 0 }}"
+                    data-range-thumb="min"
+                    aria-label="Minimum price"
+                  >
+                  <input
+                    type="range"
+                    class="collection-filter__range-input collection-filter__range-input--max"
+                    min="0"
+                    max="{{ range_max_decimal }}"
+                    step="0.01"
+                    value="{{ max_val_decimal | default: range_max_decimal }}"
+                    data-range-thumb="max"
+                    aria-label="Maximum price"
+                  >
+                </div>
+
+                {%- assign quarter_cents = filter.range_max | divided_by: 4.0 -%}
+                {%- assign b1_cents = quarter_cents | round -%}
+                {%- assign b2_cents = quarter_cents | times: 2 | round -%}
+                {%- assign b3_cents = quarter_cents | times: 3 | round -%}
+                {%- assign b1_dollars = b1_cents | divided_by: 100 -%}
+                {%- assign b1_cents_part = b1_cents | modulo: 100 | prepend: '00' | slice: -2, 2 -%}
+                {%- assign b1 = b1_dollars | append: '.' | append: b1_cents_part -%}
+                {%- assign b2_dollars = b2_cents | divided_by: 100 -%}
+                {%- assign b2_cents_part = b2_cents | modulo: 100 | prepend: '00' | slice: -2, 2 -%}
+                {%- assign b2 = b2_dollars | append: '.' | append: b2_cents_part -%}
+                {%- assign b3_dollars = b3_cents | divided_by: 100 -%}
+                {%- assign b3_cents_part = b3_cents | modulo: 100 | prepend: '00' | slice: -2, 2 -%}
+                {%- assign b3 = b3_dollars | append: '.' | append: b3_cents_part -%}
+                <div class="collection-filter__price-brackets" role="radiogroup" aria-label="Price brackets">
+                  <label class="collection-filter__price-option">
+                    <input type="radio" name="price_bracket" data-price-bracket data-min="0" data-max="{{ b1 }}">
+                    Less than {{ b1_cents | money }}
+                  </label>
+                  <label class="collection-filter__price-option">
+                    <input type="radio" name="price_bracket" data-price-bracket data-min="{{ b1 }}" data-max="{{ b2 }}">
+                    {{ b1_cents | money }} to {{ b2_cents | money }}
+                  </label>
+                  <label class="collection-filter__price-option">
+                    <input type="radio" name="price_bracket" data-price-bracket data-min="{{ b2 }}" data-max="{{ b3 }}">
+                    {{ b2_cents | money }} to {{ b3_cents | money }}
+                  </label>
+                  <label class="collection-filter__price-option">
+                    <input type="radio" name="price_bracket" data-price-bracket data-min="{{ b3 }}" data-max="{{ range_max_decimal }}">
+                    {{ b3_cents | money }} to {{ filter.range_max | money }}
+                  </label>
+                  <label class="collection-filter__price-option">
+                    <input type="radio" name="price_bracket" data-price-bracket data-min="{{ range_max_decimal }}" data-max="">
+                    More than {{ filter.range_max | money }}
+                  </label>
+                </div>
+              </div>
+          {%- endcase -%}
+        </div>
+      </div>
+    {%- endfor -%}
+
+    <button type="submit" class="collection-filter__submit">Apply</button>
+
+  </form>
+
+</aside>
+
+<script src="{{ 'collection-filter.js' | asset_url }}" defer></script>

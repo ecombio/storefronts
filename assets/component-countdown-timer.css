@@ -1,0 +1,55 @@
+/* component-countdown-timer.css */
+
+.countdown-timer {
+  display: block;
+}
+
+.countdown-timer.no-js-hidden {
+  display: block;
+}
+
+.no-js .countdown-timer.no-js-hidden {
+  display: none;
+}
+
+.countdown-timer__inner {
+  gap: 0;
+}
+
+.countdown-timer__block {
+  min-width: 2ch;
+  text-align: center;
+}
+
+.countdown-timer__number {
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.countdown-timer__separator {
+  padding: 0 0.2em;
+  line-height: 1;
+  font-size: inherit;
+  font-weight: inherit;
+  align-self: flex-start;
+  padding-top: 0.05em;
+}
+
+.countdown-timer__label {
+  font-size: 0.65em;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.6;
+  margin-top: 0.15em;
+}
+
+/* Promotion banner timer inherits h1 sizing from parent */
+.promotion-banner__timer .countdown-timer__number.h1 {
+  font-size: var(--font-heading-1, 2.5rem);
+}
+
+@media screen and (max-width: 749px) {
+  .promotion-banner__timer .countdown-timer__number.h1 {
+    font-size: var(--font-heading-2, 2rem);
+  }
+}

@@ -1,0 +1,55 @@
+.athletes-grid-wrapper {
+  width: 100%;
+}
+
+.athletes-grid__heading {
+  font-size: var(--font-size-lg, 1.375rem);
+  font-weight: 600;
+  margin: 0 0 1.5rem 0;
+}
+
+.athletes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 2.5rem 1.5rem;
+}
+
+.athletes-grid__item[hidden] {
+  display: none;
+}
+
+.athletes-grid__load-more {
+  display: block;
+  margin: 2.5rem auto 0;
+  padding: 0.75rem 2rem;
+  font-size: var(--font-size-sm, 0.9375rem);
+  font-weight: 500;
+  color: var(--color-text, #111);
+  background: transparent;
+  border: 1px solid var(--color-border, #d1d5db);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.athletes-grid__load-more:hover,
+.athletes-grid__load-more:focus-visible {
+  background-color: var(--color-bg-secondary, #f3f4f6);
+  border-color: var(--color-text-muted, #9ca3af);
+}
+
+.athletes-grid__empty {
+  color: var(--color-text-muted, #6b7280);
+  font-size: var(--font-size-sm, 0.9375rem);
+}
+
+.athletes-grid__empty--demo {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+@media screen and (max-width: 640px) {
+  .athletes-grid {
+    grid-template-columns: 1fr;
+  }
+}

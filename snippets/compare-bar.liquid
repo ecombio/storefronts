@@ -1,0 +1,39 @@
+{%- comment -%}
+  snippets/compare-bar.liquid
+  Sticky bottom bar — shown when 1+ products are checked for compare.
+  Wired to product-card.js initCompare().
+
+  Add to theme.liquid just before </body>:
+    {% render 'compare-bar' %}
+{%- endcomment -%}
+
+<div class="compare-bar" role="region" aria-label="Compare products" aria-live="polite">
+  <div class="compare-bar__inner">
+
+    <div class="compare-bar__left">
+      <span class="compare-bar__label">
+        Comparing <strong class="compare-bar__counter">0</strong> products
+      </span>
+      <ul class="compare-bar__list" aria-label="Products selected for comparison"></ul>
+    </div>
+
+    <div class="compare-bar__actions">
+      <button
+        class="compare-bar__btn compare-bar__btn--submit"
+        type="button"
+        data-compare-submit
+        disabled
+      >
+        <span>Compare now</span>
+      </button>
+      <button
+        class="compare-bar__btn compare-bar__btn--clear"
+        type="button"
+        data-compare-clear
+      >
+        Clear all
+      </button>
+    </div>
+
+  </div>
+</div>

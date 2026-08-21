@@ -1,0 +1,171 @@
+{% comment %}
+  =========================================================
+  IMAGE CAROUSEL — Styles
+  Extracted from sections/image-carousel.liquid
+  NOTE: This file uses the .css.liquid extension so Shopify
+  still processes the {{ section.id }} liquid variable before
+  serving it as a static stylesheet.
+  =========================================================
+{% endcomment %}
+
+.carousel-section-{{ section.id }} {
+  --slide-height: {{ section.settings.slide_height }}px;
+  --overlay-opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }};
+  --text-color: {{ section.settings.text_color }};
+  --accent-color: {{ section.settings.accent_color }};
+  --dot-color: {{ section.settings.dot_color }};
+  --nav-bg: {{ section.settings.nav_bg_color }};
+  --nav-icon: {{ section.settings.nav_icon_color }};
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Swiper wrapper ── */
+.carousel-section-{{ section.id }} .swiper {
+  width: 100%;
+  height: var(--slide-height);
+}
+
+.carousel-section-{{ section.id }} .swiper-slide {
+  position: relative;
+  overflow: hidden;
+  display: block;
+  text-decoration: none;
+}
+
+/* ── Image / placeholder ── */
+.carousel-section-{{ section.id }} .slide-img,
+.carousel-section-{{ section.id }} .slide-placeholder {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.6s ease;
+}
+
+.carousel-section-{{ section.id }} .slide-placeholder {
+  background: #e8e8e8;
+}
+
+.carousel-section-{{ section.id }} .slide-placeholder svg {
+  width: 100%;
+  height: 100%;
+}
+
+.carousel-section-{{ section.id }} .swiper-slide:hover .slide-img,
+.carousel-section-{{ section.id }} .swiper-slide:hover .slide-placeholder {
+  transform: scale(1.03);
+}
+
+/* ── Overlay ── */
+.carousel-section-{{ section.id }} .slide-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,var(--overlay-opacity));
+  pointer-events: none;
+}
+
+/* ── Text content ── */
+.carousel-section-{{ section.id }} .slide-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 2.5rem 3rem;
+  color: var(--text-color);
+  pointer-events: none;
+}
+
+.carousel-section-{{ section.id }} .slide-eyebrow {
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.75;
+  margin-bottom: 0.4rem;
+}
+
+.carousel-section-{{ section.id }} .slide-heading {
+  font-size: clamp(1.4rem, 3vw, 2.4rem);
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 0.6rem;
+}
+
+.carousel-section-{{ section.id }} .slide-subtext {
+  font-size: 0.95rem;
+  opacity: 0.85;
+  max-width: 480px;
+}
+
+.carousel-section-{{ section.id }} .slide-cta {
+  display: inline-block;
+  margin-top: 1.2rem;
+  padding: 0.55rem 1.4rem;
+  background: var(--accent-color);
+  color: var(--text-color);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 3px;
+  pointer-events: auto;
+  transition: opacity 0.2s;
+}
+
+.carousel-section-{{ section.id }} .slide-cta:hover {
+  opacity: 0.85;
+}
+
+/* ── Navigation arrows ── */
+.carousel-section-{{ section.id }} .swiper-button-prev,
+.carousel-section-{{ section.id }} .swiper-button-next {
+  width: 44px;
+  height: 44px;
+  background: var(--nav-bg);
+  border-radius: 50%;
+  color: var(--nav-icon);
+  transition: background 0.2s;
+}
+
+.carousel-section-{{ section.id }} .swiper-button-prev:hover,
+.carousel-section-{{ section.id }} .swiper-button-next:hover {
+  background: var(--accent-color);
+  color: var(--text-color);
+}
+
+.carousel-section-{{ section.id }} .swiper-button-prev::after,
+.carousel-section-{{ section.id }} .swiper-button-next::after {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* ── Pagination dots ── */
+.carousel-section-{{ section.id }} .swiper-pagination-bullet {
+  background: var(--dot-color);
+  opacity: 0.45;
+  width: 8px;
+  height: 8px;
+}
+
+.carousel-section-{{ section.id }} .swiper-pagination-bullet-active {
+  opacity: 1;
+  background: var(--accent-color);
+  width: 24px;
+  border-radius: 4px;
+}
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .carousel-section-{{ section.id }} .swiper {
+    height: {{ section.settings.slide_height_mobile }}px;
+  }
+  .carousel-section-{{ section.id }} .slide-content {
+    padding: 1.5rem;
+  }
+  .carousel-section-{{ section.id }} .swiper-button-prev,
+  .carousel-section-{{ section.id }} .swiper-button-next {
+    display: none;
+  }
+}

@@ -1,0 +1,171 @@
+{% comment %}
+  Menu Item - Header Menu
+  File: snippets/menu-item.liquid
+
+  Renders a top-level nav link that opens a full-width flyout panel
+  with a "Good to know" sidebar (up to 3 promo tips) and a category
+  grid (up to 8 image tiles, each with an optional badge), plus a
+  "See all" link in the top-right of the grid.
+
+  Unlike mega-menu, the tips and categories aren't built from a
+  link_list — they're fixed, numbered setting groups (Tip 1-3,
+  Category 1-8), since the layout is a specific fixed shape rather
+  than an arbitrary nested menu.
+
+  Shares data-mega-menu / data-mega-menu-trigger / data-mega-menu-panel
+  attributes with mega-menu.liquid so assets/mega-menu.js (already
+  generic) drives open/close + positioning for this block too, with
+  no JS changes needed.
+
+  Desktop (≥1024px) only — see assets/menu-item.css.
+
+  Params:
+    block — the menu-item block from section.blocks
+{% endcomment %}
+
+{%- liquid
+  assign link = block.settings.link
+  assign panel_id = 'MenuItemPanel-' | append: block.id
+
+  assign tips = ''
+  assign has_tips = false
+  for i in (1..3)
+    assign title_key = 'tip_' | append: i | append: '_title'
+    if block.settings[title_key] != blank
+      assign has_tips = true
+    endif
+  endfor
+
+  assign has_categories = false
+  for i in (1..8)
+    assign label_key = 'category_' | append: i | append: '_label'
+    if block.settings[label_key] != blank
+      assign has_categories = true
+    endif
+  endfor
+
+  assign has_panel = false
+  if has_tips or has_categories
+    assign has_panel = true
+  endif
+-%}
+
+<li class="menu-bar__item{% if has_panel %} menu-bar__item--menu-item{% endif %}" {% if has_panel %}data-mega-menu{% endif %} {{ block.shopify_attributes }}>
+  <a
+    href="{{ link | default: '#' }}"
+    class="menu-bar__link{% if has_panel %} menu-bar__link--menu-item{% endif %}"
+    {%- if has_panel %}
+    aria-haspopup="true"
+    aria-expanded="false"
+    aria-controls="{{ panel_id }}"
+    data-mega-menu-trigger
+    {% endif -%}
+  >
+    {%- if block.settings.icon != blank -%}
+      <span class="menu-bar__icon">{%- render 'menu-icon', icon: block.settings.icon -%}</span>
+    {%- endif -%}
+    {{ block.settings.label | default: 'Menu item' }}
+    {%- if has_panel -%}
+      <svg class="icon-caret-down" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+        <path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    {%- endif -%}
+  </a>
+
+  {%- if has_panel -%}
+    <div class="menu-item__panel" id="{{ panel_id }}" data-mega-menu-panel>
+      <div class="menu-item__panel-inner page-width--header">
+
+        {%- if has_tips -%}
+          <div class="menu-item__sidebar">
+            <p class="menu-item__sidebar-heading">Good to know</p>
+            <ul class="menu-item__tip-list">
+              {%- for i in (1..3) -%}
+                {%- liquid
+                  assign icon_key  = 'tip_' | append: i | append: '_icon'
+                  assign title_key = 'tip_' | append: i | append: '_title'
+                  assign text_key  = 'tip_' | append: i | append: '_text'
+                  assign link_key  = 'tip_' | append: i | append: '_link'
+
+                  assign tip_icon  = block.settings[icon_key]
+                  assign tip_title = block.settings[title_key]
+                  assign tip_text  = block.settings[text_key]
+                  assign tip_link  = block.settings[link_key]
+                -%}
+                {%- if tip_title != blank -%}
+                  <li class="menu-item__tip">
+                    {%- if tip_link != blank %}<a href="{{ tip_link }}" class="menu-item__tip-link">{% endif -%}
+                      {%- if tip_icon != blank -%}
+                        <span class="menu-item__tip-icon">{%- render 'menu-icon', icon: tip_icon -%}</span>
+                      {%- endif -%}
+                      <span class="menu-item__tip-copy">
+                        <span class="menu-item__tip-title">{{ tip_title }}</span>
+                        {%- if tip_text != blank -%}
+                          <span class="menu-item__tip-text">{{ tip_text }}</span>
+                        {%- endif -%}
+                      </span>
+                    {%- if tip_link != blank %}</a>{% endif -%}
+                  </li>
+                {%- endif -%}
+              {%- endfor -%}
+            </ul>
+          </div>
+        {%- endif -%}
+
+        {%- if has_categories -%}
+          <div class="menu-item__main">
+            <div class="menu-item__main-header">
+              <p class="menu-item__main-heading">Categories</p>
+              {%- if block.settings.see_all_link != blank -%}
+                <a href="{{ block.settings.see_all_link }}" class="menu-item__see-all">
+                  {{ block.settings.see_all_label | default: 'See all' }}
+                </a>
+              {%- endif -%}
+            </div>
+
+            <div class="menu-item__grid">
+              {%- for i in (1..8) -%}
+                {%- liquid
+                  assign image_key = 'category_' | append: i | append: '_image'
+                  assign label_key = 'category_' | append: i | append: '_label'
+                  assign link_key  = 'category_' | append: i | append: '_link'
+                  assign bg_key    = 'category_' | append: i | append: '_bg'
+                  assign badge_key = 'category_' | append: i | append: '_badge'
+
+                  assign cat_image = block.settings[image_key]
+                  assign cat_label = block.settings[label_key]
+                  assign cat_link  = block.settings[link_key]
+                  assign cat_bg    = block.settings[bg_key]
+                  assign cat_badge = block.settings[badge_key]
+                -%}
+                {%- if cat_label != blank -%}
+                  <a href="{{ cat_link | default: '#' }}" class="menu-item__card">
+                    <span class="menu-item__card-image" style="background-color: {{ cat_bg | default: '#f5f5f5' }};">
+                      {%- if cat_image != blank -%}
+                        <img
+                          src="{{ cat_image | image_url: width: 300 }}"
+                          alt="{{ cat_image.alt | default: cat_label | escape }}"
+                          width="150" height="150" loading="lazy">
+                      {%- endif -%}
+                      {%- if cat_badge != blank and cat_badge != 'none' -%}
+                        <span class="menu-item__card-badge">
+                          {%- if cat_badge == 'ai' -%}
+                            AI
+                          {%- else -%}
+                            {%- render 'menu-icon', icon: cat_badge -%}
+                          {%- endif -%}
+                        </span>
+                      {%- endif -%}
+                    </span>
+                    <span class="menu-item__card-label">{{ cat_label }}</span>
+                  </a>
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
+          </div>
+        {%- endif -%}
+
+      </div>
+    </div>
+  {%- endif -%}
+</li>

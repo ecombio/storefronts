@@ -1,0 +1,122 @@
+{% comment %}
+  ECOMBIO Header — Mobile / Tablet Drawer Nav
+  File: snippets/ecombio-mobile-nav.liquid
+
+  Supports 3 levels:
+    Level 1 — top-level links (always visible)
+    Level 2 — accordion expand (category headings)
+    Level 3 — nested links shown when level 2 opens
+{% endcomment %}
+
+{%- assign nav_menu = linklists[menu] | default: linklists['main-menu'] -%}
+
+<div class="ecombio-mobile-nav" id="ecombio-mobile-nav" aria-hidden="true">
+  <div class="ecombio-mobile-nav__overlay" id="ecombio-nav-overlay"></div>
+
+  <nav class="ecombio-mobile-nav__panel" role="navigation" aria-label="Mobile navigation">
+
+    {%- comment -%}── Header row ──{%- endcomment -%}
+    <div class="ecombio-mobile-nav__header">
+      <span class="ecombio-mobile-nav__header-label">Menu</span>
+      <button class="ecombio-mobile-nav__close" id="ecombio-nav-close" aria-label="Close navigation">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    {%- comment -%}── Nav list ──{%- endcomment -%}
+    <ul class="ecombio-mobile-nav__list" role="list">
+      {%- for link in nav_menu.links -%}
+
+        {%- if link.links.size > 0 -%}
+          {%- comment -%}── Has children: render accordion ──{%- endcomment -%}
+          <li class="ecombio-mobile-nav__item ecombio-mobile-nav__item--has-children
+                     {%- if link.active %} is-active{%- endif %}">
+
+            <div class="ecombio-mobile-nav__row">
+              <a href="{{ link.url }}"
+                 class="ecombio-mobile-nav__link"
+                 {% if link.current %}aria-current="page"{% endif %}>
+                {{ link.title }}
+              </a>
+              <button class="ecombio-mobile-nav__toggle"
+                      aria-expanded="false"
+                      aria-label="Expand {{ link.title }}">
+                <svg class="ecombio-mobile-nav__chevron" width="16" height="16"
+                     viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor"
+                        stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+
+            <ul class="ecombio-mobile-nav__sub" role="list" hidden>
+              {%- for child in link.links -%}
+
+                {%- if child.links.size > 0 -%}
+                  {%- comment -%}── Level 3: nested accordion ──{%- endcomment -%}
+                  <li class="ecombio-mobile-nav__item ecombio-mobile-nav__item--has-children
+                             ecombio-mobile-nav__item--l3">
+                    <div class="ecombio-mobile-nav__row">
+                      <a href="{{ child.url }}"
+                         class="ecombio-mobile-nav__link ecombio-mobile-nav__link--sub"
+                         {% if child.current %}aria-current="page"{% endif %}>
+                        {{ child.title }}
+                      </a>
+                      <button class="ecombio-mobile-nav__toggle"
+                              aria-expanded="false"
+                              aria-label="Expand {{ child.title }}">
+                        <svg class="ecombio-mobile-nav__chevron" width="14" height="14"
+                             viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                          <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor"
+                                stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </button>
+                    </div>
+                    <ul class="ecombio-mobile-nav__sub ecombio-mobile-nav__sub--l3" role="list" hidden>
+                      {%- for grandchild in child.links -%}
+                        <li>
+                          <a href="{{ grandchild.url }}"
+                             class="ecombio-mobile-nav__link ecombio-mobile-nav__link--deep"
+                             {% if grandchild.current %}aria-current="page"{% endif %}>
+                            {{ grandchild.title }}
+                          </a>
+                        </li>
+                      {%- endfor -%}
+                    </ul>
+                  </li>
+
+                {%- else -%}
+                  {%- comment -%}── Level 2 leaf ──{%- endcomment -%}
+                  <li class="ecombio-mobile-nav__item">
+                    <a href="{{ child.url }}"
+                       class="ecombio-mobile-nav__link ecombio-mobile-nav__link--sub"
+                       {% if child.current %}aria-current="page"{% endif %}>
+                      {{ child.title }}
+                    </a>
+                  </li>
+                {%- endif -%}
+
+              {%- endfor -%}
+            </ul>
+          </li>
+
+        {%- else -%}
+          {%- comment -%}── No children: simple link ──{%- endcomment -%}
+          <li class="ecombio-mobile-nav__item{% if link.active %} is-active{% endif %}">
+            <a href="{{ link.url }}"
+               class="ecombio-mobile-nav__link"
+               {% if link.current %}aria-current="page"{% endif %}>
+              {{ link.title }}
+            </a>
+          </li>
+        {%- endif -%}
+
+      {%- endfor -%}
+    </ul>
+
+  </nav>
+</div>

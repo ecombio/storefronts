@@ -1,0 +1,13 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-brand",
+      "settings": {
+        "heading": "All Brands"
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

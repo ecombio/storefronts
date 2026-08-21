@@ -1,0 +1,163 @@
+{%- if predictive_search.performed -%}
+  {%- liquid
+    assign safe_terms  = predictive_search.terms | escape
+
+    assign queries      = predictive_search.resources.queries
+    assign collections   = predictive_search.resources.collections
+    assign products      = predictive_search.resources.products
+
+    assign has_suggestions = false
+    if queries.size > 0 or collections.size > 0
+      assign has_suggestions = true
+    endif
+
+    assign has_results = false
+    if has_suggestions or products.size > 0
+      assign has_results = true
+    endif
+
+    assign trending_menu = linklists['predictive-search-trending']
+    assign has_trending  = false
+    if trending_menu and trending_menu.links.size > 0
+      assign has_trending = true
+    endif
+  -%}
+
+  {%- if has_results -%}
+
+    <div class="predictive-search__layout">
+
+      <div class="predictive-search__rail" data-predictive-rail>
+        {%- if has_suggestions -%}
+          <div class="predictive-search__group">
+            <p class="predictive-search__group-label" id="PredictiveSearchSuggestions">Top Suggestions</p>
+            <ul class="predictive-search__list" role="group" aria-labelledby="PredictiveSearchSuggestions">
+
+              {%- for query in queries -%}
+                <li role="option" class="predictive-search__list-item">
+                  <a href="{{ query.url }}" class="predictive-search__item predictive-search__item--query" tabindex="-1">
+                    <span aria-label="{{ query.text | escape }}">{{ query.styled_text }}</span>
+                  </a>
+                </li>
+              {%- endfor -%}
+
+              {%- for collection in collections -%}
+                <li role="option" class="predictive-search__list-item">
+                  <a href="{{ collection.url }}" class="predictive-search__item predictive-search__item--collection" tabindex="-1">
+                    <span class="predictive-search__item-icon" aria-hidden="true">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                      </svg>
+                    </span>
+                    {{ collection.title | escape }}
+                  </a>
+                </li>
+              {%- endfor -%}
+
+            </ul>
+          </div>
+        {%- endif -%}
+      </div>
+
+      <div class="predictive-search__products">
+
+        {%- if products.size > 0 -%}
+          <div class="predictive-search__group predictive-search__group--carousel">
+            <p class="predictive-search__group-label" id="PredictiveSearchProducts">Products</p>
+
+            <div class="predictive-search__carousel" data-predictive-carousel>
+              <button type="button"
+                      class="predictive-search__carousel-btn predictive-search__carousel-btn--prev"
+                      data-predictive-carousel-prev
+                      aria-label="Scroll to previous results"
+                      tabindex="-1">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M15 18l-6-6 6-6"/>
+                </svg>
+              </button>
+
+              <ul class="predictive-search__carousel-track"
+                  data-predictive-carousel-track
+                  role="group"
+                  aria-labelledby="PredictiveSearchProducts">
+                {%- for product in products -%}
+                  <li role="option" class="predictive-search__carousel-item">
+                    <a href="{{ product.url }}" class="predictive-search__card" tabindex="-1">
+                      <span class="predictive-search__card-media">
+                        {%- if product.featured_media -%}
+                          {{ product.featured_media | image_url: width: 400 | image_tag: loading: 'lazy', alt: product.title, widths: '200, 300, 400', sizes: '200px' }}
+                        {%- else -%}
+                          <span class="predictive-search__card-media--placeholder" aria-hidden="true"></span>
+                        {%- endif -%}
+                      </span>
+                      <span class="predictive-search__card-info">
+                        <span class="predictive-search__card-title">{{ product.title | escape }}</span>
+                        {%- if product.type != blank -%}
+                          <span class="predictive-search__card-subtitle">{{ product.type | escape }}</span>
+                        {%- endif -%}
+                        <span class="predictive-search__card-price">
+                          {%- if product.price_varies -%}
+                            From {{ product.price_min | money }}
+                          {%- else -%}
+                            {{ product.price | money }}
+                          {%- endif -%}
+                          {%- unless product.available -%}
+                            <span class="predictive-search__card-badge">Sold out</span>
+                          {%- endunless -%}
+                        </span>
+                      </span>
+                    </a>
+                  </li>
+                {%- endfor -%}
+              </ul>
+
+              <button type="button"
+                      class="predictive-search__carousel-btn predictive-search__carousel-btn--next"
+                      data-predictive-carousel-next
+                      aria-label="Scroll to more results"
+                      tabindex="-1">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M9 18l6-6-6-6"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        {%- endif -%}
+
+        <div class="predictive-search__group predictive-search__group--footer">
+          <a href="{{ routes.search_url }}?q={{ predictive_search.terms | url_encode }}&type=product"
+             class="predictive-search__view-all"
+             role="option"
+             tabindex="-1">
+            View all results for &ldquo;{{ safe_terms }}&rdquo;
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+
+  {%- else -%}
+
+    <div class="predictive-search__empty">
+      <p>No results found for &ldquo;{{ safe_terms }}&rdquo;.</p>
+
+      {%- if has_trending -%}
+        <p class="predictive-search__group-label" id="PredictiveSearchTrending">Trending searches</p>
+        <ul class="predictive-search__list" role="group" aria-labelledby="PredictiveSearchTrending">
+          {%- for link in trending_menu.links -%}
+            <li role="option" class="predictive-search__list-item">
+              <a href="{{ link.url }}" class="predictive-search__item predictive-search__item--query" tabindex="-1">
+                {{ link.title | escape }}
+              </a>
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+    </div>
+
+  {%- endif -%}
+{%- endif -%}

@@ -1,0 +1,138 @@
+{{ 'collection-toolbar.css' | asset_url | stylesheet_tag }}
+
+<div
+  class="collection-toolbar"
+  id="collection-toolbar"
+  role="navigation"
+  aria-label="Collection navigation"
+  data-active-tab="{{ active_tab }}"
+>
+
+  <div class="tab-switcher" role="tablist" aria-label="Collection view">
+    <button
+      class="tab-switcher__tab{% if active_tab == 'products' %} tab-switcher__tab--active{% endif %}"
+      role="tab"
+      type="button"
+      aria-selected="{% if active_tab == 'products' %}true{% else %}false{% endif %}"
+      aria-controls="panel-products"
+      id="tab-products"
+      data-tab="products"
+      tabindex="{% if active_tab == 'products' %}0{% else %}-1{% endif %}"
+    >{{ section.settings.tab_products_label | default: 'Products' }}</button>
+
+    <button
+      class="tab-switcher__tab{% if active_tab == 'articles' %} tab-switcher__tab--active{% endif %}"
+      role="tab"
+      type="button"
+      aria-selected="{% if active_tab == 'articles' %}true{% else %}false{% endif %}"
+      aria-controls="panel-articles"
+      id="tab-articles"
+      data-tab="articles"
+      tabindex="{% if active_tab == 'articles' %}0{% else %}-1{% endif %}"
+    >{{ section.settings.tab_articles_label | default: 'Articles' }}</button>
+  </div>
+
+  {%- if section.settings.show_filters -%}
+    <div
+      class="collection-active-filters"
+      id="collection-active-filters"
+      aria-label="Active filters"
+      {%- if active_filter_count == 0 %} hidden{%- endif %}
+    >
+      <div class="collection-active-filters__scroll">
+        <button
+          type="button"
+          class="collection-active-filters__nav collection-active-filters__nav--prev"
+          aria-label="Scroll active filters left"
+          data-active-filters-prev
+          hidden
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <div class="collection-active-filters__track" data-active-filters-track>
+          {%- for filter in collection.filters -%}
+            {%- for value in filter.active_values -%}
+              <a href="{{ value.url_to_remove }}" class="collection-filter__pill">
+                {{ value.label }} &times;
+              </a>
+            {%- endfor -%}
+          {%- endfor -%}
+
+          {%- if active_filter_count > 0 -%}
+            <a href="{{ collection.url }}" class="collection-filter__pill collection-filter__pill--clear">Clear all</a>
+          {%- endif -%}
+        </div>
+
+        <button
+          type="button"
+          class="collection-active-filters__nav collection-active-filters__nav--next"
+          aria-label="Scroll active filters right"
+          data-active-filters-next
+          hidden
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  {%- endif -%}
+
+  {%- if section.settings.show_sort -%}
+    <div class="collection-toolbar__sort">
+      <label for="SortBy" class="visually-hidden">Sort</label>
+      <select id="SortBy" data-sort>
+        {%- for option in collection.sort_options -%}
+          <option
+            value="{{ option.value }}"
+            {%- if option.value == collection.sort_by %} selected{%- endif %}
+          >{{ option.name }}</option>
+        {%- endfor -%}
+      </select>
+    </div>
+  {%- endif -%}
+
+</div>
+
+{%- if section.settings.show_filters or section.settings.show_sort -%}
+  <div class="collection-mobile-bar" aria-label="Collection controls" role="toolbar">
+
+    {%- if section.settings.show_filters -%}
+      <button
+        class="collection-mobile-bar__btn"
+        type="button"
+        aria-expanded="false"
+        aria-controls="collection-filter"
+        aria-label="Toggle filters"
+        data-filter-toggle
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M2 4h12M4 8h8M6 12h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        Filters
+      </button>
+    {%- endif -%}
+
+    {%- if section.settings.show_sort -%}
+      <button
+        class="collection-mobile-bar__btn"
+        type="button"
+        aria-expanded="false"
+        aria-label="Sort products"
+        data-mobile-sort-toggle
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M2 4h8M2 8h6M2 12h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M12 3v10M9.5 10.5L12 13l2.5-2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Sort
+      </button>
+    {%- endif -%}
+
+  </div>
+{%- endif -%}
+
+<script src="{{ 'collection-toolbar.js' | asset_url }}" defer></script>

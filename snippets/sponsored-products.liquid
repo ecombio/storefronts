@@ -1,0 +1,85 @@
+{% comment %}
+  snippets/sponsored-products.liquid
+  [2.1] "Sponsored Products" in-feed ad unit.
+
+  Reads block.settings.product_1..product_8 (discrete product pickers,
+  not a list picker — matches the schema in sections/collection.liquid).
+  Renders two ways:
+    - exactly 1 product configured  → single sponsored card
+    - 2+ products configured        → horizontal sponsored carousel
+
+  Card rendering is delegated to product-card.liquid (is_sponsored: true)
+  so sponsored cards share image/price/reviews/wishlist/quickview/compare/
+  ATC markup and behavior with organic product-grid cards. This snippet
+  owns only ad-unit chrome: the "Sponsored" section label and, for the
+  carousel variant, the scroll track wrapper.
+
+  Parameters:
+    block {Object} required — section block, type "sponsored-products"
+      block.settings.row          {Number}  — used upstream, not here
+      block.settings.product_1-8  {Product}
+
+  Asset ownership: this snippet loads no CSS/JS of its own.
+    sponsored-ads.css is loaded once by collection-products.liquid.
+    sponsored-ads.js  is loaded once by collection-products.liquid
+                       (needed whenever the carousel variant can appear).
+{% endcomment %}
+
+{%- liquid
+  assign product_count = 0
+
+  for i in (1..8)
+    assign key = 'product_' | append: i
+    assign p = block.settings[key]
+    if p != blank
+      assign product_count = product_count | plus: 1
+    endif
+  endfor
+-%}
+
+{%- if product_count == 0 -%}
+  {%- comment -%} No products configured yet — render nothing rather than an empty shell. {%- endcomment -%}
+
+{%- elsif product_count == 1 -%}
+
+  {%- comment -%} ── Single sponsored product card ───────────────────────── {%- endcomment -%}
+
+  {%- liquid
+    assign product = blank
+    for i in (1..8)
+      assign key = 'product_' | append: i
+      assign p = block.settings[key]
+      if p != blank
+        assign product = p
+        break
+      endif
+    endfor
+  -%}
+
+  <div class="sponsored-products sponsored-products--single" data-sponsored-block-id="{{ block.id }}">
+    {%- render 'product-card', product: product, is_sponsored: true -%}
+  </div>
+
+{%- else -%}
+
+  {%- comment -%} ── Manual carousel (2+ products) ───────────────────────── {%- endcomment -%}
+
+  <div class="sponsored-products sponsored-products--carousel" data-sponsored-block-id="{{ block.id }}">
+    <span class="sponsored-products__label">Sponsored</span>
+
+    <ul class="sponsored-products__track" data-sponsored-track>
+      {%- for i in (1..8) -%}
+        {%- liquid
+          assign key = 'product_' | append: i
+          assign product = block.settings[key]
+        -%}
+        {%- if product != blank -%}
+          <li class="sponsored-products__item">
+            {%- render 'product-card', product: product, is_sponsored: true -%}
+          </li>
+        {%- endif -%}
+      {%- endfor -%}
+    </ul>
+  </div>
+
+{%- endif -%}

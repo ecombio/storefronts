@@ -1,0 +1,154 @@
+{%- comment -%}
+  snippets/quick-view-recommendation.liquid
+  =========================================
+  Row 3 — full-width "You may also like" carousel inside the Quick View modal.
+
+  Strategy:
+    • Liquid renders cards at page load (section-render API call).
+      Because quick-view.liquid is fetched via /products/<handle>?sections=quick-view,
+      the Shopify section-render context IS a product page, so product.collections
+      and product.tags are available for recommendation filtering.
+    • Up to `rec_limit` sibling products from the first non-catch-all collection
+      are rendered into <li> elements via {% capture %}. The current product is
+      excluded so it never appears in its own recommendations.
+    • After the modal body is stamped, quick-view.js fires no extra event here —
+      instead this snippet emits `productcard:injected` via an inline <script>
+      so product-card.js can sync wishlist + compare states immediately.
+    • No JS carousel library is used; horizontal scroll is CSS-only for speed.
+
+  Parameters:
+    product    {Object}  required — current product (used to find collection &
+                                    exclude the product from its own results)
+    rec_limit  {Number}  optional — max cards to show (default 6)
+    heading    {String}  optional — section heading (default "You may also like")
+    see_all_url {String} optional — URL for "See all" link (falls back to first
+                                    collection URL if found, otherwise omitted)
+
+  JS hooks:
+    [data-qv-rec]           — root wrapper; used by the inline init script below
+                              as a sentinel to avoid double-init on re-render.
+    [data-qv-rec-list]      — the <ul>; could be targeted for async injection.
+
+  CSS dependency: Section 6 of assets/quick-view.css (added alongside this file).
+
+  IMPORTANT: product-card.js must be loaded globally (it is, via theme.liquid).
+    All ATC, Wishlist, Compare, and Quick View interactions inside these cards
+    are handled by product-card.js event delegation on document.body — no extra
+    wiring is needed here.
+{%- endcomment -%}
+
+{%- liquid
+  assign rec_limit   = rec_limit | default: 6
+  assign heading     = heading   | default: 'You may also like'
+
+  comment
+    ── Find a source collection ──────────────────────────────────────────────
+    Walk the product's collections to find one that is NOT a catch-all
+    ("all", "frontpage"). Prefer the first match.
+  endcomment
+  assign source_collection = nil
+  for c in product.collections
+    unless c.handle == 'all' or c.handle == 'frontpage'
+      assign source_collection = c
+      break
+    endunless
+  endfor
+
+  comment
+    ── Build the recommendation list ─────────────────────────────────────────
+    Only proceed when we have a source collection with more than one product.
+    We need at least 2 products so we have something to show after excluding
+    the current one.
+  endcomment
+  assign has_recs = false
+  if source_collection != nil and source_collection.products_count > 1
+    assign has_recs = true
+  endif
+
+  comment
+    ── "See all" URL ─────────────────────────────────────────────────────────
+    Caller can override via see_all_url param; otherwise fall back to the
+    source collection URL so the link is always relevant.
+  endcomment
+  assign see_all_href = see_all_url | default: nil
+  if see_all_href == nil and source_collection != nil
+    assign see_all_href = source_collection.url
+  endif
+-%}
+
+{%- if has_recs -%}
+
+{%- comment -%}── Build <li> items via capture to keep logic out of markup ──{%- endcomment -%}
+{%- capture rec_items_html -%}
+  {%- assign shown_count = 0 -%}
+  {%- for rec_product in source_collection.products -%}
+    {%- if shown_count >= rec_limit -%}{%- break -%}{%- endif -%}
+    {%- comment -%}Skip the product currently open in the modal{%- endcomment -%}
+    {%- if rec_product.id == product.id -%}{%- continue -%}{%- endif -%}
+    <li class="quick-view-rec__item">
+      {%- render 'product-card',
+        product:        rec_product,
+        show_quickview: true,
+        show_compare:   true,
+        show_eta:       false
+      -%}
+    </li>
+    {%- assign shown_count = shown_count | plus: 1 -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
+{%- comment -%}
+  Guard: only render the section when at least one card was produced.
+  (Edge case: the loop above may skip every product if the collection only
+  contained the current product despite products_count > 1.)
+{%- endcomment -%}
+{%- unless rec_items_html == blank -%}
+
+<div class="quick-view-rec" data-qv-rec>
+
+  {%- comment -%}── Section header ──{%- endcomment -%}
+  <div class="quick-view-rec__header">
+    <h3 class="quick-view-rec__heading">{{ heading }}</h3>
+    {%- if see_all_href != blank -%}
+      <a
+        href="{{ see_all_href }}"
+        class="quick-view-rec__see-all"
+        aria-label="See all products in {{ source_collection.title | escape }}"
+      >
+        See all
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"
+             stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 7h8M7.5 3.5 11 7l-3.5 3.5"/>
+        </svg>
+      </a>
+    {%- endif -%}
+  </div>
+
+  {%- comment -%}── Horizontal scroll list ──{%- endcomment -%}
+  <ul class="quick-view-rec__list" data-qv-rec-list role="list">
+    {{ rec_items_html }}
+  </ul>
+
+</div>
+
+{%- comment -%}
+  ── Sync wishlist + compare states ──────────────────────────────────────────
+  product-card.js listens for 'productcard:injected' on document and runs
+  syncWishlistButtons() + syncCompareCheckboxes() + renderCompareBar().
+  We fire it inline, deferred one microtask so the DOM is committed first.
+  The sentinel check on [data-qv-rec-init] prevents double-fire if the
+  section is somehow re-rendered inside the same page context.
+{%- endcomment -%}
+<script>
+  (function () {
+    var root = document.querySelector('[data-qv-rec]:not([data-qv-rec-init])');
+    if (!root) return;
+    root.setAttribute('data-qv-rec-init', '1');
+    Promise.resolve().then(function () {
+      document.dispatchEvent(new CustomEvent('productcard:injected', { bubbles: true }));
+    });
+  }());
+</script>
+
+{%- endunless -%}
+{%- endif -%}

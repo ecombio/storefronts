@@ -1,0 +1,76 @@
+/* ============================================
+   THEME.CSS — Design System
+
+   Brand Direction:
+   - United States Flag Colors (Old Glory Red, White, Old Glory Blue)
+   - Apple System UI aesthetic (clean, minimal, refined)
+
+   Ownership rule:
+   This file owns STATIC constants only — values that never change
+   regardless of merchant settings or theme preset. Anything a
+   merchant can edit in the theme editor (colors, spacing, widths,
+   presets, fonts) is computed in snippets/css-variables.liquid and
+   MUST NOT be redefined here. If you find yourself adding a var
+   that references a setting, it belongs in css-variables.liquid,
+   not here.
+
+   Presets (Launchpad / Marketplace / Storefront) are now resolved
+   entirely inside css-variables.liquid at render time and written
+   directly into :root — there is no longer a .theme-preset-* class
+   layer here. This removes the previous dual-source-of-truth bug
+   where theme.css's class overrides and the Liquid snippet's :root
+   values could silently disagree.
+   ============================================ */
+
+:root {
+  /* ── Brand palette (fixed, not settings-driven) ────────────────── */
+  --color-red: #B31942;      /* Old Glory Red */
+  --color-blue: #0A3161;     /* Old Glory Blue */
+  --color-white: #FFFFFF;
+  --color-black: #111111;
+  --color-yellow: #E8B923;
+
+  /* ── System font fallback ───────────────────────────────────────
+     Used only until css-variables.liquid's settings-driven
+     --font-primary--family loads; also serves as the value if that
+     snippet is ever removed from a page by mistake. */
+  --font-primary--family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-body: var(--font-primary--family);
+
+  /* ── Radii (fixed) ───────────────────────────────────────────── */
+  --radius-base: 10px;
+  --radius-sm: 6px;
+  /* --style-border-radius-inputs is settings-driven (input_corner_radius)
+     — defined in css-variables.liquid, not here. */
+
+  /* ── Motion (fixed) ──────────────────────────────────────────── */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.2s ease;
+  --transition-slow: 0.35s ease;
+
+  /* ── ATC button accents (fixed) ──────────────────────────────── */
+  --color-accent-text: #ffffff;
+  --color-atc-text: #111111;
+  --color-atc-soldout-bg: #E5E7EB;
+  --color-atc-soldout-text: #9CA3AF;
+  --color-atc-added: #059669;
+
+  /* ── Sale / savings (fixed half — color-sale/save-text are
+     settings-driven, in css-variables.liquid) ─────────────────── */
+  --color-save-bg: #FEF3C7;
+
+  /* ── Option pills (fixed half — active/border states are
+     settings-driven, in css-variables.liquid) ─────────────────── */
+  --color-pill-bg: #F3F4F6;
+  --color-pill-text: #374151;
+  --color-pill-text-active: #ffffff;
+}
+
+/* ============================================
+   BASE ELEMENT STYLES
+   ============================================ */
+body {
+  font-family: var(--font-primary--family);
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+}

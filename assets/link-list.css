@@ -1,0 +1,168 @@
+/* =============================================================
+   Link List Dropdown
+   File: assets/link-list.css
+   Loaded by: snippets/header-menu.liquid (only when a link-list
+   block is present in section.blocks)
+
+   Scope: the link-list trigger's caret + the compact dropdown panel
+   (single column of rows, with an optional one-level indented
+   sub-list per row — no mega-menu-style multi-column layout, no
+   trending-products rail).
+
+   Panel is position:fixed for the same overflow-clipping reason
+   documented in mega-menu.liquid/css — `top`/`left` are set inline by
+   assets/link-list.js against the trigger's own rect; this file only
+   owns width/visual styling. Deliberately narrow (min/max-width) and
+   left-aligned under its trigger, unlike mega-menu's full-width panel.
+
+   Desktop (≥1024px) only, same as the rest of .menu-bar — mobile/
+   tablet use the drawer instead.
+   ============================================================= */
+
+@media (min-width: 1024px) {
+
+  .menu-bar__link--link-list {
+    cursor: pointer;
+  }
+
+  .menu-bar__item--link-list:hover > .menu-bar__link--link-list .icon-caret-down,
+  .menu-bar__item--link-list:focus-within > .menu-bar__link--link-list .icon-caret-down {
+    transform: rotate(180deg);
+  }
+
+  /* ── Panel shell ──
+     Same direct-child hover/focus-within note as mega-menu.css: fixed
+     positioning moves the panel's rendered box, not its place in the
+     DOM/accessibility tree, so hovering into the panel still counts
+     as hovering the parent <li> and keeps it open. */
+  .link-list__panel {
+    position: fixed;
+    top: 0;    /* overwritten inline by link-list.js */
+    left: 0;   /* overwritten inline by link-list.js */
+    min-width: 220px;
+    max-width: 320px;
+    /* Hard cap so a large link_list (e.g. someone assigns the full
+       main menu here instead of a short curated list) can never grow
+       past the bottom of the viewport and overlap page content below
+       the header. `top` is set inline by link-list.js to the
+       trigger's live bottom edge, so the cap is computed the same
+       way: leave a 16px gap to the bottom of the screen. link-list.js
+       also sets an exact inline max-height based on the trigger's
+       actual position — this is just the CSS fallback. */
+    max-height: calc(100vh - 16px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+    z-index: 300;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-6px);
+    transition: opacity 0.16s ease, transform 0.16s ease, visibility 0s linear 0.16s;
+  }
+
+  .menu-bar__item--link-list:hover > .link-list__panel,
+  .menu-bar__item--link-list:focus-within > .link-list__panel,
+  .link-list__panel.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+    transition: opacity 0.16s ease, transform 0.16s ease;
+  }
+
+  .link-list__list {
+    list-style: none;
+    margin: 0;
+    padding: 8px 0;
+  }
+
+  .link-list__item {
+    padding: 0;
+  }
+
+  .link-list__link {
+    display: block;
+    padding: 9px 16px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #1a1a1a;
+    text-decoration: none;
+    transition: background 0.12s ease, color 0.12s ease;
+  }
+  .link-list__link:hover {
+    background: #f5f5f5;
+    color: var(--hdr-accent);
+  }
+
+  /* ── Sub-list (2nd nesting level) ── */
+  .link-list__sublist {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 4px;
+  }
+
+  .link-list__sublink {
+    display: block;
+    padding: 7px 16px 7px 28px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: #6b6b6b;
+    text-decoration: none;
+    transition: background 0.12s ease, color 0.12s ease;
+  }
+  .link-list__sublink:hover {
+    background: #f5f5f5;
+    color: var(--hdr-accent);
+  }
+
+  .link-list__item--has-sub > .link-list__link {
+    font-weight: 700;
+  }
+
+  /* ── Grandchild list (3rd nesting level) ──
+     Same role as mega-menu's .mega-menu__subcolumn-list: a further-
+     indented, smaller, more muted tier beneath a 2nd-level link that
+     itself has children (e.g. "From the News Room" → "Latest News"). */
+  .link-list__subitem--has-sub > .link-list__sublink {
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+
+  .link-list__subsublist {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 4px;
+  }
+
+  .link-list__subsublink {
+    display: block;
+    padding: 6px 16px 6px 40px;
+    font-size: 12px;
+    font-weight: 400;
+    color: #8a8a8a;
+    text-decoration: none;
+    transition: background 0.12s ease, color 0.12s ease;
+  }
+  .link-list__subsublink:hover {
+    background: #f5f5f5;
+    color: var(--hdr-accent);
+  }
+}
+
+/* Link-list dropdown is desktop-only; the mobile drawer handles nav below 1024px */
+@media (max-width: 1023px) {
+  .link-list__panel {
+    display: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .link-list__panel,
+  .menu-bar__item--link-list .icon-caret-down {
+    transition: none !important;
+  }
+}

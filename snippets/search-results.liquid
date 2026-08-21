@@ -1,0 +1,102 @@
+{%- comment -%} snippets/search-results.liquid {%- endcomment -%}
+{{ 'search-results.css' | asset_url | stylesheet_tag }}
+{{ 'promo-banner.css' | asset_url | stylesheet_tag }}
+{{ 'promo-carousel.css' | asset_url | stylesheet_tag }}
+
+<div class="search-feed" id="search-feed" data-search-feed>
+
+  <div
+    id="panel-products"
+    class="search-feed__panel"
+    role="tabpanel"
+    aria-labelledby="tab-products"
+    data-panel="products"
+    {%- if active_type != 'product' %} hidden{%- endif %}
+  >
+    {%- if active_type == 'product' -%}
+      {%- liquid
+        assign banner_blocks = section.blocks | where: 'type', 'promo_banner'
+        assign carousel_blocks = section.blocks | where: 'type', 'promo_carousel'
+      -%}
+
+      {%- paginate search.results by section.settings.results_per_page -%}
+
+        <div
+          id="search-results-grid"
+          class="search-results-grid"
+          style="--columns: {{ section.settings.columns | default: 4 }}; --mobile-columns: {{ section.settings.mobile_columns | default: 1 }};"
+        >
+          {%- for result in search.results -%}
+            {%- assign absolute_index = paginate.current_offset | plus: forloop.index -%}
+
+            {%- for banner in banner_blocks -%}
+              {%- assign banner_position = banner.settings.position | default: 0 -%}
+              {%- if banner_position > 0 and banner_position == absolute_index -%}
+                {%- render 'promo-banner', block: banner -%}
+              {%- endif -%}
+            {%- endfor -%}
+
+            {%- for carousel in carousel_blocks -%}
+              {%- assign carousel_position = carousel.settings.position | default: 0 -%}
+              {%- if carousel_position > 0 and carousel_position == absolute_index -%}
+                {%- render 'promo-carousel', block: carousel -%}
+              {%- endif -%}
+            {%- endfor -%}
+
+            {%- render 'product-card', product: result -%}
+
+          {%- else -%}
+            <p class="search-empty">No products found for &ldquo;{{ search_terms }}&rdquo;.</p>
+          {%- endfor -%}
+
+          {%- unless paginate.next -%}
+            {%- for banner in banner_blocks -%}
+              {%- assign banner_position = banner.settings.position | default: 0 -%}
+              {%- if banner_position > paginate.items and banner_position > 0 -%}
+                {%- render 'promo-banner', block: banner -%}
+              {%- endif -%}
+            {%- endfor -%}
+            {%- for carousel in carousel_blocks -%}
+              {%- assign carousel_position = carousel.settings.position | default: 0 -%}
+              {%- if carousel_position > paginate.items and carousel_position > 0 -%}
+                {%- render 'promo-carousel', block: carousel -%}
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endunless -%}
+        </div>
+
+        {%- render 'search-pagination', paginate: paginate, type: 'product' -%}
+
+      {%- endpaginate -%}
+    {%- endif -%}
+  </div>
+
+  <div
+    id="panel-articles"
+    class="search-feed__panel"
+    role="tabpanel"
+    aria-labelledby="tab-articles"
+    data-panel="articles"
+    {%- if active_type != 'article' %} hidden{%- endif %}
+  >
+    {%- if active_type == 'article' -%}
+      {%- paginate search.results by section.settings.results_per_page -%}
+
+        <div id="search-articles-grid" class="article-feed">
+          {%- for result in search.results -%}
+            {%- render 'article-card', article: result -%}
+          {%- else -%}
+            <p class="search-empty">No articles found for &ldquo;{{ search_terms }}&rdquo;.</p>
+          {%- endfor -%}
+        </div>
+
+        {%- render 'search-pagination', paginate: paginate, type: 'article' -%}
+
+      {%- endpaginate -%}
+    {%- endif -%}
+  </div>
+
+</div>
+
+<script src="{{ 'search-results.js' | asset_url }}" defer></script>
+<script src="{{ 'promo-carousel.js' | asset_url }}" defer></script>

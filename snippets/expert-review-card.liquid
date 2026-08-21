@@ -1,0 +1,112 @@
+{%- liquid
+  assign has_native_video = false
+  assign has_external_video = false
+  assign external_provider = blank
+  assign external_video_id = blank
+
+  if review.video.value != blank
+    assign has_native_video = true
+  elsif review.video_url.value != blank
+    assign raw_url = review.video_url.value
+
+    if raw_url contains 'youtube.com' or raw_url contains 'youtu.be'
+      assign external_provider = 'youtube'
+      if raw_url contains 'watch?v='
+        assign external_video_id = raw_url | split: 'watch?v=' | last | split: '&' | first
+      elsif raw_url contains 'youtu.be/'
+        assign external_video_id = raw_url | split: 'youtu.be/' | last | split: '?' | first
+      elsif raw_url contains '/embed/'
+        assign external_video_id = raw_url | split: '/embed/' | last | split: '?' | first
+      endif
+    elsif raw_url contains 'vimeo.com'
+      assign external_provider = 'vimeo'
+      assign external_video_id = raw_url | split: 'vimeo.com/' | last | split: '?' | first
+    endif
+
+    if external_provider != blank and external_video_id != blank
+      assign has_external_video = true
+    endif
+  endif
+
+  assign has_thumbnail = false
+  if review.thumbnail.value != blank
+    assign has_thumbnail = true
+  endif
+-%}
+<div class="expert-review-card" id="ExpertReviewCard-{{ review.id | split: '/' | last }}" data-video-card>
+  <div class="expert-review-card__frame">
+
+    <button
+      type="button"
+      class="expert-review-card__play-trigger"
+      data-video-card-trigger
+      aria-label="Play video{% if review.title.value != blank %}: {{ review.title.value | escape }}{% endif %}"
+      aria-haspopup="dialog"
+      data-video-caption=""
+      {%- if has_native_video %}
+        data-video-type="native"
+        data-video-src="{{ review.video.value.sources.last.url }}"
+      {%- elsif has_external_video %}
+        data-video-type="external"
+        data-provider="{{ external_provider }}"
+        data-video-id="{{ external_video_id }}"
+      {%- else %}
+        disabled
+      {%- endif %}
+    >
+      {%- if has_thumbnail -%}
+        {{
+          review.thumbnail.value
+          | image_url: width: 800
+          | image_tag:
+            loading: 'lazy',
+            class: 'expert-review-card__thumbnail',
+            sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 80vw',
+            widths: '400,600,800,1000'
+        }}
+      {%- elsif has_native_video and review.video.value.preview_image -%}
+        {{
+          review.video.value.preview_image
+          | image_url: width: 800
+          | image_tag:
+            loading: 'lazy',
+            class: 'expert-review-card__thumbnail',
+            sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 80vw',
+            widths: '400,600,800,1000'
+        }}
+      {%- else -%}
+        {{ 'lifestyle-1' | placeholder_svg_tag: 'expert-review-card__thumbnail expert-review-card__thumbnail--placeholder' }}
+      {%- endif -%}
+
+      <span class="expert-review-card__play-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" focusable="false">
+          <path d="M8 5v14l11-7z" fill="currentColor"/>
+        </svg>
+      </span>
+    </button>
+
+  </div>
+
+  <div class="expert-review-card__body">
+    {%- if review.title.value != blank -%}
+      <p class="expert-review-card__title">{{ review.title.value }}</p>
+    {%- endif -%}
+
+    {%- if review.view_count.value != blank -%}
+      <p class="expert-review-card__views">{{ review.view_count.value }}</p>
+    {%- endif -%}
+
+    {%- if review.source_name.value != blank -%}
+      <div class="expert-review-card__source">
+        {%- if review.source_icon.value != blank -%}
+          {{
+            review.source_icon.value
+            | image_url: width: 40
+            | image_tag: loading: 'lazy', class: 'expert-review-card__source-icon', alt: ''
+          }}
+        {%- endif -%}
+        <span class="expert-review-card__source-name">{{ review.source_name.value }}</span>
+      </div>
+    {%- endif -%}
+  </div>
+</div>

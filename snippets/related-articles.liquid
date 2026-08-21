@@ -1,0 +1,47 @@
+{{ 'related-articles.css' | asset_url | stylesheet_tag }}
+{{ 'article-card.css' | asset_url | stylesheet_tag }}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+
+{% assign articles = collection.metafields.custom.related_post_cards.value %}
+{% assign show_image = show_image | default: true %}
+
+{% if articles != blank %}
+  <div class="related-articles-wrapper">
+    <h2 class="related-articles__title">Related Articles</h2>
+
+    <div class="related-articles{% unless show_image %} related-articles--hide-images{% endunless %}" data-related-articles>
+      <div class="related-articles__swiper swiper">
+        <div class="related-articles__track swiper-wrapper">
+          {% for article in articles %}
+            <div class="related-articles__slide swiper-slide">
+              {% render 'article-card', article: article, show_image: show_image %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="related-articles__button related-articles__button--prev"
+        aria-label="Previous articles"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+      </button>
+
+      <button
+        type="button"
+        class="related-articles__button related-articles__button--next"
+        aria-label="Next articles"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 18l6-6-6-6" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer="defer"></script>
+  {{ 'related-articles.js' | asset_url | script_tag }}
+{% endif %}

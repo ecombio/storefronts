@@ -1,0 +1,146 @@
+{% comment %}
+  Region picker: trigger button + dropdown modal.
+
+  The dropdown is rendered here in the DOM (next to the trigger) but is
+  teleported to <body> at runtime by utility-bar.js. This escapes any
+  overflow:hidden / z-index stacking-context traps in the header, so the
+  modal always paints above everything else regardless of where this
+  snippet is rendered from.
+
+  No parameters — reads directly from the `localization` global, same as
+  the original inline markup.
+{% endcomment %}
+
+{%- comment -%} ── Trigger button ── {%- endcomment -%}
+<button type="button"
+        class="utility-bar__region-btn"
+        aria-label="Choose location: {{ localization.country.name }}"
+        aria-expanded="false"
+        aria-controls="utility-bar-region-dropdown"
+        id="utility-bar-region-trigger">
+  <img src="https://cdn.shopify.com/shopifycloud/preview-bar/assets/{{ localization.country.iso_code | downcase }}.svg"
+       alt="{{ localization.country.name }} flag"
+       width="16" height="11"
+       class="utility-bar__flag"
+       loading="eager">
+  <span class="utility-bar__region-label">
+    {{ localization.language.endonym_name | capitalize }} ({{ localization.country.iso_code }})
+  </span>
+  <svg class="utility-bar__chevron region-trigger__chevron"
+       width="9" height="9" viewBox="0 0 20 20"
+       fill="none" stroke="currentColor" stroke-width="2.5"
+       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M5 8l5 5 5-5"/>
+  </svg>
+</button>
+
+{%- comment -%} ── Dropdown modal (teleported to <body> by JS) ── {%- endcomment -%}
+<div class="region-dropdown"
+     id="utility-bar-region-dropdown"
+     role="dialog"
+     aria-modal="true"
+     aria-label="Choose location"
+     hidden>
+
+  <div class="region-dropdown__header">
+    <p class="region-dropdown__title">Choose location</p>
+    <button type="button"
+            class="region-dropdown__close"
+            aria-label="Close location picker"
+            id="utility-bar-region-close">
+      <svg width="14" height="14" viewBox="0 0 20 20" fill="none"
+           stroke="currentColor" stroke-width="2.5"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 4l12 12M16 4L4 16"/>
+      </svg>
+    </button>
+  </div>
+
+  <p class="region-dropdown__subtitle">
+    Changing your location might affect your delivery address options, price, product availability, and currency.
+  </p>
+
+  <div class="region-dropdown__search-wrap">
+    <input type="text"
+           class="region-dropdown__search"
+           placeholder="Search your country"
+           aria-label="Search countries"
+           id="utility-bar-region-search"
+           autocomplete="off">
+    <svg class="region-dropdown__search-icon" width="14" height="14"
+         viewBox="0 0 20 20" fill="none" stroke="currentColor"
+         stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="9" cy="9" r="6"/><path d="M15 15l3 3"/>
+    </svg>
+  </div>
+
+  <div class="region-dropdown__section-label">Current country &amp; language</div>
+
+  <div class="region-dropdown__current">
+    <img src="https://cdn.shopify.com/shopifycloud/preview-bar/assets/{{ localization.country.iso_code | downcase }}.svg"
+         alt="{{ localization.country.name }}"
+         width="20" height="14"
+         class="region-dropdown__flag">
+    <span class="region-dropdown__current-country">{{ localization.country.name }}</span>
+
+    {%- if localization.available_languages.size > 1 -%}
+      {%- form 'localization', id: 'utility-bar-region-locale-form', return_to: request.path -%}
+        <div class="region-dropdown__lang-wrap">
+          <select name="locale_code"
+                  class="region-dropdown__lang-select"
+                  aria-label="Select language for {{ localization.country.name }}"
+                  onchange="this.form.submit()">
+            {%- for language in localization.available_languages -%}
+              <option value="{{ language.iso_code }}"
+                {%- if language.iso_code == localization.language.iso_code %} selected{% endif -%}>
+                {{ language.endonym_name | capitalize }} ({{ localization.country.iso_code }})
+              </option>
+            {%- endfor -%}
+          </select>
+          <svg width="10" height="10" viewBox="0 0 20 20" fill="none"
+               stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 8l5 5 5-5"/>
+          </svg>
+        </div>
+      {%- endform -%}
+    {%- else -%}
+      <span class="region-dropdown__lang-static">
+        {{ localization.language.endonym_name | capitalize }} ({{ localization.country.iso_code }})
+      </span>
+    {%- endif -%}
+  </div>
+
+  <div class="region-dropdown__divider"></div>
+
+  {%- form 'localization', id: 'utility-bar-region-country-form', return_to: request.path -%}
+    <input type="hidden" name="locale_code" value="{{ localization.language.iso_code }}">
+    <ul class="region-dropdown__list" id="utility-bar-region-list" role="list">
+      {%- for country in localization.available_countries -%}
+        {%- unless country.iso_code == localization.country.iso_code -%}
+          <li class="region-dropdown__item" data-country="{{ country.name | downcase }}">
+            <button type="submit"
+                    name="country_code"
+                    value="{{ country.iso_code }}"
+                    class="region-dropdown__country-btn"
+                    form="utility-bar-region-country-form">
+              <img src="https://cdn.shopify.com/shopifycloud/preview-bar/assets/{{ country.iso_code | downcase }}.svg"
+                   alt="{{ country.name }}"
+                   width="20" height="14"
+                   class="region-dropdown__flag"
+                   loading="lazy">
+              <span class="region-dropdown__country-name">{{ country.name }}</span>
+              <span class="region-dropdown__country-lang">
+                {{ localization.language.endonym_name | capitalize }} ({{ country.iso_code }})
+              </span>
+            </button>
+          </li>
+        {%- endunless -%}
+      {%- endfor -%}
+    </ul>
+    <p class="region-dropdown__empty" id="utility-bar-region-empty" aria-live="polite">
+      No countries found.
+    </p>
+  {%- endform -%}
+
+</div>

@@ -1,0 +1,256 @@
+<link rel="stylesheet" href="{{ 'videos.css' | asset_url }}" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="{{ 'videos.css' | asset_url }}"></noscript>
+<script src="{{ 'videos.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign placeholder_names = 'lifestyle-1,lifestyle-2,product-1,product-2,product-3,product-4' | split: ','
+-%}
+
+<div
+  {% render 'section-width', section: section, extra_class: 'product-videos' %}
+  id="ProductVideos-{{ section.id }}"
+  data-product-videos
+>
+
+  {%- if section.settings.heading != blank -%}
+    <div class="product-videos__header">
+      <h2 class="product-videos__heading">{{ section.settings.heading }}</h2>
+    </div>
+  {%- endif -%}
+
+  {%- if section.blocks.size > 0 -%}
+    <div class="product-videos__carousel" data-video-carousel>
+
+      <button
+        type="button"
+        class="product-videos__arrow product-videos__arrow--prev"
+        data-video-prev
+        aria-label="Previous videos"
+        aria-controls="VideoTrack-{{ section.id }}"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+          <path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <div
+        class="product-videos__track"
+        id="VideoTrack-{{ section.id }}"
+        data-video-track
+        role="list"
+      >
+        {%- for block in section.blocks -%}
+          {%- liquid
+            assign item_index = forloop.index0
+            assign placeholder_name = placeholder_names[item_index]
+            if placeholder_name == blank
+              assign placeholder_name = 'lifestyle-1'
+            endif
+
+            assign has_native_video = false
+            assign has_external_video = false
+            if block.settings.video != blank
+              assign has_native_video = true
+            elsif block.settings.video_url != blank
+              assign has_external_video = true
+            endif
+
+            assign has_thumbnail = false
+            if block.settings.thumbnail != blank
+              assign has_thumbnail = true
+            endif
+          -%}
+          <div
+            class="product-videos__item"
+            id="VideoItem-{{ block.id }}"
+            data-video-item
+            role="listitem"
+            {{ block.shopify_attributes }}
+          >
+            <div class="product-video" data-product-video>
+              <div class="product-video__frame">
+
+                <button
+                  type="button"
+                  class="product-video__play-trigger"
+                  data-video-play-trigger
+                  aria-label="Play video{% if block.settings.caption != blank %}: {{ block.settings.caption | escape }}{% endif %}"
+                  {% unless has_native_video or has_external_video %}disabled{% endunless %}
+                >
+                  {%- if has_thumbnail -%}
+                    {{
+                      block.settings.thumbnail
+                      | image_url: width: 800
+                      | image_tag:
+                        loading: 'lazy',
+                        class: 'product-video__thumbnail',
+                        sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 80vw',
+                        widths: '400,600,800,1000'
+                    }}
+                  {%- elsif has_native_video and block.settings.video.preview_image -%}
+                    {{
+                      block.settings.video.preview_image
+                      | image_url: width: 800
+                      | image_tag:
+                        loading: 'lazy',
+                        class: 'product-video__thumbnail',
+                        sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 80vw',
+                        widths: '400,600,800,1000'
+                    }}
+                  {%- else -%}
+                    {{ placeholder_name | placeholder_svg_tag: 'product-video__thumbnail product-video__thumbnail--placeholder' }}
+                  {%- endif -%}
+
+                  <span class="product-video__play-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="26" height="26" focusable="false">
+                      <path d="M8 5v14l11-7z" fill="currentColor"/>
+                    </svg>
+                  </span>
+                </button>
+
+                <div class="product-video__media" data-video-media hidden>
+                  {%- if has_native_video -%}
+                    <div data-video-type="native">
+                      {{
+                        block.settings.video
+                        | video_tag:
+                          controls: true,
+                          preload: 'none',
+                          class: 'product-video__video-el',
+                          image_size: '1100x'
+                      }}
+                    </div>
+                  {%- elsif has_external_video -%}
+                    <div
+                      data-video-type="external"
+                      data-provider="{{ block.settings.video_url.type }}"
+                      data-video-id="{{ block.settings.video_url.id }}"
+                    ></div>
+                  {%- endif -%}
+                </div>
+
+              </div>
+
+              {%- if section.settings.show_caption and block.settings.caption != blank -%}
+                <p class="product-video__caption">{{ block.settings.caption }}</p>
+              {%- endif -%}
+            </div>
+          </div>
+        {%- endfor -%}
+      </div>
+
+      <button
+        type="button"
+        class="product-videos__arrow product-videos__arrow--next"
+        data-video-next
+        aria-label="Next videos"
+        aria-controls="VideoTrack-{{ section.id }}"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+          <path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+    </div>
+  {%- endif -%}
+
+</div>
+
+{% schema %}
+{
+  "name": "Videos",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Watch & shop"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_caption",
+      "label": "Show video captions",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 28
+    }
+  ],
+  "blocks": [
+    {
+      "type": "video",
+      "name": "Video",
+      "settings": [
+        {
+          "type": "video",
+          "id": "video",
+          "label": "Video",
+          "info": "Upload a video file. Takes priority over an external video link."
+        },
+        {
+          "type": "video_url",
+          "id": "video_url",
+          "label": "External video link",
+          "accept": ["youtube", "vimeo"],
+          "info": "Used only if no video file is uploaded above."
+        },
+        {
+          "type": "image_picker",
+          "id": "thumbnail",
+          "label": "Thumbnail",
+          "info": "If left blank, uses the uploaded video's preview image, or a placeholder."
+        },
+        {
+          "type": "text",
+          "id": "caption",
+          "label": "Caption"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Videos",
+      "blocks": [
+        { "type": "video" },
+        { "type": "video" },
+        { "type": "video" },
+        { "type": "video" }
+      ]
+    }
+  ]
+}
+{% endschema %}

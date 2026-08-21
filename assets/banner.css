@@ -1,0 +1,120 @@
+/* assets/banner.css
+   Styles scoped to sections/banner.liquid only.
+
+   Local variables set inline per-instance from the section:
+     --section-padding  side padding (px)
+     --custom-width     only present when Section width = Custom
+     --banner-radius    resolved corner radius (px) — none/small/
+                         medium/large map to fixed px values, custom
+                         reads the section's own "Custom radius" slider
+     --banner-height     banner height (px)
+
+   These are local to this section and intentionally do NOT read from
+   the theme's global --page-margin / --page-width variables, so
+   changing this section can never affect any other section's layout.
+*/
+
+.banner {
+  display: block;
+  width: 100%;
+}
+
+/* --- Width variants (scoped BEM classes, no shared global utility) --- */
+
+.banner__default-width {
+  max-width: 120rem;
+  margin-inline: auto;
+  padding-inline: var(--section-padding);
+}
+
+.banner__full-width {
+  max-width: none;
+  padding-inline: var(--section-padding);
+}
+
+.banner__custom-width {
+  max-width: var(--custom-width);
+  margin-inline: auto;
+  padding-inline: var(--section-padding);
+}
+
+/* --- Media / image --- */
+
+.banner__media {
+  position: relative;
+  overflow: hidden;
+  height: var(--banner-height);
+  border-radius: var(--banner-radius);
+}
+
+.banner__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+.banner__img--placeholder {
+  background-color: #e5e5e5;
+}
+
+.banner__overlay {
+  position: absolute;
+  inset: 0;
+  background-color: #000;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* --- Content overlay --- */
+
+.banner__content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 2rem;
+  text-align: center;
+  color: #fff;
+}
+
+.banner__content--top-left        { justify-content: flex-start; align-items: flex-start; text-align: left; }
+.banner__content--top-center      { justify-content: flex-start; align-items: center; }
+.banner__content--top-right       { justify-content: flex-start; align-items: flex-end; text-align: right; }
+.banner__content--middle-left     { justify-content: center; align-items: flex-start; text-align: left; }
+.banner__content--middle-center   { justify-content: center; align-items: center; }
+.banner__content--middle-right    { justify-content: center; align-items: flex-end; text-align: right; }
+.banner__content--bottom-left     { justify-content: flex-end; align-items: flex-start; text-align: left; }
+.banner__content--bottom-center   { justify-content: flex-end; align-items: center; }
+.banner__content--bottom-right    { justify-content: flex-end; align-items: flex-end; text-align: right; }
+
+.banner__heading {
+  margin: 0;
+  font-size: clamp(2.4rem, 4vw, 4.8rem);
+  line-height: 1.1;
+}
+
+.banner__text {
+  max-width: 60ch;
+  font-size: 1.6rem;
+  line-height: 1.5;
+}
+
+.banner__button {
+  display: inline-block;
+  width: fit-content;
+}
+
+/* --- Small screens --- */
+
+@media screen and (max-width: 749px) {
+  .banner__media {
+    height: min(var(--banner-height), 60vh);
+  }
+
+  .banner__content {
+    padding: 1.5rem;
+  }
+}

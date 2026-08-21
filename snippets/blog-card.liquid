@@ -1,0 +1,59 @@
+{%- comment -%}
+  snippets/blog-card.liquid
+
+  Large-format "featured" article card — distinct from article-card.liquid
+  (which powers the dense blog-posts__grid below it). This one is for a
+  small number of hero-style posts: bigger image, an eyebrow tag, a bolder
+  title, and a date. No excerpt, no "Read article" link — kept intentionally
+  sparser than article-card.liquid.
+
+  Accepts:
+  - article: {Object} Article Liquid object
+  - loading: {String} optional, 'eager' | 'lazy' (default: 'eager', since
+      this snippet is only ever used for posts positioned above the fold)
+
+  Accessibility note: same stretched-link pattern as article-card.liquid —
+  the image link is decorative (aria-hidden, tabindex="-1") and the title
+  link is the single real, focusable stop for the whole card via
+  .blog-card__title-link::after.
+{%- endcomment -%}
+
+<article class="blog-card">
+  <a href="{{ article.url }}" class="blog-card__image-wrapper" aria-hidden="true" tabindex="-1">
+    {%- if article.image -%}
+      <img
+        src="{{ article.image | image_url: width: 1200 }}"
+        srcset="
+          {{- article.image | image_url: width: 600 }} 600w,
+          {{ article.image | image_url: width: 900 }} 900w,
+          {{ article.image | image_url: width: 1200 }} 1200w,
+          {{ article.image | image_url: width: 1600 }} 1600w
+        "
+        sizes="(max-width: 749px) 100vw, 50vw"
+        alt="{{ article.image.alt | default: article.title | escape }}"
+        class="blog-card__image"
+        loading="{{ loading | default: 'eager' }}"
+        width="{{ article.image.width }}"
+        height="{{ article.image.height }}"
+      >
+    {%- else -%}
+      {{ 'lifestyle-1' | placeholder_svg_tag: 'blog-card__image blog-card__image--placeholder' }}
+    {%- endif -%}
+  </a>
+
+  <div class="blog-card__content">
+    {%- if article.tags.size > 0 -%}
+      <p class="blog-card__eyebrow">{{ article.tags.first }}</p>
+    {%- elsif article.blog.title != blank -%}
+      <p class="blog-card__eyebrow">{{ article.blog.title }}</p>
+    {%- endif -%}
+
+    <h3 class="blog-card__title">
+      <a href="{{ article.url }}" class="blog-card__title-link">{{ article.title }}</a>
+    </h3>
+
+    <time class="blog-card__date" datetime="{{ article.published_at | date: '%Y-%m-%d' }}">
+      {{ article.published_at | date: format: 'abbreviated_date' }}
+    </time>
+  </div>
+</article>

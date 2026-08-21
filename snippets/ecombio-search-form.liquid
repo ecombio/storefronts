@@ -1,0 +1,199 @@
+{% comment %}
+  Search form snippet — Predictive Search Edition
+  File: snippets/ecombio-search-form.liquid
+
+  Params:
+    id_suffix {String} — 'desktop' | 'mobile' (keeps IDs unique per instance)
+
+  Dependencies:
+    assets/ecombio-search.css
+    assets/ecombio-search.js
+    (both loaded once via layout/theme.liquid — do not inline here)
+
+  All behaviour, content, and colour settings are driven by
+  Shopify Theme Settings (Online Store → Themes → Customize → Predictive Search).
+{% endcomment %}
+
+{%- assign sfx = id_suffix | default: 'desktop' -%}
+
+{%- comment -%} ── Build trending searches array from settings ── {%- endcomment -%}
+{%- assign trending_raw = '' -%}
+{%- if settings.search_trending_1 != blank -%}
+  {%- assign trending_raw = trending_raw | append: settings.search_trending_1 | append: '|' -%}
+{%- endif -%}
+{%- if settings.search_trending_2 != blank -%}
+  {%- assign trending_raw = trending_raw | append: settings.search_trending_2 | append: '|' -%}
+{%- endif -%}
+{%- if settings.search_trending_3 != blank -%}
+  {%- assign trending_raw = trending_raw | append: settings.search_trending_3 | append: '|' -%}
+{%- endif -%}
+{%- if settings.search_trending_4 != blank -%}
+  {%- assign trending_raw = trending_raw | append: settings.search_trending_4 | append: '|' -%}
+{%- endif -%}
+{%- if settings.search_trending_5 != blank -%}
+  {%- assign trending_raw = trending_raw | append: settings.search_trending_5 | append: '|' -%}
+{%- endif -%}
+{%- assign trending_array = trending_raw | split: '|' -%}
+
+{%- comment -%} ── Build category list from settings ── {%- endcomment -%}
+{%- assign show_category = settings.search_show_category | default: true -%}
+
+{%- comment -%}
+  Inject JS config via window object — this is the single source of truth consumed
+  by ecombio-search.js, keeping the JS file static and theme-settings-driven.
+  Only render once per page (guard via sfx == 'desktop').
+{%- endcomment -%}
+{%- if sfx == 'desktop' -%}
+<script>
+  window.ECOMBIO_SEARCH_SETTINGS = {
+    MIN_QUERY_LENGTH:    {{ settings.search_min_chars    | default: 2 }},
+    DEBOUNCE_MS:         {{ settings.search_debounce_ms  | default: 200 }},
+    MAX_QUERIES:         {{ settings.search_max_queries  | default: 3 }},
+    MAX_PRODUCTS:        {{ settings.search_max_products | default: 5 }},
+    MAX_COLLECTIONS:     {{ settings.search_max_collections | default: 2 }},
+    RECENT_SEARCHES_LIMIT: {{ settings.search_recent_limit | default: 5 }},
+    TRENDING_SEARCHES: [
+      {%- for term in trending_array -%}
+        {%- unless term == blank -%}
+          {{ term | json }}{% unless forloop.last %},{% endunless %}
+        {%- endunless -%}
+      {%- endfor -%}
+    ]
+  };
+</script>
+{%- endif -%}
+
+<div class="ecombio-search" id="ecombio-search-{{ sfx }}" data-search-instance="{{ sfx }}"
+     style="
+       --es-accent:       {{ settings.search_accent_color  | default: '#1a1a1a' }};
+       --es-highlight-bg: {{ settings.search_highlight_bg  | default: '#FFF3CD' }};
+       --es-bg-hover:     {{ settings.search_hover_bg      | default: '#F5F5F5' }};
+       --es-border-focus: {{ settings.search_border_focus  | default: '#1a1a1a' }};
+     ">
+
+  <form action="{{ routes.search_url }}" method="get" role="search"
+        class="ecombio-search__form" autocomplete="off"
+        id="ecombio-search-form-{{ sfx }}">
+
+    <input type="hidden" name="type" value="product">
+
+    {%- if show_category -%}
+      {%- comment -%} ── CATEGORY PILL ── {%- endcomment -%}
+      <div class="ecombio-search__category" id="ecombio-search-cat-{{ sfx }}">
+        <button type="button"
+                class="ecombio-search__cat-btn"
+                id="ecombio-cat-btn-{{ sfx }}"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+                aria-controls="ecombio-cat-list-{{ sfx }}">
+          <span id="ecombio-cat-label-{{ sfx }}">All</span>
+          <svg class="ecombio-search__chevron" width="12" height="12" viewBox="0 0 20 20"
+               fill="none" stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 8l5 5 5-5"/>
+          </svg>
+        </button>
+        <ul class="ecombio-search__cat-list"
+            id="ecombio-cat-list-{{ sfx }}"
+            role="listbox"
+            aria-labelledby="ecombio-cat-btn-{{ sfx }}"
+            hidden>
+          <li role="option" aria-selected="true" data-value="" data-label="All">All Categories</li>
+          {%- if settings.search_category_1_label != blank and settings.search_category_1_value != blank -%}
+            <li role="option" aria-selected="false"
+                data-value="{{ settings.search_category_1_value | escape }}"
+                data-label="{{ settings.search_category_1_label | escape }}">
+              {{ settings.search_category_1_label | escape }}
+            </li>
+          {%- endif -%}
+          {%- if settings.search_category_2_label != blank and settings.search_category_2_value != blank -%}
+            <li role="option" aria-selected="false"
+                data-value="{{ settings.search_category_2_value | escape }}"
+                data-label="{{ settings.search_category_2_label | escape }}">
+              {{ settings.search_category_2_label | escape }}
+            </li>
+          {%- endif -%}
+          {%- if settings.search_category_3_label != blank and settings.search_category_3_value != blank -%}
+            <li role="option" aria-selected="false"
+                data-value="{{ settings.search_category_3_value | escape }}"
+                data-label="{{ settings.search_category_3_label | escape }}">
+              {{ settings.search_category_3_label | escape }}
+            </li>
+          {%- endif -%}
+          {%- if settings.search_category_4_label != blank and settings.search_category_4_value != blank -%}
+            <li role="option" aria-selected="false"
+                data-value="{{ settings.search_category_4_value | escape }}"
+                data-label="{{ settings.search_category_4_label | escape }}">
+              {{ settings.search_category_4_label | escape }}
+            </li>
+          {%- endif -%}
+          {%- if settings.search_category_5_label != blank and settings.search_category_5_value != blank -%}
+            <li role="option" aria-selected="false"
+                data-value="{{ settings.search_category_5_value | escape }}"
+                data-label="{{ settings.search_category_5_label | escape }}">
+              {{ settings.search_category_5_label | escape }}
+            </li>
+          {%- endif -%}
+        </ul>
+        <input type="hidden" name="q[category]" id="ecombio-cat-value-{{ sfx }}" value="">
+        <span class="ecombio-search__divider" aria-hidden="true"></span>
+      </div>
+    {%- endif -%}
+
+    {%- comment -%} ── SEARCH INPUT ── {%- endcomment -%}
+    <input
+      type="search"
+      name="q"
+      id="ecombio-search-input-{{ sfx }}"
+      class="ecombio-search__input"
+      placeholder="{{ settings.search_placeholder | default: 'What are you looking for?' | escape }}"
+      aria-label="Search products"
+      aria-autocomplete="list"
+      aria-controls="ecombio-search-dropdown-{{ sfx }}"
+      aria-expanded="false"
+      role="combobox"
+      autocorrect="off"
+      autocomplete="off"
+      spellcheck="false"
+    >
+
+    {%- comment -%} ── CLEAR BUTTON ── {%- endcomment -%}
+    <button type="button"
+            class="ecombio-search__clear"
+            id="ecombio-search-clear-{{ sfx }}"
+            aria-label="Clear search"
+            hidden>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+
+    {%- comment -%} ── SUBMIT ── {%- endcomment -%}
+    <button type="submit" class="ecombio-search__submit" aria-label="Search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+           aria-hidden="true">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+    </button>
+
+  </form>
+
+  {%- comment -%} ── DROPDOWN (populated by JS) ── {%- endcomment -%}
+  <div class="ecombio-search__dropdown"
+       id="ecombio-search-dropdown-{{ sfx }}"
+       role="listbox"
+       aria-label="Search suggestions"
+       aria-live="polite"
+       hidden>
+  </div>
+
+  {%- comment -%} ── MOBILE BACKDROP ── {%- endcomment -%}
+  <div class="ecombio-search__backdrop"
+       id="ecombio-search-backdrop-{{ sfx }}"
+       aria-hidden="true"
+       hidden>
+  </div>
+
+</div>

@@ -1,0 +1,690 @@
+{{ 'main-collection.css' | asset_url | stylesheet_tag }}
+{{ 'accordion.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign active_tab = request.query_parameters['tab'] | default: 'products'
+  unless active_tab == 'products' or active_tab == 'articles'
+    assign active_tab = 'products'
+  endunless
+
+  assign active_filter_count = 0
+  for filter in collection.filters
+    assign active_filter_count = active_filter_count | plus: filter.active_values.size
+  endfor
+
+  assign width_type = section.settings.section_width
+  if width_type == blank
+    assign width_class = 'collection-page__default-width'
+  elsif width_type == 'full-width'
+    assign width_class = 'collection-page__custom-width'
+  else
+    assign width_class = 'collection-page__custom-width'
+  endif
+-%}
+
+<div class="main-collection" id="main-collection" data-section-id="{{ section.id }}">
+
+  <div
+    class="collection-page {{ width_class }}"
+    style="
+      --section-padding: {{ section.settings.section_padding }}px;
+      {%- if width_type == 'custom-width' %}
+        --custom-width: {{ section.settings.custom_width }}rem;
+      {%- endif %}
+    "
+  >
+
+    <div class="collection-hero" id="collection-hero">
+      <h1 class="collection-title">{{ collection.title }}</h1>
+
+      {%- if collection.description != blank -%}
+        <div class="collection-description rte">
+          {{ collection.description }}
+        </div>
+      {%- endif -%}
+    </div>
+
+    <section class="collection-section">
+
+      {%- render 'collection-toolbar',
+        section: section,
+        collection: collection,
+        active_tab: active_tab,
+        active_filter_count: active_filter_count
+      -%}
+
+      <div class="collection-body{% unless section.settings.show_filters %} collection-body--filters-hidden{% endunless %}">
+
+        {%- if section.settings.show_filters -%}
+          {%- render 'collection-filter', collection: collection -%}
+        {%- endif -%}
+
+        <div class="collection-body__feed">
+          {%- render 'collection-feed',
+            collection: collection,
+            section: section,
+            active_tab: active_tab
+          -%}
+        </div>
+
+      </div>
+
+    </section>
+
+    {%- assign after_items_field = collection.metafields.custom.after_item_lists -%}
+
+    {%- if after_items_field.value != blank -%}
+      <div class="after-items rte">
+        {%- if after_items_field.type contains 'list' -%}
+          {%- for after_page in after_items_field.value -%}
+            {{ after_page.content }}
+          {%- endfor -%}
+        {%- else -%}
+          {{ after_items_field.value.content }}
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+  </div>
+
+  <div class="collection-mobile-backdrop" aria-hidden="true"></div>
+
+</div>
+
+<script src="{{ 'main-collection.js' | asset_url }}" defer></script>
+<script src="{{ 'accordion.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "Main collection",
+  "tag": "section",
+  "class": "section-collection",
+  "settings": [
+    {
+      "type": "text",
+      "id": "tab_products_label",
+      "label": "Products tab label",
+      "default": "Products"
+    },
+    {
+      "type": "text",
+      "id": "tab_articles_label",
+      "label": "Articles tab label",
+      "default": "Articles"
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "Columns",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "label": "Products per page",
+      "min": 4,
+      "max": 48,
+      "step": 4,
+      "default": 16
+    },
+    {
+      "type": "checkbox",
+      "id": "show_filters",
+      "label": "Show filters",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sort",
+      "label": "Show sort",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "header",
+      "content": "Sub-collections"
+    },
+    {
+      "type": "select",
+      "id": "sub_collection_shape",
+      "label": "Sub-collection image shape",
+      "options": [
+        { "value": "square", "label": "Square (rounded corners)" },
+        { "value": "circle", "label": "Circle" }
+      ],
+      "default": "square"
+    },
+    {
+      "type": "paragraph",
+      "content": "Add sub-collection blocks below. If a collection has no image, a default placeholder icon is shown automatically — or set a custom image per block."
+    },
+    {
+      "type": "header",
+      "content": "In-feed banners"
+    },
+    {
+      "type": "paragraph",
+      "content": "Add 'In-feed banner' blocks below to place promotional banners inside the product grid. Each banner has its own position number and size — set both per block."
+    },
+    {
+      "type": "header",
+      "content": "Promo carousels"
+    },
+    {
+      "type": "paragraph",
+      "content": "Add a 'Promo carousel' block to insert a product carousel into the grid. Set its collection directly on the block."
+    },
+    {
+      "type": "header",
+      "content": "Articles"
+    },
+    {
+      "type": "paragraph",
+      "content": "Articles shown here come from the collection's 'custom.posts' metafield. Manage which articles appear by editing that metafield on each collection."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "sub_collection",
+      "name": "Sub-collection",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
+        },
+        {
+          "type": "text",
+          "id": "custom_title",
+          "label": "Custom title",
+          "info": "Leave blank to use the collection's title"
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_image",
+          "label": "Custom image",
+          "info": "Leave blank to use the collection's featured image. If neither is set, a default placeholder is shown."
+        }
+      ]
+    },
+    {
+      "type": "promo_banner",
+      "name": "Promo Banner",
+      "settings": [
+        {
+          "type": "number",
+          "id": "position",
+          "label": "Position in product grid",
+          "info": "Banner appears before the Nth product on the current page. E.g. 5 inserts it right before the 5th product. A number larger than the total product count places it at the end. Leave blank or 0 to hide."
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image (desktop)"
+        },
+        {
+          "type": "image_picker",
+          "id": "mobile_image",
+          "label": "Image (mobile)",
+          "info": "Optional. Falls back to the desktop image if not set."
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading"
+        },
+        {
+          "type": "text",
+          "id": "subheading",
+          "label": "Subheading"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Button label"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link",
+          "info": "Makes the entire banner clickable"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Text color",
+          "default": "#ffffff"
+        },
+        {
+          "type": "select",
+          "id": "content_alignment",
+          "label": "Content alignment",
+          "info": "Aligns the heading, subheading, and button together",
+          "options": [
+            { "value": "left",   "label": "Left" },
+            { "value": "center", "label": "Center" },
+            { "value": "right",  "label": "Right" }
+          ],
+          "default": "left"
+        },
+        {
+          "type": "range",
+          "id": "overlay_opacity",
+          "label": "Image overlay darkness",
+          "min": 0,
+          "max": 80,
+          "step": 5,
+          "unit": "%",
+          "default": 20
+        },
+        {
+          "type": "header",
+          "content": "Size"
+        },
+        {
+          "type": "range",
+          "id": "column_span",
+          "label": "Width (columns spanned)",
+          "min": 1,
+          "max": 4,
+          "step": 1,
+          "default": 2,
+          "info": "Capped automatically on smaller screens so it never exceeds the live column count"
+        },
+        {
+          "type": "range",
+          "id": "row_span",
+          "label": "Height (rows spanned)",
+          "min": 1,
+          "max": 3,
+          "step": 1,
+          "default": 1
+        }
+      ]
+    },
+    {
+      "type": "promo_carousel",
+      "name": "Promo carousel",
+      "settings": [
+        {
+          "type": "number",
+          "id": "position",
+          "label": "Position in product grid",
+          "info": "Carousel appears before the Nth product on this page. A number larger than the total product count places it at the end. Leave blank or 0 to hide."
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading"
+        },
+        {
+          "type": "text",
+          "id": "subheading",
+          "label": "Subheading"
+        },
+        { "type": "header", "content": "Products" },
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
+        },
+        {
+          "type": "range",
+          "id": "products_limit",
+          "label": "Products to show",
+          "min": 4,
+          "max": 24,
+          "step": 1,
+          "default": 12
+        },
+        {
+          "type": "range",
+          "id": "cards_per_row_desktop",
+          "label": "Cards per row (desktop)",
+          "min": 2,
+          "max": 5,
+          "step": 1,
+          "default": 3
+        },
+        {
+          "type": "range",
+          "id": "cards_per_row_mobile",
+          "label": "Cards per row (mobile)",
+          "min": 1,
+          "max": 3,
+          "step": 1,
+          "default": 2
+        },
+        {
+          "type": "checkbox",
+          "id": "show_arrows",
+          "label": "Show navigation arrows",
+          "default": true
+        },
+        {
+          "type": "select",
+          "id": "arrow_visibility",
+          "label": "Arrow visibility",
+          "options": [
+            { "value": "hover", "label": "On hover" },
+            { "value": "always", "label": "Always" }
+          ],
+          "default": "hover",
+          "info": "On hover: arrows fade in only when hovering the carousel (desktop pointer devices only — always shown on touch). Always: arrows stay visible at all times.",
+          "visible_if": "{{ block.settings.show_arrows }}"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_dots",
+          "label": "Show dots",
+          "default": true
+        },
+        { "type": "header", "content": "Product card" },
+        {
+          "type": "checkbox",
+          "id": "show_atc_button",
+          "label": "Show \"Add to cart\" button",
+          "default": true
+        },
+        {
+          "type": "checkbox",
+          "id": "show_compare_checkbox",
+          "label": "Show \"Compare\" checkbox",
+          "default": true,
+          "info": "Lets shoppers select products to compare side by side."
+        },
+        {
+          "type": "checkbox",
+          "id": "show_wishlist_button",
+          "label": "Show wishlist button",
+          "default": true,
+          "info": "The heart icon in the top-right corner of the product image."
+        },
+        {
+          "type": "checkbox",
+          "id": "show_quickview_button",
+          "label": "Show \"Quick view\" button",
+          "default": true,
+          "info": "Appears on hover over the product image."
+        },
+        {
+          "type": "checkbox",
+          "id": "show_sale_badge",
+          "label": "Show sale badge",
+          "default": true,
+          "info": "The \"Save X%\" ribbon on the product image, shown when an item has a compare-at price."
+        },
+        {
+          "type": "checkbox",
+          "id": "show_vendor_label",
+          "label": "Show vendor",
+          "default": true
+        },
+        {
+          "type": "checkbox",
+          "id": "show_reviews_badge",
+          "label": "Show review stars",
+          "default": true,
+          "info": "Judge.me review widget."
+        },
+        {
+          "type": "checkbox",
+          "id": "show_savings_row",
+          "label": "Show savings row",
+          "default": true,
+          "info": "The \"Save $X / Comp. Value\" line shown under the price when an item has a compare-at price."
+        },
+        {
+          "type": "checkbox",
+          "id": "show_eta_badge",
+          "label": "Show estimated delivery",
+          "default": true,
+          "info": "Only appears for products with delivery-estimate text set."
+        },
+        { "type": "header", "content": "Promo card" },
+        {
+          "type": "checkbox",
+          "id": "enable_promo_card",
+          "label": "Show promo card",
+          "default": false,
+          "info": "Adds one extra image card as the first item in the row, before the products. Doesn't count against \"Products to show\"."
+        },
+        {
+          "type": "image_picker",
+          "id": "promo_image",
+          "label": "Image",
+          "visible_if": "{{ block.settings.enable_promo_card }}"
+        },
+        {
+          "type": "image_picker",
+          "id": "promo_mobile_image",
+          "label": "Mobile image (optional)",
+          "info": "Falls back to the image above on small screens if not set.",
+          "visible_if": "{{ block.settings.enable_promo_card }}"
+        },
+        {
+          "type": "url",
+          "id": "promo_link",
+          "label": "Link",
+          "visible_if": "{{ block.settings.enable_promo_card }}"
+        },
+        {
+          "type": "text",
+          "id": "promo_heading",
+          "label": "Heading",
+          "visible_if": "{{ block.settings.enable_promo_card }}"
+        },
+        {
+          "type": "text",
+          "id": "promo_subheading",
+          "label": "Subheading",
+          "visible_if": "{{ block.settings.enable_promo_card }}"
+        },
+        {
+          "type": "text",
+          "id": "promo_price_text",
+          "label": "Price text",
+          "visible_if": "{{ block.settings.enable_promo_card }}"
+        },
+        {
+          "type": "checkbox",
+          "id": "promo_price_truncate",
+          "label": "Truncate price text",
+          "default": false,
+          "visible_if": "{{ block.settings.enable_promo_card }}"
+        },
+        {
+          "type": "text",
+          "id": "promo_button_label",
+          "label": "Button label",
+          "visible_if": "{{ block.settings.enable_promo_card }}"
+        },
+        {
+          "type": "select",
+          "id": "promo_content_position",
+          "label": "Content position",
+          "options": [
+            { "value": "top-left", "label": "Top left" },
+            { "value": "top-center", "label": "Top center" },
+            { "value": "top-right", "label": "Top right" },
+            { "value": "center", "label": "Center" },
+            { "value": "bottom-left", "label": "Bottom left" },
+            { "value": "bottom-center", "label": "Bottom center" },
+            { "value": "bottom-right", "label": "Bottom right" }
+          ],
+          "default": "center",
+          "visible_if": "{{ block.settings.enable_promo_card }}"
+        },
+        {
+          "type": "range",
+          "id": "promo_image_scale",
+          "label": "Image zoom",
+          "min": 100,
+          "max": 130,
+          "step": 5,
+          "unit": "%",
+          "default": 100,
+          "visible_if": "{{ block.settings.enable_promo_card }}"
+        },
+        {
+          "type": "color",
+          "id": "promo_text_color",
+          "label": "Text color",
+          "default": "#ffffff",
+          "visible_if": "{{ block.settings.enable_promo_card }}"
+        },
+        { "type": "header", "content": "Promo card text sizing" },
+        {
+          "type": "range",
+          "id": "promo_heading_size",
+          "label": "Heading size",
+          "min": 16,
+          "max": 64,
+          "step": 2,
+          "unit": "px",
+          "default": 32,
+          "visible_if": "{{ block.settings.enable_promo_card }}"
+        },
+        {
+          "type": "range",
+          "id": "promo_subheading_size",
+          "label": "Subheading size",
+          "min": 10,
+          "max": 32,
+          "step": 1,
+          "unit": "px",
+          "default": 16,
+          "visible_if": "{{ block.settings.enable_promo_card }}"
+        },
+        {
+          "type": "range",
+          "id": "promo_price_size",
+          "label": "Price text size",
+          "min": 10,
+          "max": 24,
+          "step": 1,
+          "unit": "px",
+          "default": 14,
+          "visible_if": "{{ block.settings.enable_promo_card }}"
+        },
+        {
+          "type": "range",
+          "id": "promo_button_size",
+          "label": "Button label size",
+          "min": 10,
+          "max": 20,
+          "step": 1,
+          "unit": "px",
+          "default": 14,
+          "visible_if": "{{ block.settings.enable_promo_card }}"
+        },
+        { "type": "header", "content": "Promo card sizing" },
+        {
+          "type": "checkbox",
+          "id": "promo_custom_width",
+          "label": "Use a custom width",
+          "default": false,
+          "info": "Off: card fills its row cell, same as before. On: set an exact pixel width below.",
+          "visible_if": "{{ block.settings.enable_promo_card }}"
+        },
+        {
+          "type": "range",
+          "id": "promo_width_px",
+          "label": "Card width",
+          "min": 200,
+          "max": 500,
+          "step": 10,
+          "unit": "px",
+          "default": 400,
+          "visible_if": "{{ block.settings.enable_promo_card and block.settings.promo_custom_width }}"
+        },
+        {
+          "type": "checkbox",
+          "id": "promo_custom_width_mobile",
+          "label": "Use a custom width (mobile)",
+          "default": false,
+          "info": "Independent of the desktop width above.",
+          "visible_if": "{{ block.settings.enable_promo_card }}"
+        },
+        {
+          "type": "range",
+          "id": "promo_width_px_mobile",
+          "label": "Card width (mobile)",
+          "min": 120,
+          "max": 300,
+          "step": 10,
+          "unit": "px",
+          "default": 160,
+          "visible_if": "{{ block.settings.enable_promo_card and block.settings.promo_custom_width_mobile }}"
+        },
+        {
+          "type": "range",
+          "id": "promo_height_mobile",
+          "label": "Image height (mobile)",
+          "min": 200,
+          "max": 600,
+          "step": 10,
+          "unit": "px",
+          "default": 320,
+          "visible_if": "{{ block.settings.enable_promo_card }}"
+        },
+        {
+          "type": "range",
+          "id": "promo_height_desktop",
+          "label": "Image height (desktop)",
+          "min": 300,
+          "max": 800,
+          "step": 10,
+          "unit": "px",
+          "default": 500,
+          "visible_if": "{{ block.settings.enable_promo_card }}"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Main collection",
+      "blocks": []
+    }
+  ]
+}
+{% endschema %}

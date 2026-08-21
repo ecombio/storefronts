@@ -1,0 +1,639 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "slideshow_zzfKYQ": {
+      "type": "slideshow",
+      "blocks": {
+        "slide_DiUPNP": {
+          "type": "slide",
+          "settings": {
+            "eyebrow": "New arrivals",
+            "heading": "Summer Edit",
+            "subtext": "Fresh styles just landed — explore the full collection.",
+            "cta_label": "Shop now",
+            "link_type": "collection",
+            "link_collection": "",
+            "link_product": "",
+            "link_blog": "",
+            "link_page": "",
+            "link_url": "",
+            "open_new_tab": false
+          }
+        },
+        "slide_hWYyEd": {
+          "type": "slide",
+          "settings": {
+            "eyebrow": "Staff pick",
+            "heading": "Featured Product",
+            "subtext": "",
+            "cta_label": "View product",
+            "link_type": "product",
+            "link_collection": "",
+            "link_product": "",
+            "link_blog": "",
+            "link_page": "",
+            "link_url": "",
+            "open_new_tab": false
+          }
+        },
+        "slide_gnJGV8": {
+          "type": "slide",
+          "settings": {
+            "eyebrow": "From the journal",
+            "heading": "Style Notes",
+            "subtext": "",
+            "cta_label": "Read more",
+            "link_type": "blog",
+            "link_collection": "",
+            "link_product": "",
+            "link_blog": "",
+            "link_page": "",
+            "link_url": "",
+            "open_new_tab": false
+          }
+        }
+      },
+      "block_order": [
+        "slide_DiUPNP",
+        "slide_hWYyEd",
+        "slide_gnJGV8"
+      ],
+      "name": "Engagement — Brand Awareness",
+      "settings": {
+        "section_width": "full-width",
+        "custom_width": 80,
+        "section_padding": 0,
+        "slide_height": 600,
+        "slide_height_mobile": 380,
+        "autoplay": true,
+        "autoplay_speed": 5000,
+        "loop": true,
+        "transition_effect": "slide",
+        "show_navigation": true,
+        "show_pagination": true,
+        "overlay_opacity": 35,
+        "text_color": "#ffffff",
+        "accent_color": "#000000",
+        "dot_color": "#ffffff",
+        "nav_bg_color": "#ffffff40",
+        "nav_icon_color": "#ffffff",
+        "accessibility_label": "Featured content"
+      }
+    },
+    "collection_carousel_6ViUnU": {
+      "type": "collection-carousel",
+      "blocks": {
+        "collection_tb6yrT": {
+          "type": "collection",
+          "settings": {
+            "collection": "electric-bikes",
+            "title": "Mac",
+            "image": "shopify://shop_images/store-card-13-mac-nav-202603_ff62bd66-7746-4d2d-9faa-eb9fb0a9feb5.png"
+          }
+        },
+        "collection_yAmr6X": {
+          "type": "collection",
+          "settings": {
+            "collection": "electric-cargo-bikes",
+            "title": "iPhone",
+            "image": "shopify://shop_images/store-card-13-iphone-nav-202509.png"
+          }
+        },
+        "collection_jh4GrK": {
+          "type": "collection",
+          "settings": {
+            "collection": "electric-city-bikes",
+            "title": "iPad",
+            "image": "shopify://shop_images/store-card-13-ipad-nav-202405.png"
+          }
+        },
+        "collection_hRLRPp": {
+          "type": "collection",
+          "settings": {
+            "collection": "electric-fat-bikes",
+            "title": "Apple Watch",
+            "image": "shopify://shop_images/store-card-13-watch-nav-202509.png"
+          }
+        },
+        "collection_b6gMpt": {
+          "type": "collection",
+          "settings": {
+            "collection": "electric-folding-bikes",
+            "title": "Apple Vision Pro",
+            "image": "shopify://shop_images/store-card-13-vision-pro-nav-202401.png"
+          }
+        },
+        "collection_J6aT7L": {
+          "type": "collection",
+          "settings": {
+            "collection": "electric-mountain-bikes",
+            "title": "AirPods",
+            "image": "shopify://shop_images/store-card-13-airpods-nav-202509.png"
+          }
+        },
+        "collection_hm7Ymr": {
+          "type": "collection",
+          "settings": {
+            "collection": "",
+            "title": "AirTag",
+            "image": "shopify://shop_images/store-card-13-airtags-nav-202601.png"
+          }
+        },
+        "collection_jXkieR": {
+          "type": "collection",
+          "settings": {
+            "collection": "",
+            "title": "Apple TV 4K",
+            "image": "shopify://shop_images/store-card-13-appletv-nav-202210.png"
+          }
+        },
+        "collection_CJjqjz": {
+          "type": "collection",
+          "settings": {
+            "collection": "",
+            "title": "HomePod",
+            "image": "shopify://shop_images/store-card-13-homepod-nav-202301.png"
+          }
+        },
+        "collection_WrEnig": {
+          "type": "collection",
+          "settings": {
+            "collection": "",
+            "title": "Accessories",
+            "image": "shopify://shop_images/store-card-13-accessories-nav-202603.png"
+          }
+        }
+      },
+      "block_order": [
+        "collection_tb6yrT",
+        "collection_yAmr6X",
+        "collection_jh4GrK",
+        "collection_hRLRPp",
+        "collection_b6gMpt",
+        "collection_J6aT7L",
+        "collection_hm7Ymr",
+        "collection_jXkieR",
+        "collection_CJjqjz",
+        "collection_WrEnig"
+      ],
+      "name": "Education — Problem Identification",
+      "settings": {
+        "heading": "Shop by category",
+        "subheading": "",
+        "heading_align": "start",
+        "view_all_label": "View all",
+        "view_all_link": "#",
+        "image_shape": "landscape",
+        "enable_animations": false,
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 24,
+        "bg_color": "#ffffff",
+        "text_color": "#121212",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
+    "banner_carousel_RXwVMx": {
+      "type": "banner-carousel",
+      "blocks": {
+        "slide_trjGCk": {
+          "type": "slide",
+          "disabled": true,
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 19,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 14,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "center"
+          }
+        },
+        "slide_wDzmaV": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_7UkR7E": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_jjCCTM": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_Bgttzp": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_VKia4N": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_WQjyyW": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_H7d9jq": {
+          "type": "slide",
+          "disabled": true,
+          "settings": {
+            "image_scale": 100,
+            "link": "",
+            "heading": "",
+            "heading_font_size": 32,
+            "heading_align": "left",
+            "subheading": "",
+            "subheading_font_size": 16,
+            "subheading_align": "left",
+            "price_text": "",
+            "price_font_size": 14,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 14,
+            "button_align": "center",
+            "text_color": "#1d1d1f",
+            "content_position": "top-left"
+          }
+        },
+        "slide_ey7GmK": {
+          "type": "slide",
+          "disabled": true,
+          "settings": {
+            "image_scale": 100,
+            "link": "",
+            "heading": "",
+            "heading_font_size": 32,
+            "heading_align": "center",
+            "subheading": "",
+            "subheading_font_size": 16,
+            "subheading_align": "center",
+            "price_text": "",
+            "price_font_size": 14,
+            "price_align": "center",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 14,
+            "button_align": "center",
+            "text_color": "#ffffff",
+            "content_position": "center"
+          }
+        },
+        "slide_de64D6": {
+          "type": "slide",
+          "disabled": true,
+          "settings": {
+            "image_scale": 100,
+            "link": "",
+            "heading": "",
+            "heading_font_size": 32,
+            "heading_align": "left",
+            "subheading": "",
+            "subheading_font_size": 16,
+            "subheading_align": "left",
+            "price_text": "",
+            "price_font_size": 14,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 14,
+            "button_align": "center",
+            "text_color": "#1d1d1f",
+            "content_position": "top-left"
+          }
+        },
+        "slide_HyLW6i": {
+          "type": "slide",
+          "disabled": true,
+          "settings": {
+            "image_scale": 100,
+            "link": "",
+            "heading": "",
+            "heading_font_size": 32,
+            "heading_align": "center",
+            "subheading": "",
+            "subheading_font_size": 16,
+            "subheading_align": "center",
+            "price_text": "",
+            "price_font_size": 14,
+            "price_align": "center",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 14,
+            "button_align": "center",
+            "text_color": "#ffffff",
+            "content_position": "center"
+          }
+        }
+      },
+      "block_order": [
+        "slide_trjGCk",
+        "slide_wDzmaV",
+        "slide_7UkR7E",
+        "slide_jjCCTM",
+        "slide_Bgttzp",
+        "slide_VKia4N",
+        "slide_WQjyyW",
+        "slide_H7d9jq",
+        "slide_ey7GmK",
+        "slide_de64D6",
+        "slide_HyLW6i"
+      ],
+      "custom_css": [],
+      "name": "Research — Investigate Solutions",
+      "settings": {
+        "heading": "Heading",
+        "subheading": "",
+        "heading_align": "start",
+        "view_all_label": "View all",
+        "view_all_link": "#",
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 24,
+        "enable_animations": true,
+        "columns_desktop": 4,
+        "card_width_desktop": 320,
+        "columns_tablet": 1,
+        "columns_mobile": 1.5,
+        "slide_gap": 16,
+        "height_desktop": 420,
+        "height_mobile": 320,
+        "slide_radius": 10,
+        "show_dots": true,
+        "show_arrows": true,
+        "autoplay": false,
+        "autoplay_speed": 5,
+        "bg_color": "#ffffff",
+        "icon_card_bg_color": "#ffffff",
+        "icon_card_text_color": "#1d1d1f",
+        "icon_card_padding": 24,
+        "icon_card_min_height_mobile": 200,
+        "icon_card_min_height_desktop": 220,
+        "icon_card_radius": 16,
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "seo_block_hYP6VG": {
+      "type": "seo-block",
+      "disabled": true,
+      "name": "Evaluation — Assess Satisfaction of Needs",
+      "settings": {
+        "heading": "",
+        "menu": "",
+        "seo_content": "",
+        "collapse_copy": true,
+        "copy_toggle_label": "Read more",
+        "section_width": "",
+        "custom_width": 80,
+        "section_padding": 28
+      }
+    },
+    "seo_block_DmaN88": {
+      "type": "seo-block",
+      "disabled": true,
+      "name": "Justification — Justify & Quantify Value, Internal Buy‑In",
+      "settings": {
+        "heading": "",
+        "menu": "",
+        "seo_content": "",
+        "collapse_copy": true,
+        "copy_toggle_label": "Read more",
+        "section_width": "",
+        "custom_width": 80,
+        "section_padding": 28
+      }
+    },
+    "seo_block_EKVLRn": {
+      "type": "seo-block",
+      "disabled": true,
+      "name": "Purchase — Transaction & Transition Factors",
+      "settings": {
+        "heading": "",
+        "menu": "",
+        "seo_content": "",
+        "collapse_copy": true,
+        "copy_toggle_label": "Read more",
+        "section_width": "",
+        "custom_width": 80,
+        "section_padding": 28
+      }
+    },
+    "seo_block_CTp9Lw": {
+      "type": "seo-block",
+      "disabled": true,
+      "name": "Purchase — Transaction & Transition Factors",
+      "settings": {
+        "heading": "",
+        "menu": "",
+        "seo_content": "",
+        "collapse_copy": true,
+        "copy_toggle_label": "Read more",
+        "section_width": "",
+        "custom_width": 80,
+        "section_padding": 28
+      }
+    },
+    "seo_block_iwdNWA": {
+      "type": "seo-block",
+      "disabled": true,
+      "name": "Adoption — Onboarding & Implementation",
+      "settings": {
+        "heading": "",
+        "menu": "",
+        "seo_content": "",
+        "collapse_copy": true,
+        "copy_toggle_label": "Read more",
+        "section_width": "",
+        "custom_width": 80,
+        "section_padding": 28
+      }
+    },
+    "seo_block_DYPiMg": {
+      "type": "seo-block",
+      "disabled": true,
+      "name": "Retention — Satisfaction & Success",
+      "settings": {
+        "heading": "",
+        "menu": "",
+        "seo_content": "",
+        "collapse_copy": true,
+        "copy_toggle_label": "Read more",
+        "section_width": "",
+        "custom_width": 80,
+        "section_padding": 28
+      }
+    },
+    "seo_block_TGKByN": {
+      "type": "seo-block",
+      "disabled": true,
+      "name": "Expansion — Upsell & Cross‑sell",
+      "settings": {
+        "heading": "",
+        "menu": "",
+        "seo_content": "",
+        "collapse_copy": true,
+        "copy_toggle_label": "Read more",
+        "section_width": "",
+        "custom_width": 80,
+        "section_padding": 28
+      }
+    },
+    "main": {
+      "type": "page",
+      "name": "Advocacy — Loyalty & Evangelism",
+      "settings": {
+        "section_width": "",
+        "custom_width": 80,
+        "section_padding": 28
+      }
+    }
+  },
+  "order": [
+    "slideshow_zzfKYQ",
+    "collection_carousel_6ViUnU",
+    "banner_carousel_RXwVMx",
+    "seo_block_hYP6VG",
+    "seo_block_DmaN88",
+    "seo_block_EKVLRn",
+    "seo_block_CTp9Lw",
+    "seo_block_iwdNWA",
+    "seo_block_DYPiMg",
+    "seo_block_TGKByN",
+    "main"
+  ]
+}

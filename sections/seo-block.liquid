@@ -1,0 +1,212 @@
+{%- comment -%}
+  sections/seo-block.liquid
+
+  Forked from sections/menu-block.liquid. Same 4-column menu rendering,
+  plus an optional rich-text area underneath for keyword-rich SEO copy —
+  the kind of block that sits at the bottom of category/collection pages.
+  The copy is collapsed behind a "Read more" toggle by default so it
+  doesn't push the menu links (or anything below the section) down the
+  page for users who don't want to read it; it's still fully present in
+  the rendered HTML for crawlers either way.
+
+  Uses the shared width pattern from snippets/section-width.liquid — see
+  sections/example-width-section.liquid for the full explanation of that
+  pattern. Don't hand-roll width logic here.
+{%- endcomment -%}
+
+<div {% render 'section-width', section: section %}>
+  <div class="section seo-block" style="padding-block: var(--section-spacing);">
+    {%- if section.settings.heading != blank -%}
+      <h2 class="seo-block__heading">{{ section.settings.heading }}</h2>
+    {%- endif -%}
+
+    {%- if section.settings.menu != blank -%}
+      {%- assign menu = linklists[section.settings.menu] -%}
+      <ul class="seo-block__columns" role="list">
+        {%- for link in menu.links limit: 4 -%}
+          <li class="seo-block__column">
+            {%- if link.links.size > 0 -%}
+              <h5 class="seo-block__column-title">{{ link.title }}</h5>
+              <ul class="seo-block__column-links" role="list">
+                {%- for child_link in link.links -%}
+                  <li>
+                    <a href="{{ child_link.url }}"{% if child_link.active %} aria-current="page"{% endif %}>
+                      {{ child_link.title }}
+                    </a>
+                  </li>
+                {%- endfor -%}
+              </ul>
+            {%- else -%}
+              {%- comment -%} No children: the item itself is the link {%- endcomment -%}
+              <h5 class="seo-block__column-title">
+                <a href="{{ link.url }}"{% if link.active %} aria-current="page"{% endif %}>{{ link.title }}</a>
+              </h5>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+
+    {%- if section.settings.seo_content != blank -%}
+      <div class="seo-block__copy{% if section.settings.collapse_copy %} seo-block__copy--collapsible{% endif %}">
+        {%- if section.settings.collapse_copy -%}
+          <details class="seo-block__copy-details">
+            <summary class="seo-block__copy-summary">
+              {{ section.settings.copy_toggle_label | default: 'Read more' }}
+            </summary>
+            <div class="seo-block__copy-body rte">
+              {{ section.settings.seo_content }}
+            </div>
+          </details>
+        {%- else -%}
+          <div class="seo-block__copy-body rte">
+            {{ section.settings.seo_content }}
+          </div>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+  </div>
+</div>
+
+<style>
+  .seo-block__heading {
+    margin-block-end: 1.5rem;
+  }
+
+  .seo-block__columns {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+    list-style: none;
+    margin: 0 0 2.5rem;
+    padding: 0;
+  }
+
+  .seo-block__column-title {
+    margin: 0 0 0.75rem;
+    font-size: 1rem;
+  }
+
+  .seo-block__column-title a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .seo-block__column-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .seo-block__column-links li {
+    margin-block: 0.4rem;
+  }
+
+  .seo-block__column-links a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .seo-block__column-links a:hover {
+    text-decoration: underline;
+  }
+
+  .seo-block__copy {
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    padding-top: 1.5rem;
+  }
+
+  .seo-block__copy-body {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: rgba(0, 0, 0, 0.7);
+  }
+
+  .seo-block__copy-summary {
+    cursor: pointer;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+
+  @media screen and (max-width: 749px) {
+    .seo-block__columns {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem 2rem;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "SEO block",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading"
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Menu",
+      "info": "Only the first 4 top-level items are shown — one per column. Sub-items under each become that column's link list. Leave blank to show only the SEO copy below."
+    },
+    { "type": "header", "content": "SEO content" },
+    {
+      "type": "richtext",
+      "id": "seo_content",
+      "label": "SEO copy",
+      "info": "Keyword-rich copy for search engines. Formatted with the built-in editor — no raw HTML needed. Leave blank to hide this area."
+    },
+    {
+      "type": "checkbox",
+      "id": "collapse_copy",
+      "label": "Collapse behind a \"Read more\" toggle",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "copy_toggle_label",
+      "label": "Toggle label",
+      "default": "Read more",
+      "visible_if": "{{ section.settings.collapse_copy }}"
+    },
+    { "type": "header", "content": "Section layout" },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 28
+    }
+  ],
+  "presets": [
+    { "name": "SEO block" }
+  ]
+}
+{% endschema %}

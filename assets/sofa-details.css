@@ -1,0 +1,179 @@
+/* ===========================================
+   Sofa Details & Gift Options Section
+   =========================================== */
+
+.sofa-details-section {
+  --sofa-details-text: #1a1a1a;
+  --sofa-details-muted: #666666;
+  --sofa-details-border: #e5e5e5;
+
+  padding: 48px 40px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--sofa-details-text);
+}
+
+.sofa-details-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+}
+
+.sofa-details-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sofa-details-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.sofa-details-body {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--sofa-details-text);
+}
+
+.sofa-details-body p {
+  margin: 0 0 14px;
+}
+
+.sofa-details-notes {
+  margin-bottom: 14px;
+}
+
+.sofa-details-notes p {
+  margin: 4px 0;
+}
+
+.sofa-details-list {
+  margin: 0 0 16px;
+  padding-left: 18px;
+  list-style: disc;
+}
+
+.sofa-details-list li {
+  margin-bottom: 4px;
+}
+
+.sofa-details-shipping a,
+.sofa-details-questions a {
+  color: var(--sofa-details-text);
+  text-decoration: underline;
+}
+
+.sofa-details-questions {
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+/* ---------- Gift options ---------- */
+.sofa-gift-intro {
+  font-size: 14px;
+  color: var(--sofa-details-muted);
+  margin: 0 0 8px;
+}
+
+.sofa-gift-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 12px;
+}
+
+.sofa-gift-col h3 {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 10px;
+}
+
+.sofa-gift-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sofa-gift-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+}
+
+.sofa-gift-list svg {
+  flex-shrink: 0;
+  color: var(--sofa-details-text);
+}
+
+.sofa-gift-list span {
+  color: var(--sofa-details-muted);
+}
+
+.sofa-gift-help {
+  font-size: 13.5px;
+  color: var(--sofa-details-muted);
+  margin: 0 0 16px;
+}
+
+.sofa-gift-btn {
+  display: inline-block;
+  padding: 12px 28px;
+  border: 1px solid var(--sofa-details-text);
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sofa-details-text);
+  text-decoration: none;
+  text-align: center;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.sofa-gift-btn:hover {
+  background: var(--sofa-details-text);
+  color: #ffffff;
+}
+
+.sofa-brand-block {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--sofa-details-border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sofa-brand-block p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--sofa-details-text);
+  margin: 0;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+  .sofa-details-section {
+    padding: 32px 24px;
+  }
+
+  .sofa-details-container {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .sofa-gift-columns {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}

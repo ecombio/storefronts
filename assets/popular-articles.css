@@ -1,0 +1,199 @@
+.popular-articles {
+  padding-block: 4rem;
+  font-family: var(--font-primary--family);
+  color: var(--color-foreground);
+  background-color: var(--color-background);
+}
+
+.popular-articles__container {
+  margin-inline: auto;
+  padding-inline: var(--section-padding);
+}
+
+/* Section width variants — scoped locally since this theme has no
+   global default-width / full-width / custom-width utility classes */
+.popular-articles__default-width .popular-articles__container {
+  max-width: 1280px;
+}
+
+.popular-articles__full-width .popular-articles__container {
+  max-width: none;
+}
+
+.popular-articles__custom-width .popular-articles__container {
+  max-width: var(--custom-width);
+}
+
+.popular-articles__heading {
+  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.25rem);
+  line-height: 1.2;
+  margin: 0 0 2rem;
+}
+
+/* Viewport: edge-fade mask, same pattern as article-carousel */
+.popular-articles__viewport {
+  position: relative;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black 24px,
+    black calc(100% - 24px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black 24px,
+    black calc(100% - 24px),
+    transparent 100%
+  );
+}
+
+.popular-articles__viewport[data-edge='start'] {
+  -webkit-mask-image: linear-gradient(to right, black calc(100% - 24px), transparent 100%);
+  mask-image: linear-gradient(to right, black calc(100% - 24px), transparent 100%);
+}
+
+.popular-articles__viewport[data-edge='end'] {
+  -webkit-mask-image: linear-gradient(to right, transparent 0, black 24px);
+  mask-image: linear-gradient(to right, transparent 0, black 24px);
+}
+
+.popular-articles__viewport[data-edge='none'] {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+/* Controls: hover/focus-visible only, same behavior as article-carousel */
+.popular-articles__controls {
+  display: flex;
+  justify-content: space-between;
+  position: absolute;
+  inset: 0;
+  padding-inline: 0.5rem;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.popular-articles__controls .popular-articles__arrow {
+  pointer-events: auto;
+  align-self: center;
+}
+
+.popular-articles__controls[hidden] {
+  display: none;
+}
+
+.popular-articles:hover .popular-articles__controls,
+.popular-articles:focus-within .popular-articles__controls {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .popular-articles__controls {
+    transition: none;
+  }
+}
+
+.popular-articles__arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--color-foreground) 15%, transparent);
+  background: var(--color-background);
+  color: var(--color-foreground);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), opacity var(--transition-fast);
+}
+
+.popular-articles__arrow:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-foreground) 6%, transparent);
+  border-color: var(--color-blue);
+}
+
+.popular-articles__arrow:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* Track */
+.popular-articles__track {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 85%;
+  gap: 1.25rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.popular-articles__track::-webkit-scrollbar {
+  display: none;
+}
+
+@media screen and (min-width: 750px) {
+  .popular-articles__track {
+    grid-auto-columns: calc(50% - 0.625rem);
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .popular-articles__track {
+    grid-auto-columns: calc((100% - 3 * 1.25rem) / 4);
+  }
+}
+
+.popular-articles__slide {
+  scroll-snap-align: start;
+}
+
+/* Card */
+.popular-articles__card {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.popular-articles__image-wrapper {
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: var(--radius-base);
+  background: color-mix(in srgb, var(--color-foreground) 4%, transparent);
+}
+
+.popular-articles__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform var(--transition-slow);
+}
+
+.popular-articles__card:hover .popular-articles__image {
+  transform: scale(1.04);
+}
+
+.popular-articles__image--placeholder svg {
+  width: 100%;
+  height: 100%;
+}
+
+.popular-articles__title {
+  font-size: 1.15rem;
+  line-height: 1.35;
+  margin: 1rem 0 0;
+  transition: color var(--transition-fast);
+}
+
+.popular-articles__card:hover .popular-articles__title {
+  color: var(--color-blue);
+}

@@ -1,0 +1,611 @@
+{%- comment -%}
+  sections/header.liquid
+
+  NOTE: the announcement bar used to render here (via snippets/announcement-bar.liquid,
+  passed this section's own settings). It's now sections/announcement-bar.liquid, a
+  standalone section placed above this one in config/header-group.json — its ann_*
+  settings have moved out of this schema into that section's own schema.
+{%- endcomment -%}
+
+{{ 'header.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign section_width = section.settings.section_width
+  case section_width
+    when 'full-width'
+      assign width_class = 'site-header--full-width'
+    when 'custom-width'
+      assign width_class = 'site-header--custom-width'
+    else
+      assign width_class = 'site-header--default-width'
+  endcase
+-%}
+
+<header class="site-header {{ width_class }}{% if section.settings.enable_sticky %} site-header--sticky-enabled{% endif %}{% if section.settings.enable_search_drawer %} site-header--search-drawer-mobile{% endif %}{% if enable_search_drawer_tablet %} site-header--search-drawer-tablet{% endif %}"
+        id="site-header"
+        role="banner"
+        {%- if section.settings.enable_sticky %}
+        data-sticky-fixed="true"
+        data-autohide="{{ section.settings.enable_autohide }}"
+        data-autohide-class="site-header--autohide-hidden"
+        {%- endif %}
+        style="
+          --section-padding: {{ section.settings.section_padding }}px;
+          {%- if section_width == 'custom-width' %}
+            --custom-width: {{ section.settings.custom_width }}rem;
+          {%- endif %}
+          {%- if section.settings.enable_sticky %}
+            position: fixed;
+            top: var(--main-header-stack-offset, 0px);
+            left: 0;
+            right: 0;
+          {%- endif %}
+        ">
+
+  {%- render 'utility-bar', settings: section.settings -%}
+{%- render 'main-header', section: section -%}
+
+</header>
+
+{%- if section.settings.enable_sticky -%}
+  <div class="site-header__sticky-spacer" id="site-header-sticky-spacer" aria-hidden="true"></div>
+{%- endif -%}
+
+<script src="{{ 'header.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Header",
+  "tag": "div",
+  "class": "main-header-section",
+  "settings": [
+    { "type": "header", "content": "Section layout" },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 24,
+      "info": "Applies at tablet and desktop widths. Mobile (< 640px) keeps its own fixed, tighter padding regardless of this setting. Also controls the Utility Bar's width/padding below it, so the two rows always line up."
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sticky",
+      "label": "Enable sticky header",
+      "info": "Keeps the header pinned to the top of the viewport while the page scrolls.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_autohide",
+      "label": "Hide header on scroll down",
+      "info": "Only applies when sticky header is enabled. Header slides away as the customer scrolls down, and reappears when they scroll back up or near the top of the page.",
+      "default": false,
+      "visible_if": "{{ section.settings.enable_sticky }}"
+    },
+
+    { "type": "header", "content": "Mobile Division (< 640px)" },
+    {
+      "type": "checkbox",
+      "id": "enable_search_drawer",
+      "label": "Enable search drawer icon (mobile only, < 640px)",
+      "info": "Adds a search icon to the header that opens a full-screen drawer sliding down from the top, replacing the search row on mobile screens only (below 640px). Independent of Tablet's setting below.",
+      "default": false
+    },
+
+    { "type": "header", "content": "Tablet Division (640px – 1023px)" },
+    {
+      "type": "checkbox",
+      "id": "enable_search_drawer_tablet",
+      "label": "Enable search drawer icon (tablet only, 640px – 1023px)",
+      "info": "Adds a search icon to the header that opens a full-screen drawer sliding down from the top, replacing the search row on tablet screens only (640px–1023px). Independent of Mobile's setting above.",
+      "default": false
+    },
+    {
+      "type": "paragraph",
+      "content": "Icon labels are shown automatically at this width via CSS, with no toggle."
+    },
+
+    { "type": "header", "content": "Utility Bar" },
+    {
+      "type": "paragraph",
+      "content": "Slim strip rendered above the main header row. Built directly into this section's markup below. Its width and side padding automatically match the header row's own Section layout settings above — there's no separate width control for it anymore."
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_bar",
+      "label": "Enable utility bar",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "bar_style",
+      "label": "Bar style",
+      "default": "hyper",
+      "options": [
+        { "value": "hyper", "label": "Hyper (white)" },
+        { "value": "focus", "label": "Focus (warm grey)" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_currency",
+      "label": "Show currency selector",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_locale",
+      "label": "Show language selector",
+      "default": true
+    },
+    {
+      "type": "image_picker",
+      "id": "link_1_icon",
+      "label": "Link 1 icon (optional)"
+    },
+    {
+      "type": "text",
+      "id": "link_1_label",
+      "label": "Link 1 label",
+      "default": "Track Order"
+    },
+    {
+      "type": "url",
+      "id": "link_1_url",
+      "label": "Link 1 URL"
+    },
+    {
+      "type": "image_picker",
+      "id": "link_2_icon",
+      "label": "Link 2 icon (optional)"
+    },
+    {
+      "type": "text",
+      "id": "link_2_label",
+      "label": "Link 2 label",
+      "default": "Store Locator"
+    },
+    {
+      "type": "url",
+      "id": "link_2_url",
+      "label": "Link 2 URL"
+    },
+    {
+      "type": "image_picker",
+      "id": "link_3_icon",
+      "label": "Link 3 icon (optional)"
+    },
+    {
+      "type": "text",
+      "id": "link_3_label",
+      "label": "Link 3 label",
+      "default": "Track Order"
+    },
+    {
+      "type": "url",
+      "id": "link_3_url",
+      "label": "Link 3 URL"
+    },
+
+    { "type": "header", "content": "Search (all breakpoints)" },
+    {
+      "type": "checkbox",
+      "id": "enable_predictive_search",
+      "label": "Enable predictive search",
+      "info": "Shows product, collection and query suggestions as the customer types.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_typewriter",
+      "label": "Animate placeholder (typewriter effect)",
+      "default": true,
+      "visible_if": "{{ section.settings.enable_predictive_search }}"
+    },
+    {
+      "type": "range",
+      "id": "typewriter_type_speed",
+      "label": "Typing speed",
+      "min": 30,
+      "max": 150,
+      "step": 5,
+      "default": 70,
+      "unit": "ms",
+      "visible_if": "{{ section.settings.enable_predictive_search and section.settings.enable_typewriter }}"
+    },
+    {
+      "type": "range",
+      "id": "typewriter_hold_ms",
+      "label": "Pause on full word",
+      "min": 1000,
+      "max": 5000,
+      "step": 100,
+      "default": 3200,
+      "unit": "ms",
+      "visible_if": "{{ section.settings.enable_predictive_search and section.settings.enable_typewriter }}"
+    },
+    {
+      "type": "paragraph",
+      "content": "Trending search terms — shown as the animated placeholder and in the empty-state suggestions. Leave a field blank to drop that term.",
+      "visible_if": "{{ section.settings.enable_predictive_search }}"
+    },
+    {
+      "type": "text",
+      "id": "trending_1",
+      "label": "Trending term 1",
+      "default": "electric scooters",
+      "visible_if": "{{ section.settings.enable_predictive_search }}"
+    },
+    {
+      "type": "text",
+      "id": "trending_2",
+      "label": "Trending term 2",
+      "default": "electric bikes",
+      "visible_if": "{{ section.settings.enable_predictive_search }}"
+    },
+    {
+      "type": "text",
+      "id": "trending_3",
+      "label": "Trending term 3",
+      "default": "electric skateboards",
+      "visible_if": "{{ section.settings.enable_predictive_search }}"
+    },
+    {
+      "type": "text",
+      "id": "trending_4",
+      "label": "Trending term 4",
+      "default": "electric cargo bikes",
+      "visible_if": "{{ section.settings.enable_predictive_search }}"
+    },
+    {
+      "type": "text",
+      "id": "trending_5",
+      "label": "Trending term 5",
+      "default": "electric city bikes",
+      "visible_if": "{{ section.settings.enable_predictive_search }}"
+    },
+    {
+      "type": "text",
+      "id": "trending_6",
+      "label": "Trending term 6",
+      "default": "electric fat bikes",
+      "visible_if": "{{ section.settings.enable_predictive_search }}"
+    },
+    {
+      "type": "text",
+      "id": "trending_7",
+      "label": "Trending term 7",
+      "default": "electric folding bikes",
+      "visible_if": "{{ section.settings.enable_predictive_search }}"
+    },
+    {
+      "type": "text",
+      "id": "trending_8",
+      "label": "Trending term 8",
+      "default": "electric mountain bikes",
+      "visible_if": "{{ section.settings.enable_predictive_search }}"
+    },
+    {
+      "type": "text",
+      "id": "trending_9",
+      "label": "Trending term 9",
+      "default": "commuter electric scooters",
+      "visible_if": "{{ section.settings.enable_predictive_search }}"
+    },
+    {
+      "type": "text",
+      "id": "trending_10",
+      "label": "Trending term 10",
+      "default": "off-road electric scooters",
+      "visible_if": "{{ section.settings.enable_predictive_search }}"
+    },
+    {
+      "type": "text",
+      "id": "trending_11",
+      "label": "Trending term 11",
+      "default": "performance electric scooters",
+      "visible_if": "{{ section.settings.enable_predictive_search }}"
+    },
+    {
+      "type": "text",
+      "id": "trending_12",
+      "label": "Trending term 12",
+      "default": "youth electric scooters",
+      "visible_if": "{{ section.settings.enable_predictive_search }}"
+    },
+
+    { "type": "header", "content": "Icons (all breakpoints)" },
+    {
+      "type": "checkbox",
+      "id": "show_icon_account",
+      "label": "Show account icon",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_label_account",
+      "label": "Show account label",
+      "info": "When off, only the icon is shown for this item — no text label at any breakpoint.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_icon_wishlist",
+      "label": "Show wishlist icon",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_label_wishlist",
+      "label": "Show wishlist label",
+      "info": "When off, only the icon is shown for this item — no text label at any breakpoint.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_icon_compare",
+      "label": "Show compare icon",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_label_compare",
+      "label": "Show compare label",
+      "info": "When off, only the icon is shown for this item — no text label at any breakpoint.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_icon_cart",
+      "label": "Show cart icon",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_label_cart",
+      "label": "Show cart label",
+      "info": "When off, only the icon is shown for this item — no text label at any breakpoint.",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "single-link",
+      "name": "Single Link",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Single Link"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "URL"
+        },
+        {
+          "type": "text",
+          "id": "icon",
+          "label": "Icon name",
+          "info": "Optional. Uses snippets/menu-icon.liquid"
+        }
+      ]
+    },
+    {
+      "type": "link-list",
+      "name": "Link list",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Top-level URL (optional)"
+        },
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": "Link list menu"
+        },
+        {
+          "type": "text",
+          "id": "icon",
+          "label": "Icon name"
+        }
+      ]
+    },
+    {
+      "type": "mega-menu",
+      "name": "Mega menu",
+      "settings": [
+        {
+          "type": "header",
+          "content": "Nav bar"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "info": "Optional. Falls back to the selected menu's title, then to the linked collection's title, then to \"Mega menu\"."
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "URL",
+          "info": "Optional. Falls back to first menu link."
+        },
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": "Menu"
+        },
+        {
+          "type": "text",
+          "id": "icon",
+          "label": "Icon name"
+        },
+        {
+          "type": "header",
+          "content": "Products"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_products",
+          "label": "Show trending products",
+          "default": false,
+          "info": "Pulls the first 3 products from the first collection link found in the chosen menu."
+        }
+      ]
+    },
+    {
+      "type": "showcase",
+      "name": "Showcase",
+      "settings": [
+        { "type": "header", "content": "Nav bar" },
+        { "type": "text", "id": "label", "label": "Label", "info": "Optional. Falls back to the linked collection's title, then to \"Showcase\"." },
+        { "type": "url", "id": "link", "label": "URL", "info": "Optional. Falls back to '#' if blank." },
+        { "type": "text", "id": "icon", "label": "Icon name", "info": "Optional. Uses snippets/menu-icon.liquid" },
+
+        { "type": "header", "content": "Panel layout" },
+        {
+          "type": "select",
+          "id": "panel_width",
+          "label": "Panel width",
+          "info": "Default aligns the dropdown panel with the header's own content width, so it doesn't stretch further than the header above it.",
+          "options": [
+            { "value": "", "label": "Default (aligns with header)" },
+            { "value": "full-width", "label": "Full width" },
+            { "value": "custom-width", "label": "Custom width" }
+          ],
+          "default": ""
+        },
+        {
+          "type": "range",
+          "id": "panel_custom_width",
+          "label": "Custom width",
+          "min": 40,
+          "max": 120,
+          "step": 5,
+          "unit": "rem",
+          "default": 80,
+          "visible_if": "{{ block.settings.panel_width == 'custom-width' }}"
+        },
+        {
+          "type": "range",
+          "id": "panel_padding",
+          "label": "Side padding",
+          "min": 0,
+          "max": 80,
+          "step": 4,
+          "unit": "px",
+          "default": 24
+        },
+
+        { "type": "header", "content": "Sidebar (optional)" },
+        { "type": "checkbox", "id": "show_sidebar", "label": "Show sidebar", "default": true },
+        { "type": "text", "id": "sidebar_heading", "label": "Sidebar heading", "default": "Good to know" },
+
+        { "type": "text", "id": "tip_1_icon", "label": "Tip 1 icon name" },
+        { "type": "text", "id": "tip_1_heading", "label": "Tip 1 heading", "default": "Trade-in" },
+        { "type": "text", "id": "tip_1_body", "label": "Tip 1 body", "default": "Get up to $700 for your old device" },
+
+        { "type": "text", "id": "tip_2_icon", "label": "Tip 2 icon name" },
+        { "type": "text", "id": "tip_2_heading", "label": "Tip 2 heading" },
+        { "type": "text", "id": "tip_2_body", "label": "Tip 2 body" },
+
+        { "type": "text", "id": "tip_3_icon", "label": "Tip 3 icon name" },
+        { "type": "text", "id": "tip_3_heading", "label": "Tip 3 heading" },
+        { "type": "text", "id": "tip_3_body", "label": "Tip 3 body" },
+
+        { "type": "header", "content": "Categories" },
+
+        { "type": "paragraph", "content": "\"See all\" automatically uses the collection linked in the URL field above. Each category below uses its selected collection's title, link, and featured image automatically." },
+
+        { "type": "collection", "id": "cat_1_collection", "label": "Category 1 collection" },
+        { "type": "collection", "id": "cat_2_collection", "label": "Category 2 collection" },
+        { "type": "collection", "id": "cat_3_collection", "label": "Category 3 collection" },
+        { "type": "collection", "id": "cat_4_collection", "label": "Category 4 collection" },
+        { "type": "collection", "id": "cat_5_collection", "label": "Category 5 collection" },
+        { "type": "collection", "id": "cat_6_collection", "label": "Category 6 collection" },
+        { "type": "collection", "id": "cat_7_collection", "label": "Category 7 collection" },
+        { "type": "collection", "id": "cat_8_collection", "label": "Category 8 collection" }
+      ]
+    },
+    {
+      "type": "highlight",
+      "name": "Highlight",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "On Sale"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "URL"
+        },
+        {
+          "type": "text",
+          "id": "icon",
+          "label": "Icon name"
+        }
+      ]
+    },
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Header",
+      "settings": {
+        "link_1_label": "Track Order",
+        "link_1_url": "/apps/track",
+        "link_2_label": "Store Locator",
+        "link_2_url": "/pages/stores",
+        "link_3_label": "Track Order",
+        "link_3_url": "/apps/track"
+      },
+      "blocks": [
+        { "type": "single-link", "settings": { "label": "Single link", "link": "/collections/all" } },
+        { "type": "link-list", "settings": { "label": "Link list" } },
+        { "type": "mega-menu", "settings": {} },
+        { "type": "showcase", "settings": {} },
+        { "type": "highlight", "settings": { "label": "On Sale", "link": "/collections/sale" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

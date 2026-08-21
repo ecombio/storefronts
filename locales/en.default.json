@@ -1,0 +1,125 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin language editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "404": {
+    "title": "404",
+    "not_found": "Page not found.",
+    "back_to_shopping": "Back to shopping"
+  },
+  "blog": {
+    "article_comments": "Comments",
+    "article_metadata_html": "{{ date }} by {{ author }}",
+    "comment_form_body": "Comment",
+    "comment_form_email": "Email",
+    "comment_form_name": "Name",
+    "comment_form_submit": "Post",
+    "comment_form_title": "Add a comment"
+  },
+  "cart": {
+    "checkout": "Checkout",
+    "title": "Cart",
+    "update": "Update",
+    "remove": "Remove",
+    "general": {
+      "taxes_and_shipping": "Taxes and shipping calculated at checkout"
+    }
+  },
+  "customers": {
+    "login": {
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign in",
+      "title": "Login"
+    }
+  },
+  "collections": {
+    "title": "Collections"
+  },
+  "gift_card": {
+    "add_to_apple_wallet": "Add to Apple Wallet",
+    "card": "Gift card",
+    "expired": "This gift card has expired",
+    "expires_on": "Expires on {{ expires_on }}",
+    "use_at_checkout": "Use this gift card at checkout"
+  },
+  "password": {
+    "title": "This shop is private",
+    "password": "Password",
+    "enter": "Enter"
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search articles, pages, or products",
+    "submit": "Search",
+    "no_results_html": "No results found for {{ terms }}",
+    "results_for_html": "{{ count }} results found for {{ terms }}"
+  },
+  "products": {
+    "facets": {
+      "filter_button": "Filter",
+      "product_count": {
+        "one": "{{ count }} product",
+        "other": "{{ count }} products"
+      },
+      "sort_by_label": "Sort by",
+      "view_as": "View as",
+      "view_grid": "Grid view",
+      "view_list": "List view"
+    },
+    "compare": {
+      "title": "Compare",
+      "add": "Compare"
+    },
+    "product": {
+      "on_sale": "Sale"
+    }
+  },
+  "product_recommendations": {
+    "related_name": "Related products",
+    "complementary_name": "Complementary products",
+    "related_heading": "You may also like",
+    "complementary_heading": "Pair it with",
+    "fbt_heading": "Frequently bought together",
+    "this_item_label": "This item:",
+    "total_price_label": "Total price:",
+    "add_all_label": "Add all {{ count }} to Cart",
+    "shipping_note": "Prices shown are per item and update as you select or deselect products.",
+    "settings": {
+      "limit_label": "Number of products to show"
+    }
+  },
+  "sections": {
+    "collection_template": {
+      "empty": "No products found in this collection.",
+      "use_fewer_filters_html": "Use fewer filters or <a href='{{ href }}'>clear all</a>"
+    },
+    "store_page": {
+      "tab_product": "Shop",
+      "tab_content": "Journal"
+    }
+  },
+  "general": {
+    "continue_shopping": "Continue shopping",
+    "pagination": {
+      "load_more": "Show More",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "newsletter": {
+      "email_placeholder": "Email",
+      "confirmation": "Thanks for subscribing!",
+      "learn_more": "Learn more"
+    },
+    "product": {
+      "on_sale": "Sale",
+      "new": "New"
+    }
+  }
+}

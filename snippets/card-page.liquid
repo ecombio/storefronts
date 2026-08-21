@@ -1,0 +1,21 @@
+{% comment %}
+  snippets/card-page.liquid
+  Renders a single page card for use in collection-showroom related pages.
+
+  Expects:
+    page {Object} — a Shopify page object (from custom.pages metafield list)
+{% endcomment %}
+
+<a href="{{ page.url }}" class="card-page">
+
+  <div class="card-page__content">
+    <h3 class="card-page__title">{{ page.title | escape }}</h3>
+
+    {%- if page.content != blank -%}
+      <p class="card-page__excerpt">{{ page.content | strip_html | truncate: 120 }}</p>
+    {%- endif -%}
+
+    <span class="card-page__read-more" aria-hidden="true">Learn more &rarr;</span>
+  </div>
+
+</a>

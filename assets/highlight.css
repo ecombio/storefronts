@@ -1,0 +1,105 @@
+.menu-bar__item--highlight {
+  --hl-color: #ff2d2d;
+}
+
+.menu-bar__link--highlight {
+  color: var(--hl-color) !important;
+  font-weight: 700;
+  position: relative;
+  padding-right: 30px;
+}
+
+.menu-bar__link--highlight:hover {
+  opacity: 0.82;
+}
+
+.main-header__mobile-nav-item--highlight {
+  --hl-color: #ff2d2d;
+}
+
+.main-header__mobile-nav-link--highlight {
+  color: var(--hl-color) !important;
+  font-weight: 700;
+}
+
+.main-header__mobile-nav-link--highlight:hover {
+  color: var(--hl-color) !important;
+  opacity: 0.82;
+}
+
+.main-header__mobile-nav-highlight-content {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  padding-right: 30px;
+}
+
+.ecombio-mobile-nav__item--highlight {
+  --hl-color: #ff2d2d;
+}
+
+.ecombio-mobile-nav__link--highlight {
+  color: var(--hl-color) !important;
+  font-weight: 700;
+}
+
+.ecombio-mobile-nav__link--highlight:hover {
+  color: var(--hl-color) !important;
+  opacity: 0.82;
+}
+
+.ecombio-mobile-nav__highlight-content {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  padding-right: 30px;
+}
+
+.star {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  color: var(--hl-color, #ff2d2d);
+  pointer-events: none;
+}
+
+.star-1 {
+  top: -6px;
+  right: -2px;
+  animation: twinkle 0.9s ease-in-out 0s infinite;
+}
+.star-2 {
+  top: 6px;
+  right: -11px;
+  animation: twinkle 1.4s ease-in-out 0.2s infinite;
+}
+.star-3 {
+  top: 16px;
+  right: -1px;
+  animation: twinkle 1.75s ease-in-out 0.45s infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.15; transform: scale(0.4) rotate(0deg); }
+  50%      { opacity: 1;    transform: scale(1.25) rotate(20deg); }
+}
+
+.menu-bar__link--highlight:hover .star-1,
+.main-header__mobile-nav-link--highlight:hover .star-1,
+.ecombio-mobile-nav__link--highlight:hover .star-1 { animation-duration: 0.5s; }
+
+.menu-bar__link--highlight:hover .star-2,
+.main-header__mobile-nav-link--highlight:hover .star-2,
+.ecombio-mobile-nav__link--highlight:hover .star-2 { animation-duration: 0.75s; }
+
+.menu-bar__link--highlight:hover .star-3,
+.main-header__mobile-nav-link--highlight:hover .star-3,
+.ecombio-mobile-nav__link--highlight:hover .star-3 { animation-duration: 0.95s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .star-1,
+  .star-2,
+  .star-3 {
+    animation-duration: 2.4s;
+  }
+}

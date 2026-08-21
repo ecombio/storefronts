@@ -1,0 +1,195 @@
+/*
+  featured-highlights.css
+  ============================================
+  Self-contained styles for snippets/featured-highlights.liquid:
+  heading, carousel track/arrows, and the image + heading +
+  description card. No dependency on any video-* asset file.
+*/
+
+.featured-highlights,
+.featured-highlights * {
+  box-sizing: border-box;
+}
+
+.featured-highlights {
+  padding-block: 32px;
+}
+
+.featured-highlights__header {
+  margin-bottom: 1.25rem;
+}
+
+.featured-highlights__heading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.featured-highlights__carousel {
+  position: relative;
+}
+
+.featured-highlights__track {
+  --items: 4;
+  --gap: 1.5rem;
+  display: flex;
+  gap: var(--gap);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--gap);
+  scrollbar-width: none;
+  width: 100%;
+}
+
+.featured-highlights__track::-webkit-scrollbar {
+  display: none;
+}
+
+.featured-highlights__item {
+  flex: 0 0 calc((100% - (var(--gap) * (var(--items) - 1))) / var(--items));
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* When a highlight has a link, the card content is wrapped in an <a>.
+   display: contents keeps the anchor out of the flex flow so the frame
+   / heading / description still lay out exactly as if the item div
+   were their direct parent — the anchor is invisible to layout, only
+   present for the click target and focus ring. */
+.featured-highlights__item-link {
+  display: contents;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.featured-highlights__item-link:hover .featured-highlights__item-heading {
+  text-decoration: underline;
+}
+
+.featured-highlights__item-link:focus-visible .featured-highlights__frame {
+  outline: 2px solid #4F46E5;
+  outline-offset: 2px;
+}
+
+.featured-highlights__frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #111827;
+}
+
+.featured-highlights__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.2s ease;
+}
+
+.featured-highlights__item-link:hover .featured-highlights__image {
+  transform: scale(1.03);
+}
+
+.featured-highlights__image--placeholder {
+  background: #E5E7EB;
+}
+
+.featured-highlights__item-heading {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.featured-highlights__item-description {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: #4B5563;
+}
+
+.featured-highlights__item-description p {
+  margin: 0;
+}
+
+.featured-highlights__arrow {
+  all: unset;
+  position: absolute;
+  top: 35%;
+  z-index: 2;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #fff;
+  color: #111827;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 2px 8px rgba(17, 24, 39, 0.15);
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.featured-highlights__arrow--prev {
+  left: -0.5rem;
+}
+
+.featured-highlights__arrow--next {
+  right: -0.5rem;
+}
+
+.featured-highlights__arrow:hover {
+  background: #F3F4F6;
+}
+
+.featured-highlights__arrow:focus-visible {
+  outline: 2px solid #4F46E5;
+  outline-offset: 2px;
+}
+
+.featured-highlights__arrow[disabled] {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
+}
+
+@media (max-width: 74.99rem) {
+  .featured-highlights__track {
+    --items: 3;
+  }
+}
+
+@media (max-width: 47.99rem) {
+  .featured-highlights__track {
+    --items: 2;
+  }
+}
+
+@media (max-width: 30rem) {
+  .featured-highlights__track {
+    --items: 1.15;
+  }
+
+  .featured-highlights__arrow {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .featured-highlights__track {
+    scroll-behavior: auto;
+  }
+
+  .featured-highlights__arrow,
+  .featured-highlights__image {
+    transition: none;
+  }
+}

@@ -1,0 +1,113 @@
+{%- comment -%} snippets/search-toolbar.liquid {%- endcomment -%}
+{{ 'search-toolbar.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign tab_products_label = section.settings.tab_products_label | default: 'Products'
+  assign tab_articles_label = section.settings.tab_articles_label | default: 'Articles'
+-%}
+
+<div
+  class="search-toolbar"
+  id="search-toolbar"
+  role="navigation"
+  aria-label="Search results navigation"
+  data-ajax-navigation="{{ section.settings.ajax_navigation }}"
+>
+
+  <div class="tab-switcher" role="tablist" aria-label="Search result type">
+    <a
+      href="{{ routes.search_url }}?q={{ search_terms | url_param_escape }}&type=product"
+      class="tab-switcher__tab{% if active_type == 'product' %} tab-switcher__tab--active{% endif %}"
+      role="tab"
+      aria-selected="{% if active_type == 'product' %}true{% else %}false{% endif %}"
+      aria-controls="panel-products"
+      id="tab-products"
+      data-type="product"
+      tabindex="{% if active_type == 'product' %}0{% else %}-1{% endif %}"
+    >{{ tab_products_label }}</a>
+
+    <a
+      href="{{ routes.search_url }}?q={{ search_terms | url_param_escape }}&type=article"
+      class="tab-switcher__tab{% if active_type == 'article' %} tab-switcher__tab--active{% endif %}"
+      role="tab"
+      aria-selected="{% if active_type == 'article' %}true{% else %}false{% endif %}"
+      aria-controls="panel-articles"
+      id="tab-articles"
+      data-type="article"
+      tabindex="{% if active_type == 'article' %}0{% else %}-1{% endif %}"
+    >{{ tab_articles_label }}</a>
+  </div>
+
+  {%- if active_type == 'product' -%}
+    {%- assign active_count = 0 -%}
+    {%- for filter in search.filters -%}
+      {%- assign active_count = active_count | plus: filter.active_values.size -%}
+    {%- endfor -%}
+
+    {%- if active_count > 0 -%}
+      <div class="search-filter__active search-toolbar__active">
+        {%- for filter in search.filters -%}
+          {%- for value in filter.active_values -%}
+            <a href="{{ value.url_to_remove }}&type=product" class="search-filter__pill">
+              {{ value.label }} &times;
+            </a>
+          {%- endfor -%}
+        {%- endfor -%}
+        <a href="{{ routes.search_url }}?q={{ search_terms | url_param_escape }}&type=product" class="search-filter__pill search-filter__pill--clear">Clear all</a>
+      </div>
+    {%- endif -%}
+  {%- endif -%}
+
+  {%- if section.settings.show_sort -%}
+    <div class="search-toolbar__sort"{% if active_type != 'product' %} style="display:none;"{% endif %}>
+      <label for="SortBy" class="visually-hidden">Sort</label>
+      <select id="SortBy" data-sort>
+        {%- for option in search.sort_options -%}
+          <option value="{{ option.value }}" {% if option.value == search.sort_by %}selected{% endif %}>
+            {{ option.name }}
+          </option>
+        {%- endfor -%}
+      </select>
+    </div>
+  {%- endif -%}
+
+</div>
+
+{%- if section.settings.show_filters or section.settings.show_sort -%}
+  <div class="search-mobile-bar" aria-label="Search controls" role="toolbar">
+
+    {%- if section.settings.show_filters -%}
+      <button
+        class="search-mobile-bar__btn"
+        type="button"
+        aria-expanded="false"
+        aria-controls="search-filter"
+        aria-label="Toggle filters"
+        data-filter-toggle
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M2 4h12M4 8h8M6 12h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        Filters
+      </button>
+    {%- endif -%}
+
+    {%- if section.settings.show_sort -%}
+      <button
+        class="search-mobile-bar__btn"
+        type="button"
+        aria-expanded="false"
+        aria-label="Sort results"
+        data-mobile-sort-toggle
+        {%- if active_type != 'product' %} disabled{%- endif %}
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M2 4h8M2 8h6M2 12h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M12 3v10M9.5 10.5L12 13l2.5-2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Sort
+      </button>
+    {%- endif -%}
+
+  </div>
+{%- endif -%}

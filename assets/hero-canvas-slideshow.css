@@ -1,0 +1,305 @@
+/* ================================================================
+   Hero Canvas Slideshow — hero-canvas-slideshow.css
+   Place in: /assets/hero-canvas-slideshow.css
+   ================================================================ */
+
+/* ── Reset / container ── */
+.hcs {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.hcs__inner {
+  position: relative;
+  width: 100%;
+  height: var(--hcs-height-desktop, 75vh);
+  border-radius: var(--hcs-radius, 10px);
+  overflow: hidden;
+}
+
+@media (max-width: 767px) {
+  .hcs__inner {
+    height: var(--hcs-height-mobile, 80vh);
+  }
+}
+
+/* ── Track / slides ── */
+.hcs__track {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.hcs__slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.hcs__slide.is-active {
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 1;
+}
+
+/* ── Background image ── */
+.hcs__bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.hcs__picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hcs__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Subtle Ken-Burns zoom on active slide */
+  transform: scale(1.06);
+  transition: transform 7s ease-out;
+}
+
+.hcs__slide.is-active .hcs__img {
+  transform: scale(1);
+}
+
+.hcs__img--placeholder {
+  background: #1a1a1a;
+  color: #555;
+}
+
+/* ── Overlay ── */
+.hcs__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, var(--hcs-overlay-alpha, 0.3));
+  pointer-events: none;
+}
+
+/* ── Content ── */
+.hcs__content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 48px 60px;
+  z-index: 2;
+  color: #fff;
+}
+
+/* X axis */
+.hcs__content--x-left   { align-items: flex-start; }
+.hcs__content--x-center { align-items: center; }
+.hcs__content--x-right  { align-items: flex-end; }
+
+/* Y axis */
+.hcs__content--y-top    { justify-content: flex-start; }
+.hcs__content--y-middle { justify-content: center; }
+.hcs__content--y-bottom { justify-content: flex-end; padding-bottom: 80px; }
+
+@media (max-width: 767px) {
+  .hcs__content {
+    padding: 32px 24px;
+  }
+  .hcs__content--y-bottom {
+    padding-bottom: 72px;
+  }
+}
+
+/* ── Motion: fade-up elements ── */
+[data-motion="fade-up"] {
+  opacity: 0;
+  transform: translateY(2.5rem);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.hcs__slide.is-active [data-motion="fade-up"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger via CSS custom property set by JS */
+.hcs__slide.is-active [data-motion="fade-up"]:nth-child(1) { transition-delay: 0ms; }
+.hcs__slide.is-active [data-motion="fade-up"]:nth-child(2) { transition-delay: 80ms; }
+.hcs__slide.is-active [data-motion="fade-up"]:nth-child(3) { transition-delay: 160ms; }
+
+/* ── Subheading ── */
+.hcs__subheading {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin: 0;
+  opacity: 0.85;
+}
+
+/* ── Heading ── */
+.hcs__heading {
+  margin: 0;
+  font-size: clamp(2.4rem, 5vw, 5rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.hcs__heading p { margin: 0; }
+
+/* ── CTA button ── */
+.hcs__btn-wrap {
+  margin-top: 4px;
+}
+
+.hcs__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 13px 28px;
+  border-radius: 100px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.18s ease, box-shadow 0.2s ease;
+  /* Primary: semi-transparent white */
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #fff;
+}
+
+.hcs__btn:hover {
+  background: rgba(255, 255, 255, 0.28);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.hcs__btn--secondary {
+  background: transparent;
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+}
+
+.hcs__btn--secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* ── Controls bar ── */
+.hcs__controls {
+  position: absolute;
+  bottom: 24px;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #fff;
+}
+
+/* ── Arrows ── */
+.hcs__arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s ease, transform 0.18s ease;
+  flex-shrink: 0;
+}
+
+.hcs__arrow:hover {
+  color: #fff;
+  transform: scale(1.12);
+}
+
+/* ── Dots ── */
+.hcs__dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hcs__dot {
+  position: relative;
+  width: 28px;
+  height: 4px;
+  border-radius: 2px;
+  border: none;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  overflow: hidden;
+  transition: width 0.3s ease, background 0.3s ease;
+}
+
+/* Single dot (inactive) */
+.hcs__dot:not(.is-active) {
+  width: 8px;
+  border-radius: 50%;
+  height: 8px;
+}
+
+.hcs__dot.is-active {
+  width: 36px;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* Progress fill inside active dot */
+.hcs__dot-progress {
+  display: block;
+  position: absolute;
+  inset: 0;
+  transform-origin: left;
+  transform: scaleX(0);
+  background: #fff;
+  border-radius: inherit;
+}
+
+.hcs__dot.is-active .hcs__dot-progress {
+  animation: hcsDotProgress var(--hcs-autoplay-delay, 6000ms) linear forwards;
+}
+
+/* If autoplay is off, just fill the active dot fully */
+.hcs--no-autoplay .hcs__dot.is-active .hcs__dot-progress {
+  transform: scaleX(1);
+  animation: none;
+}
+
+@keyframes hcsDotProgress {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* ── Respect reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .hcs__slide,
+  .hcs__img,
+  [data-motion="fade-up"],
+  .hcs__btn,
+  .hcs__dot,
+  .hcs__dot-progress {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .hcs__slide.is-active .hcs__img { transform: none; }
+  .hcs__slide.is-active [data-motion="fade-up"] { opacity: 1; transform: none; }
+  .hcs__dot.is-active .hcs__dot-progress { transform: scaleX(1); }
+}

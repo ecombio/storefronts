@@ -1,0 +1,196 @@
+.complementary-products {
+  padding-block: 2.5rem;
+}
+
+.complementary-products__heading {
+  margin: 0 0 0.25rem;
+  font-size: 1.5rem;
+}
+
+.complementary-products__subheading {
+  margin: 0 0 1.5rem;
+  color: rgba(var(--color-foreground, 18, 18, 18), 0.75);
+}
+
+.complementary-products__list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+  padding: 0;
+  margin: 0 0 1.5rem;
+}
+
+.complementary-product-select--placeholder {
+  height: 280px;
+  border-radius: 0.75rem;
+  background: linear-gradient(
+    100deg,
+    rgba(var(--color-foreground, 18, 18, 18), 0.06) 30%,
+    rgba(var(--color-foreground, 18, 18, 18), 0.12) 45%,
+    rgba(var(--color-foreground, 18, 18, 18), 0.06) 60%
+  );
+  background-size: 200% 100%;
+  animation: complementary-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes complementary-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .complementary-product-select--placeholder {
+    animation: none;
+  }
+}
+
+.complementary-products__empty {
+  grid-column: 1 / -1;
+  padding: 1rem;
+  border: 1px dashed rgba(var(--color-foreground, 18, 18, 18), 0.2);
+  border-radius: 0.5rem;
+  color: rgba(var(--color-foreground, 18, 18, 18), 0.65);
+  font-size: 0.9rem;
+}
+
+/* Card — reuses the theme's .product-card; this just adds a
+   selection toggle on top of it. See snippets/complementary-product-card.liquid */
+.complementary-product-select {
+  position: relative;
+  list-style: none;
+}
+
+.complementary-product-select:has(.complementary-product-select__input:disabled) {
+  opacity: 0.55;
+}
+
+.complementary-product-select:has(.complementary-product-select__input:checked) .product-card {
+  border-color: rgb(var(--color-foreground, 18, 18, 18));
+  box-shadow: 0 0 0 1px rgb(var(--color-foreground, 18, 18, 18));
+}
+
+.complementary-product-select__toggle {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.complementary-product-select__input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.complementary-product-select__check {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(17, 24, 39, 0.35);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(4px);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.complementary-product-select__input:checked + .complementary-product-select__check {
+  background: #111827;
+  border-color: #111827;
+}
+
+.complementary-product-select__input:checked + .complementary-product-select__check::after {
+  content: '';
+  display: block;
+  width: 6px;
+  height: 10px;
+  margin: 4px auto 0;
+  border-right: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  transform: rotate(45deg);
+}
+
+.complementary-product-select__input:focus-visible + .complementary-product-select__check {
+  outline: 2px solid #111827;
+  outline-offset: 2px;
+}
+
+/* Footer / submit bar */
+.complementary-products__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(var(--color-foreground, 18, 18, 18), 0.1);
+}
+
+.complementary-products__summary {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+}
+
+.complementary-products__count {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.complementary-products__total {
+  margin-left: 0.75rem;
+  font-weight: 600;
+}
+
+.complementary-products__submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 180px;
+  justify-content: center;
+}
+
+.complementary-products__submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.complementary-products__spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: complementary-spin 0.6s linear infinite;
+}
+
+.complementary-products__error {
+  margin-top: 0.75rem;
+  color: #b91c1c;
+  font-size: 0.85rem;
+}
+
+@keyframes complementary-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 749px) {
+  .complementary-products__list {
+    grid-template-columns: 1fr;
+  }
+  .complementary-products__footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .complementary-products__submit {
+    width: 100%;
+  }
+}

@@ -1,0 +1,20 @@
+{% comment %}
+  Snippet: collection-hero
+  Renders the collection page header: title and optional description.
+  Usage: {%- render 'collection-hero', collection: collection -%}
+
+  Container width mirrors the header (max-width: 1184px, padding 24px,
+  dropping to 12px under 639px) — see collection-hero.css.
+{% endcomment %}
+
+{{ 'collection-hero.css' | asset_url | stylesheet_tag }}
+
+<div class="collection-header">
+  <h1 class="collection-title">{{ collection.title }}</h1>
+
+  {%- if collection.description != blank -%}
+    <div class="collection-description rte">
+      {{ collection.description }}
+    </div>
+  {%- endif -%}
+</div>

@@ -1,0 +1,386 @@
+{%- comment -%}
+  Blog Carousel
+  Renders articles from a chosen blog (or manually-picked "article" blocks)
+  through snippets/article-card.liquid, inside a scroll-snap carousel with
+  arrow + dot navigation.
+
+  Section layout: adopts the independent width/padding pattern from
+  sections/example-width-section.liquid. section_width / custom_width /
+  section_padding are LOCAL to this section (never read --page-margin or
+  --page-width), applied to the outermost wrapper below via the
+  blog-carousel__default-width / __full-width / __custom-width classes
+  defined in section-blog-carousel.css. Vertical spacing (padding_top /
+  padding_bottom) is unrelated to that pattern and stays on the
+  <blog-carousel> element itself, as it was before.
+
+  ADOPTED BY (sections/example-width-section.liquid list):
+  - sections/blog-carousel.liquid ("Latest from our blog") — scoped
+    classes example, same reasoning as video-carousel.
+{%- endcomment -%}
+
+{{ 'blog-carousel.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'blog-carousel.js' | asset_url }}" defer="defer"></script>
+
+{%- liquid
+  assign blog = section.settings.blog
+  assign use_blocks = false
+  if section.blocks.size > 0
+    assign use_blocks = true
+  endif
+
+  assign has_content = false
+  if use_blocks
+    assign has_content = true
+  elsif blog != blank and blog.articles_count > 0
+    assign has_content = true
+  endif
+
+  assign width_type = section.settings.section_width
+  if width_type == blank
+    assign width_class = 'blog-carousel__default-width'
+  else
+    assign width_class = 'blog-carousel__' | append: width_type
+  endif
+-%}
+
+{% style %}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{% endstyle %}
+
+<div
+  class="{{ width_class }}"
+  style="
+    --section-padding: {{ section.settings.section_padding }}px;
+    {%- if width_type == 'custom-width' %}
+      --custom-width: {{ section.settings.custom_width }}rem;
+    {%- endif %}
+  "
+>
+  <blog-carousel
+    class="blog-carousel color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding"
+    data-autoplay="{{ section.settings.autoplay }}"
+    data-autoplay-speed="{{ section.settings.autoplay_speed | times: 1000 }}"
+    style="
+      --slides-desktop: {{ section.settings.slides_desktop }};
+      --slides-tablet: {{ section.settings.slides_tablet }};
+      --slides-mobile: {{ section.settings.slides_mobile }};
+      --carousel-gap: {{ section.settings.gap }}px;
+    "
+  >
+    <div class="blog-carousel__header">
+      <div class="blog-carousel__header-text">
+        {%- if section.settings.subheading != blank -%}
+          <p class="blog-carousel__subheading">{{ section.settings.subheading | escape }}</p>
+        {%- endif -%}
+        {%- if section.settings.heading != blank -%}
+          <h2 class="blog-carousel__heading {{ section.settings.heading_size }}">
+            {{ section.settings.heading }}
+          </h2>
+        {%- endif -%}
+      </div>
+
+      <div class="blog-carousel__header-actions">
+        {%- if section.settings.show_view_all and blog != blank -%}
+          <a href="{{ blog.url }}" class="button button--secondary blog-carousel__view-all">
+            {{ section.settings.view_all_label | default: 'View all' }}
+          </a>
+        {%- endif -%}
+
+        {%- if section.settings.enable_arrows and has_content -%}
+          <div class="blog-carousel__nav" role="group" aria-label="Carousel navigation">
+            <button type="button" class="blog-carousel__nav-button blog-carousel__nav-button--prev" aria-label="Previous articles" disabled>
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                <path d="M11 3.5 5.5 9l5.5 5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button type="button" class="blog-carousel__nav-button blog-carousel__nav-button--next" aria-label="Next articles">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                <path d="M7 3.5 12.5 9 7 14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+
+    {%- if has_content -%}
+      <div class="blog-carousel__viewport">
+        <ul class="blog-carousel__track" id="BlogCarousel-{{ section.id }}" role="list">
+          {%- if use_blocks -%}
+            {%- for block in section.blocks -%}
+              {%- if block.settings.article != blank -%}
+                <li
+                  class="blog-carousel__slide"
+                  {{ block.shopify_attributes }}
+                  data-slide-index="{{ forloop.index0 }}"
+                >
+                  {%- render 'article-card', article: block.settings.article, loading: forloop.index -%}
+                </li>
+              {%- endif -%}
+            {%- endfor -%}
+          {%- else -%}
+            {%- for article in blog.articles limit: section.settings.articles_to_show -%}
+              <li class="blog-carousel__slide" data-slide-index="{{ forloop.index0 }}">
+                {%- render 'article-card', article: article, loading: forloop.index -%}
+              </li>
+            {%- endfor -%}
+          {%- endif -%}
+        </ul>
+      </div>
+
+      {%- if section.settings.enable_dots -%}
+        <div class="blog-carousel__dots" role="tablist" aria-label="Slides"></div>
+      {%- endif -%}
+    {%- else -%}
+      <div class="blog-carousel__empty">
+        <p>Select a blog with articles, or add article blocks, to display this carousel.</p>
+      </div>
+    {%- endif -%}
+  </blog-carousel>
+</div>
+
+{% schema %}
+{
+  "name": "Blog carousel",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "blog",
+      "id": "blog",
+      "label": "Blog",
+      "info": "Used when no manual article blocks are added below."
+    },
+    {
+      "type": "range",
+      "id": "articles_to_show",
+      "min": 3,
+      "max": 16,
+      "step": 1,
+      "default": 8,
+      "label": "Articles to pull from blog"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Latest from our blog"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Heading size",
+      "options": [
+        { "value": "h3", "label": "Small" },
+        { "value": "h2", "label": "Medium" },
+        { "value": "h1", "label": "Large" }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_view_all",
+      "label": "Show 'View all' button",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "view_all_label",
+      "label": "'View all' button label",
+      "default": "View all"
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "header",
+      "content": "Carousel layout"
+    },
+    {
+      "type": "range",
+      "id": "slides_desktop",
+      "min": 1,
+      "max": 5,
+      "step": 1,
+      "default": 4,
+      "label": "Slides per view (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "slides_tablet",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 2,
+      "label": "Slides per view (tablet)"
+    },
+    {
+      "type": "range",
+      "id": "slides_mobile",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 1,
+      "label": "Slides per view (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "min": 8,
+      "max": 40,
+      "step": 2,
+      "default": 24,
+      "label": "Space between slides",
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_arrows",
+      "label": "Show arrow navigation",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_dots",
+      "label": "Show dot navigation",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Autoplay"
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Enable autoplay",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "default": 5,
+      "label": "Change slides every",
+      "unit": "s"
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "default": 36,
+      "label": "Top padding",
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "default": 36,
+      "label": "Bottom padding",
+      "unit": "px"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "article",
+      "name": "Article",
+      "settings": [
+        {
+          "type": "article",
+          "id": "article",
+          "label": "Article"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 16,
+  "presets": [
+    {
+      "name": "Blog carousel"
+    }
+  ]
+}
+{% endschema %}
+{% comment %}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: "{%- render 'article-card', article: block.settings.article, loading: forloop.index
+    <= 2 ? 'eager' : 'lazy' -%}"
+  to: "{%- render 'article-card', article: block.settings.article, loading: forloop.index
+    -%}"
+  position: 5159..5245
+- from: "{%- render 'article-card', article: article, loading: forloop.index <= 2
+    ? 'eager' : 'lazy' -%}"
+  to: "{%- render 'article-card', article: article, loading: forloop.index -%}"
+  position: 5540..5611
+{% endcomment %}

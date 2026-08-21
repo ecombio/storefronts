@@ -1,0 +1,243 @@
+{%- liquid
+  assign card_product  = product
+  assign card_image    = card_product.featured_image
+  assign card_image2   = card_product.images[1]
+  assign card_url      = card_product.url
+  assign card_title    = card_product.title
+  assign card_vendor   = card_product.vendor
+  assign card_price    = card_product.price
+  assign card_comp     = card_product.compare_at_price
+
+  assign on_sale     = false
+  assign save_amount = 0
+  assign save_pct    = 0
+  if card_comp > card_price
+    assign on_sale     = true
+    assign save_amount = card_comp | minus: card_price
+    assign save_pct    = save_amount | times: 100 | divided_by: card_comp
+  endif
+
+  assign first_variant = card_product.first_available_variant | default: card_product.variants.first
+  assign variant_id    = first_variant.id
+  assign eta_text      = card_product.metafields.custom.eta_text
+
+  assign is_sponsored = is_sponsored | default: false
+
+  # NOTE: the `default` filter treats `false` as blank and silently
+  # swaps it back to the fallback — so `show_atc | default: true` was
+  # overriding an explicit `false` from the section settings back to
+  # `true`. That's why unchecking the toggles in the theme editor
+  # didn't hide anything. Checking for `nil` instead only fills in the
+  # default when the param wasn't passed at all, and leaves an
+  # explicit `false` alone. Every toggle below now uses this pattern
+  # since they're all wired to real settings.
+  if show_atc == nil
+    assign show_atc = true
+  endif
+  if show_compare == nil
+    assign show_compare = true
+  endif
+  if show_wishlist == nil
+    assign show_wishlist = true
+  endif
+  if show_quickview == nil
+    assign show_quickview = true
+  endif
+  if show_vendor == nil
+    assign show_vendor = true
+  endif
+  if show_reviews == nil
+    assign show_reviews = true
+  endif
+  if show_sale_badge == nil
+    assign show_sale_badge = true
+  endif
+  if show_savings_row == nil
+    assign show_savings_row = true
+  endif
+  if show_eta == nil
+    assign show_eta = true
+  endif
+
+  # Same `nil`-check pattern as above, applied to the reviews provider.
+  # `provider` isn't a boolean toggle, so there's no false-vs-blank trap
+  # here — but the section calling this card still needs to pass its own
+  # `section.settings.reviews_provider` through, or this card falls back
+  # to Yotpo regardless of what's picked elsewhere on the site.
+  assign card_reviews_provider = provider | default: settings.reviews_provider | default: 'yotpo'
+
+  assign card_image_sizes = '(max-width: 480px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw'
+-%}
+
+{{- '' -}}
+<div
+  class="product-card{% if is_sponsored %} product-card--sponsored{% endif %}"
+  data-product-id="{{ card_product.id }}"
+  data-product-handle="{{ card_product.handle }}"
+  {%- if is_sponsored %}
+  data-sponsored="true"
+  {%- endif %}
+>
+
+  <div class="product-card__img-zone{% if card_image2 != blank %} product-card__img-zone--has-hover{% endif %}">
+
+    {%- if is_sponsored -%}
+      <span class="product-card__sponsored-label">Sponsored</span>
+    {%- endif -%}
+
+    <a href="{{ card_url }}" class="product-card__image-wrapper" aria-label="{{ card_title | escape }}" tabindex="0">
+      {%- if card_image != blank -%}
+        {{
+          card_image
+          | image_url: width: 600
+          | image_tag:
+            class: 'product-card__img product-card__img--primary',
+            loading: 'lazy',
+            widths: '200, 300, 400, 600',
+            sizes: card_image_sizes,
+            alt: card_image.alt | default: card_title | escape
+        }}
+        {%- if card_image2 != blank -%}
+          {{
+            card_image2
+            | image_url: width: 600
+            | image_tag:
+              class: 'product-card__img product-card__img--secondary',
+              loading: 'lazy',
+              widths: '200, 300, 400, 600',
+              sizes: card_image_sizes,
+              alt: card_image2.alt | default: card_title | escape
+          }}
+        {%- endif -%}
+      {%- else -%}
+        <div class="product-card__img-placeholder" aria-hidden="true">
+          {{ 'product-1' | placeholder_svg_tag: 'product-card__placeholder-svg' }}
+        </div>
+      {%- endif -%}
+    </a>
+
+    {%- if show_wishlist -%}
+      <button
+        class="product-card__wishlist-btn"
+        type="button"
+        aria-label="Add {{ card_title | escape }} to wishlist"
+        aria-pressed="false"
+        data-wishlist-btn
+        data-product-id="{{ card_product.id }}"
+      >
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <path class="product-card__wishlist-path" d="M9 15.5S2 11 2 6a4 4 0 0 1 7-2.65A4 4 0 0 1 16 6c0 5-7 9.5-7 9.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    {%- endif -%}
+
+    {%- if show_quickview -%}
+      <button
+        class="product-card__quickview-btn"
+        type="button"
+        aria-label="Quick view {{ card_title | escape }}"
+        data-quickview-btn
+        data-product-url="{{ card_product.url }}"
+        data-product-handle="{{ card_product.handle }}"
+      >
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+          <ellipse cx="7.5" cy="7.5" rx="6" ry="4.5" stroke="currentColor" stroke-width="1.4"/>
+          <circle cx="7.5" cy="7.5" r="2" stroke="currentColor" stroke-width="1.4"/>
+        </svg>
+        Quick view
+      </button>
+    {%- endif -%}
+
+    {%- if show_sale_badge and on_sale -%}
+      <span class="product-card__badge">Save {{ save_pct }}%</span>
+    {%- endif -%}
+  </div>
+
+  <div class="product-card__body">
+
+    {%- if show_vendor and card_vendor != blank -%}
+      <span class="product-card__vendor">{{ card_vendor }}</span>
+    {%- endif -%}
+
+    <a href="{{ card_url }}" class="product-card__title" title="{{ card_title | escape }}">{{ card_title }}</a>
+
+    {%- if show_reviews -%}
+      <div class="product-card__reviews">
+        {%- render 'star-rating', product: card_product, provider: card_reviews_provider, link_to_reviews: false -%}
+      </div>
+    {%- endif -%}
+
+    <div class="product-card__pricing">
+      {%- if on_sale -%}
+        {%- if show_savings_row -%}
+          <span class="product-card__price product-card__price--compare">
+            <s>{{ card_comp | money }}</s>
+          </span>
+        {%- else -%}
+          <span class="product-card__price product-card__price--compare is-hidden" aria-hidden="true"><s></s></span>
+        {%- endif -%}
+
+        <span class="product-card__price product-card__price--sale">{{ card_price | money }}</span>
+
+        {%- if show_savings_row -%}
+          <span class="product-card__save-badge">Save {{ save_amount | money_without_trailing_zeros }}</span>
+        {%- else -%}
+          <span class="product-card__save-badge is-hidden" aria-hidden="true"></span>
+        {%- endif -%}
+      {%- else -%}
+        <span class="product-card__price product-card__price--compare is-hidden" aria-hidden="true"><s></s></span>
+        <span class="product-card__price">{{ card_price | money }}</span>
+        <span class="product-card__save-badge is-hidden" aria-hidden="true"></span>
+      {%- endif -%}
+    </div>
+
+    {%- if show_eta and eta_text != blank -%}
+      <div class="product-card__eta" aria-label="Estimated delivery">
+        <svg class="product-card__eta-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <rect x="1" y="4" width="9" height="7" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+          <path d="M10 6.5h1.5l1.5 2V11h-3V6.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+          <circle cx="3.5" cy="11.5" r="1" fill="currentColor"/>
+          <circle cx="10.5" cy="11.5" r="1" fill="currentColor"/>
+        </svg>
+        <span>{{ eta_text }}</span>
+      </div>
+    {%- endif -%}
+
+    {%- if show_atc or show_compare -%}
+      <div class="product-card__bottom-row">
+
+        {%- if show_atc -%}
+          <button
+            class="product-card__atc-btn"
+            type="button"
+            aria-label="Add {{ card_title | escape }} to cart"
+            data-atc-btn
+            data-variant-id="{{ variant_id }}"
+            data-product-title="{{ card_title | escape }}"
+          >
+            <span data-atc-label>Add to cart</span>
+          </button>
+        {%- endif -%}
+
+        {%- if show_compare -%}
+          <label class="product-card__compare-label">
+            <input
+              class="product-card__compare-checkbox"
+              type="checkbox"
+              data-compare-checkbox
+              data-product-id="{{ card_product.id }}"
+              data-product-handle="{{ card_product.handle }}"
+              data-product-title="{{ card_title | escape }}"
+              data-product-image="{{ card_image | image_url: width: 120 }}"
+              data-product-price="{{ card_price | money }}"
+              aria-label="Compare {{ card_title | escape }}"
+            >
+            <span class="product-card__compare-text">Compare</span>
+          </label>
+        {%- endif -%}
+
+      </div>
+    {%- endif -%}
+  </div>
+
+</div>

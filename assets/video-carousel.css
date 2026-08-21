@@ -1,0 +1,203 @@
+.video-carousel-section {
+  padding: 48px 0;
+  background: var(--vc-bg, transparent);
+  color: var(--vc-text, inherit);
+}
+
+/* Default width: same 1184px cap the old .video-carousel__boxed used
+   (mirrors .main-header__inner from main-header.css). Side padding now
+   comes from --section-padding, set inline per-instance from this
+   section's own "Side padding" setting — no longer hardcoded, and no
+   longer tied to the global --page-margin. Falls back to 24px if the
+   variable is ever missing. */
+.video-carousel__default-width {
+  width: 100%;
+  max-width: 1184px;
+  margin: 0 auto;
+  padding: 0 var(--section-padding, 24px);
+}
+
+/* Full width: no max-width, spans the browser. Side padding comes from
+   --section-padding; set it to 0 for true edge-to-edge. (Arrow spacing
+   is now handled separately by .video-carousel__track's own padding,
+   not by this side padding — see the arrow rules below.) */
+.video-carousel__full-width {
+  width: 100%;
+  max-width: none;
+  padding: 0 var(--section-padding, 24px);
+}
+
+/* Custom width: max-width comes from --custom-width, set inline only
+   when Section width = Custom width (see video-carousel.liquid). */
+.video-carousel__custom-width {
+  width: 100%;
+  max-width: var(--custom-width, 1184px);
+  margin: 0 auto;
+  padding: 0 var(--section-padding, 24px);
+}
+
+.video-carousel__header {
+  text-align: left;
+  max-width: 640px;
+  margin: 0 0 32px;
+}
+
+.video-carousel__heading {
+  margin: 0 0 8px;
+}
+
+.video-carousel__subheading {
+  margin: 0;
+  opacity: 0.75;
+}
+
+.video-carousel__wrapper {
+  position: relative;
+}
+
+.video-carousel__track {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  box-sizing: border-box;
+}
+
+.video-carousel__track::-webkit-scrollbar {
+  display: none;
+}
+
+.video-carousel__list {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc(
+    (100% - (var(--vc-gap) * (var(--vc-slides-mobile) - 1))) / var(--vc-slides-mobile)
+  );
+  gap: var(--vc-gap);
+}
+
+@media screen and (min-width: 750px) {
+  .video-carousel__list {
+    grid-auto-columns: calc(
+      (100% - (var(--vc-gap) * (var(--vc-slides-tablet) - 1))) / var(--vc-slides-tablet)
+    );
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .video-carousel__list {
+    grid-auto-columns: calc(
+      (100% - (var(--vc-gap) * (var(--vc-slides-desktop) - 1))) / var(--vc-slides-desktop)
+    );
+  }
+}
+
+.video-carousel__empty {
+  opacity: 0.6;
+  padding: 40px 0;
+}
+
+.video-carousel__arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%) scale(1);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--color-blue, currentColor);
+  background: var(--vc-bg, var(--color-white));
+  color: var(--color-blue, inherit);
+  cursor: pointer;
+  opacity: 1;
+  transition: opacity var(--transition-slow, 0.35s ease),
+    transform var(--transition-base, 0.2s ease),
+    background var(--transition-fast, 0.15s ease),
+    color var(--transition-fast, 0.15s ease);
+}
+
+.video-carousel__arrow--prev {
+  left: 8px;
+}
+
+.video-carousel__arrow--next {
+  right: 8px;
+}
+
+.video-carousel__arrow:hover:not(:disabled) {
+  background: var(--color-blue, currentColor);
+  color: var(--color-white, #fff);
+  transform: translateY(-50%) scale(1.08);
+}
+
+.video-carousel__arrow:disabled {
+  opacity: 0.6;
+  cursor: default;
+  border-color: var(--color-atc-soldout-text, currentColor);
+  color: var(--color-atc-soldout-text, currentColor);
+  background: var(--color-atc-soldout-bg, transparent);
+}
+
+/* On devices with real hover (mouse/trackpad), keep the arrows out of
+   the way until the person's attention is on the carousel, instead of
+   permanently floating on top of the video thumbnails. Touch devices
+   fall back to the always-visible styles above, since there's no
+   hover state to reveal them. */
+@media (hover: hover) and (pointer: fine) {
+  .video-carousel__arrow {
+    opacity: 0;
+    transform: translateY(-50%) scale(0.85);
+    pointer-events: none;
+  }
+
+  .video-carousel__wrapper:hover .video-carousel__arrow,
+  .video-carousel__arrow:focus-visible {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+    pointer-events: auto;
+  }
+
+  .video-carousel__wrapper:hover .video-carousel__arrow:hover:not(:disabled) {
+    transform: translateY(-50%) scale(1.08);
+  }
+
+  .video-carousel__wrapper:hover .video-carousel__arrow:disabled,
+  .video-carousel__arrow:disabled:focus-visible {
+    /* Still reveal a disabled arrow on hover/focus so a dead end is
+       communicated (greyed out), rather than just disappearing. */
+    opacity: 0.6;
+    transform: translateY(-50%) scale(1);
+  }
+}
+
+.video-carousel__dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.video-carousel__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  background: var(--color-blue, currentColor);
+  opacity: 0.3;
+  cursor: pointer;
+  transition: opacity var(--transition-fast, 0.15s ease),
+    transform var(--transition-fast, 0.15s ease),
+    background var(--transition-fast, 0.15s ease);
+}
+
+.video-carousel__dot[aria-current="true"] {
+  background: var(--color-red, currentColor);
+  opacity: 1;
+  transform: scale(1.2);
+}

@@ -1,0 +1,118 @@
+/* =============================================================================
+   ECOMBIO Header — Wishlist Icon
+   File: assets/header-wishlist.css
+   Pairs with: snippets/header-wishlist.liquid
+
+   Self-contained: uses its own header-wishlist__* class names rather
+   than the generic .ecombio-header__icon-link classes from
+   header-account.css, so this file has no load-order dependency on
+   header-account.css or header-cart.css. It still reads the shared
+   --hdr-* tokens from header.css when present, but every var() call
+   below has a fallback so styling still holds up if header.css isn't
+   loaded on the page.
+   ============================================================================= */
+
+.header-wishlist__link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  color: var(--hdr-text, #1a1a1a);
+  font-size: 0.875rem;
+  font-weight: 400;
+  white-space: nowrap;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: transparent;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.header-wishlist__link:hover {
+  background: var(--hdr-search-bg, #f2f2f2);
+}
+
+.header-wishlist__link:focus-visible {
+  outline: 2px solid var(--hdr-text, #1a1a1a);
+  outline-offset: 2px;
+}
+
+.header-wishlist__icon-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.header-wishlist__icon {
+  display: block;
+  flex-shrink: 0;
+}
+
+.header-wishlist__badge {
+  position: absolute;
+  top: -7px;
+  right: -9px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  background: var(--hdr-accent, #e11d27);
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  border-radius: 9999px;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.header-wishlist__badge--hidden {
+  opacity: 0;
+}
+
+.header-wishlist__badge--pop {
+  animation: header-wishlist-pop 0.3s ease;
+}
+
+@keyframes header-wishlist-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+
+/* No base display rule for .header-wishlist__label — visible by
+   default (desktop), same as .ecombio-header__icon-label in
+   header-account.css. Only mobile hides it below. */
+
+/* =============================================================================
+   RESPONSIVE — TABLET (≤ 1023px)
+   ============================================================================= */
+
+@media (max-width: 1023px) {
+  .header-wishlist__label {
+    display: inline;
+  }
+}
+
+/* =============================================================================
+   RESPONSIVE — MOBILE (≤ 599px)
+   ============================================================================= */
+
+@media (max-width: 599px) {
+  .header-wishlist__label {
+    display: none;
+  }
+
+  .header-wishlist__link {
+    padding: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header-wishlist__badge {
+    transition: none;
+  }
+
+  .header-wishlist__badge--pop {
+    animation: none;
+  }
+}

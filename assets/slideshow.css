@@ -1,0 +1,188 @@
+/* =========================================================
+   assets/slideshow.css
+   Styles for sections/slideshow.liquid
+
+   No {{ section.id }} scoping needed here: every per-instance
+   value (slide height, colors, section width/padding, etc.)
+   is passed in as an inline CSS custom property on the
+   .slideshow-section wrapper in the section file, so this
+   stylesheet can stay a single static asset shared by every
+   instance of the section on the page.
+   ========================================================= */
+
+.slideshow-section {
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Section width / padding ──
+   Local, section-owned variables only — never reads from the
+   theme's global --page-margin / --page-width. See
+   sections/example-width-section.liquid for the pattern this
+   is copied from. */
+.slideshow__default-width {
+  max-width: 120rem;
+  margin-inline: auto;
+  padding-inline: var(--section-padding);
+}
+
+.slideshow__full-width {
+  max-width: none;
+  padding-inline: var(--section-padding);
+}
+
+.slideshow__custom-width {
+  max-width: var(--custom-width);
+  margin-inline: auto;
+  padding-inline: var(--section-padding);
+}
+
+/* ── Swiper wrapper ── */
+.slideshow-section .swiper {
+  width: 100%;
+  height: var(--slide-height);
+}
+
+.slideshow-section .swiper-slide {
+  position: relative;
+  overflow: hidden;
+  display: block;
+  text-decoration: none;
+}
+
+/* ── Image / placeholder ── */
+.slideshow-section .slide-img,
+.slideshow-section .slide-placeholder {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.6s ease;
+}
+
+.slideshow-section .slide-placeholder {
+  background: #e8e8e8;
+}
+
+.slideshow-section .slide-placeholder svg {
+  width: 100%;
+  height: 100%;
+}
+
+.slideshow-section .swiper-slide:hover .slide-img,
+.slideshow-section .swiper-slide:hover .slide-placeholder {
+  transform: scale(1.03);
+}
+
+/* ── Overlay ── */
+.slideshow-section .slide-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, var(--overlay-opacity));
+  pointer-events: none;
+}
+
+/* ── Text content ── */
+.slideshow-section .slide-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 2.5rem 3rem;
+  color: var(--text-color);
+  pointer-events: none;
+}
+
+.slideshow-section .slide-eyebrow {
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.75;
+  margin-bottom: 0.4rem;
+}
+
+.slideshow-section .slide-heading {
+  font-size: clamp(1.4rem, 3vw, 2.4rem);
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 0.6rem;
+}
+
+.slideshow-section .slide-subtext {
+  font-size: 0.95rem;
+  opacity: 0.85;
+  max-width: 480px;
+}
+
+.slideshow-section .slide-cta {
+  display: inline-block;
+  margin-top: 1.2rem;
+  padding: 0.55rem 1.4rem;
+  background: var(--accent-color);
+  color: var(--text-color);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 3px;
+  pointer-events: auto;
+  transition: opacity 0.2s;
+}
+
+.slideshow-section .slide-cta:hover {
+  opacity: 0.85;
+}
+
+/* ── Navigation arrows ── */
+.slideshow-section .swiper-button-prev,
+.slideshow-section .swiper-button-next {
+  width: 44px;
+  height: 44px;
+  background: var(--nav-bg);
+  border-radius: 50%;
+  color: var(--nav-icon);
+  transition: background 0.2s;
+}
+
+.slideshow-section .swiper-button-prev:hover,
+.slideshow-section .swiper-button-next:hover {
+  background: var(--accent-color);
+  color: var(--text-color);
+}
+
+.slideshow-section .swiper-button-prev::after,
+.slideshow-section .swiper-button-next::after {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* ── Pagination dots ── */
+.slideshow-section .swiper-pagination-bullet {
+  background: var(--dot-color);
+  opacity: 0.45;
+  width: 8px;
+  height: 8px;
+}
+
+.slideshow-section .swiper-pagination-bullet-active {
+  opacity: 1;
+  background: var(--accent-color);
+  width: 24px;
+  border-radius: 4px;
+}
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .slideshow-section .swiper {
+    height: var(--slide-height-mobile);
+  }
+  .slideshow-section .slide-content {
+    padding: 1.5rem;
+  }
+  .slideshow-section .swiper-button-prev,
+  .slideshow-section .swiper-button-next {
+    display: none;
+  }
+}

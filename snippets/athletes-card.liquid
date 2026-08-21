@@ -1,0 +1,47 @@
+{%- liquid
+  assign show_meta = show_meta | default: true
+  assign avatar_alt = avatar_alt | default: article.title
+  assign cover_image = cover_image | default: article.image
+-%}
+
+<a href="{{ article.url }}" class="athletes-card" data-athletes-card>
+  <div class="athletes-card__media">
+    {%- if cover_image -%}
+      <img
+        src="{{ cover_image | image_url: width: 600 }}"
+        srcset="{{ cover_image | image_url: width: 400 }} 400w, {{ cover_image | image_url: width: 600 }} 600w, {{ cover_image | image_url: width: 800 }} 800w"
+        sizes="(max-width: 640px) 90vw, 320px"
+        alt="{{ cover_image.alt | default: article.title | escape }}"
+        class="athletes-card__image"
+        width="{{ cover_image.width }}"
+        height="{{ cover_image.height }}"
+        loading="{% if loading %}eager{% else %}lazy{% endif %}"
+      >
+    {%- else -%}
+      {{ 'lifestyle-1' | placeholder_svg_tag: 'athletes-card__image athletes-card__image--placeholder' }}
+    {%- endif -%}
+
+    {%- if avatar -%}
+      <span class="athletes-card__avatar-wrapper">
+        <img
+          src="{{ avatar | image_url: width: 160 }}"
+          srcset="{{ avatar | image_url: width: 80 }} 80w, {{ avatar | image_url: width: 160 }} 160w"
+          sizes="80px"
+          alt="{{ avatar_alt | escape }}"
+          class="athletes-card__avatar"
+          width="80"
+          height="80"
+          loading="lazy"
+        >
+      </span>
+    {%- endif -%}
+  </div>
+
+  <div class="athletes-card__content">
+    <h3 class="athletes-card__title">{{ article.title }}</h3>
+
+    {%- if show_meta and article.published_at -%}
+      <span class="athletes-card__meta">{{ article.published_at | date: '%B %d, %Y' }}</span>
+    {%- endif -%}
+  </div>
+</a>

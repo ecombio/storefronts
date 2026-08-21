@@ -1,0 +1,236 @@
+/* =============================================================================
+   Mobile Menu Drawer  |  assets/mobile-menu.css
+   Loaded from sections/header-menu.liquid
+============================================================================= */
+
+/* ── Variables (shared with header-menu.css) ── */
+:root {
+  --hdr-bg             : #ffffff;
+  --hdr-border         : #e5e5e5;
+  --hdr-text           : #111111;
+  --hdr-muted          : #6b6b6b;
+  --hdr-accent         : #e11d27;
+  --hdr-search-bg      : #f2f2f2;
+  --hdr-font           : -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --hdr-drawer-z       : 400;
+}
+
+/* ── Overlay + visibility shell ── */
+.mobile-nav {
+  position: fixed;
+  inset: 0;
+  z-index: var(--hdr-drawer-z);
+  pointer-events: none;
+  visibility: hidden;
+  font-family: var(--hdr-font);
+}
+
+.mobile-nav.is-open {
+  pointer-events: auto;
+  visibility: visible;
+}
+
+.mobile-nav__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.mobile-nav.is-open .mobile-nav__overlay {
+  opacity: 1;
+}
+
+/* ── Slide-in panel ── */
+.mobile-nav__panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(320px, 88vw);
+  background: #fff;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-nav.is-open .mobile-nav__panel {
+  transform: translateX(0);
+}
+
+/* ── Header row ── */
+.mobile-nav__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px 0 20px;
+  height: 56px;
+  flex-shrink: 0;
+  border-bottom: 2px solid var(--hdr-border);
+}
+
+.mobile-nav__header-label {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--hdr-text);
+  letter-spacing: -0.01em;
+}
+
+.mobile-nav__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--hdr-text);
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+
+.mobile-nav__close:hover {
+  background: var(--hdr-search-bg);
+}
+
+/* ── List reset ── */
+.mobile-nav__list,
+.mobile-nav__sub {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mobile-nav__list {
+  flex: 1;
+  padding: 6px 0 32px;
+}
+
+/* ── Row structure ── */
+.mobile-nav__row {
+  display: flex;
+  align-items: stretch;
+}
+
+/* ── Top-level dividers ── */
+.mobile-nav__list > .mobile-nav__item {
+  border-bottom: 1px solid var(--hdr-border);
+}
+.mobile-nav__list > .mobile-nav__item:last-child {
+  border-bottom: none;
+}
+
+/* ── Level 1 Links ── */
+.mobile-nav__link {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 14px 20px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--hdr-text);
+  text-decoration: none;
+  line-height: 1.3;
+  transition: color 0.12s;
+}
+.mobile-nav__link:hover,
+.mobile-nav__link[aria-current="page"],
+.mobile-nav__item.is-active > .mobile-nav__link {
+  color: var(--hdr-accent);
+}
+
+/* ── Level 2 Links ── */
+.mobile-nav__link--sub {
+  padding: 11px 20px 11px 28px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+.mobile-nav__link--sub:hover {
+  color: var(--hdr-accent);
+}
+
+/* ── Level 3 Links ── */
+.mobile-nav__link--deep {
+  padding: 9px 20px 9px 44px;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: #6b7280;
+}
+.mobile-nav__link--deep:hover {
+  color: var(--hdr-accent);
+}
+
+/* ── Toggle buttons ── */
+.mobile-nav__toggle {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  background: transparent;
+  border: none;
+  border-left: 1px solid var(--hdr-border);
+  cursor: pointer;
+  color: #9ca3af;
+  transition: color 0.12s, background 0.12s;
+}
+.mobile-nav__toggle:hover {
+  background: var(--hdr-search-bg);
+  color: var(--hdr-accent);
+}
+
+/* ── Chevron + expanded state ── */
+.mobile-nav__chevron {
+  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+.mobile-nav__toggle[aria-expanded="true"] .mobile-nav__chevron {
+  transform: rotate(180deg);
+}
+.mobile-nav__toggle[aria-expanded="true"] {
+  color: var(--hdr-accent);
+  border-left-color: var(--hdr-accent);
+}
+
+/* ── Submenu containers ── */
+.mobile-nav__sub {
+  background: #f9fafb;
+  border-top: 1px solid var(--hdr-border);
+  overflow: hidden;
+}
+.mobile-nav__sub[hidden] {
+  display: none;
+}
+.mobile-nav__sub--l3 {
+  background: #f3f4f6;
+}
+
+/* ── Nested item dividers ── */
+.mobile-nav__sub > .mobile-nav__item {
+  border-bottom: 1px solid #ebebeb;
+}
+.mobile-nav__sub > .mobile-nav__item:last-child {
+  border-bottom: none;
+}
+.mobile-nav__item--l3 {
+  border-bottom: 1px solid #e4e4e4;
+}
+.mobile-nav__item--l3:last-child {
+  border-bottom: none;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .mobile-nav__overlay,
+  .mobile-nav__panel,
+  .mobile-nav__chevron {
+    transition: none !important;
+  }
+}

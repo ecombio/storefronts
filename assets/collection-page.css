@@ -1,0 +1,43 @@
+/*
+  assets/collection-page.css
+
+  Layout shell for sections/collection-page.liquid.
+  Owns the two-column (sidebar + main) layout only — the filter
+  internals are styled by product-filter.css, the grid internals by
+  product-feed.css / product-card.css.
+*/
+
+.collection-page__layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 2.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem 1.5rem 3rem;
+}
+
+.collection-page__sidebar {
+  flex: 0 0 260px;
+  width: 260px;
+  position: sticky;
+  top: 1.5rem;
+}
+
+.collection-page__main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+@media (max-width: 989px) {
+  .collection-page__layout {
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 1rem;
+  }
+
+  .collection-page__sidebar {
+    flex: 1 1 auto;
+    width: 100%;
+    position: static;
+  }
+}

@@ -1,0 +1,239 @@
+/* blog.css */
+
+.blog-feed {
+  padding-block: 40px;
+  padding-inline: var(--section-padding, 1.5rem);
+}
+
+.blog-feed__title {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 24px;
+}
+
+/* ── Grid ────────────────────────────────────────────────────────────────── */
+
+.blog-feed__grid {
+  display: grid;
+  grid-template-columns: repeat(var(--columns, 3), 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .blog-feed__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .blog-feed__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Cards ───────────────────────────────────────────────────────────────── */
+
+.blog-feed__card {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.blog-feed__card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.07);
+}
+
+.blog-feed__image-link {
+  display: block;
+}
+
+.blog-feed__image {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  display: block;
+}
+
+.blog-feed__image--placeholder {
+  background: #f0f0f0;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  display: block;
+}
+
+.blog-feed__content {
+  padding: 20px;
+}
+
+.blog-feed__card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.blog-feed__card-tag {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #666;
+  background: #f2f2f2;
+  border-radius: 4px;
+  padding: 2px 7px;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.blog-feed__card-tag:hover {
+  background: #222;
+  color: #fff;
+}
+
+.blog-feed__heading {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.35;
+  margin: 0 0 10px;
+}
+
+.blog-feed__heading-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.blog-feed__heading-link:hover {
+  text-decoration: underline;
+}
+
+.blog-feed__excerpt {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #555;
+  margin: 0 0 14px;
+}
+
+.blog-feed__meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #888;
+}
+
+.blog-feed__author::before {
+  content: '·';
+  margin-right: 10px;
+}
+
+/* ── Pagination ──────────────────────────────────────────────────────────── */
+
+.article-feed__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 40px;
+  flex-wrap: wrap;
+}
+
+.article-feed__page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #222;
+  text-decoration: none;
+  background: #fff;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.article-feed__page-btn:hover:not(.is-disabled):not(.is-current) {
+  background: #f5f5f5;
+  border-color: #bbb;
+}
+
+.article-feed__page-btn.is-current {
+  background: #222;
+  border-color: #222;
+  color: #fff;
+  cursor: default;
+}
+
+.article-feed__page-btn.is-disabled {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
+}
+
+.article-feed__page-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 38px;
+  font-size: 14px;
+  color: #aaa;
+}
+
+.article-feed__page-count {
+  font-size: 13px;
+  color: #888;
+  padding: 0 8px;
+}
+
+.article-feed__load-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 32px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #222;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.article-feed__load-more:hover {
+  background: #f5f5f5;
+  border-color: #bbb;
+}
+
+.article-feed__load-more[aria-busy="true"] {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.article-feed__infinite-trigger {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0;
+  margin-top: 16px;
+}
+
+.article-feed__infinite-spinner {
+  display: block;
+  width: 24px;
+  height: 24px;
+  border: 2px solid #eee;
+  border-top-color: #888;
+  border-radius: 50%;
+  animation: af-spin 0.7s linear infinite;
+}
+
+@keyframes af-spin {
+  to { transform: rotate(360deg); }
+}

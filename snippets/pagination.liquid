@@ -1,0 +1,40 @@
+{% comment %}
+  Renders numbered pagination.
+  Usage: {% render 'pagination', paginate: paginate %}
+{% endcomment %}
+
+{%- if paginate.pages > 1 -%}
+  <nav class="pagination" role="navigation" aria-label="Pagination">
+    <ul class="pagination__list">
+
+      {%- if paginate.previous -%}
+        <li>
+          <a href="{{ paginate.previous.url }}" class="pagination__item pagination__item--prev" aria-label="Previous page">
+            &lsaquo;
+          </a>
+        </li>
+      {%- endif -%}
+
+      {%- for part in paginate.parts -%}
+        <li>
+          {%- if part.is_link -%}
+            <a href="{{ part.url }}" class="pagination__item">{{ part.title }}</a>
+          {%- elsif part.title == paginate.current_page -%}
+            <span class="pagination__item current" aria-current="page" aria-label="Page {{ part.title }}">{{ part.title }}</span>
+          {%- else -%}
+            <span class="pagination__item pagination__item--ellipsis">&hellip;</span>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+
+      {%- if paginate.next -%}
+        <li>
+          <a href="{{ paginate.next.url }}" class="pagination__item pagination__item--next" aria-label="Next page">
+            &rsaquo;
+          </a>
+        </li>
+      {%- endif -%}
+
+    </ul>
+  </nav>
+{%- endif -%}

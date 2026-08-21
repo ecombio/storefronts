@@ -1,0 +1,65 @@
+{% comment %}
+  Snippet: article-player.liquid
+  Usage:   {% render 'article-player', article: article %}
+  Place anywhere in the article template — position: fixed, floats over content.
+  - Word wrapping + highlighting
+  - Floating dock (bottom-centered capsule)
+  - All JS via article-player.js (defer)
+{% endcomment %}
+
+<div class="ma-player" id="ma-player" aria-label="Read aloud player">
+  <div class="ma-player__dock" id="ma-player-dock" role="group" aria-label="Playback controls">
+    <!-- Play/Pause + ring -->
+    <button class="ma-player__dock-btn ma-player__play" id="ma-player-play" type="button" aria-label="Play / Pause" title="Play / Pause">
+      <svg class="ma-player__ring" viewBox="0 0 40 40" aria-hidden="true">
+        <circle class="ma-player__ring-track" cx="20" cy="20" r="17.5" />
+        <circle class="ma-player__ring-fill" id="ma-player-ring-fill" cx="20" cy="20" r="17.5" />
+      </svg>
+      <svg class="ma-player__icon ma-player__icon--play" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <polygon points="6,3 20,12 6,21" fill="currentColor"/>
+      </svg>
+      <svg class="ma-player__icon ma-player__icon--pause" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="display:none">
+        <rect x="5" y="3" width="4" height="18" fill="currentColor"/>
+        <rect x="15" y="3" width="4" height="18" fill="currentColor"/>
+      </svg>
+    </button>
+
+    <div class="ma-player__divider" aria-hidden="true"></div>
+
+    <!-- Speed cycle -->
+    <button class="ma-player__dock-btn ma-player__dock-btn--speed" id="ma-player-speed" type="button" aria-label="Playback speed" title="Tap to cycle speed">
+      <span id="ma-player-speed-label">1.25×</span>
+    </button>
+
+    <!-- Voice -->
+    <button class="ma-player__dock-btn" id="ma-player-voice-toggle" type="button" aria-label="Choose voice" aria-expanded="false" aria-controls="ma-player-voice-popover" title="Voice">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" width="18" height="18">
+        <path d="M12 1a4 4 0 0 0-4 4v6a4 4 0 0 0 8 0V5a4 4 0 0 0-4-4z"/>
+        <path d="M19 10v1a7 7 0 0 1-14 0v-1"/>
+        <line x1="12" y1="18" x2="12" y2="22"/>
+        <line x1="8" y1="22" x2="16" y2="22"/>
+      </svg>
+    </button>
+
+    <!-- Follow along toggle -->
+    <button class="ma-player__dock-btn ma-player__follow-toggle is-active" id="ma-player-follow-toggle" type="button" aria-label="Toggle follow along" aria-pressed="true" title="Follow along">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" width="18" height="18">
+        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Time chip (shows above dock while playing / hover) -->
+  <div class="ma-player__time-chip" id="ma-player-time-chip" aria-hidden="true">
+    <span id="ma-player-elapsed">0:00</span>
+    <span class="ma-player__time-sep" aria-hidden="true">·</span>
+    <span id="ma-player-remaining">-0:00</span>
+  </div>
+
+  <!-- Voice popover -->
+  <div class="ma-player__popover" id="ma-player-voice-popover" hidden>
+    <label class="ma-player__popover-label" for="ma-player-voice">Voice</label>
+    <select class="ma-player__select" id="ma-player-voice" aria-label="Select voice"></select>
+  </div>
+</div>

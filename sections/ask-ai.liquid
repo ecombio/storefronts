@@ -1,0 +1,235 @@
+{%- comment -%}
+  sections/ask-ai.liquid
+  Renders an "Ask AI about [Brand]" footer widget with deep links into
+  ChatGPT, Perplexity, Google AI Mode, Claude, and Grok — each prefilled
+  with a merchant-configurable analyst-style prompt.
+
+  Add to theme footer via: {% section 'ask-ai' %}
+  Or make it app-block/section-group compatible — see note at bottom.
+{%- endcomment -%}
+
+{%- liquid
+  assign brand_name = section.settings.brand_name | default: shop.name
+  assign brand_url = section.settings.brand_url | default: shop.url
+  assign category = section.settings.category
+  assign competitor_1 = section.settings.competitor_1
+  assign competitor_2 = section.settings.competitor_2
+
+  assign competitors = ''
+  if competitor_1 != blank and competitor_2 != blank
+    assign competitors = competitor_1 | append: ' or ' | append: competitor_2
+  elsif competitor_1 != blank
+    assign competitors = competitor_1
+  endif
+
+  assign prompt = 'Act as an independent analyst. Using publicly available information, briefly explain what '
+  assign prompt = prompt | append: brand_name | append: ' (' | append: brand_url | append: ') does, who it is best for'
+  if category != blank
+    assign prompt = prompt | append: ', and the top 3 features that differentiate it from ' | append: category
+    if competitors != blank
+      assign prompt = prompt | append: ' like ' | append: competitors
+    endif
+  endif
+  assign prompt = prompt | append: '. Keep the response factual, clearly categorized, and concise.'
+-%}
+
+<div class="footer-ai" data-ask-ai-brand="{{ brand_name | escape }}">
+  <p>
+    {{ section.settings.label | default: 'Ask AI' }}
+    <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M5.27699 4.25395C5.59914 3.38333 6.83081 3.38333 7.15296 4.25395L8.24183 7.19731C8.34309 7.47095 8.55904 7.68681 8.83265 7.78813L11.777 8.87797C12.6474 9.20022 12.6474 10.4318 11.777 10.7539L8.83265 11.8428C8.559 11.9441 8.34315 12.16 8.24183 12.4336L7.15296 15.378C6.83082 16.2486 5.5992 16.2485 5.27699 15.378L4.18714 12.4336C4.08581 12.1601 3.86993 11.9441 3.59632 11.8428L0.652964 10.7539C-0.217655 10.4318 -0.217655 9.20013 0.652964 8.87797L3.59632 7.78813C3.87004 7.68684 4.08586 7.47103 4.18714 7.19731L5.27699 4.25395Z" fill="currentColor"/>
+    </svg>
+    about {{ brand_name }}
+  </p>
+  <ul>
+    {%- if section.settings.show_chatgpt -%}
+    <li>
+      <a id="ask_ai_click_footer_chatgpt" class="ask-ai-link" data-platform="chatgpt"
+         href="https://chatgpt.com/?prompt={{ prompt | url_encode }}&model=auto" target="_blank" rel="noopener noreferrer"
+         aria-label="Ask ChatGPT about {{ brand_name }}">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M16.8134 7.36682C16.9675 6.91002 17.0461 6.43174 17.0461 5.95031C17.0461 5.15369 16.831 4.37145 16.4231 3.684C15.6034 2.27609 14.0827 1.40687 12.4369 1.40687C12.1132 1.40687 11.7888 1.44062 11.4723 1.50766C11.0459 1.03362 10.5225 0.654151 9.9366 0.394275C9.35071 0.134399 8.71563 0 8.07326 0H8.04441C6.04031 0 4.27265 1.26917 3.65985 3.14013C2.37666 3.39897 1.26892 4.193 0.621266 5.31553C0.214577 6.00714 0 6.79247 0 7.59207C0 8.71578 0.422935 9.79945 1.18645 10.6332C1.03232 11.09 0.953722 11.5683 0.953656 12.0497C0.953725 12.8464 1.16876 13.6286 1.57668 14.316C2.39633 15.7244 3.91713 16.5931 5.56306 16.5931C5.88711 16.5931 6.21027 16.5593 6.52713 16.4923C6.9536 16.9663 7.47707 17.3458 8.06301 17.6057C8.64895 17.8656 9.28407 18 9.92649 18H9.95533C11.9614 18 13.7285 16.7309 14.3414 14.8582C15.6245 14.5993 16.7323 13.8053 17.3799 12.6827C17.7862 11.9917 18.0001 11.2071 18 10.4082C18 9.28452 17.5771 8.20085 16.8136 7.36707L16.8134 7.36682Z" fill="currentColor"/>
+        </svg>
+      </a>
+    </li>
+    {%- endif -%}
+
+    {%- if section.settings.show_perplexity -%}
+    <li>
+      <a id="ask_ai_click_footer_perplexity" class="ask-ai-link" data-platform="perplexity"
+         href="https://www.perplexity.ai/search?q={{ prompt | url_encode }}" target="_blank" rel="noopener noreferrer"
+         aria-label="Ask Perplexity about {{ brand_name }}">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M14.8387 0V5.454H16.875V13.215H14.6737V18L9.396 13.3545V17.9632H8.57775V13.3492L3.294 18V13.1512H1.125V5.391H3.288V0L8.57775 4.8705V0.1425H9.39525V5.01L14.8387 0Z" fill="#22B8CD"/>
+        </svg>
+      </a>
+    </li>
+    {%- endif -%}
+
+    {%- if section.settings.show_google -%}
+    <li>
+      <a id="ask_ai_click_footer_google" class="ask-ai-link" data-platform="google"
+         href="https://www.google.com/search?udm=50&q={{ prompt | url_encode }}" target="_blank" rel="noopener noreferrer"
+         aria-label="Ask Google AI Mode about {{ brand_name }}">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="10" cy="10" r="9" fill="#3186FF"/>
+        </svg>
+      </a>
+    </li>
+    {%- endif -%}
+
+    {%- if section.settings.show_claude -%}
+    <li>
+      <a id="ask_ai_click_footer_claude" class="ask-ai-link" data-platform="claude"
+         href="https://claude.ai/new?q={{ prompt | url_encode }}" target="_blank" rel="noopener noreferrer"
+         aria-label="Ask Claude about {{ brand_name }}">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M3.92319 13.3L7.85872 11.0933L7.92486 10.9016L7.85872 10.795L7.66695 10.795L7.0092 10.7545L4.76057 10.6937L2.81041 10.6127L0.921006 10.5115L0.445622 10.4103L0 9.82317L0.0458981 9.53033L0.445676 9.26173L1.01831 9.31166L2.28373 9.398L4.18254 9.52894L5.56013 9.60994L7.60085 9.82183H7.92486L7.97082 9.69095L7.86005 9.60994L7.7736 9.52894L5.80859 8.19812L3.68146 6.79169L2.5673 5.98184L1.96496 5.57157L1.66109 5.18688L1.53013 4.34739L2.07711 3.74542L2.8118 3.79535L2.99951 3.84533L3.74371 4.41756L5.33326 5.64718L7.40898 7.17505L7.71285 7.42746L7.8344 7.34112L7.84926 7.28035L7.71285 7.05228L6.58383 5.0128L5.37915 2.93835L4.84296 2.07857L4.70116 1.563C4.6512 1.35111 4.61476 1.17297 4.61476 0.955633L5.23735 0.110697L5.58171 0L6.41231 0.110697L6.76213 0.414378L7.27802 1.59407L8.11401 3.4513L9.41054 5.97661L9.79007 6.72569L9.99263 7.41945L10.0683 7.63134L10.1991 7.63129V7.50981L10.3058 6.08719L10.503 4.34067L10.6948 2.09341L10.761 1.46042L11.0742 0.701826L11.6968 0.29156L12.183 0.52374L12.5828 1.09597L12.5274 1.46581L12.2897 3.00985L11.8238 5.42852L11.5199 7.04817H11.6969L11.8996 6.84573L12.7193 5.75788L14.0969 4.03698L14.7046 3.35406L15.4137 2.59958L15.8687 2.24053L16.729 2.24047L17.3624 3.18121L17.0788 4.15302L16.1929 5.27595L15.4582 6.22748L14.4047 7.64469L13.747 8.77841L13.8078 8.86887L13.9645 8.85402L16.3441 8.34785L17.6298 8.11573L19.1641 7.85257L19.8582 8.17649L19.9339 8.50581L19.6611 9.17933L18.0202 9.58426L16.0957 9.96895L13.2298 10.6465L13.1947 10.6722L13.2352 10.7221L14.5263 10.8436L15.0787 10.8733H16.4305L18.9479 11.0609L19.6056 11.4955L20 12.0273L19.9339 12.4323L18.9209 12.9478L17.5542 12.6239L14.3642 11.8654L13.2702 11.5927L13.119 11.5927V11.6831L14.0306 12.5739L15.7012 14.0815L17.7932 16.0251L17.8999 16.5057L17.6311 16.8849L17.3476 16.8444L15.5095 15.4623L14.8004 14.8401L13.1946 13.489L13.088 13.489V13.6307L13.4581 14.172L15.4123 17.1076L15.5135 18.0078L15.3718 18.3007L14.8653 18.4775L14.3089 18.3763L13.165 16.7715L11.9846 14.9642L11.0325 13.3446L10.9164 13.4107L10.3545 19.4587L10.0912 19.7678L9.48342 20L8.97699 19.6153L8.70823 18.9931L8.97699 17.7635L9.30111 16.1587L9.56442 14.8832L9.80214 13.2987L9.94395 12.7722L9.93449 12.7372L9.81839 12.752L8.62311 14.3919L6.80531 16.847L5.36697 18.3857L5.0226 18.5221L4.42561 18.2129L4.48102 17.661L4.81459 17.1697L6.80531 14.639L8.00592 13.0706L8.78111 12.1649L8.77571 12.034H8.72982L3.44251 15.465L2.50115 15.5864L2.09597 15.2071L2.14599 14.5849L2.33775 14.3825L3.9273 13.2892L3.9219 13.2947L3.92319 13.3Z" fill="#D77655"/>
+        </svg>
+      </a>
+    </li>
+    {%- endif -%}
+
+    {%- if section.settings.show_grok -%}
+    <li>
+      <a id="ask_ai_click_footer_grok" class="ask-ai-link" data-platform="grok"
+         href="https://x.com/i/grok?q={{ prompt | url_encode }}" target="_blank" rel="noopener noreferrer"
+         aria-label="Ask Grok about {{ brand_name }}">
+        <svg width="21" height="20" viewBox="0 0 21 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M8.11125 12.826L15.092 7.71207C15.4341 7.46061 15.9233 7.55858 16.0869 7.94797C16.9444 10.0024 16.5611 12.4704 14.8531 14.165C13.146 15.8595 10.7695 16.2307 8.59774 15.3843L6.22564 16.4744C9.6285 18.782 13.7603 18.2114 16.3424 15.6479C18.3907 13.6152 19.0251 10.8444 18.4319 8.34602C17.577 4.68207 18.6489 3.21476 20.8434 0.215081L18.1116 2.86614V2.85744L8.10863 12.8278M6.67012 14.0687C4.22711 11.7533 4.64888 8.17085 6.73226 6.10427C8.27314 4.57541 10.7984 3.95102 13.0025 4.8685L15.3694 3.78451C14.8774 3.42583 14.3392 3.13415 13.769 2.91728C12.3356 2.33582 10.7606 2.18745 9.24234 2.49082C7.72405 2.79419 6.33016 3.53575 5.23601 4.62224C3.01961 6.82146 2.32226 10.2036 3.51926 13.0896C4.41349 15.2464 2.94788 16.7718 1.47176 18.312C0.947625 18.8583 0.422625 19.4038 0 19.9813L6.6675 14.0713" fill="currentColor"/>
+        </svg>
+      </a>
+    </li>
+    {%- endif -%}
+  </ul>
+</div>
+
+<style>
+  .footer-ai {
+    max-width: 420px;
+  }
+  .footer-ai p {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    margin: 0 0 12px;
+    color: {{ section.settings.text_color | default: '#ffffff' }};
+  }
+  .footer-ai ul {
+    list-style: none;
+    display: flex;
+    gap: 14px;
+    padding: 0;
+    margin: 0;
+  }
+  .footer-ai a {
+    display: inline-flex;
+    width: 34px;
+    height: 34px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    color: {{ section.settings.text_color | default: '#ffffff' }};
+    transition: transform .15s ease, background .15s ease;
+  }
+  .footer-ai a:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.16);
+  }
+  .footer-ai svg { width: 18px; height: 18px; }
+</style>
+
+<script>
+  (function () {
+    document.querySelectorAll('.ask-ai-link').forEach(function (link) {
+      link.addEventListener('click', function () {
+        var platform = link.getAttribute('data-platform');
+        var brand = link.closest('.footer-ai').getAttribute('data-ask-ai-brand');
+        // Wire into whatever analytics the theme already loads.
+        if (typeof gtag === 'function') {
+          gtag('event', 'ask_ai_click', { ai_platform: platform, brand: brand });
+        }
+        if (window.analytics && typeof window.analytics.track === 'function') {
+          window.analytics.track('Ask AI Click', { platform: platform, brand: brand });
+        }
+      });
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Ask AI",
+  "tag": "section",
+  "class": "section-ask-ai",
+  "settings": [
+    {
+      "type": "text",
+      "id": "label",
+      "label": "Label prefix",
+      "default": "Ask AI"
+    },
+    {
+      "type": "text",
+      "id": "brand_name",
+      "label": "Brand name",
+      "info": "Defaults to your store name if left blank."
+    },
+    {
+      "type": "url",
+      "id": "brand_url",
+      "label": "Brand URL",
+      "info": "Defaults to your store's primary domain if left blank."
+    },
+    {
+      "type": "text",
+      "id": "category",
+      "label": "Product category",
+      "info": "e.g. \"ecommerce email & SMS marketing tools\". Leave blank to omit the comparison clause entirely.",
+      "default": "ecommerce email & SMS marketing tools"
+    },
+    {
+      "type": "text",
+      "id": "competitor_1",
+      "label": "Competitor 1 (optional)"
+    },
+    {
+      "type": "text",
+      "id": "competitor_2",
+      "label": "Competitor 2 (optional)"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text / icon color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Platforms to show"
+    },
+    { "type": "checkbox", "id": "show_chatgpt", "label": "ChatGPT", "default": true },
+    { "type": "checkbox", "id": "show_perplexity", "label": "Perplexity", "default": true },
+    { "type": "checkbox", "id": "show_google", "label": "Google AI Mode", "default": true },
+    { "type": "checkbox", "id": "show_claude", "label": "Claude", "default": true },
+    { "type": "checkbox", "id": "show_grok", "label": "Grok", "default": true }
+  ],
+  "presets": [
+    {
+      "name": "Ask AI"
+    }
+  ]
+}
+{% endschema %}
+
+{%- comment -%}
+  Usage:
+  1. Save as sections/ask-ai.liquid in your theme.
+  2. Drop {% section 'ask-ai' %} into your footer template/group
+     (e.g. sections/footer.liquid, or as a block if your footer uses
+     section-groups / theme blocks in a Online Store 2.0 theme).
+  3. Configure brand name, category, and competitors in the theme editor —
+     no code changes needed per store.
+{%- endcomment -%}

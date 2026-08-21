@@ -1,0 +1,614 @@
+{%- liquid
+  assign width_type = section.settings.section_width
+  if width_type == 'full-width'
+    assign width_class = 'featured-images-section__full-width'
+  elsif width_type == 'custom-width'
+    assign width_class = 'featured-images-section__custom-width'
+  else
+    assign width_class = 'featured-images-section__default-width'
+  endif
+-%}
+
+{{ 'featured-images.css' | asset_url | stylesheet_tag }}
+
+<div
+  class="featured-images-section"
+  {% unless section.settings.enable_animations %}data-animations="off"{% endunless %}
+  style="padding-top: {{ section.settings.padding_top }}px; padding-bottom: {{ section.settings.padding_bottom }}px; background-color: {{ section.settings.bg_color }}; --fi-heading-font-size: {{ section.settings.heading_font_size | default: 48 }}px;"
+>
+  <div
+    class="featured-images-section__inner {{ width_class }}"
+    style="
+      --section-padding: {{ section.settings.section_padding }}px;
+      {%- if width_type == 'custom-width' %}
+        --custom-width: {{ section.settings.custom_width }}rem;
+      {%- endif %}
+    "
+  >
+
+    {%- if section.settings.heading != blank or section.settings.subheading != blank -%}
+      <div class="featured-images-section__header featured-images-section__header--align-{{ section.settings.heading_align }}">
+        {%- if section.settings.heading != blank -%}
+          <h2 class="featured-images-section__heading">{{ section.settings.heading }}</h2>
+        {%- endif -%}
+        {%- if section.settings.subheading != blank -%}
+          <p class="featured-images-section__subheading">{{ section.settings.subheading }}</p>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <div
+      class="featured-images-carousel{% if section.settings.enable_carousel %} featured-images-carousel--enabled{% endif %}"
+      {% if section.settings.enable_carousel %}
+        data-featured-images-carousel
+        data-autoplay="{{ section.settings.autoplay }}"
+        data-autoplay-speed="{{ section.settings.autoplay_speed | times: 1000 }}"
+      {% endif %}
+      style="
+        --columns-mobile: {{ section.settings.columns_mobile }};
+        --columns-tablet: {{ section.settings.columns_tablet }};
+        --columns-desktop: {{ section.settings.columns_desktop }};
+        --grid-gap: {{ section.settings.grid_gap }}px;
+        --card-radius: {{ section.settings.card_radius }}px;
+        --card-height-desktop: {{ section.settings.height_desktop }}px;
+        --card-height-mobile: {{ section.settings.height_mobile }}px;
+        --fi-btn-bg: {{ section.settings.bg_color }};
+      "
+    >
+      <div class="featured-images-carousel__viewport">
+        <div
+          class="featured-images-grid"
+          data-featured-images-track
+          {% if section.settings.enable_scroll_reveal %}data-featured-images-reveal{% endif %}
+        >
+          {%- for block in section.blocks -%}
+        {%- liquid
+          assign image = block.settings.image
+          if image == blank and block.settings.collection != blank and block.settings.collection.image != blank
+            assign image = block.settings.collection.image
+          endif
+          assign mobile_image = block.settings.mobile_image
+          assign link = block.settings.link
+          assign heading = block.settings.heading
+          assign subheading = block.settings.subheading
+          assign price_text = block.settings.price_text
+          assign button_label = block.settings.button_label
+          assign img_loading = 'lazy'
+          if forloop.index <= 2
+            assign img_loading = 'eager'
+          endif
+        -%}
+        <div class="featured-images-card" data-featured-images-card {{ block.shopify_attributes }}>
+          <a href="{{ link | default: '#' }}" class="featured-images-card__link" {% if link == blank %}tabindex="-1" aria-disabled="true"{% endif %}>
+            <span class="featured-images-card__image-wrap">
+              {%- if image != blank -%}
+                <img
+                  class="featured-images-card__image featured-images-card__image--desktop"
+                  src="{{ image | image_url: width: 1200 }}"
+                  srcset="{{ image | image_url: width: 600 }} 600w, {{ image | image_url: width: 900 }} 900w, {{ image | image_url: width: 1200 }} 1200w"
+                  sizes="(min-width: 750px) 50vw, 100vw"
+                  alt="{{ image.alt | default: heading | escape }}"
+                  loading="{{ img_loading }}"
+                  width="{{ image.width }}"
+                  height="{{ image.height }}"
+                  style="--fi-img-scale: {{ block.settings.image_scale | default: 100 | divided_by: 100.0 }};"
+                >
+              {%- else -%}
+                <span class="featured-images-card__placeholder featured-images-card__placeholder--desktop">
+                  {{ 'lifestyle-1' | placeholder_svg_tag: 'featured-images-card__placeholder-svg' }}
+                </span>
+              {%- endif -%}
+
+              {%- if mobile_image != blank -%}
+                <img
+                  class="featured-images-card__image featured-images-card__image--mobile"
+                  src="{{ mobile_image | image_url: width: 750 }}"
+                  srcset="{{ mobile_image | image_url: width: 450 }} 450w, {{ mobile_image | image_url: width: 750 }} 750w"
+                  sizes="100vw"
+                  alt="{{ mobile_image.alt | default: heading | escape }}"
+                  loading="{{ img_loading }}"
+                  width="{{ mobile_image.width }}"
+                  height="{{ mobile_image.height }}"
+                  style="--fi-img-scale: {{ block.settings.image_scale | default: 100 | divided_by: 100.0 }};"
+                >
+              {%- elsif image != blank -%}
+                <img
+                  class="featured-images-card__image featured-images-card__image--mobile"
+                  src="{{ image | image_url: width: 750 }}"
+                  srcset="{{ image | image_url: width: 450 }} 450w, {{ image | image_url: width: 750 }} 750w"
+                  sizes="100vw"
+                  alt="{{ image.alt | default: heading | escape }}"
+                  loading="{{ img_loading }}"
+                  width="{{ image.width }}"
+                  height="{{ image.height }}"
+                  style="--fi-img-scale: {{ block.settings.image_scale | default: 100 | divided_by: 100.0 }};"
+                >
+              {%- else -%}
+                <span class="featured-images-card__placeholder featured-images-card__placeholder--mobile">
+                  {{ 'lifestyle-2' | placeholder_svg_tag: 'featured-images-card__placeholder-svg' }}
+                </span>
+              {%- endif -%}
+            </span>
+
+            {%- if heading != blank or subheading != blank or price_text != blank or button_label != blank -%}
+              <span class="featured-images-card__content featured-images-card__content--{{ block.settings.content_position }}" style="color: {{ block.settings.text_color | default: '#ffffff' }};">
+                {%- if heading != blank -%}
+                  <span class="featured-images-card__heading featured-images-card__text--{{ block.settings.heading_align | default: 'center' }}" style="font-size: {{ block.settings.heading_font_size | default: 28 }}px;">{{ heading }}</span>
+                {%- endif -%}
+                {%- if subheading != blank -%}
+                  <span class="featured-images-card__subheading featured-images-card__text--{{ block.settings.subheading_align | default: 'center' }}" style="font-size: {{ block.settings.subheading_font_size | default: 15 }}px;">{{ subheading }}</span>
+                {%- endif -%}
+                {%- if price_text != blank -%}
+                  <span class="featured-images-card__price featured-images-card__text--{{ block.settings.price_align | default: 'center' }}" style="font-size: {{ block.settings.price_font_size | default: 14 }}px;">{{ price_text }}</span>
+                {%- endif -%}
+                {%- if button_label != blank -%}
+                  <span class="featured-images-card__button featured-images-card__text--{{ block.settings.button_align | default: 'center' }}" style="font-size: {{ block.settings.button_font_size | default: 14 }}px;">{{ button_label }}</span>
+                {%- endif -%}
+              </span>
+            {%- endif -%}
+          </a>
+        </div>
+      {%- else -%}
+        <div class="featured-images-card">
+          <span class="featured-images-card__image-wrap">
+            <span class="featured-images-card__placeholder featured-images-card__placeholder--desktop">
+              {{ 'lifestyle-1' | placeholder_svg_tag: 'featured-images-card__placeholder-svg' }}
+            </span>
+          </span>
+        </div>
+      {%- endfor -%}
+      </div>
+
+      {%- if section.settings.enable_carousel and section.blocks.size > 1 and section.settings.show_arrows -%}
+        <button type="button" class="featured-images-carousel__btn featured-images-carousel__btn--prev" data-featured-images-prev aria-label="Previous">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <button type="button" class="featured-images-carousel__btn featured-images-carousel__btn--next" data-featured-images-next aria-label="Next">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      {%- endif -%}
+
+      {%- if section.settings.enable_carousel and section.blocks.size > 1 and section.settings.show_dots -%}
+        <div class="featured-images-carousel__dots" data-featured-images-dots>
+          {%- for block in section.blocks -%}
+            <button type="button" class="featured-images-carousel__dot" data-featured-images-dot aria-label="Go to slide {{ forloop.index }}"></button>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    </div>
+
+  </div>
+</div>
+
+{%- if section.settings.enable_scroll_reveal or section.settings.enable_carousel -%}
+  <script src="{{ 'featured-images.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Featured-images",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Header"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading"
+    },
+    {
+      "type": "select",
+      "id": "heading_align",
+      "label": "Heading alignment",
+      "options": [
+        { "value": "start",  "label": "Left"   },
+        { "value": "center", "label": "Center" },
+        { "value": "end",    "label": "Right"  }
+      ],
+      "default": "start"
+    },
+    {
+      "type": "range",
+      "id": "heading_font_size",
+      "label": "Heading font size (desktop)",
+      "info": "Scales down proportionally on tablet and mobile.",
+      "min": 20,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "header",
+      "content": "Grid"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "label": "Columns (desktop)",
+      "info": "Set this to match the number of cards you add for an even fixed row (e.g. 4 columns for 4 cards).",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "columns_tablet",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "label": "Columns (tablet)",
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "columns_mobile",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "label": "Columns (mobile)",
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "grid_gap",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Gap between cards",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "height_desktop",
+      "min": 200,
+      "max": 800,
+      "step": 10,
+      "unit": "px",
+      "label": "Image height (desktop/tablet)",
+      "default": 380
+    },
+    {
+      "type": "range",
+      "id": "height_mobile",
+      "min": 150,
+      "max": 600,
+      "step": 10,
+      "unit": "px",
+      "label": "Image height (mobile)",
+      "default": 320
+    },
+    {
+      "type": "range",
+      "id": "card_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Card corner radius",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Carousel (optional)"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_carousel",
+      "label": "Enable carousel / horizontal scroll",
+      "info": "Turn this on when you have more cards than fit in one row (e.g. 5+). Cards per row still follow the Columns settings above — extra cards scroll instead of wrapping to a new row.",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show arrows",
+      "default": true,
+      "visible_if": "{{ section.settings.enable_carousel }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Show pagination dots",
+      "default": true,
+      "visible_if": "{{ section.settings.enable_carousel }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Auto-rotate",
+      "default": false,
+      "visible_if": "{{ section.settings.enable_carousel }}"
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "label": "Change slides every",
+      "default": 5,
+      "visible_if": "{{ section.settings.enable_carousel }}"
+    },
+    {
+      "type": "header",
+      "content": "Animation"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_animations",
+      "label": "Enable hover lift/zoom",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_scroll_reveal",
+      "label": "Fade cards in on scroll",
+      "info": "Loads a small script to fade/slide each card in the first time it scrolls into view. Leave off for a purely static grid with no extra script.",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Section background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Section padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 40
+    }
+  ],
+  "blocks": [
+    {
+      "type": "card",
+      "name": "Card",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image",
+          "info": "A placeholder image is shown if blank"
+        },
+        {
+          "type": "image_picker",
+          "id": "mobile_image",
+          "label": "Mobile image",
+          "info": "Optional. Used on small screens instead of the image above"
+        },
+        {
+          "type": "range",
+          "id": "image_scale",
+          "min": 100,
+          "max": 200,
+          "step": 5,
+          "unit": "%",
+          "label": "Image zoom",
+          "default": 100
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection",
+          "info": "Optional. If no image is chosen above, this collection's image is used automatically."
+        },
+        {
+          "type": "header",
+          "content": "Text"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading"
+        },
+        {
+          "type": "range",
+          "id": "heading_font_size",
+          "min": 14,
+          "max": 60,
+          "step": 1,
+          "unit": "px",
+          "label": "Heading font size",
+          "default": 28
+        },
+        {
+          "type": "select",
+          "id": "heading_align",
+          "label": "Heading alignment",
+          "options": [
+            { "value": "left",   "label": "Left"   },
+            { "value": "center", "label": "Center" },
+            { "value": "right",  "label": "Right"  }
+          ],
+          "default": "left"
+        },
+        {
+          "type": "text",
+          "id": "subheading",
+          "label": "Subheading"
+        },
+        {
+          "type": "range",
+          "id": "subheading_font_size",
+          "min": 10,
+          "max": 28,
+          "step": 1,
+          "unit": "px",
+          "label": "Subheading font size",
+          "default": 15
+        },
+        {
+          "type": "select",
+          "id": "subheading_align",
+          "label": "Subheading alignment",
+          "options": [
+            { "value": "left",   "label": "Left"   },
+            { "value": "center", "label": "Center" },
+            { "value": "right",  "label": "Right"  }
+          ],
+          "default": "left"
+        },
+        {
+          "type": "text",
+          "id": "price_text",
+          "label": "Price / details text"
+        },
+        {
+          "type": "range",
+          "id": "price_font_size",
+          "min": 10,
+          "max": 24,
+          "step": 1,
+          "unit": "px",
+          "label": "Price / details font size",
+          "default": 14
+        },
+        {
+          "type": "select",
+          "id": "price_align",
+          "label": "Price / details alignment",
+          "options": [
+            { "value": "left",   "label": "Left"   },
+            { "value": "center", "label": "Center" },
+            { "value": "right",  "label": "Right"  }
+          ],
+          "default": "left"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Button label"
+        },
+        {
+          "type": "range",
+          "id": "button_font_size",
+          "min": 10,
+          "max": 20,
+          "step": 1,
+          "unit": "px",
+          "label": "Button font size",
+          "default": 14
+        },
+        {
+          "type": "select",
+          "id": "button_align",
+          "label": "Button alignment",
+          "options": [
+            { "value": "left",   "label": "Left"   },
+            { "value": "center", "label": "Center" },
+            { "value": "right",  "label": "Right"  }
+          ],
+          "default": "center"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Text color",
+          "default": "#1d1d1f"
+        },
+        {
+          "type": "select",
+          "id": "content_position",
+          "label": "Content block position",
+          "options": [
+            { "value": "top-left", "label": "Top left" },
+            { "value": "top-center", "label": "Top center" },
+            { "value": "top-right", "label": "Top right" },
+            { "value": "center", "label": "Center" },
+            { "value": "bottom-left", "label": "Bottom left" },
+            { "value": "bottom-center", "label": "Bottom center" },
+            { "value": "bottom-right", "label": "Bottom right" }
+          ],
+          "default": "bottom-left"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Featured-images",
+      "blocks": [
+        { "type": "card" },
+        { "type": "card" },
+        { "type": "card" },
+        { "type": "card" }
+      ]
+    }
+  ]
+}
+{% endschema %}

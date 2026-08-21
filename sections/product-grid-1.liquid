@@ -1,0 +1,174 @@
+{%- comment -%}
+  sections/product-grid.liquid
+
+  Renders snippets/product-card.liquid in one of two modes:
+    • collection  — pulls the first N products from a chosen collection
+    • manual      — merchant hand-picks specific products via blocks
+
+  Asset ownership: this section owns and loads its own layout CSS
+  (product-grid.css). It does NOT load product-card.css/.js — those
+  are already loaded globally via theme.liquid.
+{%- endcomment -%}
+
+{{ 'product-grid.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign source = section.settings.product_source
+
+  assign show_quickview = section.settings.show_quickview
+  assign show_compare   = section.settings.show_compare
+  assign show_eta       = section.settings.show_eta
+
+  if source == 'collection'
+    assign products = section.settings.collection.products | slice: 0, section.settings.products_to_show
+  endif
+-%}
+
+<div class="product-grid">
+  <div class="product-grid__header">
+    {%- if section.settings.heading != blank -%}
+      <h2 class="product-grid__heading">{{ section.settings.heading }}</h2>
+    {%- endif -%}
+
+    {%- if source == 'collection' and section.settings.collection != blank -%}
+      <a href="{{ section.settings.collection.url }}" class="product-grid__view-all">View all</a>
+    {%- endif -%}
+  </div>
+
+  {%- if source == 'collection' -%}
+
+    {%- if products.size > 0 -%}
+      <ul class="product-grid__list" role="list">
+        {%- for product in products -%}
+          <li class="product-grid__list-item">
+            {%- render 'product-card',
+              product: product,
+              show_quickview: show_quickview,
+              show_compare: show_compare,
+              show_eta: show_eta
+            -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- else -%}
+      <p class="product-grid__empty">
+        {%- if section.settings.collection == blank -%}
+          Select a collection in the section settings to display products here.
+        {%- else -%}
+          This collection has no products yet.
+        {%- endif -%}
+      </p>
+    {%- endif -%}
+
+  {%- else -%}
+    {%- comment -%} Manual mode: pull products from blocks {%- endcomment -%}
+
+    {%- assign manual_products = '' | split: '' -%}
+    {%- for block in section.blocks -%}
+      {%- if block.settings.product != blank -%}
+        {%- assign manual_products = manual_products | concat: block.settings.product -%}
+      {%- endif -%}
+    {%- endfor -%}
+
+    {%- if manual_products.size > 0 -%}
+      <ul class="product-grid__list" role="list">
+        {%- for product in manual_products -%}
+          <li class="product-grid__list-item" {{ block.shopify_attributes }}>
+            {%- render 'product-card',
+              product: product,
+              show_quickview: show_quickview,
+              show_compare: show_compare,
+              show_eta: show_eta
+            -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- else -%}
+      <p class="product-grid__empty">Add product blocks in the section settings to display products here.</p>
+    {%- endif -%}
+
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Product grid 1",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Featured products"
+    },
+    {
+      "type": "select",
+      "id": "product_source",
+      "label": "Product source",
+      "options": [
+        { "value": "collection", "label": "Collection" },
+        { "value": "manual", "label": "Manually selected products" }
+      ],
+      "default": "collection"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection",
+      "info": "Used when Product source is set to Collection"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "label": "Products to show",
+      "min": 2,
+      "max": 24,
+      "step": 1,
+      "default": 8,
+      "info": "Used when Product source is set to Collection"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_quickview",
+      "label": "Show quick view button",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_compare",
+      "label": "Show compare checkbox",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_eta",
+      "label": "Show estimated delivery",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "product",
+      "name": "Product",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 24,
+  "presets": [
+    {
+      "name": "Product grid 1",
+      "blocks": [
+        { "type": "product" },
+        { "type": "product" },
+        { "type": "product" },
+        { "type": "product" }
+      ]
+    }
+  ]
+}
+{% endschema %}

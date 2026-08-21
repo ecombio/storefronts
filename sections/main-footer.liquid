@@ -1,0 +1,453 @@
+{{ 'main-footer.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign section_width = section.settings.section_width
+  if section_width == blank
+    assign width_class = 'main-footer--default-width'
+  elsif section_width == 'full-width'
+    assign width_class = 'main-footer--full-width'
+  else
+    assign width_class = 'main-footer--custom-width'
+  endif
+
+  assign social_col_num = 0
+  assign payment_col_num = 0
+  if section.settings.footer_style == 'columns'
+    assign social_col_num = section.settings.social_column | plus: 0
+    assign payment_col_num = section.settings.payment_column | plus: 0
+  endif
+-%}
+
+<footer class="main-footer {{ width_class }}"
+        data-section-id="{{ section.id }}"
+        data-section-type="main-footer"
+        style="
+          --section-padding: {{ section.settings.section_padding }}px;
+          {%- if section_width == 'custom-width' %}
+            --custom-width: {{ section.settings.custom_width }}rem;
+          {%- endif %}
+        ">
+  <div class="footer-width">
+
+    {% if section.settings.menu != blank %}
+      {% assign footer_menu = section.settings.menu %}
+
+      {% if footer_menu.links.size > 0 %}
+        <div class="main-footer__menu">
+          {%- if section.settings.menu_heading != blank -%}
+            <h3 class="footer-menu__heading footer-menu__heading--top">
+              {{ section.settings.menu_heading }}
+            </h3>
+          {%- endif %}
+
+          <div class="footer-menu__columns footer-menu__columns--{{ section.settings.column_layout }}">
+              {% for column in footer_menu.links %}
+                {% if column.links.size > 0 %}
+                  <div class="footer-menu__column">
+                    <h3 class="footer-menu__heading">{{ column.title }}</h3>
+
+                    {% for section_item in column.links %}
+                      {% if section_item.links.size > 0 %}
+                        {% if section.settings.show_section_titles %}
+                          <div class="footer-menu__section-title">{{ section_item.title }}</div>
+                        {% endif %}
+
+                        {% for link in section_item.links %}
+                          <a href="{{ link.url }}" class="footer-menu__link">{{ link.title }}</a>
+                        {% endfor %}
+
+                      {% else %}
+                        <a href="{{ section_item.url }}" class="footer-menu__link">{{ section_item.title }}</a>
+                      {% endif %}
+                    {% endfor %}
+
+                    {% if social_col_num == forloop.index %}
+                      <div class="main-footer__socials">
+                        {% if section.settings.social_instagram != blank %}
+                          <a href="{{ section.settings.social_instagram }}" target="_blank">
+                            <img src="{{ 'icon-instagram.svg' | asset_url }}" alt="Instagram">
+                          </a>
+                        {% endif %}
+                        {% if section.settings.social_tiktok != blank %}
+                          <a href="{{ section.settings.social_tiktok }}" target="_blank">
+                            <img src="{{ 'tiktok.svg' | asset_url }}" alt="TikTok">
+                          </a>
+                        {% endif %}
+                        {% if section.settings.social_youtube != blank %}
+                          <a href="{{ section.settings.social_youtube }}" target="_blank">
+                            <img src="{{ 'icon-youtube.svg' | asset_url }}" alt="YouTube">
+                          </a>
+                        {% endif %}
+                        {% if section.settings.social_x != blank %}
+                          <a href="{{ section.settings.social_x }}" target="_blank">
+                            <img src="{{ 'icon-x.svg' | asset_url }}" alt="X">
+                          </a>
+                        {% endif %}
+                        {% if section.settings.social_facebook != blank %}
+                          <a href="{{ section.settings.social_facebook }}" target="_blank">
+                            <img src="{{ 'icon-facebook.svg' | asset_url }}" alt="Facebook">
+                          </a>
+                        {% endif %}
+                        {% if section.settings.social_linkedin != blank %}
+                          <a href="{{ section.settings.social_linkedin }}" target="_blank">
+                            <img src="{{ 'icon-linkedin.svg' | asset_url }}" alt="LinkedIn">
+                          </a>
+                        {% endif %}
+                      </div>
+                    {% endif %}
+
+                    {% if payment_col_num == forloop.index %}
+                      <div class="main-footer__payments">
+                        <img src="{{ 'icon-visa.svg' | asset_url }}" alt="Visa">
+                        <img src="{{ 'icon-mastercard.svg' | asset_url }}" alt="Mastercard">
+                        <img src="{{ 'icon-discover.svg' | asset_url }}" alt="Discover">
+                        <img src="{{ 'icon-amex.svg' | asset_url }}" alt="American Express">
+                        <img src="{{ 'icon-paypal.svg' | asset_url }}" alt="PayPal">
+                        <img src="{{ 'icon-applepay.svg' | asset_url }}" alt="Apple Pay">
+                        <img src="{{ 'icon-googlepay.svg' | asset_url }}" alt="Google Pay">
+                        <img src="{{ 'icon-amazonpay.svg' | asset_url }}" alt="Amazon Pay">
+                      </div>
+                    {% endif %}
+                  </div>
+                {% endif %}
+              {% endfor %}
+
+              {% if section.settings.footer_style == 'columns' and section.blocks.size > 0 %}
+                <div class="footer-menu__column footer-menu__column--badges">
+                  <div class="footer-menu__badges">
+                    {% for block in section.blocks %}
+                      {% if block.type == 'badge' and block.settings.image != blank %}
+                        {% liquid
+                          assign has_hover = false
+                          if block.settings.hover_image != blank
+                            assign has_hover = true
+                          endif
+                        %}
+                        <div class="footer-menu__badge" {{ block.shopify_attributes }}>
+                          {% if block.settings.link != blank %}
+                            <a
+                              href="{{ block.settings.link }}"
+                              target="_blank"
+                              rel="noreferrer noopener"
+                              class="footer-menu__badge-link{% if has_hover %} footer-menu__badge-link--flip{% endif %}">
+                              <img
+                                class="footer-menu__badge-img footer-menu__badge-img--base"
+                                src="{{ block.settings.image | image_url: width: 200 }}"
+                                alt="{{ block.settings.alt | escape }}"
+                                width="60"
+                                loading="lazy">
+                              {% if has_hover %}
+                                <img
+                                  class="footer-menu__badge-img footer-menu__badge-img--hover"
+                                  src="{{ block.settings.hover_image | image_url: width: 200 }}"
+                                  alt=""
+                                  aria-hidden="true"
+                                  width="60"
+                                  loading="lazy">
+                              {% endif %}
+                            </a>
+                          {% else %}
+                            <span class="footer-menu__badge-link{% if has_hover %} footer-menu__badge-link--flip{% endif %}">
+                              <img
+                                class="footer-menu__badge-img footer-menu__badge-img--base"
+                                src="{{ block.settings.image | image_url: width: 200 }}"
+                                alt="{{ block.settings.alt | escape }}"
+                                width="60"
+                                loading="lazy">
+                              {% if has_hover %}
+                                <img
+                                  class="footer-menu__badge-img footer-menu__badge-img--hover"
+                                  src="{{ block.settings.hover_image | image_url: width: 200 }}"
+                                  alt=""
+                                  aria-hidden="true"
+                                  width="60"
+                                  loading="lazy">
+                              {% endif %}
+                            </span>
+                          {% endif %}
+                        </div>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+        </div>
+      {% endif %}
+    {% endif %}
+
+    <div class="main-footer__content"></div>
+
+    <div class="main-footer__bottom{% if section.settings.footer_style == 'columns' %} main-footer__bottom--compact{% endif %}">
+
+      {% if section.settings.footer_style == 'original' %}
+        <div class="main-footer__icons">
+          <div class="main-footer__payments">
+            <img src="{{ 'icon-visa.svg' | asset_url }}" alt="Visa">
+            <img src="{{ 'icon-mastercard.svg' | asset_url }}" alt="Mastercard">
+            <img src="{{ 'icon-paypal.svg' | asset_url }}" alt="PayPal">
+            <img src="{{ 'icon-applepay.svg' | asset_url }}" alt="Apple Pay">
+            <img src="{{ 'icon-googlepay.svg' | asset_url }}" alt="Google Pay">
+            <img src="{{ 'icon-amazonpay.svg' | asset_url }}" alt="Amazon Pay">
+            <img src="{{ 'icon-amex.svg' | asset_url }}" alt="American Express">
+            <img src="{{ 'icon-discover.svg' | asset_url }}" alt="Discover">
+          </div>
+
+          <div class="main-footer__socials">
+            {% if section.settings.social_x != blank %}
+              <a href="{{ section.settings.social_x }}" target="_blank">
+                <img src="{{ 'icon-x.svg' | asset_url }}" alt="X">
+              </a>
+            {% endif %}
+            {% if section.settings.social_tiktok != blank %}
+              <a href="{{ section.settings.social_tiktok }}" target="_blank">
+                <img src="{{ 'tiktok.svg' | asset_url }}" alt="TikTok">
+              </a>
+            {% endif %}
+            {% if section.settings.social_youtube != blank %}
+              <a href="{{ section.settings.social_youtube }}" target="_blank">
+                <img src="{{ 'icon-youtube.svg' | asset_url }}" alt="YouTube">
+              </a>
+            {% endif %}
+            {% if section.settings.social_instagram != blank %}
+              <a href="{{ section.settings.social_instagram }}" target="_blank">
+                <img src="{{ 'icon-instagram.svg' | asset_url }}" alt="Instagram">
+              </a>
+            {% endif %}
+            {% if section.settings.social_facebook != blank %}
+              <a href="{{ section.settings.social_facebook }}" target="_blank">
+                <img src="{{ 'icon-facebook.svg' | asset_url }}" alt="Facebook">
+              </a>
+            {% endif %}
+            {% if section.settings.social_linkedin != blank %}
+              <a href="{{ section.settings.social_linkedin }}" target="_blank">
+                <img src="{{ 'icon-linkedin.svg' | asset_url }}" alt="LinkedIn">
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="main-footer__bottom-inner">
+        <div class="main-footer__copyright">
+          <p>{{ section.settings.copyright_text }}</p>
+        </div>
+
+        <ul class="main-footer__policies">
+          <li><a href="/policies/privacy-policy">Privacy Policy</a></li>
+          <li><a href="/policies/terms-of-service">Terms of Service</a></li>
+          <li><a href="/policies/refund-policy">Refund Policy</a></li>
+          <li><a href="/policies/shipping-policy">Shipping Policy</a></li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</footer>
+
+<script src="{{ 'main-footer.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "Main footer",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": "",
+      "info": "Defaults to Default width so the footer lines up with the header above it. Changing this independently of the header's own Section width setting will break that alignment."
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 24,
+      "info": "Applies at tablet and desktop widths. Mobile (< 640px) keeps its own fixed, tighter padding regardless of this setting. Defaults to 24px to match the header's default."
+    },
+    {
+      "type": "header",
+      "content": "Footer Menu"
+    },
+    {
+      "type": "select",
+      "id": "footer_style",
+      "label": "Footer style",
+      "options": [
+        { "value": "original", "label": "Original (payments/socials in bottom bar)" },
+        { "value": "columns", "label": "Columns with badges" }
+      ],
+      "default": "original",
+      "info": "Switch between the original footer layout and the newer column-based layout with social/payment icons embedded in a menu column plus a trust-badges area."
+    },
+    {
+      "type": "text",
+      "id": "menu_heading",
+      "label": "Menu heading (optional)"
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Menu",
+      "info": "Select a nested menu for the footer"
+    },
+    {
+      "type": "select",
+      "id": "column_layout",
+      "label": "Menu columns",
+      "info": "Choose 5 columns if your footer menu has a fifth top-level link list. Choose 6 columns to make room for a dedicated badges column (Columns with badges style only).",
+      "options": [
+        { "value": "4", "label": "4 columns" },
+        { "value": "5", "label": "5 columns" },
+        { "value": "6", "label": "6 columns" }
+      ],
+      "default": "4"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_section_titles",
+      "label": "Show section titles",
+      "default": true,
+      "info": "Display Level 2 titles inside the menu"
+    },
+    {
+      "type": "select",
+      "id": "social_column",
+      "label": "Social icons column",
+      "info": "Which footer menu column the social icons appear under. Only applies to the Columns with badges style.",
+      "options": [
+        { "value": "0", "label": "None" },
+        { "value": "1", "label": "Column 1" },
+        { "value": "2", "label": "Column 2" },
+        { "value": "3", "label": "Column 3" },
+        { "value": "4", "label": "Column 4" },
+        { "value": "5", "label": "Column 5" }
+      ],
+      "default": "1",
+      "visible_if": "{{ section.settings.footer_style == 'columns' }}"
+    },
+    {
+      "type": "select",
+      "id": "payment_column",
+      "label": "Payment icons column",
+      "info": "Which footer menu column the payment icons appear under. Only applies to the Columns with badges style.",
+      "options": [
+        { "value": "0", "label": "None" },
+        { "value": "1", "label": "Column 1" },
+        { "value": "2", "label": "Column 2" },
+        { "value": "3", "label": "Column 3" },
+        { "value": "4", "label": "Column 4" },
+        { "value": "5", "label": "Column 5" }
+      ],
+      "default": "3",
+      "visible_if": "{{ section.settings.footer_style == 'columns' }}"
+    },
+    {
+      "type": "header",
+      "content": "Copyright"
+    },
+    {
+      "type": "text",
+      "id": "copyright_text",
+      "label": "Copyright text",
+      "default": "© 2026 ECombio. All rights reserved."
+    },
+    {
+      "type": "header",
+      "content": "Social Media Links"
+    },
+    {
+      "type": "url",
+      "id": "social_instagram",
+      "label": "Instagram"
+    },
+    {
+      "type": "url",
+      "id": "social_tiktok",
+      "label": "TikTok"
+    },
+    {
+      "type": "url",
+      "id": "social_youtube",
+      "label": "YouTube"
+    },
+    {
+      "type": "url",
+      "id": "social_x",
+      "label": "X (Twitter)"
+    },
+    {
+      "type": "url",
+      "id": "social_facebook",
+      "label": "Facebook"
+    },
+    {
+      "type": "url",
+      "id": "social_linkedin",
+      "label": "LinkedIn"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "badge",
+      "name": "Trust badge",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Badge image"
+        },
+        {
+          "type": "image_picker",
+          "id": "hover_image",
+          "label": "Hover image (optional)",
+          "info": "Shown when the badge is hovered or focused, e.g. accreditation details. Leave blank for a static badge."
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link (optional)",
+          "info": "Makes the badge clickable, e.g. a BBB or B Corp profile page."
+        },
+        {
+          "type": "text",
+          "id": "alt",
+          "label": "Alt text",
+          "info": "Describe the badge for accessibility, e.g. \"Certified B Corporation\". Only shows when Footer style is set to Columns with badges."
+        }
+      ]
+    }
+  ],
+  "max_blocks": 6,
+  "presets": [
+    {
+      "name": "Main footer",
+      "blocks": []
+    }
+  ]
+}
+{% endschema %}

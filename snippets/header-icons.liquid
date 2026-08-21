@@ -1,0 +1,51 @@
+{% comment %}
+  Snippet: header-icons.liquid
+  Renders the right-side icons: Sign in / Register + Cart.
+
+  Usage:
+    render 'header-icons'
+{% endcomment %}
+
+<div class="ecombio-header__icons">
+
+  {%- comment -%} Account link {%- endcomment -%}
+  <a
+    href="{%- if customer -%}{{ routes.account_url }}{%- else -%}{{ routes.account_login_url }}{%- endif -%}"
+    class="ecombio-header__account-link"
+    aria-label="{%- if customer -%}My account{%- else -%}Sign in or register{%- endif -%}"
+  >
+    <svg class="ecombio-header__icon" width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+      <circle cx="11" cy="7.5" r="3.5" stroke="currentColor" stroke-width="1.6"/>
+      <path d="M3.5 19c0-4.142 3.358-7.5 7.5-7.5s7.5 3.358 7.5 7.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>
+    <span class="ecombio-header__account-label">
+      {%- if customer -%}
+        My Account
+      {%- else -%}
+        Sign in/ Register
+      {%- endif -%}
+    </span>
+  </a>
+
+  {%- comment -%} Cart link {%- endcomment -%}
+  <a
+    href="{{ routes.cart_url }}"
+    class="ecombio-header__cart-link"
+    aria-label="Cart ({{ cart.item_count }} items)"
+  >
+    <span class="ecombio-header__cart-icon-wrap">
+      <svg class="ecombio-header__icon" width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+        <path d="M2 2h2.5l1.8 9.2a2 2 0 0 0 2 1.8h7.4a2 2 0 0 0 1.96-1.6L18.5 6H5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="8.5" cy="18.5" r="1.5" fill="currentColor"/>
+        <circle cx="15.5" cy="18.5" r="1.5" fill="currentColor"/>
+      </svg>
+
+      {%- if cart.item_count > 0 -%}
+        <span class="ecombio-header__cart-badge" aria-hidden="true">
+          {{- cart.item_count | at_most: 99 -}}
+        </span>
+      {%- endif -%}
+    </span>
+  </a>
+
+</div>

@@ -1,0 +1,75 @@
+{%- liquid
+  assign threshold_num = threshold | times: 1.0
+-%}
+
+{%- if enabled and threshold_num > 0 -%}
+  {{ 'progress-bar.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'progress-bar.js' | asset_url }}" defer></script>
+
+  {%- liquid
+    assign threshold_cents = threshold_num | times: 100 | round
+    assign current_cents   = current_total | default: 0
+    if current_cents < 0
+      assign current_cents = 0
+    endif
+
+    assign remaining_cents = threshold_cents | minus: current_cents
+    if remaining_cents < 0
+      assign remaining_cents = 0
+    endif
+
+    assign percent = current_cents | times: 100.0 | divided_by: threshold_cents
+    if percent > 100
+      assign percent = 100
+    endif
+
+    assign is_complete = false
+    if current_cents >= threshold_cents
+      assign is_complete = true
+    endif
+
+    assign progress_template = label_progress | default: "You're {{ amount }} away from free shipping!"
+    assign complete_template = label_complete | default: "You've unlocked free shipping!"
+
+    assign remaining_money = remaining_cents | money
+    if is_complete
+      assign display_message = complete_template
+    else
+      assign display_message = progress_template | replace: '{{ amount }}', remaining_money
+    endif
+  -%}
+
+  <div
+    class="ecombio-progress-bar{% if is_complete %} is-complete{% endif %}"
+    data-ecombio-progress-bar
+    data-threshold="{{ threshold_cents }}"
+    data-current="{{ current_cents }}"
+    data-label-progress="{{ progress_template | escape }}"
+    data-label-complete="{{ complete_template | escape }}"
+  >
+    <p
+      class="ecombio-progress-bar__message"
+      data-ecombio-progress-message
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      {{ display_message }}
+    </p>
+
+    <div
+      class="ecombio-progress-bar__track"
+      role="progressbar"
+      aria-valuenow="{{ percent | round }}"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      aria-label="Progress toward free shipping"
+    >
+      <div
+        class="ecombio-progress-bar__fill"
+        data-ecombio-progress-fill
+        style="width: {{ percent }}%;"
+      ></div>
+    </div>
+  </div>
+{%- endif -%}

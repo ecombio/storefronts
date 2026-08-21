@@ -1,0 +1,17 @@
+{% comment %}
+  blocks/product-reviews.liquid
+  ─────────────────────────────────────────────────────────────────────────────
+  Product Reviews theme block.
+  Rendered by sections/product-sections.liquid via the block type 'product-reviews'.
+{% endcomment %}
+
+<div class="product-reviews" {{ block.shopify_attributes }}>
+  {%- render 'judgeme-reviews', product: product -%}
+</div>
+
+{% schema %}
+{
+  "name": "Product Reviews",
+  "settings": []
+}
+{% endschema %}

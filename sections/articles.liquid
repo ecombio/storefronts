@@ -1,0 +1,234 @@
+{% comment %}
+  Section: main-article.liquid
+  Template: article
+
+  Orchestrates three self-contained snippets:
+    - article-player   (Read Aloud + Follow Along)
+    - article-toc      (Table of Contents)
+    - article-summarizer (Secure AI hand-off)
+
+  Each snippet owns its own logic and styles.
+  This file handles layout only.
+{% endcomment %}
+
+{{ 'main-article.css'       | asset_url | stylesheet_tag }}
+{{ 'article-player.css'     | asset_url | stylesheet_tag }}
+{{ 'article-toc.css'        | asset_url | stylesheet_tag }}
+{{ 'article-summarizer.css' | asset_url | stylesheet_tag }}
+
+{% comment %} ── Banner ───────────────────────────────────────────────── {% endcomment %}
+<header
+  class="ma-banner"
+  {% if article.image %}
+    style="background-image: url('{{ article.image | image_url: width: 1600 }}')"
+  {% endif %}
+>
+  <div class="ma-banner__inner">
+    {% if blog.title %}
+      <a class="ma-banner__eyebrow" href="{{ blog.url }}">{{ blog.title }}</a>
+    {% endif %}
+    <h1 class="ma-banner__title">{{ article.title }}</h1>
+    {% assign pub_date = article.published_at | time_tag: format: 'date' %}
+    <p class="ma-banner__meta">
+      {{ pub_date }}
+      <span class="ma-banner__meta-sep" aria-hidden="true">·</span>
+      {{ article.author }}
+    </p>
+  </div>
+</header>
+
+{% comment %} ── Sticky Read Aloud Player ─────────────────────────────── {% endcomment %}
+{% render 'article-player' %}
+
+{% comment %} ── AI Summarizer (full-width, above body) ───────────────── {% endcomment %}
+<div class="ma-summarizer-wrap">
+  {% render 'article-summarizer', article: article %}
+</div>
+
+{% comment %} ── 3-column body ─────────────────────────────────────────── {% endcomment %}
+<div class="ma-body">
+
+  {% comment %} Left: Table of Contents {% endcomment %}
+  <aside class="ma-body__toc" aria-label="Table of contents">
+    {% render 'article-toc' %}
+  </aside>
+
+  {% comment %} Center: Article content {% endcomment %}
+  <main class="ma-body__content" id="article-content" role="main">
+    {% comment %}
+      .article-content is intentionally scoped to ONLY the rendered
+      article body. article-player.js and article-toc.js both query
+      this class to wrap words / build the TOC — it must never include
+      the comments list or comment form below, or those get read aloud
+      / wrapped in word-spans too.
+    {% endcomment %}
+    <div class="article-content">
+      {{ article.content }}
+    </div>
+
+    {% comment %} ── Comments ────────────────────────────────────────── {% endcomment %}
+    {% if blog.comments_enabled? %}
+      <section class="ma-comments" id="comments">
+        <h2 class="ma-comments__title">{{ 'blog.article_comments' | t }}</h2>
+
+        {% paginate article.comments by 10 %}
+          {% for comment in article.comments %}
+            <div class="ma-comment">
+              <p class="ma-comment__author">{{ comment.author }}</p>
+              <p class="ma-comment__date">{{ comment.created_at | time_tag: format: 'date' }}</p>
+              <p class="ma-comment__body">{{ comment.content }}</p>
+            </div>
+          {% endfor %}
+          {{ paginate | default_pagination: anchor: 'comments' }}
+        {% endpaginate %}
+
+        {% form 'new_comment', article %}
+          <h2 class="ma-comments__title">{{ 'blog.comment_form_title' | t }}</h2>
+          {{ form.errors | default_errors }}
+
+          {% if form.posted_successfully? %}
+            <p class="ma-comment-form__success">{{ 'blog.comment_form_success' | t }}</p>
+          {% endif %}
+
+          <div class="ma-comment-form__field">
+            <label for="comment-author">{{ 'blog.comment_form_name' | t }}</label>
+            <input type="text" name="comment[author]" id="comment-author" value="{{ form.author }}" autocomplete="name" required>
+          </div>
+          <div class="ma-comment-form__field">
+            <label for="comment-email">{{ 'blog.comment_form_email' | t }}</label>
+            <input type="email" name="comment[email]" id="comment-email" value="{{ form.email }}" autocomplete="email" required>
+          </div>
+          <div class="ma-comment-form__field">
+            <label for="comment-body">{{ 'blog.comment_form_body' | t }}</label>
+            <textarea name="comment[body]" id="comment-body" required>{{ form.body }}</textarea>
+          </div>
+          <button type="submit" class="ma-comment-form__submit">
+            {{ 'blog.comment_form_submit' | t }}
+          </button>
+        {% endform %}
+      </section>
+    {% endif %}
+  </main>
+
+  {% comment %} Right: Tags + Share {% endcomment %}
+  <aside class="ma-body__sidebar" aria-label="Article sidebar">
+
+    {% if article.tags.size > 0 %}
+      <div class="ma-sidebar-widget">
+        <p class="ma-sidebar-widget__label">Tags</p>
+        <ul class="ma-sidebar-tags" role="list">
+          {% for tag in article.tags %}
+            <li>
+              <a href="{{ blog.url }}/tagged/{{ tag | handle }}" class="ma-sidebar-tag">
+                {{ tag }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <div class="ma-sidebar-widget">
+      <p class="ma-sidebar-widget__label">Share</p>
+      <ul class="ma-sidebar-share" role="list">
+        <li>
+          <a
+            class="ma-sidebar-share__link"
+            href="https://twitter.com/intent/tweet?url={{ shop.url | append: article.url | url_encode }}&text={{ article.title | url_encode }}"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            Share on X
+          </a>
+        </li>
+        <li>
+          <a
+            class="ma-sidebar-share__link"
+            href="https://www.linkedin.com/sharing/share-offsite/?url={{ shop.url | append: article.url | url_encode }}"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            Share on LinkedIn
+          </a>
+        </li>
+        <li>
+          <a
+            class="ma-sidebar-share__link"
+            href="mailto:?subject={{ article.title | url_encode }}&body={{ shop.url | append: article.url | url_encode }}"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>
+            Share via email
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    {% comment %} Recent posts in this blog {% endcomment %}
+    {% assign other_articles = blog.articles | where_exp: 'a', 'a.handle != article.handle' %}
+    {% if other_articles.size > 0 %}
+      <div class="ma-sidebar-widget">
+        <p class="ma-sidebar-widget__label">More articles</p>
+        <ul class="ma-sidebar-recent" role="list">
+          {% for post in other_articles limit: 5 %}
+            <li>
+              <a href="{{ post.url }}" class="ma-sidebar-recent__link">{{ post.title }}</a>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+  </aside>
+
+</div>
+
+{% comment %} ── Outro ─────────────────────────────────────────────────── {% endcomment %}
+<footer class="ma-outro">
+
+  {% comment %} Prev / Next pagination {% endcomment %}
+  {% if blog.previous_article or blog.next_article %}
+    <nav class="ma-pagination" aria-label="Article navigation">
+      {% if blog.previous_article %}
+        <a class="ma-pagination__link ma-pagination__link--prev" href="{{ blog.previous_article.url }}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+          <span>
+            <span class="ma-pagination__label">Previous</span>
+            <span class="ma-pagination__title">{{ blog.previous_article.title }}</span>
+          </span>
+        </a>
+      {% endif %}
+      {% if blog.next_article %}
+        <a class="ma-pagination__link ma-pagination__link--next" href="{{ blog.next_article.url }}">
+          <span>
+            <span class="ma-pagination__label">Next</span>
+            <span class="ma-pagination__title">{{ blog.next_article.title }}</span>
+          </span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+      {% endif %}
+    </nav>
+  {% endif %}
+
+  {% comment %} Back to blog CTA {% endcomment %}
+  <div class="ma-outro__cta">
+    <a class="ma-outro__back" href="{{ blog.url }}">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+      All {{ blog.title }} articles
+    </a>
+  </div>
+
+</footer>
+
+{% comment %} ── Deferred JS ───────────────────────────────────────────── {% endcomment %}
+<script src="{{ 'article-player.js'     | asset_url }}" defer></script>
+<script src="{{ 'article-toc.js'        | asset_url }}" defer></script>
+<script src="{{ 'article-summarizer.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "t:general.article",
+  "settings": []
+}
+{% endschema %}

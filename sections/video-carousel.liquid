@@ -1,0 +1,253 @@
+{{ 'video-carousel.css' | asset_url | stylesheet_tag }}
+{{ 'video-card.css' | asset_url | stylesheet_tag }}
+{{ 'video-modal.css' | asset_url | stylesheet_tag }}
+{%- comment -%}
+  product-card.liquid doesn't load its own CSS (see asset ownership rule
+  in that file) — it expects the host page to have loaded it already.
+  Since a shoppable video block can render a product-card inside the
+  modal on any page this section is placed on, load it here explicitly.
+{%- endcomment -%}
+{{ 'product-card.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Section width / side padding below follow the pattern from
+  sections/example-width-section.liquid: --section-padding and
+  --custom-width are local to THIS section instance and are only ever
+  set inline here. They never read from the global --page-margin /
+  --page-width variables (snippets/css-variables.liquid), so bumping
+  the global Body side padding setting can no longer break this
+  section's layout the way it broke the old full_width checkbox.
+
+  Unlike the example section, this theme has no shared global
+  default-width/full-width/custom-width utility classes, so these
+  are scoped to this component as video-carousel__default-width /
+  video-carousel__full-width / video-carousel__custom-width in
+  video-carousel.css, replacing the old .video-carousel__boxed and
+  .video-carousel__full-bleed rules.
+{%- endcomment -%}
+
+{%- liquid
+  assign show_arrows = section.settings.show_arrows
+  assign show_dots = section.settings.show_dots
+  assign width_type = section.settings.section_width
+  if width_type == blank
+    assign width_class = 'video-carousel__default-width'
+  else
+    assign width_class = 'video-carousel__' | append: width_type
+  endif
+-%}
+
+<div
+  class="video-carousel-section"
+  id="VideoCarousel-{{ section.id }}"
+  data-video-carousel
+  data-section-id="{{ section.id }}"
+  data-autoplay-first="{{ section.settings.autoplay_first }}"
+  style="
+    --vc-slides-desktop: {{ section.settings.slides_desktop }};
+    --vc-slides-tablet: {{ section.settings.slides_tablet }};
+    --vc-slides-mobile: {{ section.settings.slides_mobile }};
+    --vc-gap: {{ section.settings.gap }}px;
+    {% if section.settings.background_color != blank %}--vc-bg: {{ section.settings.background_color }};{% endif %}
+    {% if section.settings.text_color != blank %}--vc-text: {{ section.settings.text_color }};{% endif %}
+    --vc-card-ratio: {% if section.settings.card_style == 'reel' %}9 / 16{% else %}16 / 9{% endif %};
+  "
+>
+  <div
+    class="{{ width_class }}"
+    style="
+      --section-padding: {{ section.settings.section_padding }}px;
+      {%- if width_type == 'custom-width' %}
+        --custom-width: {{ section.settings.custom_width }}rem;
+      {%- endif %}
+    "
+  >
+    {%- if section.settings.heading != blank or section.settings.subheading != blank -%}
+      <div class="video-carousel__header">
+        {%- if section.settings.heading != blank -%}
+          <h2 class="video-carousel__heading">{{ section.settings.heading }}</h2>
+        {%- endif -%}
+        {%- if section.settings.subheading != blank -%}
+          <p class="video-carousel__subheading">{{ section.settings.subheading }}</p>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <div class="video-carousel__wrapper">
+      {%- if show_arrows -%}
+        <button
+          type="button"
+          class="video-carousel__arrow video-carousel__arrow--prev"
+          aria-label="Previous videos"
+          data-carousel-prev
+        >
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+            <path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      {%- endif -%}
+
+      <div
+        class="video-carousel__track"
+        data-carousel-track
+        tabindex="0"
+        role="region"
+        aria-label="{{ section.settings.heading | default: 'Video carousel' }}"
+      >
+        <div class="video-carousel__list" data-carousel-list>
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'video' -%}
+              {%- render 'video-card', block: block, index: forloop.index, cta_style: section.settings.cta_style -%}
+            {%- endif -%}
+          {%- else -%}
+            <p class="video-carousel__empty">Add video blocks in the theme editor.</p>
+          {%- endfor -%}
+        </div>
+      </div>
+
+      {%- if show_arrows -%}
+        <button
+          type="button"
+          class="video-carousel__arrow video-carousel__arrow--next"
+          aria-label="Next videos"
+          data-carousel-next
+        >
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+            <path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      {%- endif -%}
+    </div>
+
+    {%- if show_dots -%}
+      <div class="video-carousel__dots" data-carousel-dots role="tablist" aria-label="Slide navigation"></div>
+    {%- endif -%}
+  </div>
+</div>
+
+{%- render 'video-modal' -%}
+
+{{ 'video-carousel.js' | asset_url | script_tag }}
+{{ 'video-card.js' | asset_url | script_tag }}
+{{ 'video-modal.js' | asset_url | script_tag }}
+
+{% schema %}
+{
+  "name": "Video carousel",
+  "tag": "section",
+  "class": "section video-carousel",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Watch & learn" },
+    { "type": "textarea", "id": "subheading", "label": "Subheading" },
+    { "type": "color", "id": "background_color", "label": "Background color" },
+    { "type": "color", "id": "text_color", "label": "Text color" },
+    { "type": "header", "content": "Layout" },
+    {
+      "type": "select",
+      "id": "card_style",
+      "label": "Card style",
+      "options": [
+        { "value": "standard", "label": "Standard (16:9)" },
+        { "value": "reel", "label": "Reel / Shorts (9:16)" }
+      ],
+      "default": "standard"
+    },
+    { "type": "range", "id": "slides_desktop", "label": "Videos per view (desktop)", "min": 1, "max": 5, "step": 1, "default": 3 },
+    { "type": "range", "id": "slides_tablet", "label": "Videos per view (tablet)", "min": 1, "max": 4, "step": 1, "default": 2 },
+    { "type": "range", "id": "slides_mobile", "label": "Videos per view (mobile)", "min": 1, "max": 4, "step": 1, "default": 1 },
+    { "type": "range", "id": "gap", "label": "Gap between videos", "min": 0, "max": 40, "step": 2, "unit": "px", "default": 16 },
+    { "type": "checkbox", "id": "show_arrows", "label": "Show navigation arrows", "default": true },
+    { "type": "checkbox", "id": "show_dots", "label": "Show dots", "default": true },
+    {
+      "type": "checkbox",
+      "id": "autoplay_first",
+      "label": "Autoplay first video's sound off preview",
+      "default": false,
+      "info": "Only applies to uploaded MP4 videos, muted."
+    },
+    { "type": "header", "content": "Section layout" },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": "",
+      "info": "Default caps the carousel at your theme's standard content width. Full width spans edge-to-edge. Custom width lets you set an exact max width below."
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 24,
+      "info": "This section's own side padding, independent of the global Body side padding setting."
+    },
+    { "type": "header", "content": "Shoppable videos" },
+    {
+      "type": "select",
+      "id": "cta_style",
+      "label": "Product CTA style",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "overlay", "label": "Overlay" },
+        { "value": "icon_button", "label": "Icon button" },
+        { "value": "text_button", "label": "Text button" },
+        { "value": "card_outside_video", "label": "Card outside video" }
+      ],
+      "default": "card_outside_video",
+      "info": "Applies to every video block in this carousel that has a product selected. Choose None to hide the on-card CTA (the video still opens the product modal on click)."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "video",
+      "name": "Video",
+      "settings": [
+        {
+          "type": "video_url",
+          "id": "video_url",
+          "label": "Video URL",
+          "accept": ["youtube", "vimeo"],
+          "info": "Paste a YouTube or Vimeo link. Leave blank if uploading a file below."
+        },
+        { "type": "video", "id": "video_file", "label": "Or upload a video file" },
+        {
+          "type": "image_picker",
+          "id": "thumbnail",
+          "label": "Thumbnail image",
+          "info": "Recommended if using a Video URL. Uploaded videos can use their own preview image."
+        },
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product",
+          "info": "Optional. If selected, the video opens in a split view with this product's card alongside the video."
+        },
+        { "type": "text", "id": "title", "label": "Title" },
+        { "type": "text", "id": "subtitle", "label": "Subtitle" }
+      ]
+    }
+  ],
+  "presets": [
+    { "name": "Video carousel", "blocks": [{ "type": "video" }, { "type": "video" }, { "type": "video" }] }
+  ]
+}
+{% endschema %}

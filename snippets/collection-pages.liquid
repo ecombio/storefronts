@@ -1,0 +1,18 @@
+{% comment %}
+  snippets/collection-pages.liquid
+  Renders the pages grid for collection-showroom.liquid.
+
+  Expects:
+    pages  {Array} — collection.metafields.custom.pages.value
+                     (array of Shopify page objects)
+
+  Card rendering: delegates to page-card.liquid.
+{% endcomment %}
+
+<div class="collection-pages">
+  <div class="collection-pages__grid">
+    {%- for page in pages -%}
+      {%- render 'page-card', page: page -%}
+    {%- endfor -%}
+  </div>
+</div>

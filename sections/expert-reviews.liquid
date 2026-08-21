@@ -1,0 +1,163 @@
+{%- comment -%}
+  sections/expert-reviews.liquid
+  ============================================
+  Metafield-driven video carousel for third-party review videos.
+
+  Reviews are pulled directly from the product's `custom.expert_reviews`
+  metafield (List of metaobject references, type `expert_reviews`) —
+  NOT from a section setting. There is nothing to configure in the
+  theme editor for which reviews show; whatever is assigned to the
+  product's metafield is what renders, in that order.
+
+  If the product has no metafield value, or this section is rendered
+  outside product context, this renders NOTHING — no wrapper markup,
+  no CSS/JS asset requests, no video-modal include — so it drops
+  cleanly out of the page.
+
+  Still reuses, unchanged:
+    - assets/video-section.js   → carousel arrow/scroll behavior
+    - assets/video-card.js      → play-trigger click → 'video-card:play' dispatch
+    - snippets/video-modal.liquid + assets/video-modal.css/js → shared lightbox
+
+  snippets/expert-review-card.liquid reads metaobject fields
+  (review.field.value) — unchanged by this switch.
+{%- endcomment -%}
+
+{%- liquid
+  assign reviews = blank
+  if product
+    assign reviews = product.metafields.custom.expert_reviews.value
+  endif
+-%}
+
+{%- if reviews != blank and reviews.size > 0 -%}
+  <link rel="stylesheet" href="{{ 'expert-reviews.css' | asset_url }}" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="{{ 'video-modal.css' | asset_url }}" media="print" onload="this.media='all'">
+  <noscript>
+    <link rel="stylesheet" href="{{ 'expert-reviews.css' | asset_url }}">
+    <link rel="stylesheet" href="{{ 'video-modal.css' | asset_url }}">
+  </noscript>
+  <script src="{{ 'video-section.js' | asset_url }}" defer></script>
+  <script src="{{ 'video-card.js' | asset_url }}" defer></script>
+  <script src="{{ 'video-modal.js' | asset_url }}" defer></script>
+
+  <div
+    {% render 'section-width', section: section, extra_class: 'expert-reviews' %}
+    id="ExpertReviews-{{ section.id }}"
+    data-video-section
+  >
+
+    {%- if section.settings.heading != blank -%}
+      <div class="expert-reviews__header">
+        <h2 class="expert-reviews__heading">{{ section.settings.heading }}</h2>
+      </div>
+    {%- endif -%}
+
+    <div class="expert-reviews__carousel" data-video-carousel>
+
+      <button
+        type="button"
+        class="expert-reviews__arrow expert-reviews__arrow--prev"
+        data-video-prev
+        aria-label="Previous reviews"
+        aria-controls="ExpertReviewsTrack-{{ section.id }}"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+          <path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <div
+        class="expert-reviews__track"
+        id="ExpertReviewsTrack-{{ section.id }}"
+        data-video-track
+        role="list"
+      >
+        {%- for review in reviews -%}
+          <div
+            class="expert-reviews__item"
+            id="ExpertReview-{{ review.id | split: '/' | last }}"
+            data-video-item
+            role="listitem"
+          >
+            {%- render 'expert-review-card', review: review -%}
+          </div>
+        {%- endfor -%}
+      </div>
+
+      <button
+        type="button"
+        class="expert-reviews__arrow expert-reviews__arrow--next"
+        data-video-next
+        aria-label="Next reviews"
+        aria-controls="ExpertReviewsTrack-{{ section.id }}"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+          <path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+    </div>
+  </div>
+
+  {%- render 'video-modal' -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Expert Reviews",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Expert Reviews"
+    },
+    {
+      "type": "paragraph",
+      "content": "Reviews are pulled automatically from this product's Expert Reviews metafield. Assign entries to the product to control what shows here."
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 28
+    }
+  ],
+  "presets": [
+    {
+      "name": "Expert Reviews"
+    }
+  ]
+}
+{% endschema %}

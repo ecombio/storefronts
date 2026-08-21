@@ -1,0 +1,239 @@
+{% comment %}
+  Product Carousel Section
+  ------------------------
+  Renders your existing 'product-card' snippet inside a responsive,
+  swipeable/draggable carousel with arrows + dots.
+
+  ASSUMPTION: your product-card snippet is called like:
+    {% render 'product-card', card_product: product %}
+  If your snippet expects a different param name (e.g. `product:`),
+  just change the `card_product:` line below to match.
+
+  ASSUMPTION: your banner slide snippet is saved as
+    snippets/banner-carousel-slide.liquid
+  and is rendered as {% render 'banner-carousel-slide', block: block, is_first: true %}.
+  If the filename differs, update the `render 'banner-carousel-slide'` line below.
+{% endcomment %}
+
+<section
+  class="product-carousel-section color-{{ section.settings.color_scheme }}"
+  data-section-id="{{ section.id }}"
+  data-section-type="product-carousel"
+>
+  <div class="product-carousel-container page-width">
+
+    {%- if section.settings.heading != blank -%}
+      <div class="product-carousel-header">
+        <h2 class="product-carousel-heading">{{ section.settings.heading }}</h2>
+        {%- if section.settings.show_view_all and section.settings.collection != blank -%}
+          <a href="{{ section.settings.collection.url }}" class="product-carousel-view-all">
+            {{ section.settings.view_all_label | default: 'View all' }}
+          </a>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- liquid
+      if section.settings.collection != blank
+        assign carousel_products = section.settings.collection.products
+      else
+        assign carousel_products = section.settings.products
+      endif
+      assign carousel_products_count = carousel_products.size
+      assign banner_block = section.blocks | where: 'type', 'banner' | first
+      assign show_banner = false
+      if section.settings.show_banner_card and banner_block
+        assign show_banner = true
+      endif
+    -%}
+
+    {%- if carousel_products_count > 0 or show_banner -%}
+      <div
+        class="product-carousel"
+        data-product-carousel
+        data-slides-desktop="{{ section.settings.slides_per_view_desktop }}"
+        data-slides-tablet="{{ section.settings.slides_per_view_tablet }}"
+        data-slides-mobile="{{ section.settings.slides_per_view_mobile }}"
+        data-autoplay="{{ section.settings.autoplay }}"
+        data-autoplay-speed="{{ section.settings.autoplay_speed | times: 1000 }}"
+        data-loop="{{ section.settings.enable_loop }}"
+        data-gap="{{ section.settings.slide_gap }}"
+      >
+        <div class="product-carousel__viewport" data-carousel-viewport>
+          <ul class="product-carousel__track" data-carousel-track role="list">
+            {%- if show_banner -%}
+              <li class="product-carousel__slide product-carousel__slide--banner" data-carousel-slide>
+                {%- render 'banner-card', block: banner_block, is_first: true -%}
+              </li>
+            {%- endif -%}
+            {%- for product in carousel_products limit: section.settings.products_to_show -%}
+              <li class="product-carousel__slide" data-carousel-slide>
+                {%- render 'product-card', card_product: product -%}
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
+
+        {%- if section.settings.show_arrows -%}
+          <button
+            type="button"
+            class="product-carousel__arrow product-carousel__arrow--prev"
+            data-carousel-prev
+            aria-label="Previous products"
+          >
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+              <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <button
+            type="button"
+            class="product-carousel__arrow product-carousel__arrow--next"
+            data-carousel-next
+            aria-label="Next products"
+          >
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+              <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        {%- endif -%}
+
+        {%- if section.settings.show_dots -%}
+          <div class="product-carousel__dots" data-carousel-dots role="tablist" aria-label="Slide navigation"></div>
+        {%- endif -%}
+      </div>
+    {%- else -%}
+      <p class="product-carousel__empty">No products to display.</p>
+    {%- endif -%}
+
+  </div>
+</section>
+
+{{ 'product-carousel-1.css' | asset_url | stylesheet_tag }}
+{%- if show_banner -%}
+  {{ 'banner-carousel.css' | asset_url | stylesheet_tag }}
+{%- endif -%}
+<script src="{{ 'product-carousel-1.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Product Carousel 1",
+  "tag": "section",
+  "class": "section-product-carousel",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Featured Products" },
+    { "type": "checkbox", "id": "show_banner_card", "label": "Show banner card as first slide", "default": false, "info": "Requires a 'Banner card' block below." },
+    { "type": "checkbox", "id": "show_view_all", "label": "Show 'View all' link", "default": true },
+    { "type": "text", "id": "view_all_label", "label": "'View all' label", "default": "View all" },
+    { "type": "collection", "id": "collection", "label": "Collection", "info": "Leave blank to pick products manually below." },
+    { "type": "product_list", "id": "products", "label": "Products", "info": "Used only if no collection is selected." },
+    { "type": "range", "id": "products_to_show", "min": 2, "max": 24, "step": 1, "default": 12, "label": "Max products to show" },
+    { "type": "range", "id": "slides_per_view_desktop", "min": 1, "max": 6, "step": 1, "default": 4, "label": "Products per view — Desktop" },
+    { "type": "range", "id": "slides_per_view_tablet", "min": 1, "max": 4, "step": 1, "default": 3, "label": "Products per view — Tablet" },
+    { "type": "range", "id": "slides_per_view_mobile", "min": 1, "max": 3, "step": 1, "default": 1, "label": "Products per view — Mobile" },
+    { "type": "range", "id": "slide_gap", "min": 0, "max": 40, "step": 2, "default": 16, "unit": "px", "label": "Gap between products" },
+    { "type": "checkbox", "id": "show_arrows", "label": "Show arrows", "default": true },
+    { "type": "checkbox", "id": "show_dots", "label": "Show dots", "default": true },
+    { "type": "checkbox", "id": "enable_loop", "label": "Enable infinite loop", "default": false },
+    { "type": "checkbox", "id": "autoplay", "label": "Autoplay", "default": false },
+    { "type": "range", "id": "autoplay_speed", "min": 2, "max": 10, "step": 1, "default": 4, "unit": "s", "label": "Autoplay speed" },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "options": [
+        { "value": "background-1", "label": "Background 1" },
+        { "value": "background-2", "label": "Background 2" },
+        { "value": "inverse", "label": "Inverse" }
+      ],
+      "default": "background-1"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "banner",
+      "name": "Banner card",
+      "limit": 1,
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image (desktop)" },
+        { "type": "image_picker", "id": "mobile_image", "label": "Image (mobile)", "info": "Falls back to the desktop image if left blank." },
+        { "type": "url", "id": "link", "label": "Link" },
+        { "type": "text", "id": "heading", "label": "Heading" },
+        { "type": "text", "id": "subheading", "label": "Subheading" },
+        { "type": "text", "id": "price_text", "label": "Price text" },
+        { "type": "checkbox", "id": "price_truncate", "label": "Truncate price text", "default": false },
+        { "type": "text", "id": "button_label", "label": "Button label" },
+        {
+          "type": "select",
+          "id": "content_position",
+          "label": "Content position",
+          "options": [
+            { "value": "top-left", "label": "Top left" },
+            { "value": "top-center", "label": "Top center" },
+            { "value": "top-right", "label": "Top right" },
+            { "value": "middle-left", "label": "Middle left" },
+            { "value": "middle-center", "label": "Middle center" },
+            { "value": "middle-right", "label": "Middle right" },
+            { "value": "bottom-left", "label": "Bottom left" },
+            { "value": "bottom-center", "label": "Bottom center" },
+            { "value": "bottom-right", "label": "Bottom right" }
+          ],
+          "default": "middle-center"
+        },
+        { "type": "color", "id": "text_color", "label": "Text color", "default": "#ffffff" },
+        { "type": "range", "id": "image_scale", "min": 50, "max": 150, "step": 5, "unit": "%", "default": 100, "label": "Image scale" },
+        {
+          "type": "select",
+          "id": "heading_align",
+          "label": "Heading alignment",
+          "options": [
+            { "value": "left", "label": "Left" },
+            { "value": "center", "label": "Center" },
+            { "value": "right", "label": "Right" }
+          ],
+          "default": "center"
+        },
+        { "type": "range", "id": "heading_font_size", "min": 16, "max": 80, "step": 2, "unit": "px", "default": 32, "label": "Heading font size" },
+        {
+          "type": "select",
+          "id": "subheading_align",
+          "label": "Subheading alignment",
+          "options": [
+            { "value": "left", "label": "Left" },
+            { "value": "center", "label": "Center" },
+            { "value": "right", "label": "Right" }
+          ],
+          "default": "center"
+        },
+        { "type": "range", "id": "subheading_font_size", "min": 10, "max": 40, "step": 1, "unit": "px", "default": 16, "label": "Subheading font size" },
+        {
+          "type": "select",
+          "id": "price_align",
+          "label": "Price alignment",
+          "options": [
+            { "value": "left", "label": "Left" },
+            { "value": "center", "label": "Center" },
+            { "value": "right", "label": "Right" }
+          ],
+          "default": "center"
+        },
+        { "type": "range", "id": "price_font_size", "min": 10, "max": 30, "step": 1, "unit": "px", "default": 14, "label": "Price font size" },
+        {
+          "type": "select",
+          "id": "button_align",
+          "label": "Button alignment",
+          "options": [
+            { "value": "left", "label": "Left" },
+            { "value": "center", "label": "Center" },
+            { "value": "right", "label": "Right" }
+          ],
+          "default": "center"
+        },
+        { "type": "range", "id": "button_font_size", "min": 10, "max": 30, "step": 1, "unit": "px", "default": 14, "label": "Button font size" }
+      ]
+    }
+  ],
+  "presets": [
+    { "name": "Product Carousel 1" }
+  ]
+}
+{% endschema %}

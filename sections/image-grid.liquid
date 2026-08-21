@@ -1,0 +1,227 @@
+{%- comment -%}
+  sections/image-grid.liquid
+
+  CSS lives in assets/image-grid.css and is loaded below via
+  asset_url + stylesheet_tag — it is NOT inlined with {% style %}.
+  Since a static asset file can't read section.id or setting values,
+  every value that changes per-instance (background color, card gap,
+  columns per breakpoint, layout width/padding) is passed into the
+  stylesheet as a CSS custom property set inline on this section's
+  wrapper divs. The class names in image-grid.css stay generic (no
+  section.id suffix), so the same stylesheet works for every
+  instance of this section on the page and the browser only
+  downloads/parses it once.
+
+  SECTION LAYOUT:
+  Background and width constraint live on two different elements so
+  the color always paints edge-to-edge, and only the content
+  (heading + cards) is constrained/centered by the "Section width"
+  setting. This mirrors sections/example-width-section.liquid's
+  independent --section-padding / --custom-width variables, but with
+  the background pulled out a level so it never gets letterboxed.
+{%- endcomment -%}
+
+{{ 'image-grid.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign width_type = section.settings.section_width
+  if width_type == blank
+    assign width_class = 'image-grid__default-width'
+  else
+    assign width_class = 'image-grid__' | append: width_type
+  endif
+-%}
+
+<div
+  class="image-grid-wrap"
+  style="--image-grid-bg: {{ section.settings.bg_color }};"
+>
+  <div
+    class="image-grid-inner {{ width_class }}"
+    style="
+      --section-padding: {{ section.settings.section_padding }}px;
+      {%- if width_type == 'custom-width' %}
+        --custom-width: {{ section.settings.custom_width }}rem;
+      {%- endif %}
+      --image-grid-gap: {{ section.settings.card_gap | default: 16 }}px;
+      --image-grid-cols-mobile: {{ section.settings.cards_mobile | default: 2 }};
+      --image-grid-cols-tablet: {{ section.settings.cards_tablet | default: 3 }};
+      --image-grid-cols-desktop: {{ section.settings.cards_desktop | default: 4 }};
+    "
+  >
+    {% if section.settings.heading != blank %}
+      <h2 class="image-grid-heading">{{ section.settings.heading | escape }}</h2>
+    {% endif %}
+
+    <div class="image-grid-cards">
+      {% for block in section.blocks %}
+        {% if block.type == 'card' %}
+          <a
+            href="{{ block.settings.link | default: '#' }}"
+            class="image-grid-card"
+            style="background-color: {{ block.settings.card_color }};"
+            {{ block.shopify_attributes }}
+          >
+            <div class="image-grid-card__media">
+              {% if block.settings.image != blank %}
+                {{
+                  block.settings.image
+                  | image_url: width: 600
+                  | image_tag:
+                    loading: 'lazy',
+                    sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw',
+                    widths: '150, 300, 450, 600',
+                    class: 'image-grid-card__img'
+                }}
+              {% else %}
+                {{ 'image' | placeholder_svg_tag: 'image-grid-card__img image-grid-card__placeholder' }}
+              {% endif %}
+            </div>
+            {% if block.settings.label != blank %}
+              <p class="image-grid-card__label">{{ block.settings.label | escape }}</p>
+            {% endif %}
+          </a>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Image Grid",
+  "tag": "section",
+  "class": "image-grid-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Shop our most wanted"
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Section background",
+      "default": "#F5F6F7"
+    },
+    {
+      "type": "range",
+      "id": "cards_desktop",
+      "label": "Cards per row — desktop",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "cards_tablet",
+      "label": "Cards per row — tablet",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "cards_mobile",
+      "label": "Cards per row — mobile",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "card_gap",
+      "label": "Gap between cards (px)",
+      "min": 4,
+      "max": 32,
+      "step": 2,
+      "default": 16
+    }
+  ],
+  "blocks": [
+    {
+      "type": "card",
+      "name": "Card",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Category name"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+        {
+          "type": "color",
+          "id": "card_color",
+          "label": "Card background color",
+          "default": "#E9F687"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Image Grid",
+      "blocks": [
+        { "type": "card", "settings": { "label": "Great deals" } },
+        { "type": "card", "settings": { "label": "iPhone" } },
+        { "type": "card", "settings": { "label": "MacBook" } },
+        { "type": "card", "settings": { "label": "iPad" } },
+        { "type": "card", "settings": { "label": "Video game consoles" } },
+        { "type": "card", "settings": { "label": "Android" } },
+        { "type": "card", "settings": { "label": "Windows Laptops" } },
+        { "type": "card", "settings": { "label": "Airpods" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

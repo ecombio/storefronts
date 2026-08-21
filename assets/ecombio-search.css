@@ -1,0 +1,820 @@
+/**
+ * ECOMBIO Predictive Search Styles
+ * File: assets/ecombio-search.css
+ *
+ * Architecture: BEM (.ecombio-search__*)
+ * Theming: CSS custom properties — override in your theme's base variables
+ * Motion: Respects prefers-reduced-motion
+ * Breakpoints: 768px (desktop/mobile split)
+ *
+ * New in this version:
+ *   - Mic button + listening state (pulse ring, active fill)
+ *   - Staggered result row fade-in via --es-row-index
+ *   - Voice transcript live-preview cursor blink
+ *
+ * Fix in this revision:
+ *   - The focused/open form state no longer changes border-radius. It
+ *     previously snapped the bottom corners from --es-radius-lg to
+ *     --es-radius-md with no transition, which looked like an abrupt,
+ *     "random" shape change. The form now keeps a consistent pill shape
+ *     and only gains a focus ring + darker border on focus/open.
+ */
+
+/* ─── Custom Properties ──────────────────────────────────────────────────────── */
+
+.ecombio-search {
+  --es-bg:              #ffffff;
+  --es-bg-hover:        #f8f7f5;
+  --es-border:          #e5e3de;
+  --es-border-focus:    #1a1a1a;
+  --es-text-primary:    #1a1a1a;
+  --es-text-secondary:  #6b6860;
+  --es-text-muted:      #9e9b94;
+  --es-accent:          #1a1a1a;
+  --es-accent-soft:     #f0ede8;
+  --es-highlight-bg:    #fdf3dc;
+  --es-highlight-text:  #1a1a1a;
+  --es-price-color:     #1a1a1a;
+  --es-oos-color:       #b04040;
+  --es-mic-active:      #d94040;   /* red while listening */
+  --es-radius-sm:       6px;
+  --es-radius-md:       10px;
+  --es-radius-lg:       14px;
+  --es-shadow:          0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
+  --es-shadow-lg:       0 16px 48px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.06);
+  --es-font-size-sm:    12px;
+  --es-font-size-base:  14px;
+  --es-font-size-md:    15px;
+  --es-transition:      150ms ease;
+  --es-dropdown-max-h:  520px;
+  --es-z-dropdown:      9000;
+  --es-z-backdrop:      8999;
+}
+
+/* ─── Wrapper ────────────────────────────────────────────────────────────────── */
+
+.ecombio-search {
+  position: relative;
+  width: 100%;
+}
+
+/* ─── Form ───────────────────────────────────────────────────────────────────── */
+
+.ecombio-search__form {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  background: var(--es-bg);
+  border: 1.5px solid var(--es-border);
+  border-radius: var(--es-radius-lg);
+  overflow: visible;
+  transition: border-color var(--es-transition), box-shadow var(--es-transition);
+  position: relative;
+}
+
+/* Focused / open state: darker border + focus ring only. The form keeps its
+   normal pill shape at all times — see header comment for why. */
+.ecombio-search--open .ecombio-search__form,
+.ecombio-search__form:focus-within {
+  /*border-color: #3b4fd4;*/
+  box-shadow: 0 0 0 3px rgba(26,26,26,0.07);
+  border-radius: 20px 20px 0px 0px;
+}
+
+/* ─── Category pill ──────────────────────────────────────────────────────────── */
+
+.ecombio-search__category {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.ecombio-search__cat-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 12px;
+  height: 44px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: var(--es-font-size-sm);
+  font-weight: 600;
+  color: var(--es-text-primary);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  transition: color var(--es-transition);
+}
+
+.ecombio-search__cat-btn:hover {
+  color: var(--es-text-secondary);
+}
+
+.ecombio-search__chevron {
+  transition: transform var(--es-transition);
+  flex-shrink: 0;
+}
+
+.ecombio-search__cat-btn[aria-expanded="true"] .ecombio-search__chevron {
+  transform: rotate(180deg);
+}
+
+.ecombio-search__divider {
+  display: block;
+  width: 1px;
+  height: 20px;
+  background: var(--es-border);
+  flex-shrink: 0;
+}
+
+.ecombio-search__cat-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 160px;
+  background: var(--es-bg);
+  border: 1.5px solid var(--es-border);
+  border-radius: var(--es-radius-md);
+  box-shadow: var(--es-shadow);
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  z-index: calc(var(--es-z-dropdown) + 1);
+}
+
+.ecombio-search__cat-list[hidden] {
+  display: none;
+}
+
+.ecombio-search__cat-list [role="option"] {
+  padding: 8px 12px;
+  font-size: var(--es-font-size-base);
+  color: var(--es-text-primary);
+  border-radius: var(--es-radius-sm);
+  cursor: pointer;
+  transition: background var(--es-transition);
+}
+
+.ecombio-search__cat-list [role="option"]:hover,
+.ecombio-search__cat-list [role="option"][aria-selected="true"] {
+  background: var(--es-accent-soft);
+}
+
+.ecombio-search__cat-list [role="option"][aria-selected="true"] {
+  font-weight: 600;
+}
+
+/* ─── Search input ───────────────────────────────────────────────────────────── */
+
+.ecombio-search__input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  padding: 0 8px;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: var(--es-font-size-md);
+  color: var(--es-text-primary);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.ecombio-search__input::placeholder {
+  color: var(--es-text-muted);
+  transition: color var(--es-transition);
+}
+
+/* Dimmer placeholder while voice is listening */
+.ecombio-search--listening .ecombio-search__input::placeholder {
+  color: var(--es-mic-active);
+  opacity: 0.7;
+}
+
+.ecombio-search__input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* ─── Clear button ───────────────────────────────────────────────────────────── */
+
+.ecombio-search__clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-right: 2px;
+  background: var(--es-accent-soft);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--es-text-secondary);
+  flex-shrink: 0;
+  transition: background var(--es-transition), color var(--es-transition);
+}
+
+.ecombio-search__clear:hover {
+  background: var(--es-border);
+  color: var(--es-text-primary);
+}
+
+.ecombio-search__clear[hidden] {
+  display: none;
+}
+
+/* ─── Mic button ─────────────────────────────────────────────────────────────── */
+
+.ecombio-search__mic {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin-right: 2px;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--es-text-muted);
+  flex-shrink: 0;
+  position: relative;
+  transition: color var(--es-transition), background var(--es-transition);
+}
+
+.ecombio-search__mic:hover {
+  color: var(--es-text-primary);
+  background: var(--es-accent-soft);
+}
+
+.ecombio-search__mic[hidden] {
+  display: none;
+}
+
+/* Listening state — button turns red */
+.ecombio-search__mic--listening {
+  color: var(--es-mic-active);
+  background: rgba(217, 64, 64, 0.08);
+}
+
+.ecombio-search__mic--listening:hover {
+  background: rgba(217, 64, 64, 0.14);
+  color: var(--es-mic-active);
+}
+
+/* Pulsing ring around mic while listening */
+.ecombio-search__mic--listening::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1.5px solid var(--es-mic-active);
+  opacity: 0;
+  animation: es-mic-pulse 1.4s ease-out infinite;
+}
+
+.ecombio-search__mic--listening::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1.5px solid var(--es-mic-active);
+  opacity: 0;
+  animation: es-mic-pulse 1.4s ease-out infinite 0.7s;
+}
+
+@keyframes es-mic-pulse {
+  0%   { transform: scale(0.85); opacity: 0.6; }
+  100% { transform: scale(1.55); opacity: 0; }
+}
+
+/* ─── Submit button ──────────────────────────────────────────────────────────── */
+
+.ecombio-search__submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 38px;
+  margin: 3px;
+  background: var(--es-accent);
+  border: none;
+  border-radius: var(--es-radius-md);
+  cursor: pointer;
+  color: #fff;
+  flex-shrink: 0;
+  transition: opacity var(--es-transition), transform var(--es-transition);
+}
+
+.ecombio-search__submit:hover  { opacity: 0.88; }
+.ecombio-search__submit:active { transform: scale(0.96); }
+
+/* ─── Dropdown ───────────────────────────────────────────────────────────────── */
+
+.ecombio-search__dropdown {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  background: var(--es-bg);
+  /*border: 1.5px solid #3b4fd4;*/
+  border-top: none;
+  border-radius: 0px 0px 20px 20px;
+  box-shadow: 0 0 0 3px #1a1a1a12;
+  z-index: var(--es-z-dropdown);
+  overflow: hidden;
+  max-height: var(--es-dropdown-max-h);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  animation: es-dropdown-in 140ms ease both;
+}
+
+.ecombio-search__dropdown[hidden] {
+  display: none;
+}
+
+@keyframes es-dropdown-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ecombio-search__dropdown::-webkit-scrollbar       { width: 4px; }
+.ecombio-search__dropdown::-webkit-scrollbar-track { background: transparent; }
+.ecombio-search__dropdown::-webkit-scrollbar-thumb {
+  background: var(--es-border);
+  border-radius: 4px;
+}
+
+/* ─── Sections ───────────────────────────────────────────────────────────────── */
+
+.ecombio-search__section {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--es-border);
+}
+
+.ecombio-search__section:last-child {
+  border-bottom: none;
+}
+
+.ecombio-search__section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px 2px;
+}
+
+.ecombio-search__section-label {
+  padding: 6px 16px 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--es-text-muted);
+  margin: 0;
+}
+
+.ecombio-search__section-header .ecombio-search__section-label {
+  padding: 0;
+}
+
+/* ─── Items (shared) ─────────────────────────────────────────────────────────── */
+
+.ecombio-search__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--es-text-primary);
+  font-size: var(--es-font-size-base);
+  transition: background var(--es-transition);
+  position: relative;
+}
+
+.ecombio-search__item:hover,
+.ecombio-search__item--active {
+  background: var(--es-bg-hover);
+}
+
+/* Staggered fade-in for result rows
+   JS sets --es-row-index on each item. */
+.ecombio-search__item--animate {
+  animation: es-row-in 200ms ease both;
+  animation-delay: calc(var(--es-row-index, 0) * 35ms);
+}
+
+@keyframes es-row-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Query suggestion items ─────────────────────────────────────────────────── */
+
+.ecombio-search__item--query .ecombio-search__item-text {
+  flex: 1;
+}
+
+.ecombio-search__item--query .ecombio-search__item-arrow {
+  font-size: 12px;
+  color: var(--es-text-muted);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity var(--es-transition), transform var(--es-transition);
+}
+
+.ecombio-search__item--query:hover .ecombio-search__item-arrow,
+.ecombio-search__item--query.ecombio-search__item--active .ecombio-search__item-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ─── Product items ──────────────────────────────────────────────────────────── */
+
+.ecombio-search__item--product {
+  padding: 8px 16px;
+}
+
+.ecombio-search__product-media { flex-shrink: 0; }
+
+.ecombio-search__product-img {
+  display: block;
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: var(--es-radius-sm);
+  background: var(--es-accent-soft);
+  border: 1px solid var(--es-border);
+}
+
+.ecombio-search__product-img--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--es-text-muted);
+}
+
+.ecombio-search__product-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ecombio-search__product-title {
+  font-size: var(--es-font-size-base);
+  font-weight: 500;
+  color: var(--es-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.ecombio-search__product-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ecombio-search__product-price {
+  font-size: var(--es-font-size-sm);
+  font-weight: 600;
+  color: var(--es-price-color);
+}
+
+.ecombio-search__product-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.02em;
+}
+
+.ecombio-search__product-badge--oos {
+  color: var(--es-oos-color);
+  background: rgba(176,64,64,0.08);
+}
+
+/* ─── Collection items ───────────────────────────────────────────────────────── */
+
+.ecombio-search__item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: var(--es-accent-soft);
+  border-radius: var(--es-radius-sm);
+  color: var(--es-text-secondary);
+  flex-shrink: 0;
+}
+
+.ecombio-search__item-icon--folder {
+  background: #eef4ff;
+  color: #3b4fd4;
+}
+
+.ecombio-search__item-count {
+  font-size: var(--es-font-size-sm);
+  color: var(--es-text-muted);
+  margin-left: auto;
+}
+
+/* ─── Recent searches ────────────────────────────────────────────────────────── */
+
+.ecombio-search__item--recent { padding: 7px 16px; }
+
+.ecombio-search__remove-recent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--es-text-muted);
+  margin-left: auto;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity var(--es-transition), background var(--es-transition);
+}
+
+.ecombio-search__item--recent:hover .ecombio-search__remove-recent {
+  opacity: 1;
+}
+
+.ecombio-search__remove-recent:hover {
+  background: var(--es-border);
+  color: var(--es-text-primary);
+}
+
+.ecombio-search__clear-recent {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: var(--es-font-size-sm);
+  color: var(--es-text-secondary);
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.ecombio-search__clear-recent:hover { color: var(--es-text-primary); }
+
+/* ─── Trending pills ─────────────────────────────────────────────────────────── */
+
+.ecombio-search__trending-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 16px 10px;
+}
+
+.ecombio-search__trending-pill {
+  padding: 5px 12px;
+  background: var(--es-accent-soft);
+  border: 1.5px solid var(--es-border);
+  border-radius: 99px;
+  font-size: var(--es-font-size-sm);
+  font-weight: 500;
+  color: var(--es-text-primary);
+  cursor: pointer;
+  transition: background var(--es-transition), border-color var(--es-transition),
+              transform var(--es-transition);
+}
+
+.ecombio-search__trending-pill:hover {
+  background: var(--es-border);
+  border-color: var(--es-text-secondary);
+  transform: translateY(-1px);
+}
+
+/* ─── View all ───────────────────────────────────────────────────────────────── */
+
+.ecombio-search__section--footer { padding: 4px; }
+
+.ecombio-search__view-all {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 11px 16px;
+  font-size: var(--es-font-size-base);
+  color: var(--es-text-primary);
+  text-decoration: none;
+  border-radius: var(--es-radius-sm);
+  transition: background var(--es-transition);
+  font-weight: 500;
+}
+
+.ecombio-search__view-all:hover,
+.ecombio-search__view-all.ecombio-search__item--active {
+  background: var(--es-accent-soft);
+}
+
+.ecombio-search__view-all strong { font-weight: 700; }
+
+/* ─── Highlight (matched text) ───────────────────────────────────────────────── */
+
+.ecombio-search__highlight {
+  background: var(--es-highlight-bg);
+  color: var(--es-highlight-text);
+  font-weight: 700;
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+/* ─── Skeleton loaders ───────────────────────────────────────────────────────── */
+
+.ecombio-search__loading { padding: 8px 0; }
+
+.ecombio-search__skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  animation: es-row-in 180ms ease both;
+}
+
+.ecombio-search__skeleton-row:nth-child(2) { animation-delay: 60ms; }
+.ecombio-search__skeleton-row:nth-child(3) { animation-delay: 120ms; }
+
+.ecombio-search__skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--es-accent-soft) 25%,
+    var(--es-border) 50%,
+    var(--es-accent-soft) 75%
+  );
+  background-size: 200% 100%;
+  border-radius: var(--es-radius-sm);
+  animation: es-shimmer 1.4s ease infinite;
+}
+
+@keyframes es-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.ecombio-search__skeleton--icon {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--es-radius-sm);
+  flex-shrink: 0;
+}
+
+.ecombio-search__skeleton-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ecombio-search__skeleton--title    { height: 13px; width: 60%; }
+.ecombio-search__skeleton--subtitle { height: 11px; width: 35%; }
+
+/* ─── Empty / error states ───────────────────────────────────────────────────── */
+
+.ecombio-search__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 28px 20px 24px;
+  gap: 6px;
+  color: var(--es-text-muted);
+}
+
+.ecombio-search__empty svg { margin-bottom: 4px; opacity: 0.45; }
+
+.ecombio-search__empty-title {
+  font-size: var(--es-font-size-base);
+  font-weight: 600;
+  color: var(--es-text-primary);
+  margin: 0;
+}
+
+.ecombio-search__empty-title em { font-style: normal; color: var(--es-text-secondary); }
+
+.ecombio-search__empty-hint { font-size: var(--es-font-size-sm); margin: 2px 0 6px; }
+
+.ecombio-search__empty--error svg { color: #b04040; opacity: 0.7; }
+
+/* SR-only announcer */
+.ecombio-search__sr-announce {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ─── Mobile — Bottom Sheet ──────────────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+  .ecombio-search__dropdown {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: var(--es-radius-lg) var(--es-radius-lg) 0 0;
+    border: none;
+    border-top: 1.5px solid var(--es-border);
+    box-shadow: var(--es-shadow-lg);
+    max-height: 72vh;
+    z-index: var(--es-z-dropdown);
+    animation: es-sheet-in 220ms cubic-bezier(0.32, 0.72, 0, 1) both;
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+  }
+
+  @keyframes es-sheet-in {
+    from { transform: translateY(100%); opacity: 0.6; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+
+  .ecombio-search__dropdown::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 4px;
+    background: var(--es-border);
+    border-radius: 99px;
+    margin: 10px auto 6px;
+    flex-shrink: 0;
+  }
+
+  .ecombio-search__item {
+    min-height: 48px;
+    padding: 12px 16px;
+  }
+
+  .ecombio-search__remove-recent {
+    opacity: 1;
+    width: 32px;
+    height: 32px;
+  }
+
+  /* Mic button larger on touch */
+  .ecombio-search__mic {
+    width: 38px;
+    height: 38px;
+  }
+
+  .ecombio-search__backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: var(--es-z-backdrop);
+    animation: es-fade-in 200ms ease both;
+  }
+
+  @keyframes es-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .ecombio-search__backdrop[hidden] { display: none; }
+}
+
+/* ─── Body scroll lock ───────────────────────────────────────────────────────── */
+
+body.ecombio-search-lock { overflow: hidden; }
+
+/* ─── Reduced motion ─────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .ecombio-search__dropdown,
+  .ecombio-search__item,
+  .ecombio-search__item--animate,
+  .ecombio-search__skeleton-row,
+  .ecombio-search__trending-pill,
+  .ecombio-search__cat-btn,
+  .ecombio-search__submit,
+  .ecombio-search__clear,
+  .ecombio-search__mic {
+    transition: none;
+    animation: none;
+  }
+
+  .ecombio-search__skeleton {
+    animation: none;
+    background: var(--es-accent-soft);
+  }
+
+  /* Keep the mic listening state visually clear even without animation */
+  .ecombio-search__mic--listening::before,
+  .ecombio-search__mic--listening::after {
+    animation: none;
+    opacity: 0;
+  }
+}

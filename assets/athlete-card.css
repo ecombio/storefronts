@@ -1,0 +1,74 @@
+/**
+ * athlete-card.css
+ * Styling for snippets/athlete-card.liquid
+ *
+ * Loaded once by whatever renders the card (athlete-grid.liquid).
+ * Do not add a stylesheet_tag for this file inside the card snippet
+ * itself — it's rendered in a loop and would emit one <link> per
+ * card.
+ */
+
+.athlete-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.athlete-card__media {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: var(--color-bg-secondary, #f3f4f6);
+  transition: transform 0.2s ease;
+}
+
+.athlete-card:hover .athlete-card__media,
+.athlete-card:focus-visible .athlete-card__media {
+  transform: translateY(-2px);
+}
+
+.athlete-card__image,
+.athlete-card__image--placeholder {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+}
+
+.athlete-card__avatar-wrapper {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translate(-50%, 50%);
+  display: block;
+  border-radius: 50%;
+  border: 3px solid var(--color-bg, #fff);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  line-height: 0;
+}
+
+.athlete-card__avatar {
+  display: block;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: var(--color-bg-secondary, #f3f4f6);
+}
+
+.athlete-card__content {
+  padding: 2.5rem 0.25rem 0.5rem;
+  text-align: center;
+}
+
+.athlete-card__title {
+  font-size: var(--font-size-md, 1rem);
+  font-weight: 600;
+  margin: 0 0 0.35rem 0;
+}
+
+.athlete-card__meta {
+  display: block;
+  font-size: var(--font-size-xs, 0.8125rem);
+  color: var(--color-text-muted, #6b7280);
+}

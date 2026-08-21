@@ -1,0 +1,213 @@
+/* =========================================================
+   Author Section
+   Styled to match main-article.css: same grays (#333/#555/#888),
+   same border color (#e5e5e5), same radius/shadow language as
+   .sidebar-widget, no imported fonts — inherits the theme's type.
+   ========================================================= */
+
+.author-section {
+  --as-accent: #155DFC;
+  --as-card-bg: #FFFFFF;
+  --as-border: #E5E5E5;
+  --as-radius: 12px;
+  --as-pt: 40px;
+  --as-pb: 40px;
+
+  padding: var(--as-pt) 20px var(--as-pb);
+}
+
+.author-section__card {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: var(--as-card-bg);
+  border: 1px solid var(--as-border);
+  border-radius: var(--as-radius);
+}
+
+.author-section__card--shadow {
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.06);
+}
+
+/* ---------- Title ---------- */
+
+.author-section__title {
+  margin: 0 0 1.5rem;
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--as-accent);
+}
+
+.author-section__title-sep {
+  margin: 0 0.4em;
+}
+
+/* ---------- Body row ---------- */
+
+.author-section__body {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+}
+
+.author-section--image-right .author-section__body {
+  flex-direction: row-reverse;
+}
+
+.author-section__media {
+  flex: 0 0 auto;
+}
+
+.author-section__photo {
+  display: block;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--as-border);
+}
+
+.author-section__photo--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f7f7f7;
+  color: #888;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.author-section__content {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.author-section__role {
+  margin: 0 0 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #888;
+}
+
+/* ---------- Bio ---------- */
+
+.author-section__bio {
+  font-size: 0.95rem;
+  line-height: 1.75;
+  color: #333;
+}
+
+.author-section__bio p {
+  margin: 0 0 0.9em;
+}
+
+.author-section__bio p:last-child {
+  margin-bottom: 0;
+}
+
+.author-section__bio--clamped .author-section__bio-inner {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--as-bio-lines, 4);
+  overflow: hidden;
+}
+
+.author-section__bio--clamped.author-section__bio--expanded .author-section__bio-inner {
+  display: block;
+  -webkit-line-clamp: unset;
+  overflow: visible;
+}
+
+.author-section__bio-toggle {
+  margin-top: 0.5rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--as-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.author-section__bio-toggle:hover {
+  opacity: 0.8;
+}
+
+/* ---------- Social links ---------- */
+
+.author-section__social {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.1rem;
+  margin: 1rem 0 0;
+  padding: 0;
+}
+
+.author-section__social-item {
+  margin: 0;
+}
+
+.author-section__social-link {
+  font-size: 0.85rem;
+  color: #333;
+  text-decoration: none;
+}
+
+.author-section__social-link:hover,
+.author-section__social-link:focus-visible {
+  color: var(--as-accent);
+  text-decoration: underline;
+}
+
+/* ---------- Scroll-in animation ---------- */
+
+.author-section--animated .author-section__card {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.author-section--animated.author-section--in-view .author-section__card {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .author-section--animated .author-section__card,
+  .author-section--animated.author-section--in-view .author-section__card {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 640px) {
+  .author-section__card {
+    padding: 1.5rem;
+  }
+
+  .author-section__body,
+  .author-section--image-right .author-section__body {
+    flex-direction: column;
+  }
+
+  .author-section__photo {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+/* ---------- Focus visibility ---------- */
+
+.author-section a:focus-visible,
+.author-section button:focus-visible {
+  outline: 2px solid var(--as-accent);
+  outline-offset: 3px;
+}

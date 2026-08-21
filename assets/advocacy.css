@@ -1,0 +1,246 @@
+/* ============================================
+   ADVOCACY SECTION — sections/advocacy.liquid
+   Centered text + button blocks. Two layouts:
+   - Two column grid (all blocks visible)
+   - One column slideshow (one block visible at a time)
+   Uses theme.css tokens: --font-primary--family, --radius-base,
+   --transition-base/fast, --color-black, --color-red, --color-blue,
+   --color-pill-bg, --color-pill-text, --color-accent-text.
+   ============================================ */
+
+.advocacy {
+  background-color: var(--advocacy-bg, var(--color-background));
+  color: var(--advocacy-text, var(--color-foreground));
+}
+
+.advocacy--has-image {
+  position: relative;
+  background-image: var(--advocacy-bg-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  isolation: isolate;
+}
+
+.advocacy--has-image::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, var(--advocacy-overlay-opacity, 0.3));
+  z-index: 0;
+}
+
+.advocacy--has-image .advocacy__inner {
+  position: relative;
+  z-index: 1;
+}
+
+.advocacy__inner {
+  max-width: var(--page-width, 1280px);
+  margin: 0 auto;
+  padding-left: var(--page-margin, 24px);
+  padding-right: var(--page-margin, 24px);
+}
+
+/* ── Shared item styling (used in both layouts) ─────────────────── */
+.advocacy__eyebrow {
+  display: block;
+  width: 32px;
+  height: 4px;
+  margin: 0 auto 16px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, var(--color-blue) 0%, var(--color-blue) 45%, var(--color-red) 55%, var(--color-red) 100%);
+}
+
+.advocacy__heading {
+  margin: 0 0 12px;
+  font-family: var(--font-primary--family);
+  font-size: clamp(22px, 2.4vw, 30px);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--advocacy-text, var(--color-foreground));
+}
+
+.advocacy__text {
+  margin: 0 0 24px;
+  font-family: var(--font-primary--family);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--advocacy-text, var(--color-foreground));
+  opacity: 0.8;
+}
+
+.advocacy__text p {
+  margin: 0 0 12px;
+}
+
+.advocacy__text p:last-child {
+  margin-bottom: 0;
+}
+
+.advocacy .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-primary--family);
+  font-size: 15px;
+  font-weight: 600;
+  padding: 13px 28px;
+  border-radius: var(--radius-base);
+  text-decoration: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color var(--transition-base), color var(--transition-base), border-color var(--transition-base), transform var(--transition-fast);
+}
+
+.advocacy .button:active {
+  transform: scale(0.98);
+}
+
+.advocacy .button--primary {
+  background-color: var(--color-black);
+  color: var(--color-accent-text);
+}
+
+.advocacy .button--primary:hover {
+  background-color: var(--color-red);
+}
+
+.advocacy .button--secondary {
+  background-color: var(--color-pill-bg);
+  color: var(--color-pill-text);
+}
+
+.advocacy .button--secondary:hover {
+  background-color: var(--color-red);
+  color: var(--color-accent-text);
+}
+
+.advocacy .button--outline {
+  background-color: transparent;
+  color: var(--advocacy-text, var(--color-foreground));
+  border-color: currentColor;
+}
+
+.advocacy .button--outline:hover {
+  background-color: var(--advocacy-text, var(--color-foreground));
+  color: var(--advocacy-bg, var(--color-background));
+}
+
+/* ============================================
+   TWO COLUMN LAYOUT
+   ============================================ */
+.advocacy__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 48px;
+}
+
+.advocacy__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+@media screen and (max-width: 749px) {
+  .advocacy__grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+}
+
+/* ============================================
+   ONE COLUMN SLIDESHOW
+   ============================================ */
+.advocacy__slideshow {
+  position: relative;
+  outline: none;
+}
+
+.advocacy__track {
+  display: flex;
+  transition: transform 0.4s ease;
+}
+
+.advocacy__slide {
+  flex: 0 0 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 56px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .advocacy__track {
+    transition: none;
+  }
+}
+
+.advocacy__arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background-color: var(--color-pill-bg);
+  color: var(--color-pill-text);
+  cursor: pointer;
+  transition: background-color var(--transition-base), color var(--transition-base);
+}
+
+.advocacy__arrow:hover {
+  background-color: var(--color-black);
+  color: var(--color-accent-text);
+}
+
+.advocacy__arrow--prev {
+  left: 0;
+}
+
+.advocacy__arrow--next {
+  right: 0;
+}
+
+.advocacy__dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 32px;
+}
+
+.advocacy__dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background-color: var(--color-pill-bg);
+  cursor: pointer;
+  transition: background-color var(--transition-base), transform var(--transition-base);
+}
+
+.advocacy__dot.is-active {
+  background-color: var(--color-black);
+  transform: scale(1.25);
+}
+
+@media screen and (max-width: 749px) {
+  .advocacy__slide {
+    padding: 0 40px;
+  }
+
+  .advocacy__arrow {
+    width: 32px;
+    height: 32px;
+  }
+}

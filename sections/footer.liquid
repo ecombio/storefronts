@@ -1,0 +1,148 @@
+{% doc %}
+  Main Footer for ECOMBIO.
+  Supports normal blocks + Dynamic Mega Menu block (your original snippet).
+{% enddoc %}
+
+<footer class="footer" data-theme-preset="{{ settings.theme_preset | default: 'hyper' }}" {{ section.shopify_attributes }}>
+
+  <div class="footer__inner">
+
+    {%- for block in section.blocks -%}
+
+      {%- case block.type -%}
+
+        {%- when 'dynamic_mega_menu' -%}
+          <!-- ========== YOUR ORIGINAL MEGA MENU SNIPPET ========== -->
+          {% render 'footer-mega-menu', menu: linklists[block.settings.menu] %}
+
+        {%- when 'menu' -%}
+          <div class="footer__block footer__block--menu" {{ block.shopify_attributes }}>
+            {%- if block.settings.heading != blank -%}
+              <h4 class="footer__heading">{{ block.settings.heading }}</h4>
+            {%- endif -%}
+            {% if block.settings.menu != blank %}
+              <ul class="footer__menu">
+                {% for link in block.settings.menu.links %}
+                  <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+
+        {%- when 'newsletter' -%}
+          <div class="footer__block footer__block--newsletter" {{ block.shopify_attributes }}>
+            {%- if block.settings.heading != blank -%}
+              <h4 class="footer__heading">{{ block.settings.heading }}</h4>
+            {%- endif -%}
+            {% form 'customer', class: 'footer__newsletter' %}
+              <input type="hidden" name="contact[tags]" value="newsletter">
+              <div class="footer__newsletter-row">
+                <input type="email" name="contact[email]" placeholder="Your email" required>
+                <button type="submit">Subscribe</button>
+              </div>
+            {% endform %}
+          </div>
+
+      {%- endcase -%}
+
+    {%- endfor -%}
+
+  </div>
+
+  <!-- Footer Bottom Bar -->
+  <div class="footer__bottom">
+    <div class="footer__bottom-inner">
+      <div class="footer__copyright">
+        &copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. All rights reserved.
+      </div>
+    </div>
+  </div>
+
+</footer>
+
+{% stylesheet %}
+  .footer {
+    background-color: #111111;
+    color: #ffffff;
+    font-size: 14px;
+  }
+
+  [data-theme-preset="focus"] .footer {
+    background-color: #f8f8f8;
+    color: #333333;
+  }
+
+  .footer__inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 50px 24px 40px;
+  }
+
+  /* Override your snippet styles to match dark theme */
+  .footer-mega-menu {
+    background: transparent !important;
+  }
+
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Footer",
+  "class": "shopify-section--footer",
+  "max_blocks": 8,
+  "blocks": [
+    {
+      "type": "dynamic_mega_menu",
+      "name": "Dynamic Mega Menu",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": "Mega Menu",
+          "info": "Select your one nested menu (Level 1 = columns, Level 2 = sections, Level 3 = links)"
+        }
+      ]
+    },
+    {
+      "type": "menu",
+      "name": "Menu",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Quick Links"
+        },
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": "Menu"
+        }
+      ]
+    },
+    {
+      "type": "newsletter",
+      "name": "Newsletter",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Stay Updated"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Footer",
+      "blocks": [
+        {
+          "type": "dynamic_mega_menu"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

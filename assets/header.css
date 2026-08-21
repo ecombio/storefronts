@@ -1,0 +1,615 @@
+/* assets/header.css
+   Styles for sections/header.liquid: the outer <header> wrapper (sticky
+   positioning, autohide, spacer), plus the "ecombio" hamburger trigger,
+   mobile nav drawer (mega menu / showcase blocks), and desktop menu-bar
+   strip. Self-contained: loaded by sections/header.liquid itself.
+   Menu/drawer markup is rendered via snippets/header-menu.liquid.
+
+   Stacking with an announcement bar: when sections/announcement-bar.liquid
+   is rendered above this header in config/header-group.json and is itself
+   sticky, header.js computes --main-header-stack-offset (that bar's live
+   height) and this header is positioned/animated relative to it — see the
+   .site-header--sticky-enabled rules below and header.js's "Sticky header
+   height sync" + "Scroll-based autohide" IIFEs.
+--------------------------------------------------------------------- */
+
+:root {
+  --hdr-height-desktop : 68px;
+  --hdr-height-tablet  : 64px;
+  --hdr-height-mobile  : 56px;
+  --hdr-search-row-h   : 56px;
+  --hdr-bg             : #ffffff;
+  --hdr-border         : #e5e5e5;
+  --hdr-text           : #111111;
+  --hdr-muted          : #6b6b6b;
+  --hdr-accent         : #e11d27;
+  --hdr-search-bg      : #f2f2f2;
+  --hdr-pill-bg        : #e5e5e5;
+  --hdr-pill-bg-hover  : #d8d8d8;
+  --hdr-radius-pill    : 9999px;
+  --hdr-radius-drop    : 12px;
+  --hdr-shadow-drop    : 0 4px 20px rgba(0,0,0,.10);
+  --hdr-font           : -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --hdr-z              : 200;
+  --hdr-drawer-z       : 400;
+}
+
+/* ---------------------------------------------------------------------
+   Outer <header> wrapper + sticky/autohide states
+   Styles the outer <header class="site-header ..."> element and the
+   sticky spacer div, both rendered directly in sections/header.liquid.
+   Behavior lives in header.js below.
+
+   This wrapper is its own block (.site-header), separate from the
+   .main-header__* component styles in assets/main-header.css
+   (snippets/main-header.liquid renders that independently). Keep the two
+   from re-merging under one name — that's what caused the duplicate
+   sticky/autohide logic we found (main-header.js) in the first place.
+
+   NOTE: `position` for the sticky state is NOT set here. When
+   enable_sticky is on, sections/header.liquid sets `position: fixed`
+   via an inline style, which always wins over any class-based `position`
+   rule here regardless of specificity. The spacer + autohide transform
+   logic is built around `fixed` behavior. If you want true `position:
+   sticky` behavior instead, remove the inline style in header.liquid
+   rather than adding a conflicting rule here.
+--------------------------------------------------------------------- */
+.site-header {
+  position: relative;
+  width: 100%;
+  z-index: 200;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.site-header--sticky-enabled {
+  transition: transform 0.3s ease;
+}
+
+.site-header--sticky-enabled.site-header--autohide-hidden {
+  /* --main-header-stack-offset is however far this header was already
+     pushed down by a sticky element above it in the fixed stack (e.g.
+     sections/announcement-bar.liquid, rendered above sections/header.liquid
+     in config/header-group.json — see header.js, which computes it). Without
+     subtracting it, translateY(-100%) alone only moves the header up by its
+     own height and stops, leaving it still overlapping/visible where that
+     element sits; this makes it travel far enough to clear the whole stack. */
+  transform: translateY(calc(-100% - var(--main-header-stack-offset, 0px)));
+}
+
+.site-header__sticky-spacer {
+  width: 100%;
+  /* Sized in header.js's sync() to the FULL combined height of this header
+     plus any sticky element(s) stacked above it (e.g. a sticky announcement
+     bar) — kept constant regardless of autohide state, so page content never
+     jumps as the stack hides/reveals.
+     Defensive: overflow-anchor: none ensures it can never become a
+     scroll-anchoring target if that logic ever changes — resizing it
+     previously caused a feedback loop with the autohide scroll handler. */
+  overflow-anchor: none;
+}
+
+.ecombio-header {
+  position: relative;
+  top: auto;
+  background: var(--hdr-bg);
+  border-bottom: 1px solid var(--hdr-border);
+  font-family: var(--hdr-font);
+}
+
+.ecombio-header__bar { width: 100%; }
+
+.ecombio-header__inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: var(--hdr-height-desktop);
+}
+
+.ecombio-header__hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  padding: 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+.ecombio-header__hamburger:hover { background: var(--hdr-search-bg); }
+
+.ecombio-header__hamburger span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: var(--hdr-text);
+  border-radius: 2px;
+  transition: transform 0.25s, opacity 0.25s;
+}
+.ecombio-header__hamburger[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.ecombio-header__hamburger[aria-expanded="true"] span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.ecombio-header__hamburger[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+.ecombio-header__logo { flex-shrink: 0; }
+.ecombio-header__logo-link { display: flex; align-items: center; text-decoration: none; }
+.ecombio-header__logo-img { display: block; height: auto; max-height: 36px; width: auto; }
+.ecombio-header__logo-text {
+  font-size: 1.375rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--hdr-text);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* NOTE: this search-with-category-dropdown form has no confirmed liquid/JS
+   reference yet (header.liquid renders snippets/header-search.liquid, which
+   uses .ecombio-search__* classes too, but that hasn't been verified against
+   this markup 1:1). Flagging as a candidate for removal once header-search
+   .liquid is reviewed — not deleted here to avoid a regression. */
+.ecombio-search__form {
+  display: flex;
+  align-items: center;
+  background: var(--hdr-search-bg);
+  border-radius: var(--hdr-radius-pill);
+  height: 44px;
+  padding: 0;
+  gap: 0;
+  width: 100%;
+}
+
+.ecombio-search__category { position: relative; flex-shrink: 0; display: flex; align-items: center; }
+
+.ecombio-search__cat-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--hdr-pill-bg);
+  border: none;
+  border-radius: var(--hdr-radius-pill);
+  padding: 0 12px;
+  height: 34px;
+  margin: 5px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--hdr-text);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.ecombio-search__cat-btn:hover { background: var(--hdr-pill-bg-hover); }
+
+.ecombio-search__chevron { color: var(--hdr-muted); transition: transform 0.2s; flex-shrink: 0; }
+.ecombio-search__cat-btn[aria-expanded="true"] .ecombio-search__chevron { transform: rotate(180deg); }
+
+.ecombio-search__cat-list {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 200px;
+  background: #fff;
+  border-radius: var(--hdr-radius-drop);
+  box-shadow: var(--hdr-shadow-drop);
+  border: 1px solid var(--hdr-border);
+  list-style: none;
+  margin: 0;
+  padding: 6px 0;
+  z-index: calc(var(--hdr-z) + 10);
+}
+.ecombio-search__cat-list[hidden] { display: none; }
+
+.ecombio-search__cat-list li {
+  padding: 9px 16px;
+  font-size: 0.875rem;
+  color: var(--hdr-text);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.ecombio-search__cat-list li:hover,
+.ecombio-search__cat-list li[aria-selected="true"] { background: var(--hdr-search-bg); }
+
+.ecombio-search__divider { display: block; width: 1px; height: 20px; background: #cccccc; flex-shrink: 0; margin: 0 2px 0 0; }
+
+.ecombio-search__input {
+  flex: 1 1 auto;
+  border: none;
+  background: transparent;
+  font-size: 0.9375rem;
+  color: var(--hdr-text);
+  padding: 0 8px;
+  height: 100%;
+  outline: none;
+  min-width: 0;
+}
+.ecombio-search__input::placeholder { color: #aaaaaa; }
+.ecombio-search__input::-webkit-search-cancel-button { display: none; }
+
+.ecombio-search__submit {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--hdr-muted);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  transition: color 0.15s;
+}
+.ecombio-search__submit:hover { color: var(--hdr-text); }
+
+.ecombio-header__search--inline { flex: 1 1 auto; min-width: 0; max-width: 640px; }
+
+.ecombio-header__search-row { display: none; border-top: 1px solid var(--hdr-border); background: var(--hdr-bg); }
+.ecombio-header__search-row-inner { max-width: 100%; margin: 0 auto; padding: 8px 24px; }
+
+.ecombio-mobile-nav { position: fixed; inset: 0; z-index: var(--hdr-drawer-z); pointer-events: none; visibility: hidden; }
+.ecombio-mobile-nav.is-open { pointer-events: auto; visibility: visible; }
+
+.ecombio-mobile-nav__overlay { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.45); opacity: 0; transition: opacity 0.3s ease; }
+.ecombio-mobile-nav.is-open .ecombio-mobile-nav__overlay { opacity: 1; }
+
+.ecombio-mobile-nav__panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(320px, 88vw);
+  background: #fff;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+}
+.ecombio-mobile-nav.is-open .ecombio-mobile-nav__panel { transform: translateX(0); }
+
+.ecombio-mobile-nav__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px 0 20px;
+  height: 56px;
+  flex-shrink: 0;
+  border-bottom: 2px solid var(--hdr-border);
+}
+.ecombio-mobile-nav__header-label { font-size: 0.9375rem; font-weight: 700; color: var(--hdr-text); letter-spacing: -0.01em; }
+
+.ecombio-mobile-nav__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--hdr-text);
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+.ecombio-mobile-nav__close:hover { background: var(--hdr-search-bg); }
+
+.ecombio-mobile-nav__list,
+.ecombio-mobile-nav__sub { list-style: none; margin: 0; padding: 0; }
+.ecombio-mobile-nav__list { flex: 1; padding: 6px 0 32px; }
+.ecombio-mobile-nav__row { display: flex; align-items: stretch; }
+
+.ecombio-mobile-nav__list > .ecombio-mobile-nav__item { border-bottom: 1px solid var(--hdr-border); }
+.ecombio-mobile-nav__list > .ecombio-mobile-nav__item:last-child { border-bottom: none; }
+
+.ecombio-mobile-nav__link {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 14px 20px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--hdr-text);
+  text-decoration: none;
+  line-height: 1.3;
+  transition: color 0.12s;
+}
+.ecombio-mobile-nav__link:hover,
+.ecombio-mobile-nav__link[aria-current="page"],
+.ecombio-mobile-nav__item.is-active > .ecombio-mobile-nav__link,
+.ecombio-mobile-nav__item.is-active > .ecombio-mobile-nav__row > .ecombio-mobile-nav__link { color: var(--hdr-accent); }
+
+.ecombio-mobile-nav__link--sub { padding: 11px 20px 11px 28px; font-size: 0.875rem; font-weight: 500; color: #374151; }
+.ecombio-mobile-nav__link--sub:hover { color: var(--hdr-accent); }
+
+.ecombio-mobile-nav__link--deep { padding: 9px 20px 9px 44px; font-size: 0.8125rem; font-weight: 400; color: #6b7280; }
+.ecombio-mobile-nav__link--deep:hover { color: var(--hdr-accent); }
+
+.ecombio-mobile-nav__toggle {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  background: transparent;
+  border: none;
+  border-left: 1px solid var(--hdr-border);
+  cursor: pointer;
+  color: #9ca3af;
+  transition: color 0.12s, background 0.12s;
+}
+.ecombio-mobile-nav__toggle:hover { background: var(--hdr-search-bg); color: var(--hdr-accent); }
+
+.ecombio-mobile-nav__chevron { transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none; }
+.ecombio-mobile-nav__toggle[aria-expanded="true"] .ecombio-mobile-nav__chevron { transform: rotate(180deg); }
+.ecombio-mobile-nav__toggle[aria-expanded="true"] { color: var(--hdr-accent); border-left-color: var(--hdr-accent); }
+
+.ecombio-mobile-nav__sub { background: #f9fafb; border-top: 1px solid var(--hdr-border); overflow: hidden; }
+.ecombio-mobile-nav__sub[hidden] { display: none; }
+.ecombio-mobile-nav__sub--l3 { background: #f3f4f6; }
+
+.ecombio-mobile-nav__sub > .ecombio-mobile-nav__item { border-bottom: 1px solid #ebebeb; }
+.ecombio-mobile-nav__sub > .ecombio-mobile-nav__item:last-child { border-bottom: none; }
+
+.ecombio-mobile-nav__item--l3 { border-bottom: 1px solid #e4e4e4; }
+.ecombio-mobile-nav__item--l3:last-child { border-bottom: none; }
+
+/* sr-only utility — duplicated in main-header.css so each component stays
+   self-contained regardless of which one a given page actually loads. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 1023px) {
+  .ecombio-header__inner { height: var(--hdr-height-tablet); padding: 0 20px; gap: 10px; }
+  .ecombio-header__hamburger { display: flex; }
+  .ecombio-header__search--inline { display: none; }
+  .ecombio-header__search-row { display: block; }
+}
+
+@media (max-width: 599px) {
+  .ecombio-header__inner { height: var(--hdr-height-mobile); padding: 0 16px; gap: 8px; }
+  .ecombio-header__search-row-inner { padding: 6px 12px; }
+  .ecombio-search__form { height: 42px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-header--sticky-enabled,
+  .ecombio-mobile-nav__overlay,
+  .ecombio-mobile-nav__panel,
+  .ecombio-mobile-nav__chevron,
+  .ecombio-header__hamburger span { transition: none !important; }
+}
+
+@media (min-width: 1024px) {
+  .menu-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 1184px;
+    margin: 0 auto;
+    padding: 0 24px;
+    border-top: 0;
+    background: #ffffff;
+    position: relative;
+    z-index: 100;
+  }
+
+  .menu-bar__container {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .menu-bar__container::-webkit-scrollbar {
+    display: none;
+  }
+
+  .menu-bar__list {
+    flex-wrap: nowrap;
+    width: max-content;
+  }
+
+  .menu-bar__edge-fade {
+    display: block;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 64px;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .menu-bar__edge-fade--left {
+    left: 0;
+    background: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 1) 0%,
+      rgba(255, 255, 255, 0.85) 30%,
+      rgba(255, 255, 255, 0.4) 65%,
+      rgba(255, 255, 255, 0) 100%
+    );
+  }
+  .menu-bar__edge-fade--right {
+    right: 0;
+    background: linear-gradient(
+      to left,
+      rgba(255, 255, 255, 1) 0%,
+      rgba(255, 255, 255, 0.85) 30%,
+      rgba(255, 255, 255, 0.4) 65%,
+      rgba(255, 255, 255, 0) 100%
+    );
+  }
+
+  .menu-bar.has-scroll-left .menu-bar__edge-fade--left,
+  .menu-bar.has-scroll-right .menu-bar__edge-fade--right {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 1023px) {
+  .menu-bar__edge-fade {
+    display: none;
+  }
+}
+
+@media (max-width: 1023px) {
+  .menu-bar {
+    display: none;
+  }
+}
+
+@media (max-width: 639px) {
+  .main-header--menu-bar-mobile-visible .menu-bar {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+    padding: 0;
+  }
+  .main-header--menu-bar-mobile-visible .menu-bar::-webkit-scrollbar {
+    display: none;
+  }
+  .main-header--menu-bar-mobile-visible .menu-bar .menu-bar__container {
+    width: max-content;
+    max-width: unset;
+    min-width: 100%;
+    padding: 0 16px;
+  }
+  .main-header--menu-bar-mobile-visible .menu-bar__list {
+    flex-wrap: nowrap;
+    width: max-content;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .main-header--menu-bar-tablet-visible .menu-bar {
+    display: flex;
+    flex-wrap: wrap;
+  }
+}
+
+.menu-bar__container {
+  position: relative;
+}
+
+.menu-bar__list {
+  display: flex;
+  align-items: stretch;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  position: relative;
+}
+
+.menu-bar__item {
+  position: relative;
+}
+
+.menu-bar__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 16px;
+  font-weight: 600;
+  font-size: 13.5px;
+  color: #1a1a1a;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.15s ease;
+}
+
+.menu-bar__link:hover,
+.menu-bar__item:hover > .menu-bar__link {
+  color: var(--hdr-accent);
+}
+
+.menu-bar__icon {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
+.menu-bar__icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.icon-caret-down {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.menu-bar__item:hover > .menu-bar__link .icon-caret-down {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon-caret-down {
+    transition: none !important;
+    animation: none !important;
+  }
+  .menu-bar__edge-fade {
+    transition: none !important;
+  }
+}
+
+/* NOTE: kept — .menu-item / .menu-item__icon look like an earlier naming
+   pass that .menu-bar__link / .menu-bar__icon superseded (identical rules).
+   Not removing yet: unconfirmed whether snippets/header-menu.liquid or
+   snippets/utility-bar.liquid still render a standalone .menu-item outside
+   of .menu-bar. Verify against those files before deleting. */
+.menu-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 16px;
+  font-weight: 600;
+  font-size: 13.5px;
+  color: #1a1a1a;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.15s ease;
+}
+
+.menu-item:hover {
+  color: var(--hdr-accent);
+}
+
+.menu-item__icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.menu-item__icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.menu-bar__link.menu-item {
+  padding: 14px 16px;
+}

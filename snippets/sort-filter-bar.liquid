@@ -1,0 +1,71 @@
+{% comment %}
+  Renders the collection toolbar: Filter button, product count, Compare, Sort by, View as.
+  Usage: {% render 'sort-filter-bar', results: collection %}
+{% endcomment %}
+
+<div class="sort-filter-bar" id="SortFilterBar">
+
+  <button
+    class="sort-filter-bar__filter-btn"
+    type="button"
+    aria-expanded="false"
+    aria-controls="FilterSidebar"
+  >
+    {% render 'icon-filter' %}
+    <span>{{ 'products.facets.filter_button' | t }}</span>
+  </button>
+
+  <span class="sort-filter-bar__count">
+    {{ results.products_count }}
+    {{ 'products.facets.product_count' | t: count: results.products_count }}
+  </span>
+
+  <div class="sort-filter-bar__compare">
+    <span class="sort-filter-bar__label">{{ 'products.compare.title' | t }}:</span>
+    <label class="compare-toggle">
+      <input type="checkbox" id="CompareToggle" class="compare-toggle__input">
+      <span class="compare-toggle__track"></span>
+    </label>
+  </div>
+
+  <div class="sort-filter-bar__sort">
+    <label class="sort-filter-bar__label" for="SortBy">
+      {{ 'products.facets.sort_by_label' | t }}
+    </label>
+    <div class="sort-filter-bar__select-wrap">
+      <select name="sort_by" id="SortBy" class="sort-filter-bar__select">
+        {%- assign sort_by = results.sort_by | default: results.default_sort_by -%}
+        {% for option in results.sort_options %}
+          <option
+            value="{{ option.value | escape }}"
+            {% if option.value == sort_by %}selected="selected"{% endif %}
+          >
+            {{ option.name | escape }}
+          </option>
+        {% endfor %}
+      </select>
+      {% render 'icon-chevron-down' %}
+    </div>
+  </div>
+
+  <div class="sort-filter-bar__view-as" role="group" aria-label="{{ 'products.facets.view_as' | t }}">
+    <span class="sort-filter-bar__label">{{ 'products.facets.view_as' | t }}:</span>
+    <button
+      type="button"
+      class="sort-filter-bar__view-btn sort-filter-bar__view-btn--grid active"
+      data-view="grid"
+      aria-label="{{ 'products.facets.view_grid' | t }}"
+    >
+      {% render 'icon-grid' %}
+    </button>
+    <button
+      type="button"
+      class="sort-filter-bar__view-btn sort-filter-bar__view-btn--list"
+      data-view="list"
+      aria-label="{{ 'products.facets.view_list' | t }}"
+    >
+      {% render 'icon-list' %}
+    </button>
+  </div>
+
+</div>

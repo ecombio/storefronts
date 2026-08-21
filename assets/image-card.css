@@ -1,0 +1,306 @@
+/* Styles for a single, standalone image card (snippets/image-card.liquid).
+   Derived from banner-card.css, with carousel/track-specific sizing
+   (flex-basis off --slides-mobile/--slide-width-desktop, scroll-snap)
+   removed — this card is sized by its container instead.
+
+   Simplifications made vs. the original banner-card:
+   - Per-field text alignment (separate left/center/right per heading/
+     subheading/price/button) was dropped. Alignment now follows the
+     content_position value directly (7 positions, each implying its
+     own text-align + align-items).
+   - --ic-card-ease has a real fallback (`ease`) since the original
+     --bc-card-ease was never defined in banner-card.css itself (it
+     depended on the parent banner-carousel.liquid setting it inline).
+
+   Sizing: --ic-width, --ic-width-mobile, --ic-height-mobile/-desktop,
+   and the four --ic-*-size font variables all have defaults below so
+   the card renders exactly as before for any caller that doesn't pass
+   the new image-card.liquid params (width, width_mobile, height_mobile,
+   height_desktop, heading_size, subheading_size, price_size,
+   button_size). Callers that do pass them get an inline custom
+   property from the liquid file that overrides the default here.
+*/
+
+/* Universal box-sizing reset, scoped to this component — same pattern
+   product-card.css already uses. Without this, .image-card__content
+   (and any other padded/bordered child) sits in the browser's default
+   content-box mode, where padding is added ON TOP of a computed width
+   instead of being included in it. .image-card__content has
+   max-width: 100% plus 16–40px of padding per side; in content-box
+   mode that pushes its real rendered width ~32–80px past the card's
+   edge, where .image-card__link's overflow: hidden then clips it —
+   visible as text getting cut off mid-word rather than wrapping.
+   This went unnoticed while card width was a large fixed fraction of
+   a wide container, but became visible once the featured-collection
+   promo card started sizing itself fluidly off a narrower clamp() —
+   see featured-collection.css. border-box makes max-width: 100% (and
+   any future --ic-width) include padding, so content always fits
+   inside the card regardless of how wide or narrow it renders. */
+.image-card,
+.image-card *,
+.image-card *::before,
+.image-card *::after {
+  box-sizing: border-box;
+}
+
+.image-card {
+  display: block;
+  width: var(--ic-width, 100%);
+  height: 100%;
+  /* No-op at the 100% default; only visibly centers the card within
+     its grid cell when a merchant sets --ic-width below 100%. */
+  margin: 0 auto;
+}
+
+/* Mobile width is its own axis, not an inherited/capped version of
+   the desktop --ic-width above. Deliberately does NOT fall back to
+   --ic-width here — falling back to the desktop custom value was the
+   exact bug this rule fixes (a merchant's 250px desktop card silently
+   becoming a 250px mobile card too, with no way to opt out, because an
+   inline --ic-width set directly on this element always wins over an
+   ancestor's inherited override — see the note in featured-collection.css
+   on .featured-collection__promo-pinned).
+   No --ic-width-mobile passed → falls straight to 100%, i.e. the
+   pre-existing "fill the mobile banner" default, completely
+   independent of whatever desktop width is set. */
+@media screen and (max-width: 599px) {
+  .image-card {
+    width: var(--ic-width-mobile, 100%);
+  }
+}
+
+.image-card__link {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  text-decoration: none;
+  /* Default bumped from 0px to 20px for a rounded, polished look out
+     of the box. --ic-radius still lets a caller override it. */
+  border-radius: var(--ic-radius, 20px);
+  overflow: hidden;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.15);
+  transition: transform 0.4s var(--ic-card-ease, ease), box-shadow 0.4s var(--ic-card-ease, ease);
+}
+
+.image-card__link:hover,
+.image-card__link:focus-visible {
+  transform: translateY(-6px);
+  box-shadow: 0 0 16px rgba(0, 0, 0, 0.2);
+}
+
+.image-card__image-wrap {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: var(--ic-height-mobile, 320px);
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: var(--ic-radius, 20px);
+}
+
+@media screen and (min-width: 600px) {
+  .image-card__image-wrap {
+    height: var(--ic-height-desktop, 500px);
+  }
+}
+
+.image-card__image,
+.image-card__placeholder,
+.image-card__placeholder-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-card__image {
+  transform: scale(var(--ic-img-scale, 1));
+  transition: transform 0.6s var(--ic-card-ease, ease);
+}
+
+.image-card__link:hover .image-card__image,
+.image-card__link:focus-visible .image-card__image {
+  transform: scale(calc(var(--ic-img-scale, 1) * 1.05));
+}
+
+.image-card__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.image-card__placeholder-svg {
+  width: auto;
+  height: 50%;
+  max-width: 50%;
+  object-fit: contain;
+  opacity: 0.55;
+}
+
+.image-card__image--mobile,
+.image-card__placeholder--mobile {
+  display: none;
+}
+
+@media screen and (max-width: 599px) {
+  .image-card__image--desktop,
+  .image-card__placeholder--desktop {
+    display: none;
+  }
+  .image-card__image--mobile,
+  .image-card__placeholder--mobile {
+    display: flex;
+  }
+}
+
+.image-card__content {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* width: 100% (not just max-width) is the actual fix for the text
+     getting clipped mid-word. Without a definite width, this being a
+     position: absolute + display: flex box left the browser to
+     "shrink-to-fit" it — a sizing pass that's unreliable across
+     browsers once percentage-width text children are involved, and
+     can resolve to a box wider than max-width actually allows. The
+     overflow then got sliced off by .image-card__link's
+     overflow: hidden. A definite width removes that ambiguous sizing
+     pass entirely, so every child reliably wraps within the real
+     card width no matter how narrow or wide the fluid card gets. The
+     content_position modifiers below still control how content
+     visually sits and aligns inside this now-full-width box via
+     text-align/align-items, so left/center/right positioning is
+     unaffected. */
+  width: 100%;
+  max-width: 100%;
+  padding: 20px;
+  /* Safety net for the narrowest card widths: breaks an unusually
+     long unbroken word rather than letting it push past the box. */
+  overflow-wrap: break-word;
+}
+
+@media screen and (min-width: 1024px) {
+  .image-card__content {
+    padding: 44px;
+  }
+}
+
+/* Position + alignment travel together — see file header note. */
+.image-card__content--top-left,
+.image-card__content--top-center,
+.image-card__content--top-right {
+  top: 0;
+  padding-top: 18px;
+}
+
+.image-card__content--bottom-left,
+.image-card__content--bottom-center,
+.image-card__content--bottom-right {
+  bottom: 0;
+}
+
+.image-card__content--center {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  align-items: center;
+}
+
+.image-card__content--top-left,
+.image-card__content--bottom-left {
+  left: 0;
+  text-align: left;
+  align-items: flex-start;
+}
+
+.image-card__content--top-right,
+.image-card__content--bottom-right {
+  right: 0;
+  text-align: right;
+  align-items: flex-end;
+}
+
+.image-card__content--top-center,
+.image-card__content--bottom-center {
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  align-items: center;
+}
+
+.image-card__heading {
+  display: block;
+  width: 100%;
+  font-weight: 700;
+  line-height: 1.2;
+  font-size: var(--ic-heading-size, 32px);
+}
+
+.image-card__subheading {
+  display: block;
+  width: 100%;
+  opacity: 0.95;
+  font-size: var(--ic-subheading-size, 16px);
+}
+
+.image-card__price {
+  display: block;
+  width: 100%;
+  opacity: 0.9;
+  font-size: var(--ic-price-size, 14px);
+}
+
+.image-card__price--truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.image-card__button {
+  margin-top: 6px;
+  display: inline-block;
+  padding: 8px 18px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: var(--ic-button-size, 14px);
+}
+
+/* Animation kill-switch, scoped to the card itself (not a parent
+   section class) so image-card is self-contained wherever it's used. */
+.image-card[data-animations="off"] .image-card__link,
+.image-card[data-animations="off"] .image-card__image {
+  transition: none;
+}
+
+.image-card[data-animations="off"] .image-card__link:hover,
+.image-card[data-animations="off"] .image-card__link:focus-visible {
+  transform: none;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.15);
+}
+
+.image-card[data-animations="off"] .image-card__link:hover .image-card__image,
+.image-card[data-animations="off"] .image-card__link:focus-visible .image-card__image {
+  transform: scale(var(--ic-img-scale, 1));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image-card__link,
+  .image-card__link .image-card__image {
+    transition: none !important;
+  }
+  .image-card__link:hover,
+  .image-card__link:focus-visible {
+    transform: none !important;
+  }
+  .image-card__link:hover .image-card__image,
+  .image-card__link:focus-visible .image-card__image {
+    transform: scale(var(--ic-img-scale, 1)) !important;
+  }
+}

@@ -1,0 +1,266 @@
+{%- comment -%}
+  sections/main-athlete.liquid
+
+  REQUIRED SETUP:
+  1. A blog with handle `athletes` must exist.
+  2. Each athlete is one Article inside that blog:
+       - handle  -> becomes the athlete's URL slug (e.g. "jordan")
+       - title   -> the athlete's display name AND the matching key
+       - image   -> athlete photo
+       - content -> athlete bio (rich text)
+     Optional metafields (all safe to leave unset):
+       - custom.athlete_match_name (string) — decouples the matching
+         key from the display title
+       - custom.athlete_sport (string)
+       - custom.athlete_team (string)
+       - custom.athlete_position (string)
+  3. Assign this section to that blog's article template
+     (templates/article.athletes.json).
+  4. On every real blog post, the native "Author" field must match the
+     athlete's title (or athlete_match_name) EXACTLY.
+
+  This section renders nothing meaningful unless `article` is in scope
+  and lives inside the blog described above.
+
+  Card rendering is delegated to snippets/athlete-grid.liquid (which
+  itself delegates each card to snippets/athlete-card.liquid) — this
+  file only owns the profile header and the author-matching search
+  logic below.
+{%- endcomment -%}
+
+{{ 'main-athlete.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign width_type = section.settings.section_width
+  if width_type == blank
+    assign width_class = 'athlete-section__default-width'
+  else
+    assign width_class = 'athlete-section__' | append: width_type
+  endif
+-%}
+
+<div
+  class="athlete-section {{ width_class }}"
+  data-section-type="main-athlete"
+  id="athlete-section-{{ section.id }}"
+  style="
+    --section-padding: {{ section.settings.section_padding }}px;
+    {%- if width_type == 'custom-width' %}
+      --custom-width: {{ section.settings.custom_width }}rem;
+    {%- endif %}
+  "
+>
+  {%- if article -%}
+    {%- assign athlete_name = article.metafields.custom.athlete_match_name | default: article.title -%}
+    {%- assign current_blog_handle = article.blog.handle -%}
+
+    <header class="athlete-section__header">
+      {%- if section.settings.show_photo -%}
+        <div class="athlete-section__photo-wrapper">
+          {%- if article.image -%}
+            <img
+              src="{{ article.image | image_url: width: 500 }}"
+              srcset="{{ article.image | image_url: width: 300 }} 300w, {{ article.image | image_url: width: 500 }} 500w, {{ article.image | image_url: width: 700 }} 700w"
+              sizes="(max-width: 640px) 160px, 200px"
+              alt="{{ article.image.alt | default: athlete_name | escape }}"
+              class="athlete-section__photo"
+              width="{{ article.image.width }}"
+              height="{{ article.image.height }}"
+              loading="eager"
+            >
+          {%- else -%}
+            {{ 'lifestyle-1' | placeholder_svg_tag: 'athlete-section__photo athlete-section__photo--placeholder' }}
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      <div class="athlete-section__intro">
+        <h1 class="athlete-section__name">
+          {{ section.settings.heading | default: athlete_name }}
+        </h1>
+
+        {%- if article.metafields.custom.athlete_sport != blank or article.metafields.custom.athlete_team != blank or article.metafields.custom.athlete_position != blank -%}
+          <ul class="athlete-section__stats">
+            {%- if article.metafields.custom.athlete_sport != blank -%}
+              <li class="athlete-section__stat">
+                <span class="athlete-section__stat-label">Sport</span>
+                <span class="athlete-section__stat-value">{{ article.metafields.custom.athlete_sport }}</span>
+              </li>
+            {%- endif -%}
+            {%- if article.metafields.custom.athlete_team != blank -%}
+              <li class="athlete-section__stat">
+                <span class="athlete-section__stat-label">Team</span>
+                <span class="athlete-section__stat-value">{{ article.metafields.custom.athlete_team }}</span>
+              </li>
+            {%- endif -%}
+            {%- if article.metafields.custom.athlete_position != blank -%}
+              <li class="athlete-section__stat">
+                <span class="athlete-section__stat-label">Position</span>
+                <span class="athlete-section__stat-value">{{ article.metafields.custom.athlete_position }}</span>
+              </li>
+            {%- endif -%}
+          </ul>
+        {%- endif -%}
+
+        {%- if section.settings.show_bio and article.content != blank -%}
+          <div class="athlete-section__bio">{{ article.content }}</div>
+        {%- endif -%}
+      </div>
+    </header>
+
+    {%- comment -%} ---- Gather this athlete's articles across the store ---- {%- endcomment -%}
+    {%- assign matched = blank -%}
+    {%- assign has_seed = false -%}
+
+    {%- if section.settings.search_all_blogs -%}
+      {%- for blog in blogs -%}
+        {%- unless blog.handle == current_blog_handle -%}
+          {%- assign blog_matches = blog.articles | where: "author", athlete_name -%}
+          {%- if blog_matches.size > 0 -%}
+            {%- if has_seed -%}
+              {%- assign matched = matched | concat: blog_matches -%}
+            {%- else -%}
+              {%- assign matched = blog_matches -%}
+              {%- assign has_seed = true -%}
+            {%- endif -%}
+          {%- endif -%}
+        {%- endunless -%}
+      {%- endfor -%}
+    {%- elsif section.settings.specific_blog != blank -%}
+      {%- assign matched = section.settings.specific_blog.articles | where: "author", athlete_name -%}
+    {%- endif -%}
+
+    {%- assign matched = matched | sort: "published_at" | reverse -%}
+    {%- comment -%} Hard cap so a prolific athlete doesn't blow up the DOM. {%- endcomment -%}
+    {%- assign matched = matched | slice: 0, 60 -%}
+
+    {%- comment -%}
+      Every card here is authored by / about this one athlete, so we
+      pass a single avatar (this athlete's own photo) rather than a
+      per-card avatar_lookup — see snippets/athlete-grid.liquid.
+    {%- endcomment -%}
+    {%- render 'athlete-grid',
+      articles: matched,
+      heading: section.settings.articles_heading,
+      per_page: section.settings.per_page,
+      load_more_increment: section.settings.load_more_increment,
+      empty_state_text: section.settings.empty_state_text,
+      avatar: article.image,
+      avatar_alt: athlete_name
+    -%}
+  {%- else -%}
+    <div class="athlete-section__empty athlete-section__empty--config">
+      This section only works on an Athlete page — an article inside the
+      blog described in the setup comment at the top of this file.
+    </div>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Main athlete",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading override",
+      "info": "Leave blank to use the athlete's title automatically."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_photo",
+      "label": "Show photo",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_bio",
+      "label": "Show bio",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "articles_heading",
+      "label": "Articles heading",
+      "default": "Latest articles"
+    },
+    {
+      "type": "checkbox",
+      "id": "search_all_blogs",
+      "label": "Search all blogs for this athlete's posts",
+      "default": true
+    },
+    {
+      "type": "blog",
+      "id": "specific_blog",
+      "label": "Or limit to a specific blog",
+      "info": "Only used when \"Search all blogs\" is off."
+    },
+    {
+      "type": "range",
+      "id": "per_page",
+      "min": 3,
+      "max": 24,
+      "step": 3,
+      "label": "Articles shown initially",
+      "default": 9
+    },
+    {
+      "type": "range",
+      "id": "load_more_increment",
+      "min": 3,
+      "max": 12,
+      "step": 3,
+      "label": "Articles revealed per \"Load more\" click",
+      "default": 6
+    },
+    {
+      "type": "text",
+      "id": "empty_state_text",
+      "label": "Empty state message",
+      "default": "No articles published yet."
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    }
+  ],
+  "presets": [
+    {
+      "name": "Main athlete"
+    }
+  ]
+}
+{% endschema %}

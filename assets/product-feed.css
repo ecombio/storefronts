@@ -1,0 +1,36 @@
+/* product-feed.css
+   Product grid layout and sub-collection row.
+   Two-column shell (filter + feed) has moved to collection.css.
+   Filter sidebar shell has moved to collection-filter.css. */
+
+/* ---------- Product grid ---------- */
+.product-feed__grid {
+  display: grid;
+  grid-template-columns: repeat(var(--columns, 4), 1fr);
+  gap: 1.5rem;
+}
+
+/* ---------- Responsive ---------- */
+
+/* Tablet — 768px to 1024px */
+@media (max-width: 1024px) {
+  .product-feed__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Mobile — up to 768px */
+@media (max-width: 768px) {
+  .product-feed__grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
+/* Small mobile — up to 480px */
+@media (max-width: 480px) {
+  .product-feed__grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+}

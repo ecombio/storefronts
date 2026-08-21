@@ -1,0 +1,149 @@
+/**
+ * featured-article.css
+ * Carousel layout for the Featured Articles section.
+ * Card-level styles live in article-card.css.
+ */
+
+.featured-article__inner {
+  max-width: var(--page-width, 1400px);
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* ── Header ─────────────────────────────────────────── */
+
+.featured-article__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.featured-article__header-left,
+.featured-article__header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.featured-article__heading {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.featured-article__view-all {
+  font-size: var(--font-size-sm, 0.9375rem);
+  font-weight: 500;
+  color: var(--color-primary, #111);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.featured-article__view-all:hover {
+  color: var(--color-text-muted, #6b7280);
+}
+
+/* ── Controls ────────────────────────────────────────── */
+
+.featured-article__controls {
+  display: flex;
+  gap: 8px;
+}
+
+.featured-article__btn {
+  background: var(--color-bg, #fff);
+  border: 1px solid var(--color-border, #e5e5e5);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+
+.featured-article__btn:hover {
+  background: var(--color-bg-secondary, #f3f4f6);
+}
+
+.featured-article__btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ── Track ───────────────────────────────────────────── */
+
+.featured-article__track-wrapper {
+  overflow: hidden;
+}
+
+.featured-article__track {
+  display: flex;
+  gap: 20px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  transition: transform 0.4s ease;
+}
+
+/* ── Slides ──────────────────────────────────────────── */
+
+.featured-article__slide {
+  flex: 0 0 calc(33.333% - 14px);
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .featured-article__slide {
+    flex: 0 0 100%;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .featured-article__slide {
+    flex: 0 0 calc(50% - 10px);
+  }
+}
+
+/* ── Dots ────────────────────────────────────────────── */
+
+.featured-article__dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 20px;
+}
+
+.featured-article__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-border, #e5e5e5);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s ease;
+}
+
+.featured-article__dot--active {
+  background: var(--color-primary, #111);
+}
+
+/* ── Editor empty state ──────────────────────────────── */
+
+.featured-article__empty {
+  color: var(--color-text-muted, #6b7280);
+  font-size: 0.9rem;
+  padding: 40px;
+  text-align: center;
+  border: 1px dashed var(--color-border, #e5e5e5);
+  border-radius: 8px;
+}

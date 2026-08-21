@@ -1,0 +1,452 @@
+/* Collection Carousel
+   ------------------------------------------------------------------ */
+
+.cc-section {
+  --cc-gap: 20px;
+  --cc-item-width: 160px;
+  --cc-btn-size: 44px;
+  --cc-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Section layout (width + side padding)
+   ------------------------------------------------------------------
+   Local variables only — set inline per-instance from this section's
+   own schema settings (section_width / custom_width / section_padding).
+   Never reads from the global --page-margin / --page-width, so this
+   section stays independent of Theme settings > Layout > Body side
+   padding. See sections/example-width-section.liquid for the
+   canonical pattern this implements. */
+.cc-section__inner {
+  position: relative;
+  padding-inline: var(--section-padding, 24px);
+}
+
+.cc-section__inner.cc-section__default-width {
+  max-width: 1184px;
+  margin-inline: auto;
+}
+
+.cc-section__inner.cc-section__full-width {
+  max-width: 100%;
+}
+
+.cc-section__inner.cc-section__custom-width {
+  max-width: var(--custom-width, 1184px);
+  margin-inline: auto;
+}
+
+/* Header
+   ------------------------------------------------------------------ */
+
+.cc-section__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.cc-section__header--align-center {
+  justify-content: center;
+  text-align: center;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cc-section__header--align-end {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.cc-section__header-text {
+  min-width: 0;
+}
+
+.cc-section__heading {
+  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.1rem);
+  line-height: 1.15;
+  margin: 0;
+  letter-spacing: -0.01em;
+  font-weight: 600;
+}
+
+.cc-section__subheading {
+  margin: 8px 0 0;
+  font-size: 0.95rem;
+  opacity: 0.65;
+  max-width: 46em;
+}
+
+.cc-section .cc-section__view-all,
+.cc-section .cc-section__view-all:visited {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-decoration: none !important;
+  color: currentColor !important;
+  padding-bottom: 2px;
+  border-bottom: 1px solid currentColor;
+  opacity: 0.85;
+  transition: opacity 0.2s var(--cc-ease), gap 0.2s var(--cc-ease);
+}
+
+.cc-section__view-all:hover {
+  opacity: 1;
+  gap: 10px;
+}
+
+.cc-section__view-all svg {
+  transition: transform 0.2s var(--cc-ease);
+}
+
+.cc-section__view-all:hover svg {
+  transform: translateX(2px);
+}
+
+/* Carousel shell
+   ------------------------------------------------------------------ */
+
+.cc-carousel {
+  position: relative;
+}
+
+.cc-carousel__track {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: var(--cc-item-width);
+  gap: var(--cc-gap);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 4px;
+  padding: 4px 4px 14px;
+  margin: -4px -4px -14px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  cursor: grab;
+  user-select: none;
+}
+
+.cc-carousel__track:active {
+  cursor: grabbing;
+}
+
+.cc-carousel__track::-webkit-scrollbar {
+  display: none;
+}
+
+.cc-carousel__track.is-dragging {
+  scroll-snap-type: none;
+}
+
+/* Item
+   ------------------------------------------------------------------ */
+
+.cc-carousel__item {
+  scroll-snap-align: start;
+}
+
+.cc-section .cc-carousel__link,
+.cc-section .cc-carousel__link:visited {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none !important;
+  color: currentColor !important;
+  outline-offset: 4px;
+}
+
+.cc-carousel__image-wrap {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: rgba(127, 127, 127, 0.08);
+  transition: transform 0.35s var(--cc-ease), box-shadow 0.35s var(--cc-ease);
+}
+
+.cc-carousel__image-wrap--circle {
+  border-radius: 50%;
+}
+
+.cc-carousel__image-wrap--rounded {
+  border-radius: 18px;
+}
+
+.cc-carousel__image-wrap--square {
+  border-radius: 0;
+}
+
+.cc-carousel__image-wrap--landscape {
+  aspect-ratio: 3 / 2;
+  border-radius: 12px;
+  background: transparent;
+}
+
+.cc-carousel__image,
+.cc-carousel__placeholder,
+.cc-carousel__placeholder-svg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.cc-carousel__image-wrap--landscape .cc-carousel__image {
+  object-fit: contain;
+}
+
+.cc-carousel__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.35;
+}
+
+.cc-carousel__image {
+  transition: transform 0.6s var(--cc-ease);
+}
+
+.cc-carousel__link:hover .cc-carousel__image-wrap,
+.cc-carousel__link:focus-visible .cc-carousel__image-wrap {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.35);
+}
+
+.cc-carousel__link:hover .cc-carousel__image,
+.cc-carousel__link:focus-visible .cc-carousel__image {
+  transform: scale(1.06);
+}
+
+.cc-carousel__label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.3;
+  position: relative;
+  padding-bottom: 3px;
+}
+
+.cc-carousel__label::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  height: 1px;
+  width: 0;
+  background: currentColor;
+  transition: width 0.25s var(--cc-ease), left 0.25s var(--cc-ease);
+}
+
+.cc-carousel__link:hover .cc-carousel__label::after,
+.cc-carousel__link:focus-visible .cc-carousel__label::after {
+  width: 100%;
+  left: 0;
+}
+
+.cc-carousel__link[aria-disabled="true"] {
+  pointer-events: none;
+}
+
+/* Animation toggle
+   ------------------------------------------------------------------
+   When section.settings.enable_animations is off, the section root
+   renders with data-animations="off". These overrides cancel the
+   card hover effects (lift, shadow, image zoom, label underline)
+   without touching the carousel's drag/scroll behavior or the
+   prev/next nav buttons. */
+
+.cc-section[data-animations="off"] .cc-carousel__image-wrap,
+.cc-section[data-animations="off"] .cc-carousel__image,
+.cc-section[data-animations="off"] .cc-carousel__label::after {
+  transition: none;
+}
+
+.cc-section[data-animations="off"] .cc-carousel__link:hover .cc-carousel__image-wrap,
+.cc-section[data-animations="off"] .cc-carousel__link:focus-visible .cc-carousel__image-wrap {
+  transform: none;
+  box-shadow: none;
+}
+
+.cc-section[data-animations="off"] .cc-carousel__link:hover .cc-carousel__image,
+.cc-section[data-animations="off"] .cc-carousel__link:focus-visible .cc-carousel__image {
+  transform: none;
+}
+
+.cc-section[data-animations="off"] .cc-carousel__link:hover .cc-carousel__label::after,
+.cc-section[data-animations="off"] .cc-carousel__link:focus-visible .cc-carousel__label::after {
+  width: 0;
+}
+
+/* Nav buttons
+   ------------------------------------------------------------------ */
+
+.cc-carousel__btn {
+  position: absolute;
+  top: calc((100% - 14px - var(--cc-btn-size)) / 2);
+  transform: translateY(-50%);
+  width: var(--cc-btn-size);
+  height: var(--cc-btn-size);
+  border-radius: 50%;
+  border: 1px solid rgba(127, 127, 127, 0.25);
+  background: var(--cc-btn-bg, #fff);
+  color: currentColor;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+  transition: opacity 0.2s var(--cc-ease), transform 0.2s var(--cc-ease), border-color 0.2s var(--cc-ease);
+  box-shadow: 0 4px 14px -6px rgba(0, 0, 0, 0.25);
+}
+
+.cc-carousel__btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.cc-carousel__btn:hover {
+  border-color: currentColor;
+}
+
+.cc-carousel__btn--prev {
+  left: -22px;
+}
+
+.cc-carousel__btn--next {
+  right: -22px;
+}
+
+.cc-carousel__btn[disabled] {
+  opacity: 0.35;
+  pointer-events: none;
+  cursor: default;
+  box-shadow: none;
+}
+
+.cc-carousel__btn:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* Fade edges to hint at overflow — masks the track's own content
+   (image + label) so it visually fades out at the edge, rather than
+   layering a solid-color gradient rectangle on top of it (which is
+   what caused the "shadow cutting across the image" look). */
+.cc-carousel[data-cc-carousel] {
+  --cc-fade-width: 28px;
+}
+
+.cc-carousel.has-overflow-start .cc-carousel__track {
+  -webkit-mask-image: linear-gradient(to right, transparent, black var(--cc-fade-width));
+  mask-image: linear-gradient(to right, transparent, black var(--cc-fade-width));
+}
+
+.cc-carousel.has-overflow-end .cc-carousel__track {
+  -webkit-mask-image: linear-gradient(to left, transparent, black var(--cc-fade-width));
+  mask-image: linear-gradient(to left, transparent, black var(--cc-fade-width));
+}
+
+.cc-carousel.has-overflow-start.has-overflow-end .cc-carousel__track {
+  -webkit-mask-image: linear-gradient(to right, transparent, black var(--cc-fade-width), black calc(100% - var(--cc-fade-width)), transparent);
+  mask-image: linear-gradient(to right, transparent, black var(--cc-fade-width), black calc(100% - var(--cc-fade-width)), transparent);
+}
+
+/* Responsive
+   ------------------------------------------------------------------ */
+
+@media (max-width: 989px) {
+  .cc-section {
+    --cc-item-width: 128px;
+    --cc-gap: 16px;
+  }
+
+  .cc-section {
+    --cc-btn-size: 38px;
+  }
+
+  .cc-carousel[data-cc-carousel] {
+    --cc-fade-width: 20px;
+  }
+
+  /* No room outside the container at this width, so pull the
+     buttons inward instead of hanging them off the edge. */
+  .cc-carousel__btn--prev {
+    left: 4px;
+  }
+
+  .cc-carousel__btn--next {
+    right: 4px;
+  }
+
+  .cc-section .cc-section__view-all {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 749px) {
+  .cc-section {
+    --cc-item-width: 104px;
+    --cc-gap: 12px;
+    --cc-btn-size: 32px;
+  }
+
+  .cc-carousel__btn--prev {
+    left: 4px;
+  }
+
+  .cc-carousel__btn--next {
+    right: 4px;
+  }
+
+  .cc-carousel__btn svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .cc-section__header {
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .cc-section__heading {
+    font-size: 1.4rem;
+  }
+
+  .cc-carousel__label {
+    font-size: 0.8rem;
+  }
+
+  .cc-section .cc-section__view-all {
+    font-size: 0.78rem;
+    gap: 5px;
+    /* keep the tap target comfortable even though the text is small */
+    padding: 6px 0;
+  }
+
+  .cc-section .cc-section__view-all svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cc-carousel__track {
+    scroll-behavior: auto;
+  }
+
+  .cc-carousel__image-wrap,
+  .cc-carousel__image,
+  .cc-carousel__btn,
+  .cc-section__view-all,
+  .cc-section__view-all svg,
+  .cc-carousel__label::after {
+    transition: none !important;
+  }
+}

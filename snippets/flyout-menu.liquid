@@ -1,0 +1,219 @@
+{%- comment -%}
+  Flyout Menu
+  File: snippets/flyout-menu.liquid
+
+  Sidebar-style "browse all categories" flyout block — left-hand list of
+  top-level categories, right-hand content panel that swaps per category,
+  rendered for the 'flyout' block type in sections/header-menu.liquid.
+
+  Pairs with:
+    assets/flyout-menu.css
+    assets/flyout-menu.js
+
+  Usage (from sections/header-menu.liquid):
+    {%- when 'flyout' -%}
+      {%- render 'flyout-menu', block: block -%}
+
+  Accepts:
+    block - the flyout block, with settings: menu, link, label, icon, panel_style
+
+  ── LEVEL MAPPING ──────────────────────────────────────────────────
+  L1 (flyout_menu.links)   → left sidebar categories
+                              e.g. "Electric Scooters"
+                              rendered as .flyout-panel__category-link
+
+  L2 (link.links)          → one .flyout-panel__column PER L2 link,
+                              laid out as a horizontal row of columns
+                              (see assets/flyout-menu.css). Each column's
+                              heading is e.g. "Trending", "Shop by
+                              Category", "Shop by Price", rendered as
+                              .flyout-panel__group.
+
+  L3 (sublink.links)       → indented sub-links stacked vertically
+                              under each L2 heading, e.g. "Shop all",
+                              "New arrivals", "On sale", rendered as
+                              .flyout-panel__sublink
+  ───────────────────────────────────────────────────────────────────
+
+  Current-page awareness: `flyout_active_index` finds the top-level link
+  whose branch contains the page the visitor is currently on (via
+  Shopify's `link.active`, which is true for the link itself OR any of
+  its descendants) and pre-selects that category + panel instead of
+  always defaulting to the first one. Falls back to the first category
+  when nothing in the menu matches the current page (e.g. visitor is on
+  the homepage).
+
+  Column layout: every L2 link under the active L1 category becomes its
+  own .flyout-panel__column — there is no longer a fixed "2 buckets"
+  split. assets/flyout-menu.css lays these columns out as a horizontal,
+  wrapping row (CSS flexbox, not a fixed-count grid), so the number of
+  columns rendered always matches the number of L2 links exactly, no
+  matter how many a merchant adds. The "All {{ link.title }}" link is
+  rendered once, after the columns row, as its own element — it is no
+  longer nested inside whichever bucket happened to be "last".
+
+  Promo image support intentionally not included — see prior removal.
+
+  CHANGELOG (this revision):
+  - CHANGED (breaking layout change): removed the old "split L2 groups
+    into 2 vertical buckets" logic (col1_limit / col2_limit / the
+    `for col in (0..1)` loop with offset/limit). That approach forced
+    every category into exactly 2 vertical stacks regardless of how
+    many L2 groups it had, which is not what was wanted — L2 groups
+    should each be their own column, displayed as a horizontal list.
+    Replaced with a single `for sublink in sub_links` loop that emits
+    one .flyout-panel__column per L2 link, in source order, with no
+    bucketing/splitting math at all.
+  - MOVED: the "All {{ link.title }}" link used to be appended inside
+    whichever column was rendered last (column index 1). Since there is
+    no longer a fixed "last column," it's now rendered once, as a
+    sibling after .flyout-panel__columns, so it always appears as a
+    single panel-level link regardless of how many L2 columns exist.
+  - REMOVED: `col1_limit` / `col2_limit` assigns and the `(0..1)` column
+    loop — no longer needed now that columns map 1:1 to L2 links.
+  - NOTE: pairs with the matching assets/flyout-menu.css rewrite, which
+    switches `.flyout-panel__columns` from a fixed-count CSS grid to a
+    wrapping flexbox row. The two files must be updated together — this
+    Liquid change alone, without the matching CSS, would still render
+    correctly (columns would just stack vertically using flex default),
+    but you want both for the horizontal layout.
+  - ADDED (earlier revision, unchanged here): "Flyout panel style" block
+    setting (`panel_style`), giving merchants a Compact / Full-width
+    span choice in the theme editor. `flyout_panel_classes` appends
+    `flyout-panel--full-width` to the panel's class list when
+    `block.settings.panel_style == 'full-width'`. Defaults to compact
+    when the setting is blank/unset.
+{%- endcomment -%}
+
+{%- assign flyout_menu = linklists[block.settings.menu] -%}
+
+{%- if flyout_menu != blank and flyout_menu.links.size > 0 -%}
+  {%- assign flyout_active_index = 0 -%}
+  {%- for link in flyout_menu.links -%}
+    {%- if link.active and flyout_active_index == 0 -%}
+      {%- assign flyout_active_index = forloop.index -%}
+    {%- endif -%}
+  {%- endfor -%}
+  {%- if flyout_active_index == 0 -%}
+    {%- assign flyout_active_index = 1 -%}
+  {%- endif -%}
+{%- endif -%}
+
+{%- comment -%}
+  Panel style: "compact" (default) keeps the existing left-aligned
+  sidebar look. "full-width" appends the modifier class that
+  assets/flyout-menu.css uses to span the panel across the header.
+{%- endcomment -%}
+{%- assign flyout_panel_classes = 'flyout-panel' -%}
+{%- if block.settings.panel_style == 'full-width' -%}
+  {%- assign flyout_panel_classes = flyout_panel_classes | append: ' flyout-panel--full-width' -%}
+{%- endif -%}
+
+<li class="menu-bar__item menu-bar__item--has-flyout" {{ block.shopify_attributes }}>
+  <a href="{{ block.settings.link | default: flyout_menu.links.first.url | default: '#' }}"
+     class="menu-bar__link menu-bar__link--caret flyout-trigger"
+     aria-haspopup="true"
+     aria-expanded="false"
+     aria-controls="flyout-panel-{{ block.id }}"
+     data-flyout-trigger>
+    {%- if block.settings.icon != blank -%}
+      <span class="menu-bar__icon">{%- render 'menu-icon', icon: block.settings.icon -%}</span>
+    {%- endif -%}
+    {{ block.settings.label | default: 'Browse all categories' }}
+    <svg class="icon-caret-down" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path d="M16.25 7.5L10 13.75L3.75 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {%- if flyout_menu != blank and flyout_menu.links.size > 0 -%}
+    <div class="{{ flyout_panel_classes }}"
+         id="flyout-panel-{{ block.id }}"
+         role="region"
+         aria-label="{{ block.settings.label | default: 'Browse all categories' }}"
+         data-flyout-panel>
+      <div class="flyout-panel__container">
+
+        {%- comment -%} ── L1: sidebar categories ── {%- endcomment -%}
+        <ul class="flyout-panel__categories" role="list">
+          {%- for link in flyout_menu.links -%}
+            {%- assign panel_id = 'flyout-panel-' | append: block.id | append: '-' | append: forloop.index -%}
+            <li class="flyout-panel__category{% if forloop.index == flyout_active_index %} is-active{% endif %}">
+              <a href="{{ link.url }}"
+                 class="flyout-panel__category-link"
+                 data-flyout-category-trigger
+                 data-flyout-target="{{ panel_id }}"
+                 aria-controls="{{ panel_id }}"
+                 {% if link.current %}aria-current="page"{% endif %}>
+                {{ link.title }}
+                <svg class="icon-caret-right" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="M7.5 3.75L13.75 10L7.5 16.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+            </li>
+          {%- endfor -%}
+        </ul>
+
+        <div class="flyout-panel__content" data-flyout-content>
+          {%- for link in flyout_menu.links -%}
+            {%- assign panel_id = 'flyout-panel-' | append: block.id | append: '-' | append: forloop.index -%}
+            {%- assign sub_links = link.links -%}
+
+            <div class="flyout-panel__panel{% if forloop.index == flyout_active_index %} is-active{% endif %}"
+                 id="{{ panel_id }}"
+                 role="region"
+                 aria-hidden="{% if forloop.index == flyout_active_index %}false{% else %}true{% endif %}"
+                 data-flyout-panel-item>
+
+              {%- comment -%}
+                One .flyout-panel__column PER L2 link — no bucketing.
+                assets/flyout-menu.css lays these out as a horizontal,
+                wrapping row, so the rendered column count always
+                matches sub_links.size exactly.
+              {%- endcomment -%}
+              <div class="flyout-panel__columns">
+                {%- for sublink in sub_links -%}
+                  <div class="flyout-panel__column">
+                    {%- comment -%} L2: bold group heading (e.g. "Trending") {%- endcomment -%}
+                    <a href="{{ sublink.url }}"
+                       class="flyout-panel__group"
+                       {% if sublink.current %}aria-current="page"{% endif %}>
+                      {{ sublink.title }}
+                    </a>
+                    {%- if sublink.links.size > 0 -%}
+                      {%- comment -%} L3: indented sub-links under this heading (e.g. "Shop all", "New arrivals", "On sale") {%- endcomment -%}
+                      <ul class="flyout-panel__sublist" role="list">
+                        {%- for grandchild in sublink.links -%}
+                          <li>
+                            <a href="{{ grandchild.url }}"
+                               class="flyout-panel__sublink"
+                               {% if grandchild.current %}aria-current="page"{% endif %}>
+                              {{ grandchild.title }}
+                            </a>
+                          </li>
+                        {%- endfor -%}
+                      </ul>
+                    {%- endif -%}
+                  </div>
+                {%- endfor -%}
+              </div>
+
+              {%- comment -%}
+                Rendered once per panel now (not nested inside a
+                column), since there's no longer a fixed "last column"
+                to attach it to.
+              {%- endcomment -%}
+              <a href="{{ link.url }}" class="flyout-panel__all-link">
+                All {{ link.title }}
+                <svg class="icon-arrow-right" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="M4 10H16M16 10L11 5M16 10L11 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+
+            </div>
+          {%- endfor -%}
+        </div>
+
+      </div>
+    </div>
+  {%- endif -%}
+</li>

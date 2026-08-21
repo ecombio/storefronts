@@ -1,0 +1,711 @@
+{{ 'banner-iconset.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Section width/padding follows the pattern established in
+  sections/example-width-section.liquid: local, per-instance
+  --section-padding (and --custom-width when applicable), applied via
+  the theme's global .default-width / .full-width / .custom-width
+  utility classes (see base.css SECTION GRID SYSTEM). This is
+  intentionally decoupled from the global --page-margin/--page-width
+  settings, so this section's width/padding never shifts just because
+  someone changes Theme settings > Layout > Body side padding.
+{%- endcomment -%}
+{%- liquid
+  assign width_type = section.settings.section_width
+  if width_type == blank
+    assign width_class = 'default-width'
+  else
+    assign width_class = width_type
+  endif
+
+  # Arrow visibility — "always" (default) keeps the prev/next arrows
+  # visible at all times; "hover" reveals them only on wrapper
+  # hover/focus (desktop pointer devices — always shown on touch
+  # regardless, since there's no hover state to reveal them with). See
+  # the [data-arrow-visibility="hover"]-scoped media query in
+  # banner-iconset.css. Same setting/pattern as featured-collection's
+  # arrow_visibility, just with the default flipped: featured-collection
+  # defaults to "hover", this defaults to "always".
+  assign arrow_visibility = section.settings.arrow_visibility | default: 'always'
+-%}
+
+<div
+  class="banner-iconset-section {{ width_class }}"
+  {% unless section.settings.enable_animations %}data-animations="off"{% endunless %}
+  style="
+    padding-top: {{ section.settings.padding_top }}px;
+    padding-bottom: {{ section.settings.padding_bottom }}px;
+    background-color: {{ section.settings.bg_color }};
+    --section-padding: {{ section.settings.section_padding }}px;
+    {%- if width_type == 'custom-width' %}
+      --custom-width: {{ section.settings.custom_width }}rem;
+    {%- endif %}
+  "
+>
+  <div class="banner-iconset-section__inner">
+
+    {%- if section.settings.heading != blank or section.settings.subheading != blank -%}
+      <h2 class="banner-iconset-section__heading banner-iconset-section__heading--align-{{ section.settings.heading_align }}">
+        {%- if section.settings.heading != blank -%}
+          <span class="banner-iconset-section__heading-main" style="color: {{ section.settings.heading_color }};">{{ section.settings.heading }}</span>
+        {%- endif -%}
+        {%- if section.settings.subheading != blank -%}
+          <span class="banner-iconset-section__heading-sub" style="color: {{ section.settings.subheading_color }};">{{ section.settings.subheading }}</span>
+        {%- endif -%}
+      </h2>
+    {%- endif -%}
+
+    <div
+      class="banner-iconset"
+      data-banner-iconset
+      data-arrow-visibility="{{ arrow_visibility }}"
+      data-autoplay="{{ section.settings.autoplay }}"
+      data-autoplay-speed="{{ section.settings.autoplay_speed | times: 1000 }}"
+      style="
+        --slides-mobile: {{ section.settings.columns_mobile }};
+        --slides-tablet: {{ section.settings.columns_tablet }};
+        --slides-desktop: {{ section.settings.columns_desktop }};
+        --slide-gap: {{ section.settings.slide_gap }}px;
+        --card-width-desktop: {{ section.settings.card_width_desktop }}px;
+        --card-radius: {{ section.settings.card_radius }}px;
+        --card-padding: {{ section.settings.card_padding }}px;
+        --card-min-height-desktop: {{ section.settings.card_min_height_desktop }}px;
+        --card-min-height-mobile: {{ section.settings.card_min_height_mobile }}px;
+        --card-bg: {{ section.settings.card_bg_color }};
+        --bc-btn-bg: {{ section.settings.bg_color }};
+      "
+    >
+      <div class="banner-iconset__track" data-banner-iconset-track>
+        {%- for block in section.blocks -%}
+          {%- liquid
+            assign icon = block.settings.icon
+            assign icon_width = block.settings.icon_width
+            assign text = block.settings.text
+            assign link = block.settings.link
+          -%}
+
+          {%- assign modal_enable = block.settings.modal_enable -%}
+          {%- assign modal_id = 'biModal-' | append: block.id -%}
+          {%- capture card_inner -%}
+            {%- if icon != blank -%}
+              <span class="banner-iconset__icon" style="width: {{ icon_width | default: 32 }}px; height: {{ icon_width | default: 32 }}px;">
+                <img
+                  src="{{ icon | image_url: width: 160 }}"
+                  srcset="{{ icon | image_url: width: 80 }} 80w, {{ icon | image_url: width: 160 }} 160w"
+                  alt=""
+                  width="{{ icon.width }}"
+                  height="{{ icon.height }}"
+                  loading="lazy"
+                >
+              </span>
+            {%- endif -%}
+
+            {%- if text != blank -%}
+              <span class="banner-iconset__text" style="color: {{ section.settings.text_color | default: '#1d1d1f' }};">{{ text | newline_to_br }}</span>
+            {%- endif -%}
+          {%- endcapture -%}
+
+          <div class="banner-iconset__slide" data-banner-iconset-slide {{ block.shopify_attributes }}>
+            {%- if modal_enable -%}
+              <button
+                type="button"
+                class="banner-iconset__card"
+                data-bi-modal-open="{{ modal_id }}"
+                aria-haspopup="dialog"
+              >
+                {{ card_inner }}
+              </button>
+            {%- else -%}
+              <a href="{{ link | default: '#' }}" class="banner-iconset__card" {% if link == blank %}tabindex="-1" aria-disabled="true"{% endif %}>
+                {{ card_inner }}
+              </a>
+            {%- endif -%}
+          </div>
+        {%- else -%}
+          <div class="banner-iconset__slide" data-banner-iconset-slide>
+            <a href="#" class="banner-iconset__card" tabindex="-1" aria-disabled="true">
+              <span class="banner-iconset__text">Add cards in the section settings</span>
+            </a>
+          </div>
+        {%- endfor -%}
+      </div>
+
+      {%- if section.blocks.size > 1 and section.settings.show_arrows -%}
+        <button type="button" class="banner-iconset__btn banner-iconset__btn--prev" data-banner-iconset-prev aria-label="Previous">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <button type="button" class="banner-iconset__btn banner-iconset__btn--next" data-banner-iconset-next aria-label="Next">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      {%- endif -%}
+
+      {%- if section.blocks.size > 1 and section.settings.show_dots -%}
+        <div class="banner-iconset__dots" data-banner-iconset-dots></div>
+      {%- endif -%}
+    </div>
+
+  </div>
+
+  {%- for block in section.blocks -%}
+    {%- if block.settings.modal_enable -%}
+      {%- assign modal_id = 'biModal-' | append: block.id -%}
+      <div
+        class="bi-modal"
+        id="{{ modal_id }}"
+        data-bi-modal
+        aria-hidden="true"
+        role="dialog"
+        aria-modal="true"
+        {% if block.settings.modal_heading != blank %}aria-labelledby="{{ modal_id }}-heading"{% endif %}
+      >
+        <div class="bi-modal__backdrop" data-bi-modal-close tabindex="-1"></div>
+        <div class="bi-modal__panel">
+          <button type="button" class="bi-modal__close" data-bi-modal-close aria-label="Close">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+
+          {%- if block.settings.modal_heading != blank -%}
+            <h3 class="bi-modal__heading" id="{{ modal_id }}-heading">{{ block.settings.modal_heading }}</h3>
+          {%- endif -%}
+
+          {%- if block.settings.modal_intro != blank -%}
+            <p class="bi-modal__intro">{{ block.settings.modal_intro | newline_to_br }}</p>
+          {%- endif -%}
+
+          {%- for i in (1..3) -%}
+            {%- assign heading_key = 'modal_section_' | append: i | append: '_heading' -%}
+            {%- assign body_key = 'modal_section_' | append: i | append: '_body' -%}
+            {%- assign sec_heading = block.settings[heading_key] -%}
+            {%- assign sec_body = block.settings[body_key] -%}
+            {%- if sec_heading != blank or sec_body != blank -%}
+              <div class="bi-modal__section">
+                {%- if sec_heading != blank -%}<h4 class="bi-modal__section-heading">{{ sec_heading }}</h4>{%- endif -%}
+                {%- if sec_body != blank -%}<p class="bi-modal__section-body">{{ sec_body | newline_to_br }}</p>{%- endif -%}
+              </div>
+            {%- endif -%}
+          {%- endfor -%}
+
+          {%- if block.settings.modal_link_url != blank -%}
+            <a href="{{ block.settings.modal_link_url }}" class="bi-modal__link">{{ block.settings.modal_link_label | default: 'Learn more' }} &rarr;</a>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+  {%- endfor -%}
+</div>
+
+<style>
+  .bi-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: none;
+  }
+  .bi-modal[data-bi-modal-open] { display: block; }
+  .bi-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+  .bi-modal__panel {
+    position: relative;
+    z-index: 1;
+    max-width: 560px;
+    width: calc(100% - 32px);
+    max-height: calc(100vh - 64px);
+    overflow-y: auto;
+    margin: 32px auto;
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 40px 32px 32px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  }
+  .bi-modal__close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: #f5f5f7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #1d1d1f;
+  }
+  .bi-modal__close:hover { background: #e8e8ed; }
+  .bi-modal__heading {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 12px;
+    color: #1d1d1f;
+  }
+  .bi-modal__intro {
+    font-size: 15px;
+    line-height: 1.5;
+    color: #1d1d1f;
+    margin: 0 0 24px;
+  }
+  .bi-modal__section { margin-bottom: 20px; }
+  .bi-modal__section-heading {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0 0 6px;
+    color: #1d1d1f;
+  }
+  .bi-modal__section-body {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #444448;
+    margin: 0;
+  }
+  .bi-modal__link {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 14px;
+    color: #0071e3;
+    text-decoration: none;
+  }
+  .bi-modal__link:hover { text-decoration: underline; }
+  body.bi-modal-open { overflow: hidden; }
+</style>
+
+<script>
+  (function () {
+    document.addEventListener('click', function (e) {
+      var opener = e.target.closest('[data-bi-modal-open]');
+      if (opener) {
+        var modal = document.getElementById(opener.getAttribute('data-bi-modal-open'));
+        if (modal) {
+          modal.setAttribute('data-bi-modal-open', '');
+          modal.setAttribute('aria-hidden', 'false');
+          document.body.classList.add('bi-modal-open');
+          var closeBtn = modal.querySelector('.bi-modal__close');
+          if (closeBtn) closeBtn.focus();
+        }
+        return;
+      }
+
+      var closer = e.target.closest('[data-bi-modal-close]');
+      if (closer) {
+        var openModal = closer.closest('[data-bi-modal]');
+        if (openModal) {
+          openModal.removeAttribute('data-bi-modal-open');
+          openModal.setAttribute('aria-hidden', 'true');
+          document.body.classList.remove('bi-modal-open');
+        }
+      }
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        var open = document.querySelector('[data-bi-modal][data-bi-modal-open]');
+        if (open) {
+          open.removeAttribute('data-bi-modal-open');
+          open.setAttribute('aria-hidden', 'true');
+          document.body.classList.remove('bi-modal-open');
+        }
+      }
+    });
+  })();
+</script>
+
+<script src="{{ 'banner-iconset.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Icon feature banner",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Header"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "The Apple Store difference."
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "info": "Appears inline right after the heading, in a lighter color — not on its own line.",
+      "default": "Even more reasons to shop with us."
+    },
+    {
+      "type": "select",
+      "id": "heading_align",
+      "label": "Heading alignment",
+      "options": [
+        { "value": "start",  "label": "Left"   },
+        { "value": "center", "label": "Center" },
+        { "value": "end",    "label": "Right"  }
+      ],
+      "default": "start"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading color",
+      "default": "#1d1d1f"
+    },
+    {
+      "type": "color",
+      "id": "subheading_color",
+      "label": "Subheading color",
+      "default": "#6e6e73"
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "header",
+      "content": "Animation"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_animations",
+      "label": "Enable hover animations",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 1,
+      "max": 8,
+      "step": 0.5,
+      "label": "Cards per view (desktop)",
+      "info": "Used for dot pagination and arrow step distance. Actual visible count is also affected by the fixed card width below.",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "card_width_desktop",
+      "min": 140,
+      "max": 400,
+      "step": 10,
+      "unit": "px",
+      "label": "Card width (desktop/tablet)",
+      "default": 220
+    },
+    {
+      "type": "range",
+      "id": "columns_tablet",
+      "min": 1,
+      "max": 6,
+      "step": 0.5,
+      "label": "Cards per view (tablet)",
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "columns_mobile",
+      "min": 1,
+      "max": 3,
+      "step": 0.1,
+      "label": "Cards per view (mobile)",
+      "info": "A value above 1 (e.g. 1.2) shows a peek of the next card as a scroll hint",
+      "default": 1.2
+    },
+    {
+      "type": "range",
+      "id": "slide_gap",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Gap between cards",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "card_padding",
+      "min": 8,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "label": "Card padding",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "card_min_height_desktop",
+      "min": 120,
+      "max": 400,
+      "step": 10,
+      "unit": "px",
+      "label": "Card min height (desktop/tablet)",
+      "default": 220
+    },
+    {
+      "type": "range",
+      "id": "card_min_height_mobile",
+      "min": 120,
+      "max": 400,
+      "step": 10,
+      "unit": "px",
+      "label": "Card min height (mobile)",
+      "default": 200
+    },
+    {
+      "type": "range",
+      "id": "card_radius",
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "label": "Card corner radius",
+      "default": 16
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Show pagination dots",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show arrows",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "arrow_visibility",
+      "label": "Arrow visibility",
+      "options": [
+        { "value": "always", "label": "Always" },
+        { "value": "hover", "label": "On hover" }
+      ],
+      "default": "always",
+      "info": "Always: arrows stay visible at all times. On hover: arrows fade + scale in only when hovering the card row (desktop pointer devices only — always shown on touch).",
+      "visible_if": "{{ section.settings.show_arrows }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Auto-rotate cards",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "label": "Change cards every",
+      "default": 5
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Section background color",
+      "default": "#f5f5f7"
+    },
+    {
+      "type": "color",
+      "id": "card_bg_color",
+      "label": "Card background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Default card text color",
+      "info": "Use inline HTML in each card's text (e.g. a <span style=\"color:#0071e3\">) to color individual words differently.",
+      "default": "#1d1d1f"
+    },
+    {
+      "type": "header",
+      "content": "Section padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 40
+    }
+  ],
+  "blocks": [
+    {
+      "type": "card",
+      "name": "Card",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "icon",
+          "label": "Icon"
+        },
+        {
+          "type": "range",
+          "id": "icon_width",
+          "min": 16,
+          "max": 80,
+          "step": 2,
+          "unit": "px",
+          "label": "Icon size",
+          "default": 32
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "Card text",
+          "info": "Basic HTML is allowed and not escaped — e.g. <span style=\"color:#0071e3\">colored words</span>, <b>bold</b>, or <sup>1</sup> for a footnote mark.",
+          "default": "Enjoy this feature. It only takes a moment to set up."
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link",
+          "info": "Makes the whole card clickable. Leave blank for a non-clickable card."
+        },
+        {
+          "type": "header",
+          "content": "Popup (optional)"
+        },
+        {
+          "type": "checkbox",
+          "id": "modal_enable",
+          "label": "Open a popup when this card is clicked",
+          "info": "Overrides the link above — the popup opens instead.",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "modal_heading",
+          "label": "Popup heading"
+        },
+        {
+          "type": "textarea",
+          "id": "modal_intro",
+          "label": "Popup intro text"
+        },
+        {
+          "type": "text",
+          "id": "modal_section_1_heading",
+          "label": "Section 1 heading"
+        },
+        {
+          "type": "textarea",
+          "id": "modal_section_1_body",
+          "label": "Section 1 body"
+        },
+        {
+          "type": "text",
+          "id": "modal_section_2_heading",
+          "label": "Section 2 heading"
+        },
+        {
+          "type": "textarea",
+          "id": "modal_section_2_body",
+          "label": "Section 2 body"
+        },
+        {
+          "type": "text",
+          "id": "modal_section_3_heading",
+          "label": "Section 3 heading"
+        },
+        {
+          "type": "textarea",
+          "id": "modal_section_3_body",
+          "label": "Section 3 body"
+        },
+        {
+          "type": "url",
+          "id": "modal_link_url",
+          "label": "Popup \"Learn more\" link"
+        },
+        {
+          "type": "text",
+          "id": "modal_link_label",
+          "label": "Popup link label",
+          "default": "Learn more"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Icon feature banner",
+      "blocks": [
+        { "type": "card" },
+        { "type": "card" },
+        { "type": "card" },
+        { "type": "card" },
+        { "type": "card" }
+      ]
+    }
+  ]
+}
+{% endschema %}

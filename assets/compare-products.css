@@ -1,0 +1,518 @@
+/* ============================================================
+   compare-products.css
+   ============================================================ */
+
+/* ── CSS custom properties ───────────────────────────────── */
+.compare-section {
+  --compare-sticky-top: 0px; /* overridden by JS when stickyOffset > 0 */
+  --compare-label-width: 9rem;
+  --compare-col-min: 200px;
+  --compare-border: var(--color-border, rgba(0,0,0,0.09));
+  --compare-bg: var(--color-background, #fff);
+  --compare-bg-alt: var(--color-background-secondary, rgba(0,0,0,0.022));
+  --compare-fg: var(--color-foreground, #111);
+  --compare-radius: 16px;
+}
+
+/* ── Section shell ───────────────────────────────────────── */
+.compare-section {
+  padding-block: 2rem 5rem;
+}
+
+/* ── Page header ─────────────────────────────────────────── */
+.compare-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  margin-bottom: 2rem;
+}
+.compare-header__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: inherit;
+  opacity: 0.45;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+.compare-header__back:hover { opacity: 1; }
+.compare-header__title {
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+.compare-header__meta {
+  margin: 0 0 0 auto;
+  font-size: 0.8rem;
+  opacity: 0.45;
+}
+
+/* ── Diff toggle pill ────────────────────────────────────── */
+.compare-diff-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.4rem 0.9rem;
+  border: 1.5px solid var(--compare-border);
+  border-radius: 999px;
+  background: none;
+  cursor: pointer;
+  color: inherit;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.compare-diff-toggle:hover {
+  background: var(--compare-bg-alt);
+}
+.compare-diff-toggle.is-active {
+  background: var(--compare-fg);
+  color: var(--compare-bg);
+  border-color: var(--compare-fg);
+}
+.compare-diff-toggle__dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.5;
+  transition: opacity 0.15s;
+}
+.compare-diff-toggle.is-active .compare-diff-toggle__dot { opacity: 1; }
+
+/* ── Loading ─────────────────────────────────────────────── */
+.compare-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 5rem 1rem;
+  font-size: 0.9rem;
+  opacity: 0.5;
+}
+.compare-spinner {
+  width: 18px; height: 18px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: compare-spin 0.7s linear infinite;
+}
+@keyframes compare-spin { to { transform: rotate(360deg); } }
+
+/* ── Empty state ─────────────────────────────────────────── */
+.compare-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 5rem 1rem;
+  text-align: center;
+  opacity: 0.6;
+}
+.compare-empty p { margin: 0; font-size: 1rem; }
+
+/* ── Scrollable wrapper ──────────────────────────────────── */
+.compare-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1.5px solid var(--compare-border);
+  border-radius: var(--compare-radius);
+  box-shadow: 0 2px 20px rgba(0,0,0,0.07);
+}
+
+/* ── Table base ──────────────────────────────────────────── */
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+/* ── Sticky label column ─────────────────────────────────── */
+.compare-cell--label {
+  width: var(--compare-label-width);
+  min-width: 7rem;
+  padding: 0.85rem 0.75rem 0.85rem 1.25rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--compare-fg);
+  opacity: 0.4;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+  background: var(--compare-bg);
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  border-right: 1.5px solid var(--compare-border);
+}
+
+/* ── Product header cells ────────────────────────────────── */
+.compare-cell--product {
+  min-width: var(--compare-col-min);
+  padding: 1.75rem 1.5rem 1.5rem;
+  vertical-align: top;
+  border-left: 1px solid var(--compare-border);
+  background: var(--compare-bg);
+  position: sticky;
+  /* account for announcement bar + nav via CSS variable */
+  top: var(--compare-sticky-top);
+  z-index: 3;
+  /* subtle bottom border to separate header from body when scrolled */
+  box-shadow: 0 1px 0 0 var(--compare-border);
+}
+
+/* ── Data cells ──────────────────────────────────────────── */
+.compare-cell {
+  padding: 0.9rem 1.25rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  vertical-align: middle;
+  border-top: 1px solid var(--compare-border);
+  border-left: 1px solid var(--compare-border);
+  transition: background 0.2s;
+}
+.compare-cell:first-child { border-left: none; }
+
+/* Alternating rows — using a class avoids nth-child fragility */
+.compare-row:nth-child(even) .compare-cell,
+.compare-row:nth-child(even) .compare-cell--label {
+  background: var(--compare-bg-alt);
+}
+
+/* ── Difference highlight ────────────────────────────────── */
+/*
+  BUG FIX: the original code had a mismatch — JS adds
+  .compare-row--diff-hidden but CSS only had .compare-row--same-hidden.
+  Both class names are now aligned here and in the JS.
+*/
+.compare-cell--diff {
+  background: #fffbeb !important;
+  border-top-color: rgba(245,158,11,0.2);
+}
+.compare-cell--diff-label {
+  opacity: 1 !important;
+  color: #b45309 !important;
+  background: #fffbeb !important;
+}
+.compare-row--diff-hidden {
+  display: none;
+}
+
+/* ── Rows where every product is blank/dash — hidden ────── */
+.compare-row--all-empty {
+  display: none;
+}
+
+/* ── Product header card ─────────────────────────────────── */
+.compare-product-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  text-align: center;
+}
+/* Larger image area — was capped at 130px, now generous 160px */
+.compare-product-header__img-link {
+  display: block;
+  width: 100%;
+  max-width: 160px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--compare-bg-alt);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.compare-product-header__img-link:hover {
+  transform: scale(1.04);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+.compare-product-header__img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: contain;
+  display: block;
+  padding: 0.6rem;
+}
+.compare-product-header__img-placeholder {
+  width: 100%;
+  aspect-ratio: 1;
+  background: var(--compare-bg-alt);
+}
+.compare-product-header__title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: inherit;
+  text-decoration: none;
+  line-height: 1.3;
+  /* allow wrapping so long titles don't overflow */
+  word-break: break-word;
+}
+.compare-product-header__title:hover { text-decoration: underline; }
+.compare-product-header__vendor {
+  font-size: 0.72rem;
+  opacity: 0.45;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+.compare-product-header__remove {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  opacity: 0.35;
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
+  transition: opacity 0.15s, background 0.15s;
+  color: inherit;
+  margin-top: 0.15rem;
+}
+.compare-product-header__remove:hover {
+  opacity: 1;
+  background: rgba(0,0,0,0.06);
+}
+
+/* ── Price ───────────────────────────────────────────────── */
+.compare-price {
+  display: block;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+.compare-price--sale { color: var(--color-sale, #dc2626); }
+.compare-price--was {
+  font-size: 0.8rem;
+  font-weight: 400;
+  opacity: 0.45;
+  display: block;
+  text-decoration: line-through;
+  margin-top: 0.1rem;
+}
+.compare-save-badge {
+  display: inline-block;
+  margin-top: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.15em 0.55em;
+  border-radius: 4px;
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* ── Availability ────────────────────────────────────────── */
+.compare-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25em 0.75em;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+.compare-badge::before {
+  content: '';
+  display: block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.compare-badge--in  { background: #dcfce7; color: #16a34a; }
+.compare-badge--out { background: #fee2e2; color: #dc2626; }
+
+/* ── Tags ────────────────────────────────────────────────── */
+.compare-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+.compare-tag {
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 0.15em 0.55em;
+  border-radius: 4px;
+  background: var(--compare-bg-alt);
+  opacity: 0.75;
+  /* capitalize display for readability */
+  text-transform: capitalize;
+}
+
+/* ── Variants / options ──────────────────────────────────── */
+.compare-option-vals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+.compare-option-val {
+  display: inline-block;
+  font-size: 0.72rem;
+  padding: 0.15em 0.5em;
+  border-radius: 4px;
+  border: 1.5px solid var(--compare-border);
+  font-weight: 500;
+}
+
+/* ── Description ─────────────────────────────────────────── */
+.compare-cell--description { vertical-align: top; }
+.compare-description {
+  font-size: 0.82rem;
+  line-height: 1.7;
+  opacity: 0.65;
+  max-width: 280px;
+}
+
+/* ── ATC row ─────────────────────────────────────────────── */
+.compare-row--atc .compare-cell {
+  padding-block: 1.5rem;
+  border-top: 2px solid var(--compare-border);
+  vertical-align: middle;
+}
+
+/* Full-width ATC button — matches .cpc__atc-btn on collection/carousel cards */
+.compare-atc-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 0.5rem;
+  background: #f5c518;
+  color: #111;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  font-family: inherit;
+  line-height: 1.2;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, opacity 0.15s, transform 0.1s;
+}
+.compare-atc-btn:hover:not(:disabled) { background: #e6b800; }
+.compare-atc-btn:active:not(:disabled) { transform: scale(0.98); }
+.compare-atc-btn.is-loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+.compare-atc-btn:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: 2px;
+}
+.compare-atc-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Sold-out button in the ATC row — same shape/sizing as the ATC button */
+.compare-row--atc .btn--secondary {
+  width: 100%;
+  padding: 0.65rem 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  border-radius: 6px;
+}
+
+/* ── Mobile: card stack instead of wide table ────────────── */
+@media (max-width: 680px) {
+  .compare-table-wrap {
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
+  }
+  .compare-table,
+  .compare-table thead,
+  .compare-table tbody,
+  .compare-table tr,
+  .compare-table th,
+  .compare-table td {
+    display: block;
+    width: 100%;
+  }
+  .compare-row--header .compare-cell--label { display: none; }
+
+  .compare-row--header {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .compare-cell--product {
+    position: static;
+    border: 1.5px solid var(--compare-border);
+    border-radius: 12px;
+    min-width: 0;
+    padding: 1rem;
+    box-shadow: none;
+    top: auto;
+  }
+
+  .compare-row:not(.compare-row--header):not(.compare-row--atc) {
+    border: 1px solid var(--compare-border);
+    border-radius: 10px;
+    margin-bottom: 0.6rem;
+    overflow: hidden;
+    padding: 0;
+  }
+  .compare-cell--label {
+    position: static;
+    display: block;
+    width: 100%;
+    background: var(--compare-bg-alt);
+    border-right: none;
+    border-bottom: 1px solid var(--compare-border);
+    padding: 0.5rem 1rem;
+    white-space: normal;
+    min-width: 0;
+    opacity: 1;
+  }
+  .compare-cell {
+    display: grid;
+    grid-template-columns: 1fr;
+    border-left: none;
+    border-top: 1px solid var(--compare-border);
+    padding: 0.6rem 1rem;
+  }
+  .compare-cell[data-product]::before {
+    content: attr(data-product);
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    opacity: 0.4;
+    margin-bottom: 0.2rem;
+  }
+
+  .compare-row--atc {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    border: none;
+  }
+  .compare-row--atc .compare-cell--label { display: none; }
+  .compare-row--atc .compare-cell {
+    border: none;
+    padding: 0;
+  }
+}
+
+/* ── Reduced motion ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .compare-spinner { animation: none; opacity: 0.4; }
+  .compare-product-header__img-link,
+  .compare-atc-btn { transition: none; }
+}

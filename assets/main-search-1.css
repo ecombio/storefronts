@@ -1,0 +1,805 @@
+/* assets/main-search.css
+   Owned by sections/main-search.liquid.
+   Covers the hero, the section-level body layout (filter aside +
+   feed), the filter drawer, the toolbar (filter toggle, tab
+   switcher, sort select) plus its condensed mobile-bar counterpart,
+   and the results feed (panel wrapper, pagination/empty state, and
+   the product/article result grids). search-toolbar.css and
+   search-results.css have both been merged into this file — the
+   toolbar and results markup are inlined into main-search.liquid /
+   search-results.liquid rather than being separate owned snippets,
+   so all of this section's styling now lives in one asset. If
+   search-results.css is still being loaded directly by
+   search-results.liquid, remove that stylesheet_tag to avoid loading
+   these rules twice.
+
+   Color fallbacks for the toolbar match collection-toolbar.css so
+   the search and collection toolbars stay visually consistent.
+
+   BRAND COLORS (2026-07): --color-accent / --color-accent-secondary
+   are expected to be set globally by the theme (they're read with a
+   fallback everywhere in this file, never hardcoded), but the
+   fallbacks here have been set to the brand palette — Old Glory Red
+   #B31942 as the primary accent, Old Glory Blue #0A3161 as the
+   secondary — so this section still looks on-brand even on a store
+   that hasn't defined those variables yet.
+
+   PRESET-READY: every color in this file is a `var(--token, fallback)`
+   read, never a bare hex value, specifically so a future preset
+   system (e.g. "hyper" / "focus") can swap the whole section's
+   palette just by redefining --color-accent / --color-accent-
+   secondary / --color-text etc. at a higher scope (e.g. on
+   `[data-theme-preset]`) — no changes needed here when that lands.
+
+   PRICE FILTER (2026-07): the price_range group now renders a
+   histogram + dual-thumb slider + quick-pick brackets, not just the
+   two plain number inputs. Its rules live in their own subsection
+   below, right after .search-filter__price, following the same
+   var(--token, brand-fallback) convention as the rest of the file.
+*/
+
+.main-search {
+  position: relative;
+}
+
+.search-page {
+  padding-inline: var(--section-padding, 24px);
+  margin-inline: auto;
+}
+
+.search-page__default-width {
+  max-width: 90rem;
+}
+
+.search-page__custom-width {
+  max-width: var(--custom-width, 80rem);
+}
+
+.search-page__full-width {
+  max-width: 100%;
+}
+
+/* Hero
+   Left-aligned to match collection-hero.css's pattern (main-collection.css)
+   rather than the previous centered treatment — same padding-block scale
+   and mobile breakpoint behavior, adapted to this section's own class
+   names. .search-title intentionally doesn't set its own font-size,
+   same as .collection-title, so both headings pick up the theme's
+   default h1 styling and stay visually consistent with each other. */
+
+.search-hero {
+  padding-block: 40px 32px;
+}
+
+@media (max-width: 640px) {
+  .search-hero {
+    padding-block: 28px 20px;
+  }
+}
+
+.search-title {
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .search-title {
+    font-size: 1.5rem;
+  }
+}
+
+.search-result-count {
+  margin: 0.5rem 0 0;
+  color: var(--color-text-muted, #6b6b6b);
+}
+
+@media (max-width: 640px) {
+  .search-result-count {
+    font-size: 0.875rem;
+  }
+}
+
+.search-hero__prompt {
+  padding-block: 4rem;
+  text-align: center;
+  color: var(--color-text-muted, #6b6b6b);
+}
+
+/* Toolbar
+   Merged in from assets/search-toolbar.css. Covers the desktop
+   toolbar (filter toggle, tab switcher, sort select) and its
+   condensed mobile-bar counterpart. */
+
+.tab-switcher {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--color-border, #e5e5e5);
+}
+
+.tab-switcher__tab {
+  padding: 0.75rem 1rem;
+  margin-bottom: -1px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-text-muted, #6b6b6b);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.tab-switcher__tab:hover {
+  color: var(--color-text, #1a1a1a);
+}
+
+.tab-switcher__tab--active {
+  color: var(--color-text, #1a1a1a);
+  border-bottom-color: var(--color-accent, #B31942);
+}
+
+.tab-switcher__tab:focus-visible {
+  outline: 2px solid var(--color-accent, #B31942);
+  outline-offset: 2px;
+}
+
+.search-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--color-border, #e5e5e5);
+}
+
+.search-toolbar__filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: 1px solid var(--color-border, #e5e5e5);
+  border-radius: 4px;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.search-toolbar__filter-toggle:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.search-toolbar__sort {
+  margin-inline-start: auto;
+}
+
+.search-toolbar__sort select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border, #e5e5e5);
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+/* Mobile bar (hidden on desktop, shown under the toolbar breakpoint) */
+
+.search-mobile-bar {
+  display: none;
+  gap: 0.75rem;
+  padding-block: 0.75rem;
+  border-bottom: 1px solid var(--color-border, #e5e5e5);
+}
+
+.search-mobile-bar__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: 1px solid var(--color-border, #e5e5e5);
+  border-radius: 4px;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.search-mobile-bar__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .search-toolbar__sort {
+    display: none;
+  }
+
+  .search-mobile-bar {
+    display: flex;
+  }
+}
+
+/* Body layout: filter aside + feed
+   FLEXBOX FIX (2026-07): this used to be `display: grid` with
+   explicit tracks (16rem 1fr). That broke when search-filter.js
+   toggled the aside's `hidden` attribute client-side: an element with
+   `display: none` is removed from grid layout entirely, so with only
+   one item left, grid auto-placement dropped .search-body__feed into
+   the FIRST track (16rem) instead of the 1fr track, squeezing the
+   whole product grid into a narrow column with empty space beside it.
+   The old `.search-body--filters-hidden` class only handled the
+   equivalent server-rendered case (show_filters false at initial
+   load) — it never re-applied when JS toggled the aside after the
+   page had already rendered.
+
+   Flexbox doesn't have this failure mode: a hidden sibling just stops
+   taking up space and the remaining item naturally fills the row, so
+   no JS-vs-CSS state mismatch is possible. .search-filter now carries
+   its own explicit width below instead of borrowing it from a grid
+   track. */
+
+.search-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+  padding-block: 1.5rem;
+}
+
+.search-body__feed {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .search-body {
+    flex-direction: column;
+  }
+}
+
+.search-mobile-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 40;
+}
+
+/* BACKDROP FIX (2026-07): scoped to the same breakpoint the drawer
+   itself uses (see .search-filter's mobile positioning below), as a
+   defensive second layer alongside the JS check in main-search.js —
+   even if `.is-visible` somehow got added outside of mobile, it
+   still can't render there. */
+@media (min-width: 769px) {
+  .search-mobile-backdrop.is-visible {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .search-mobile-backdrop.is-visible {
+    display: block;
+  }
+}
+
+/* Filter drawer
+   Inlined from assets/search-filter.css now that the filter markup
+   itself is inlined into sections/main-search.liquid (no longer a
+   separate snippet). */
+
+.search-filter {
+  /* WIDTH FIX (2026-07): previously had no width of its own — its
+     16rem desktop width came entirely from the old grid track. Now
+     that .search-body is flexbox, there's no grid track to borrow a
+     width from, so it's set explicitly here. flex-shrink: 0 keeps it
+     from being squeezed by the feed's flex: 1 growth. */
+  width: 16rem;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border, #e2e2e2);
+  border-radius: 6px;
+  padding: 1rem;
+  width: 280px;
+}
+
+.search-filter[hidden] {
+  display: none;
+}
+
+.search-filter__close {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.search-filter__close-label {
+  font-weight: 600;
+}
+
+.search-filter__close-btn {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.search-filter__group {
+  border-bottom: 1px solid var(--color-border, #e2e2e2);
+  padding-block: 0.75rem;
+}
+
+.search-filter__group-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+
+.search-filter__group-label::-webkit-details-marker {
+  display: none;
+}
+
+.search-filter__group-badge {
+  background: var(--color-accent, #B31942);
+  color: var(--color-accent-contrast, #fff);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  padding: 0.1rem 0.5rem;
+}
+
+.search-filter__group-body {
+  padding-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.search-filter__option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.search-filter__option--active {
+  font-weight: 600;
+}
+
+.search-filter__option--disabled {
+  opacity: 0.4;
+}
+
+.search-filter__price-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.search-filter__price {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.search-filter__price input {
+  width: 5rem;
+  padding: 0.4rem;
+  border: 1px solid var(--color-border, #e2e2e2);
+  border-radius: 4px;
+}
+
+/* ---------- Price histogram (decorative distribution) ---------- */
+
+.search-filter__histogram {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 46px;
+}
+
+.search-filter__histogram-bar {
+  flex: 1 1 0;
+  min-height: 3px;
+  background: var(--color-accent-muted, #f2c9d3);
+  border-radius: 2px 2px 0 0;
+}
+
+/* ---------- Price: dual-thumb range slider ---------- */
+
+.search-filter__range-slider {
+  position: relative;
+  height: 20px;
+  margin: 0 2px;
+}
+
+.search-filter__range-track,
+.search-filter__range-track-active {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 3px;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.search-filter__range-track {
+  left: 0;
+  right: 0;
+  background: var(--color-border, #d4d4d4);
+}
+
+.search-filter__range-track-active {
+  background: var(--color-accent, #B31942);
+}
+
+.search-filter__range-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 20px;
+  margin: 0;
+  background: transparent;
+  pointer-events: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.search-filter__range-input--min {
+  z-index: 2;
+}
+
+.search-filter__range-input--max {
+  z-index: 3;
+}
+
+.search-filter__range-input.is-active-top {
+  z-index: 4;
+}
+
+.search-filter__range-input::-webkit-slider-runnable-track {
+  -webkit-appearance: none;
+  background: transparent;
+}
+
+.search-filter__range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  pointer-events: auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--color-accent, #B31942);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  margin-top: 0;
+}
+
+.search-filter__range-input::-moz-range-track {
+  background: transparent;
+  border: none;
+}
+
+.search-filter__range-input::-moz-range-thumb {
+  pointer-events: auto;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--color-accent, #B31942);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+}
+
+/* ---------- Price: quick-pick brackets ---------- */
+
+.search-filter__price-brackets {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.search-filter__price-option {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.search-filter__price-option input[type="radio"] {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: var(--color-accent, #B31942);
+  cursor: pointer;
+}
+
+.search-filter__active {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.search-filter__pill {
+  font-size: 0.8rem;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--color-border, #e2e2e2);
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--color-text, #111);
+}
+
+.search-filter__pill--clear {
+  border-color: var(--color-accent, #B31942);
+  color: var(--color-accent, #B31942);
+}
+
+.search-filter__submit {
+  margin-top: 1rem;
+  width: 100%;
+  padding: 0.6rem;
+  background: var(--color-accent, #B31942);
+  color: var(--color-accent-contrast, #fff);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.search-filter__empty {
+  color: var(--color-text-muted, #6b6b6b);
+  font-size: 0.9rem;
+}
+
+/* Articles-tab placeholder (2026-07)
+   Replaces the old single small <p class="search-filter__empty">
+   line, which left the sidebar feeling empty/broken rather than
+   intentional. Sizing (padding, icon dimensions) is set independent
+   of the filter form's own content so switching tabs doesn't change
+   .search-filter's width — same "no layout shift" goal the width fix
+   above already covers for the hidden/shown case. */
+
+.search-filter__placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+  padding: 2.5rem 1rem 1.5rem;
+}
+
+.search-filter__placeholder-icon {
+  color: var(--color-accent-secondary, #0A3161);
+  margin-bottom: 0.25rem;
+}
+
+.search-filter__placeholder-title {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-text, #1a1a1a);
+}
+
+.search-filter__placeholder-text {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--color-text-muted, #6b6b6b);
+}
+
+.search-filter__placeholder-btn {
+  margin-top: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.15rem;
+  background: var(--color-accent, #B31942);
+  color: var(--color-accent-contrast, #fff);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+
+.search-filter__placeholder-btn:hover {
+  opacity: 0.85;
+}
+
+.search-filter__placeholder-btn:focus-visible {
+  outline: 2px solid var(--color-accent-secondary, #0A3161);
+  outline-offset: 2px;
+}
+
+/* Live-filtering loading state (2026-07)
+   Previously only the results grid dimmed (via inline style in
+   main-search.js) while a filter request was in flight, leaving the
+   form itself looking fully idle/interactive. filterForm gets
+   aria-busy="true" for the duration of the request (see
+   applyFiltersLive in main-search.js) — this turns that into a
+   visible state: the fields dim and a small spinner appears, so it's
+   clear the form itself is what's updating. */
+
+#SearchFilterForm[aria-busy="true"] {
+  position: relative;
+  opacity: 0.6;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+#SearchFilterForm[aria-busy="true"]::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 2px solid var(--color-accent-secondary, #0A3161);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: search-filter-spin 0.6s linear infinite;
+}
+
+@keyframes search-filter-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Mobile drawer positioning */
+
+@media (max-width: 768px) {
+  .search-filter {
+    position: fixed;
+    inset: 0 0 0 auto;
+    width: min(85vw, 22rem);
+    z-index: 50;
+    border-radius: 0;
+    overflow-y: auto;
+  }
+
+  .search-filter__close {
+    display: flex;
+  }
+}
+
+/* Results feed
+   Merged in from assets/search-results.css. Covers the panel
+   wrapper and the pagination / empty-state markup that's identical
+   in both the product-results and article-results blocks (kept
+   here, in their shared parent, instead of duplicated per block). */
+
+.search-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Tab-switch loading state (2026-07)
+   Tabs are still plain links that do a full page navigation (see the
+   note in main-search.js) — this class just gets added the instant a
+   tab is clicked, for immediate feedback while that navigation is in
+   flight, rather than the previous results sitting there looking
+   fully idle until the new page arrives. */
+.search-feed.is-loading {
+  position: relative;
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.search-feed.is-loading::after {
+  content: '';
+  position: absolute;
+  top: 2rem;
+  left: 50%;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-left: -0.875rem;
+  border: 3px solid var(--color-accent-secondary, #0A3161);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: search-filter-spin 0.6s linear infinite;
+}
+
+.search-feed__panel[hidden] {
+  display: none;
+}
+
+.search-empty {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--color-text-muted, #6b6b6b);
+}
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.pagination__link {
+  padding: 0.5rem 0.85rem;
+  border: 1px solid var(--color-border, #e2e2e2);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: var(--color-text, #111);
+  text-decoration: none;
+}
+
+.pagination__link:hover {
+  border-color: var(--color-accent, #111);
+}
+
+.pagination__link--current {
+  background: var(--color-accent, #B31942);
+  border-color: var(--color-accent, #B31942);
+  color: var(--color-accent-contrast, #fff);
+}
+
+/* ------------------------------------------------------------------
+   snippet: product-results (formerly assets/product-results.css)
+   Card-level styling lives in product-card.css — this section only
+   owns the grid container that arranges those cards, plus the
+   #product-results wrapper it now sits inside. Breakpoints mirror
+   main-collection.css's grid (1 col <=480px, 2 col <768px, 3 col
+   <1024px) so this stays visually consistent with the rest of the
+   site, per the note in product-card.liquid's IMAGE SIZES FIX.
+   ------------------------------------------------------------------ */
+
+#product-results {
+  display: contents;
+}
+
+.search-results-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--columns, 4), minmax(0, 1fr));
+  gap: 1.5rem 1rem;
+}
+
+@media (max-width: 1024px) {
+  .search-results-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .search-results-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .search-results-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* /snippet: product-results */
+
+/* ------------------------------------------------------------------
+   snippet: article-results (formerly assets/article-results.css)
+   Card-level styling lives in article-card.css — this section only
+   owns the grid container that arranges those cards, plus the
+   #article-results wrapper it now sits inside.
+   ------------------------------------------------------------------ */
+
+#article-results {
+  display: contents;
+}
+
+.article-feed {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .article-feed {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .article-feed {
+    grid-template-columns: 1fr;
+  }
+}
+/* /snippet: article-results */

@@ -1,0 +1,150 @@
+{% comment %}
+  snippets/css-variables.liquid
+
+  Outputs a single <style> block into <head> (via theme.liquid).
+
+  This file is the ONLY place that should contain settings-driven
+  design tokens (colors, spacing, widths, presets, fonts). It is
+  intentionally NOT going away: static assets (base.css, theme.css)
+  cannot read settings_data.json or evaluate Liquid, so anything a
+  merchant can change from the theme editor has to live here.
+
+  Static, non-configurable design constants (border radii that never
+  change, transition durations, ATC/pill/sale colors that aren't
+  exposed as settings) live in theme.css instead — see the :root
+  block there. Do not duplicate those constants here.
+
+  Token namespaces:
+    --font-*          typography (settings-driven)
+    --color-*         brand / UI palette (settings-driven)
+    --style-border-radius-inputs   input radius (settings-driven)
+    --page-*          page-width layout (settings-driven)
+    --header-*        header layout (settings-driven)
+    --footer-*        footer layout (settings-driven)
+    --section-*       section spacing (settings + preset driven)
+    --card-*          product card density (preset driven)
+    --grid-*          grid gap density (preset driven)
+    --nav-*           navigation typography (preset driven)
+    --font-weight-*   preset-driven weight scale
+
+  For static constants (--radius-base, --transition-*, --color-atc-text,
+  etc.) see theme.css. Do not redefine them here.
+{% endcomment %}
+
+{% style %}
+
+  {% comment %} ── Font faces ──────────────────────────────────────────── {% endcomment %}
+  {{ settings.type_primary_font | font_face: font_display: 'swap' }}
+  {{ settings.type_primary_font | font_modify: 'weight', 'bold' | font_face: font_display: 'swap' }}
+  {{ settings.type_primary_font | font_modify: 'weight', 'bold' | font_modify: 'style', 'italic' | font_face: font_display: 'swap' }}
+  {{ settings.type_primary_font | font_modify: 'style', 'italic' | font_face: font_display: 'swap' }}
+
+{% comment %} ── Preset logic ─────────────────────────────────────────
+  Three presets supported:
+  - "" (empty)     → Launchpad (Default / Balanced)
+  - "marketplace"  → Hyper (Marketplace density)
+  - "storefront"   → Focus (Premium / more spacing)
+
+  Falls back to Launchpad if an unknown value is used.
+─────────────────────────────────────────────────────────────────── {% endcomment %}
+
+{%- liquid
+  assign preset = settings.theme_preset | default: ''
+
+  if preset == 'marketplace'
+    assign spacing_multiplier = 1.6
+    assign card_padding       = '14px'
+    assign grid_gap           = '12px'
+    assign header_padding_y   = '12px'
+    assign nav_font_size      = '14px'
+    assign font_weight_medium = '600'
+    assign font_weight_bold   = '700'
+
+  elsif preset == 'storefront'
+    assign spacing_multiplier = 2.4
+    assign card_padding       = '24px'
+    assign grid_gap           = '24px'
+    assign header_padding_y   = '18px'
+    assign nav_font_size      = '15px'
+    assign font_weight_medium = '500'
+    assign font_weight_bold   = '600'
+
+  else
+    # Launchpad (Default)
+    assign spacing_multiplier = 2.0
+    assign card_padding       = '20px'
+    assign grid_gap           = '20px'
+    assign header_padding_y   = '16px'
+    assign nav_font_size      = '15px'
+    assign font_weight_medium = '500'
+    assign font_weight_bold   = '600'
+  endif
+
+  assign section_spacing = settings.section_spacing_scale | default: 1 | plus: 0 | times: spacing_multiplier | append: 'rem'
+-%}
+
+  :root {
+
+    /* ── Typography ──────────────────────────────────────────────── */
+    --font-primary--family:  {{ settings.type_primary_font.family }}, {{ settings.type_primary_font.fallback_families }};
+    --font-primary--style:   {{ settings.type_primary_font.style }};
+    --font-primary--weight:  {{ settings.type_primary_font.weight }};
+
+    /* ── Brand palette (settings-driven) ─────────────────────────── */
+    --color-background:      {{ settings.background_color }};
+    --color-foreground:      {{ settings.foreground_color }};
+
+    --color-accent:          {{ settings.accent_color      | default: '#4F46E5' }};
+    --color-accent-hover:    {{ settings.accent_color_hover | default: '#4338CA' }};
+
+    --color-text:            {{ settings.foreground_color  | default: '#111827' }};
+    --color-text-muted:      {{ settings.text_muted_color  | default: '#6B7280' }};
+
+    --color-surface:         {{ settings.background_color  | default: '#ffffff' }};
+    --color-border:          {{ settings.border_color      | default: '#E5E7EB' }};
+
+    /* ATC button */
+    --color-atc:             {{ settings.atc_color         | default: '#f5c518' }};
+    --color-atc-hover:       {{ settings.atc_color_hover   | default: '#e6b800' }};
+
+    /* Sale / savings */
+    --color-sale:            {{ settings.sale_color        | default: '#DC2626' }};
+    --color-save-text:       {{ settings.save_badge_color  | default: '#D97706' }};
+
+    /* Option pills (settings-driven half only — static half in theme.css) */
+    --color-pill-bg-active:     {{ settings.foreground_color | default: '#111827' }};
+    --color-pill-border:        {{ settings.border_color      | default: '#E5E7EB' }};
+    --color-pill-border-active: {{ settings.foreground_color | default: '#111827' }};
+
+    /* ── Inputs (settings-driven radius) ─────────────────────────── */
+    /* NOTE: name matches critical.css's var(--style-border-radius-inputs).
+       Previously this was emitted as --radius-inputs, which nothing
+       consumed — the input radius setting was silently a no-op. */
+    --style-border-radius-inputs: {{ settings.input_corner_radius }}px;
+
+    /* ── Page layout ─────────────────────────────────────────────── */
+    --page-width:            {{ settings.max_page_width }};
+    --page-margin:           {{ settings.min_page_margin }}px;
+
+    /* ── Header layout ───────────────────────────────────────────── */
+    --header-width:          {{ settings.header_max_width | default: settings.max_page_width }};
+    --header-margin:         {{ settings.header_margin    | default: settings.min_page_margin }}px;
+    --header-padding-y:      {{ header_padding_y }};
+
+    /* ── Footer layout ───────────────────────────────────────────── */
+    --footer-width:          {{ settings.footer_max_width | default: settings.max_page_width }};
+    --footer-margin:         {{ settings.footer_margin    | default: settings.min_page_margin }}px;
+
+    /* ── Preset-driven density ───────────────────────────────────── */
+    --section-spacing:       {{ section_spacing }};
+    --card-padding:          {{ card_padding }};
+    --grid-gap:              {{ grid_gap }};
+
+    /* ── Navigation ──────────────────────────────────────────────── */
+    --nav-font-size:         {{ nav_font_size }};
+    --font-weight-medium:    {{ font_weight_medium }};
+    --font-weight-bold:      {{ font_weight_bold }};
+
+  }
+
+{% endstyle %}

@@ -1,0 +1,961 @@
+/*
+ * assets/quick-view.css
+ * =====================
+ * Scoped to #quick-view-modal and .quick-view
+ *
+ * All quickview-specific design tokens live here as --quick-view-* custom
+ * properties. Global theme tokens (--color-*, --font-family, etc.) are
+ * referenced but never redefined here.
+ *
+ * Loaded via {{ 'quick-view.css' | asset_url | stylesheet_tag }} in theme.liquid.
+ */
+
+/* ============================================================
+   1. TOKENS
+   ============================================================ */
+
+#quick-view-modal {
+  /* Surfaces */
+  --quick-view-bg:                    #ffffff;
+  --quick-view-backdrop:              rgba(0, 0, 0, 0.5);
+
+  /* Typography */
+  --quick-view-font:                  var(--font-family, 'Instrument Sans', sans-serif);
+  --quick-view-color-text:            var(--color-text, #000000);
+  --quick-view-color-text-muted:      var(--color-text-secondary, #666666);
+  --quick-view-color-link:            var(--color-text, #000000);
+  --quick-view-color-link-hover:      #000000;
+
+  /* Borders + radius */
+  --quick-view-border-color:          var(--color-border, #E5E5E5);
+  --quick-view-radius:                12px;
+  --quick-view-radius-sm:             6px;
+
+  /* Accent */
+  --quick-view-accent:                var(--color-text, #000000);
+  --quick-view-accent-hover:          #333333;
+  --quick-view-accent-text:           #ffffff;
+
+  /* ATC button */
+  --quick-view-atc-bg:                #f5c518;
+  --quick-view-atc-bg-hover:          #e6b800;
+  --quick-view-atc-text:              #111111;
+  --quick-view-atc-soldout-bg:        #E5E7EB;
+  --quick-view-atc-soldout-text:      #9CA3AF;
+
+  /* Sale / save */
+  --quick-view-sale-color:            var(--color-sale, #D32F2F);
+  --quick-view-save-bg:               #FEF3C7;
+  --quick-view-save-text:             #D97706;
+
+  /* Variant pills */
+  --quick-view-pill-bg:               var(--color-background-alt, #EDEDED);
+  --quick-view-pill-bg-active:        var(--color-text, #000000);
+  --quick-view-pill-text:             var(--color-text, #000000);
+  --quick-view-pill-text-active:      var(--color-background, #ffffff);
+  --quick-view-pill-border:           var(--color-border, #E5E5E5);
+  --quick-view-pill-border-active:    var(--color-text, #000000);
+
+  /* Swatches */
+  --quick-view-swatch-size:           28px;
+  --quick-view-swatch-gap:            6px;
+  --quick-view-swatch-ring:           var(--color-text, #000000);
+
+  /* Thumbnails */
+  --quick-view-thumb-size:            60px;
+  --quick-view-thumb-active-ring:     var(--color-text, #000000);
+
+  /* Layout */
+  --quick-view-panel-max-width:       900px;
+  --quick-view-media-width:           50%;
+  --quick-view-detail-padding:        32px;
+  --quick-view-detail-padding-mobile: 20px;
+
+  /* Animation */
+  --quick-view-duration-open:         300ms;
+  --quick-view-duration-close:        220ms;
+  --quick-view-easing-open:           cubic-bezier(0.22, 1, 0.36, 1);
+  --quick-view-easing-close:          cubic-bezier(0.4, 0, 1, 1);
+
+  /* Stack */
+  --quick-view-z:                     700;
+}
+
+/* ── Dark mode overrides ── */
+@media (prefers-color-scheme: dark) {
+  #quick-view-modal {
+    --quick-view-bg:                  #1c1c1e;
+    --quick-view-backdrop:            rgba(0, 0, 0, 0.7);
+    --quick-view-color-text:          #f0f0f0;
+    --quick-view-color-text-muted:    #9a9a9a;
+    --quick-view-color-link:          #f0f0f0;
+    --quick-view-color-link-hover:    #cccccc;
+    --quick-view-border-color:        #2e2e2e;
+    --quick-view-pill-bg:             #2a2a2c;
+    --quick-view-pill-bg-active:      #f0f0f0;
+    --quick-view-pill-text:           #d0d0d0;
+    --quick-view-pill-text-active:    #111111;
+    --quick-view-pill-border:         #3a3a3c;
+    --quick-view-pill-border-active:  #f0f0f0;
+    --quick-view-accent:              #f0f0f0;
+    --quick-view-swatch-ring:         #f0f0f0;
+    --quick-view-thumb-active-ring:   #f0f0f0;
+  }
+}
+
+/* ============================================================
+   2. MODAL SHELL
+   ============================================================ */
+
+#quick-view-modal {
+  position:       fixed;
+  inset:          0;
+  z-index:        var(--quick-view-z);
+  display:        flex;
+  align-items:    center;
+  justify-content: center;
+  padding:        1.5rem;
+  pointer-events: none;
+  visibility:     hidden;
+}
+
+#quick-view-modal.is-open {
+  pointer-events: all;
+  visibility:     visible;
+}
+
+/* ── Backdrop ── */
+.quick-view-modal__backdrop {
+  position:   absolute;
+  inset:      0;
+  background: var(--quick-view-backdrop);
+  opacity:    0;
+  transition: opacity var(--quick-view-duration-close) var(--quick-view-easing-close);
+  cursor:     pointer;
+}
+
+#quick-view-modal.is-open .quick-view-modal__backdrop {
+  opacity:    1;
+  transition: opacity var(--quick-view-duration-open) var(--quick-view-easing-open);
+}
+
+/* ── Panel ── */
+.quick-view-modal__panel {
+  position:         relative;
+  width:            100%;
+  max-width:        var(--quick-view-panel-max-width);
+  background:       var(--quick-view-bg);
+  border-radius:    var(--quick-view-radius);
+  overflow:         hidden;
+  transform:        translateY(20px) scale(0.98);
+  opacity:          0;
+  transition:
+    transform var(--quick-view-duration-close) var(--quick-view-easing-close),
+    opacity   var(--quick-view-duration-close) var(--quick-view-easing-close);
+  z-index:          1;
+  max-height:       90vh;
+  overflow-y:       auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+#quick-view-modal.is-open .quick-view-modal__panel {
+  transform:  translateY(0) scale(1);
+  opacity:    1;
+  transition:
+    transform var(--quick-view-duration-open) var(--quick-view-easing-open),
+    opacity   var(--quick-view-duration-open) var(--quick-view-easing-open);
+}
+
+/* ── Close button ── */
+.quick-view-modal__close {
+  position:     absolute;
+  top:          1rem;
+  right:        1rem;
+  width:        2rem;
+  height:       2rem;
+  display:      flex;
+  align-items:  center;
+  justify-content: center;
+  background:   transparent;
+  border:       none;
+  border-radius: var(--quick-view-radius-sm);
+  cursor:       pointer;
+  color:        var(--quick-view-color-text);
+  z-index:      2;
+  transition:   background 0.15s ease;
+}
+
+.quick-view-modal__close:hover        { background: rgba(0,0,0,0.06); }
+.quick-view-modal__close:focus-visible {
+  outline:        2px solid var(--quick-view-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .quick-view-modal__close:hover { background: rgba(255,255,255,0.1); }
+}
+
+.quick-view-modal__close-icon {
+  width:   1.25rem;
+  height:  1.25rem;
+  display: block;
+}
+
+/* ── Loading state ── */
+.quick-view-modal__loading {
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  padding:         4rem;
+  color:           var(--quick-view-color-text-muted);
+  font-family:     var(--quick-view-font);
+}
+
+.quick-view-modal__spinner {
+  width:            2rem;
+  height:           2rem;
+  border:           2px solid var(--quick-view-border-color);
+  border-top-color: var(--quick-view-accent);
+  border-radius:    50%;
+  animation:        quick-view-spin 600ms linear infinite;
+}
+
+@keyframes quick-view-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quick-view-modal__spinner { animation: none; opacity: 0.4; }
+}
+
+/* ── Error state ── */
+.quick-view-modal__error {
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  gap:             0.75rem;
+  padding:         4rem 2rem;
+  text-align:      center;
+  color:           var(--quick-view-color-text-muted);
+  font-family:     var(--quick-view-font);
+}
+
+.quick-view-modal__fallback-link {
+  color:                var(--quick-view-accent);
+  text-decoration:      underline;
+  text-underline-offset: 2px;
+}
+
+.quick-view-modal__fallback-link:hover {
+  color: var(--quick-view-accent-hover);
+}
+
+/* ── Scroll lock ── */
+html.quick-view-open { overflow: hidden; }
+
+/* ============================================================
+   3. QUICK VIEW COMPONENT — two-column layout
+      .quick-view__media  |  .quick-view__detail
+   ============================================================ */
+
+.quick-view {
+  display:               grid;
+  grid-template-columns: var(--quick-view-media-width) 1fr;
+  font-family:           var(--quick-view-font);
+  color:                 var(--quick-view-color-text);
+}
+
+/* ── Media column ── */
+.quick-view__media {
+  display:        flex;
+  flex-direction: column;
+  overflow:       hidden;
+}
+
+@media (prefers-color-scheme: dark) {
+  .quick-view__media { background: #141416; }
+}
+
+.quick-view__media-main {
+  flex:       1;
+  overflow:   hidden;
+  position:   relative;
+  aspect-ratio: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  .quick-view__media-main { background: #141416; }
+}
+
+.quick-view__main-img {
+  width:      100%;
+  height:     100%;
+  object-fit: cover;
+  display:    block;
+  transition: opacity 0.2s ease;
+}
+
+.quick-view__main-img--placeholder {
+  width:           100%;
+  height:          100%;
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  background:      #F3F4F6;
+}
+
+.quick-view__placeholder-svg {
+  width:   55%;
+  height:  auto;
+  opacity: 0.22;
+}
+
+.quick-view__media-thumbs {
+  display:          flex;
+  gap:              6px;
+  padding:          10px;
+  overflow-x:       auto;
+  scrollbar-width:  none;
+  border-top:       1px solid var(--quick-view-border-color);
+}
+
+.quick-view__media-thumbs::-webkit-scrollbar { display: none; }
+
+@media (prefers-color-scheme: dark) {
+  .quick-view__media-thumbs { background: #141416; }
+}
+
+.quick-view__thumb {
+  flex-shrink:    0;
+  width:          var(--quick-view-thumb-size);
+  height:         var(--quick-view-thumb-size);
+  border-radius:  var(--quick-view-radius-sm);
+  border:         2px solid transparent;
+  overflow:       hidden;
+  cursor:         pointer;
+  padding:        0;
+  background:     none;
+  transition:     border-color 0.15s ease;
+}
+
+.quick-view__thumb img {
+  width:      100%;
+  height:     100%;
+  object-fit: cover;
+  display:    block;
+}
+
+.quick-view__thumb.is-active,
+.quick-view__thumb:hover {
+  border-color: var(--quick-view-thumb-active-ring);
+}
+
+.quick-view__thumb:focus-visible {
+  outline:        2px solid var(--quick-view-accent);
+  outline-offset: 2px;
+}
+
+/* ── Detail column ── */
+.quick-view__detail {
+  display:        flex;
+  flex-direction: column;
+  gap:            1rem;
+  padding:        var(--quick-view-detail-padding);
+  overflow-y:     auto;
+  border-left:    1px solid var(--quick-view-border-color);
+}
+
+/* ── Vendor ── */
+.quick-view__vendor {
+  font-size:      0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color:          var(--quick-view-color-text-muted);
+  margin:         0;
+}
+
+/* ── Title ── */
+.quick-view__title {
+  font-size:   1.4rem;
+  font-weight: 600;
+  line-height: 1.25;
+  margin:      0;
+  color:       var(--quick-view-color-text);
+}
+
+.quick-view__title-link {
+  color:           var(--quick-view-color-link);
+  text-decoration: none;
+}
+
+.quick-view__title-link:hover {
+  color: var(--quick-view-color-link-hover);
+}
+
+/* ── Reviews ── */
+.quick-view__reviews {
+  min-height: 18px;
+}
+
+/* ── Price ── */
+.quick-view__price {
+  display:     flex;
+  align-items: baseline;
+  flex-wrap:   wrap;
+  gap:         0.4rem;
+}
+
+.quick-view__price-current {
+  font-size:   1.1rem;
+  font-weight: 600;
+  color:       var(--quick-view-color-text);
+}
+
+.quick-view__price-current--sale {
+  color: var(--quick-view-sale-color);
+}
+
+.quick-view__price-compare {
+  font-size:          1rem;
+  color:              var(--quick-view-color-text-muted);
+  text-decoration-color: var(--quick-view-color-text-muted);
+}
+
+.quick-view__price-save-badge {
+  font-size:    0.75rem;
+  font-weight:  700;
+  padding:      2px 8px;
+  border-radius: 4px;
+  background:   var(--quick-view-save-bg);
+  color:        var(--quick-view-save-text);
+}
+
+/* ── Variant options ── */
+.quick-view__options {
+  display:        flex;
+  flex-direction: column;
+  gap:            0.75rem;
+}
+
+.quick-view__option {
+  display:        flex;
+  flex-direction: column;
+  gap:            0.4rem;
+}
+
+.quick-view__option-label {
+  display:     flex;
+  align-items: baseline;
+  gap:         0.35rem;
+}
+
+.quick-view__option-name {
+  font-size:      0.8rem;
+  font-weight:    600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color:          var(--quick-view-color-text);
+}
+
+.quick-view__option-selected {
+  font-size: 0.8rem;
+  color:     var(--quick-view-color-text-muted);
+}
+
+.quick-view__option-values {
+  display:   flex;
+  flex-wrap: wrap;
+  gap:       0.4rem;
+}
+
+/* Pills */
+.quick-view__option-btn {
+  padding:        0.35rem 0.75rem;
+  font-size:      0.875rem;
+  border:         1.5px solid var(--quick-view-pill-border);
+  border-radius:  var(--quick-view-radius-sm);
+  background:     var(--quick-view-pill-bg);
+  color:          var(--quick-view-pill-text);
+  font-family:    var(--quick-view-font);
+  cursor:         pointer;
+  transition:     border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+  line-height:    1.4;
+}
+
+.quick-view__option-btn:hover {
+  border-color: var(--quick-view-color-text);
+}
+
+.quick-view__option-btn.is-active {
+  background:   var(--quick-view-pill-bg-active);
+  color:        var(--quick-view-pill-text-active);
+  border-color: var(--quick-view-pill-border-active);
+}
+
+.quick-view__option-btn:focus-visible {
+  outline:        2px solid var(--quick-view-accent);
+  outline-offset: 2px;
+}
+
+/* Swatches */
+.quick-view__option-values--swatches {
+  gap: var(--quick-view-swatch-gap);
+}
+
+.quick-view__swatch {
+  position:     relative;
+  width:        var(--quick-view-swatch-size);
+  height:       var(--quick-view-swatch-size);
+  border-radius: 50%;
+  border:       2px solid transparent;
+  padding:      0;
+  background:   none;
+  cursor:       pointer;
+  transition:   border-color 0.15s ease;
+}
+
+.quick-view__swatch-inner {
+  display:       block;
+  width:         100%;
+  height:        100%;
+  border-radius: 50%;
+  background:    var(--swatch-color, #cccccc);
+}
+
+.quick-view__swatch:hover {
+  border-color: var(--quick-view-color-text);
+}
+
+.quick-view__swatch.is-active {
+  border-color: var(--quick-view-swatch-ring);
+}
+
+.quick-view__swatch:focus-visible {
+  outline:        2px solid var(--quick-view-accent);
+  outline-offset: 2px;
+}
+
+/* Hidden variant select */
+.quick-view__variant-select {
+  position: absolute;
+  width:    1px;
+  height:   1px;
+  overflow: hidden;
+  clip:     rect(0 0 0 0);
+}
+
+/* ── ETA ── */
+.quick-view__eta {
+  display:     flex;
+  align-items: center;
+  gap:         5px;
+  font-size:   0.75rem;
+  color:       var(--quick-view-color-text-muted);
+}
+
+.quick-view__eta-icon {
+  flex-shrink: 0;
+}
+
+/* ── ATC ── */
+.quick-view__atc-wrap {
+  margin-top: auto;
+}
+
+.quick-view__atc {
+  width:         100%;
+  padding:       0.75rem 1.25rem;
+  border:        none;
+  border-radius: var(--quick-view-radius-sm);
+  background:    var(--quick-view-atc-bg);
+  color:         var(--quick-view-atc-text);
+  font-family:   var(--quick-view-font);
+  font-size:     0.9rem;
+  font-weight:   700;
+  cursor:        pointer;
+  position:      relative;
+  overflow:      hidden;
+  transition:    opacity 0.2s ease;
+}
+
+/* Fill-sweep on hover — matches product-card.css ATC pattern */
+.quick-view__atc::before {
+  content:    '';
+  position:   absolute;
+  inset:      0;
+  background: var(--quick-view-atc-bg-hover);
+  transform:  translateX(-100%);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.quick-view__atc:hover:not(:disabled)::before {
+  transform: translateX(0);
+}
+
+.quick-view__atc [data-atc-label] {
+  position: relative;
+  z-index:  1;
+}
+
+.quick-view__atc.is-loading {
+  pointer-events: none;
+  opacity:        0.7;
+}
+
+.quick-view__atc.is-added {
+  background: #059669;
+}
+
+.quick-view__atc.is-added::before { display: none; }
+
+.quick-view__atc--soldout,
+.quick-view__atc:disabled {
+  background: var(--quick-view-atc-soldout-bg);
+  color:      var(--quick-view-atc-soldout-text);
+  cursor:     not-allowed;
+}
+
+.quick-view__atc--soldout::before,
+.quick-view__atc:disabled::before { display: none; }
+
+.quick-view__atc:focus-visible {
+  outline:        2px solid var(--quick-view-accent);
+  outline-offset: 2px;
+}
+
+/* ── PDP link ── */
+.quick-view__pdp-link {
+  display:          inline-flex;
+  align-items:      center;
+  gap:              0.35rem;
+  font-size:        0.85rem;
+  color:            var(--quick-view-color-text-muted);
+  text-decoration:  underline;
+  text-underline-offset: 2px;
+  transition:       color 0.15s ease;
+}
+
+.quick-view__pdp-link:hover {
+  color: var(--quick-view-color-link-hover);
+}
+
+.quick-view__pdp-link:focus-visible {
+  outline:        2px solid var(--quick-view-accent);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   4. RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 700px) {
+  #quick-view-modal {
+    padding:     0;
+    align-items: flex-end;
+  }
+
+  .quick-view-modal__panel {
+    border-radius: var(--quick-view-radius) var(--quick-view-radius) 0 0;
+    max-height:    92vh;
+  }
+
+  .quick-view {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-view__detail {
+    padding:    var(--quick-view-detail-padding-mobile);
+    border-left: none;
+    border-top:  1px solid var(--quick-view-border-color);
+  }
+
+  .quick-view__title {
+    font-size: 1.2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quick-view-modal__backdrop,
+  .quick-view-modal__panel,
+  .quick-view__main-img,
+  .quick-view__atc::before {
+    transition: none;
+  }
+}
+
+/* ============================================================
+   5. DESCRIPTION TABS
+   Merged in from quick-view-description.css
+   ============================================================ */
+
+/* ── Fix: make .quick-view grid rows stack correctly ──────────────── */
+.quick-view {
+  align-items:  start;
+  background:   var(--quick-view-bg);
+}
+
+/* ── Full-width tab section ─────────────────────────────────────────
+   grid-column: 1 / -1 spans both the media and detail columns.
+   background must be set explicitly — the panel behind is transparent.
+   ─────────────────────────────────────────────────────────────────── */
+.quick-view__desc-wrap {
+  grid-column:    1 / -1;
+  display:        flex;
+  flex-direction: column;
+  background:     var(--quick-view-bg);
+  border-top:     1px solid var(--quick-view-border-color);
+}
+
+/* ── Tab strip ── */
+.quick-view__tabs {
+  display:          flex;
+  align-items:      flex-end;
+  gap:              0;
+  padding:          0 var(--quick-view-detail-padding);
+  border-bottom:    1px solid var(--quick-view-border-color);
+  background:       var(--quick-view-bg);
+  overflow-x:       auto;
+  scrollbar-width:  none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.quick-view__tabs::-webkit-scrollbar { display: none; }
+
+/* ── Tab button ── */
+.quick-view__tab {
+  flex-shrink:    0;
+  padding:        0.7rem 1rem;
+  font-family:    var(--quick-view-font);
+  font-size:      0.78rem;
+  font-weight:    600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color:          var(--quick-view-color-text-muted);
+  background:     transparent;
+  border:         none;
+  border-bottom:  2px solid transparent;
+  margin-bottom:  -1px;
+  cursor:         pointer;
+  white-space:    nowrap;
+  line-height:    1.4;
+  transition:     color 0.15s ease, border-color 0.15s ease;
+}
+
+.quick-view__tab:hover {
+  color: var(--quick-view-color-text);
+}
+
+.quick-view__tab.is-active {
+  color:               var(--quick-view-color-text);
+  border-bottom-color: var(--quick-view-accent);
+}
+
+.quick-view__tab:focus-visible {
+  outline:        2px solid var(--quick-view-accent);
+  outline-offset: 2px;
+}
+
+/* ── Tab panels ── */
+.quick-view__tab-panel {
+  display:    none;
+  padding:    1.25rem var(--quick-view-detail-padding);
+  background: var(--quick-view-bg);
+}
+
+.quick-view__tab-panel.is-active {
+  display: block;
+}
+
+/* ── Scrollable content area ── */
+.quick-view__tab-panel-inner {
+  font-family:     var(--quick-view-font);
+  font-size:       0.875rem;
+  line-height:     1.65;
+  color:           var(--quick-view-color-text);
+  max-height:      200px;
+  overflow-y:      auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--quick-view-border-color) transparent;
+}
+
+.quick-view__tab-panel-inner::-webkit-scrollbar       { width: 4px; }
+.quick-view__tab-panel-inner::-webkit-scrollbar-track { background: transparent; }
+.quick-view__tab-panel-inner::-webkit-scrollbar-thumb {
+  background:    var(--quick-view-border-color);
+  border-radius: 2px;
+}
+
+/* ── RTE resets ── */
+.quick-view__tab-panel-inner p              { margin: 0 0 0.75em; }
+.quick-view__tab-panel-inner p:last-child   { margin-bottom: 0; }
+.quick-view__tab-panel-inner h1,
+.quick-view__tab-panel-inner h2,
+.quick-view__tab-panel-inner h3             { font-size: 0.875rem; font-weight: 700; margin: 0 0 0.5em; color: var(--quick-view-color-text); }
+.quick-view__tab-panel-inner a              { color: var(--quick-view-color-link); text-underline-offset: 2px; }
+.quick-view__tab-panel-inner a:hover        { color: var(--quick-view-color-link-hover); }
+.quick-view__tab-panel-inner ul,
+.quick-view__tab-panel-inner ol             { padding-left: 1.25rem; margin: 0 0 0.75em; }
+.quick-view__tab-panel-inner li             { margin-bottom: 0.25em; }
+
+/* ── Dark mode ── */
+@media (prefers-color-scheme: dark) {
+  .quick-view__desc-wrap,
+  .quick-view__tabs,
+  .quick-view__tab-panel {
+    background: var(--quick-view-bg); /* resolves to #1c1c1e via dark token */
+  }
+  .quick-view__tab-panel-inner::-webkit-scrollbar-thumb {
+    background: #3a3a3c;
+  }
+}
+
+/* ── Mobile ── */
+@media (max-width: 700px) {
+  .quick-view__tabs {
+    padding: 0 var(--quick-view-detail-padding-mobile);
+  }
+  .quick-view__tab {
+    padding:   0.6rem 0.7rem;
+    font-size: 0.72rem;
+  }
+  .quick-view__tab-panel {
+    padding: 1rem var(--quick-view-detail-padding-mobile);
+  }
+  .quick-view__tab-panel-inner {
+    max-height: 160px;
+  }
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .quick-view__tab { transition: none; }
+}
+/* ============================================================
+   6. RECOMMENDATION ROW  (snippets/quick-view-recommendation.liquid)
+   Add this block to the END of assets/quick-view.css.
+   ============================================================ */
+
+/* ── Root: full-width grid column (same pattern as .quick-view__desc-wrap) ── */
+.quick-view-rec {
+  grid-column:    1 / -1;
+  display:        flex;
+  flex-direction: column;
+  background:     var(--quick-view-bg);
+  border-top:     1px solid var(--quick-view-border-color);
+  padding:        1.25rem var(--quick-view-detail-padding) 1.5rem;
+}
+
+/* ── Header row: heading + "See all" link ─────────────────────────────────── */
+.quick-view-rec__header {
+  display:         flex;
+  align-items:     baseline;
+  justify-content: space-between;
+  gap:             1rem;
+  margin-bottom:   0.9rem;
+}
+
+.quick-view-rec__heading {
+  font-family:    var(--quick-view-font);
+  font-size:      0.78rem;
+  font-weight:    700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color:          var(--quick-view-color-text);
+  margin:         0;
+  line-height:    1;
+}
+
+.quick-view-rec__see-all {
+  display:         inline-flex;
+  align-items:     center;
+  gap:             0.3rem;
+  font-family:     var(--quick-view-font);
+  font-size:       0.72rem;
+  font-weight:     600;
+  color:           var(--quick-view-color-text-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space:     nowrap;
+  flex-shrink:     0;
+  transition:      color 0.15s ease;
+}
+
+.quick-view-rec__see-all:hover {
+  color: var(--quick-view-color-link-hover);
+}
+
+.quick-view-rec__see-all:focus-visible {
+  outline:        2px solid var(--quick-view-accent);
+  outline-offset: 2px;
+}
+
+/* ── Horizontal scroll list ───────────────────────────────────────────────── */
+.quick-view-rec__list {
+  --rec-card-width:    180px;     /* card width on desktop */
+  --rec-gap:           12px;
+
+  display:             flex;
+  gap:                 var(--rec-gap);
+  list-style:          none;
+  margin:              0;
+  padding:             4px 2px 12px; /* bottom: room for card shadow */
+  overflow-x:          auto;
+  overflow-y:          visible;       /* cards lift on hover without clip */
+  scroll-snap-type:    x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width:     thin;
+  scrollbar-color:     var(--quick-view-border-color) transparent;
+}
+
+.quick-view-rec__list::-webkit-scrollbar       { height: 3px; }
+.quick-view-rec__list::-webkit-scrollbar-track { background: transparent; }
+.quick-view-rec__list::-webkit-scrollbar-thumb {
+  background:    var(--quick-view-border-color);
+  border-radius: 2px;
+}
+
+/* ── Individual card slot ─────────────────────────────────────────────────── */
+.quick-view-rec__item {
+  flex:            0 0 var(--rec-card-width);
+  scroll-snap-align: start;
+  /* Cards use height: 100% internally; the item sets the column height. */
+}
+
+/* ── Tighten product-card internals for the compact modal context ─────────── */
+.quick-view-rec__item .product-card__body {
+  padding:  10px 10px 12px;
+  gap:      4px;
+}
+
+.quick-view-rec__item .product-card__price {
+  font-size: 0.9rem;
+}
+
+.quick-view-rec__item .product-card__atc-btn {
+  font-size: 0.72rem;
+  padding:   7px 8px;
+}
+
+/* Hide Judge.me stars inside the rec row — they load async and cause layout
+   shift; the rating is available on the PDP anyway. */
+.quick-view-rec__item .product-card__reviews {
+  display: none;
+}
+
+/* ── Mobile (<700px) ──────────────────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .quick-view-rec {
+    padding: 1rem var(--quick-view-detail-padding-mobile) 1.25rem;
+  }
+
+  .quick-view-rec__list {
+    --rec-card-width: 150px;
+  }
+}
+
+/* ── Reduced motion ───────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .quick-view-rec__list {
+    scroll-behavior: auto;
+  }
+}

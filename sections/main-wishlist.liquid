@@ -1,0 +1,227 @@
+{{ 'main-wishlist.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Section layout (width + padding) is intentionally independent of
+  the global --page-margin / --page-width variables. See
+  sections/example-width-section.liquid for the full rationale.
+  This section defines its own local --section-padding /
+  --custom-width, set inline per-instance from this section's own
+  schema settings only.
+{%- endcomment -%}
+{%- liquid
+  assign width_type = section.settings.section_width
+  if width_type == blank
+    assign width_class = 'wishlist__default-width'
+  elsif width_type == 'full-width'
+    assign width_class = 'wishlist__full-width'
+  else
+    assign width_class = 'wishlist__custom-width'
+  endif
+-%}
+
+<section
+  class="main-wishlist {{ width_class }}"
+  data-section-id="{{ section.id }}"
+  data-cols-desktop="{{ section.settings.products_per_row_desktop }}"
+  data-cols-mobile="{{ section.settings.products_per_row_mobile }}"
+  style="
+    --section-padding: {{ section.settings.section_padding }}px;
+    {%- if width_type == 'custom-width' %}
+      --custom-width: {{ section.settings.custom_width }}rem;
+    {%- endif %}
+  "
+>
+  {%- comment -%} ── Page header ────────────────────────────────── {%- endcomment -%}
+  <header class="wishlist-header">
+    <h1 class="wishlist-header__title">{{ page.title | default: 'Wishlist' }}</h1>
+    <p class="wishlist-header__count" data-wishlist-count aria-live="polite"></p>
+  </header>
+
+  {%- comment -%} ── Empty state (shown when no items) ────────────── {%- endcomment -%}
+  <div class="wishlist-empty" data-wishlist-empty hidden>
+    <div class="wishlist-empty__icon" aria-hidden="true">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M24 41S6 30 6 17a10 10 0 0 1 18-6 10 10 0 0 1 18 6c0 13-18 24-18 24z"
+              stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none"/>
+      </svg>
+    </div>
+    <p class="wishlist-empty__message">You haven't saved anything yet.</p>
+    <a class="wishlist-empty__cta btn" href="{{ routes.all_products_collection_url }}">
+      Browse products
+    </a>
+  </div>
+
+  {%- comment -%} ── Product grid (populated by JS) ───────────────── {%- endcomment -%}
+  <div
+    class="wishlist-grid"
+    data-wishlist-grid
+    style="--cols-desktop: {{ section.settings.products_per_row_desktop }}; --cols-mobile: {{ section.settings.products_per_row_mobile }};"
+    hidden
+  ></div>
+
+  {%- comment -%} ── Actions bar ──────────────────────────────────── {%- endcomment -%}
+  <div class="wishlist-actions" data-wishlist-actions hidden>
+    <button class="wishlist-actions__clear btn btn--plain" data-wishlist-clear type="button">
+      Clear wishlist
+    </button>
+  </div>
+</section>
+
+{%- comment -%} ── Hidden product card template ─────────────────────── {%- endcomment -%}
+<template id="wishlist-card-tpl">
+  <div class="card-product card-product--wishlist-page" data-product-id="">
+    <div class="card-product__media-wrap">
+      <a class="card-product__media-link" href="" aria-label="">
+        <img class="card-product__img" src="" alt="" width="600" height="600" loading="lazy">
+      </a>
+      {%- comment -%} Remove (wishlist toggle) button ─────────── {%- endcomment -%}
+      <button
+        class="card-product__wishlist-btn"
+        type="button"
+        aria-label="Remove from wishlist"
+        aria-pressed="true"
+        data-wishlist-btn
+        data-product-id=""
+      >
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <path class="card-product__wishlist-path"
+                d="M9 15.5S2 11 2 6a4 4 0 0 1 7-2.65A4 4 0 0 1 16 6c0 5-7 9.5-7 9.5z"
+                stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="card-product__info">
+      {%- if section.settings.show_vendor -%}
+        <p class="card-product__vendor" data-vendor></p>
+      {%- endif -%}
+      <h3 class="card-product__title">
+        <a class="card-product__title-link" href="" data-title></a>
+      </h3>
+      {%- if section.settings.show_price -%}
+        <p class="card-product__price" data-price></p>
+      {%- endif -%}
+    </div>
+
+    {%- if section.settings.enable_atc -%}
+      <div class="card-product__atc-wrap">
+        <button
+          class="card-product__atc-btn btn btn--full"
+          type="button"
+          data-atc-btn
+          data-variant-id=""
+        >
+          Add to cart
+        </button>
+      </div>
+    {%- endif -%}
+  </div>
+</template>
+
+<script>
+  window.__wishlistPageSettings = {
+    enableAtc:   {{ section.settings.enable_atc   | json }},
+    showPrice:   {{ section.settings.show_price   | json }},
+    showVendor:  {{ section.settings.show_vendor  | json }},
+    routes: {
+      cartAdd:  '{{ routes.cart_add_url }}.js',
+      products: '/products/'
+    }
+  };
+</script>
+<script src="{{ 'main-wishlist.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "Wishlist",
+  "tag": "section",
+  "class": "section-wishlist",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "products_per_row_desktop",
+      "label": "Products per row (desktop)",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "products_per_row_mobile",
+      "label": "Products per row (mobile)",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "header",
+      "content": "Card options"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_atc",
+      "label": "Show Add to Cart button",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_price",
+      "label": "Show price",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "Show vendor",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "Wishlist"
+    }
+  ]
+}
+{% endschema %}

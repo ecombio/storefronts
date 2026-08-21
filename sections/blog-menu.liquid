@@ -1,0 +1,249 @@
+{{ 'blog-menu.css' | asset_url | stylesheet_tag }}
+{{ 'blog-menu-item.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'blog-menu-item.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'blog-menu.js' | asset_url }}" defer="defer"></script>
+
+{%- liquid
+  assign section_width = section.settings.section_width
+  case section_width
+    when 'full-width'
+      assign menu_width_class = 'blog-menu--full-width'
+    when 'custom-width'
+      assign menu_width_class = 'blog-menu--custom-width'
+    else
+      assign menu_width_class = 'blog-menu--default-width'
+  endcase
+
+  case request.page_type
+    when 'article'
+      assign current_page_title = article.title
+    when 'blog'
+      assign current_page_title = blog.title
+    when 'page'
+      assign current_page_title = page.title
+    else
+      assign current_page_title = blank
+  endcase
+
+  assign menu_heading = section.settings.heading | default: current_page_title
+
+  # Menu items: article metafield (custom.menu_item) takes priority.
+  # Falls back to the section's "Menu" link list if the article has
+  # no metafield items, or if we're not on an article page at all.
+  assign menu_items = blank
+  assign menu_items_total = 0
+
+  if request.page_type == 'article'
+    assign menu_items = article.metafields.custom.menu_item.value
+    assign menu_items_total = menu_items.size
+  endif
+
+  if menu_items_total > 0
+    assign use_metafield_menu = true
+  else
+    assign use_metafield_menu = false
+    assign nav_menu = section.settings.menu
+    assign nav_items_total = nav_menu.links.size
+  endif
+-%}
+
+<nav
+  class="blog-menu {{ menu_width_class }} blog-menu--align-{{ section.settings.alignment | default: 'left' }}{% if section.settings.sticky %} blog-menu--sticky{% endif %}"
+  data-blog-menu
+  aria-label="{{ menu_heading | default: 'Blog navigation' | escape }}"
+  style="
+    --blog-menu-bg: {{ section.settings.background_color | default: '#ffffff' }};
+    --blog-menu-text: {{ section.settings.text_color | default: '#111111' }};
+    --blog-menu-accent: {{ section.settings.accent_color | default: '#0A3161' }};
+    --blog-menu-border: {{ section.settings.border_color | default: '#e5e5e5' }};
+    --section-padding: {{ section.settings.section_padding }}px;
+    {%- if section_width == 'custom-width' %}
+      --custom-width: {{ section.settings.custom_width }}rem;
+    {%- endif %}
+  "
+>
+  <div class="blog-menu__inner">
+
+    {%- if menu_heading != blank -%}
+      <div class="blog-menu__heading">{{ menu_heading | escape }}</div>
+    {%- endif -%}
+
+    {%- if use_metafield_menu or nav_items_total > 0 -%}
+      <button
+        type="button"
+        class="blog-menu__toggle"
+        data-blog-menu-toggle
+        aria-expanded="false"
+        aria-controls="blog-menu-list-{{ section.id }}"
+      >
+        <span class="blog-menu__toggle-label">{{ section.settings.mobile_label | default: 'Menu' | escape }}</span>
+        <span class="blog-menu__toggle-icon" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
+      </button>
+
+      <div class="blog-menu__scroll" data-blog-menu-scroll>
+        <ul class="blog-menu__list" id="blog-menu-list-{{ section.id }}" data-blog-menu-list>
+          {%- if use_metafield_menu -%}
+            {%- for item in menu_items -%}
+              {%- liquid
+                assign item_active = false
+                if item.link == request.path
+                  assign item_active = true
+                endif
+                assign item_sublinks = item.sublinks.value
+              -%}
+              {%- if item_sublinks.size > 0 -%}
+                {%- render 'blog-menu-item', title: item.label, url: item.link, active: item_active, sublinks: item_sublinks -%}
+              {%- else -%}
+                {%- render 'blog-menu-item', title: item.label, url: item.link, active: item_active -%}
+              {%- endif -%}
+            {%- endfor -%}
+          {%- else -%}
+            {%- for link in nav_menu.links -%}
+              {%- if link.links.size > 0 -%}
+                {%- render 'blog-menu-item', title: link.title, url: link.url, active: link.active, sublinks: link.links -%}
+              {%- else -%}
+                {%- render 'blog-menu-item', title: link.title, url: link.url, active: link.active -%}
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endif -%}
+        </ul>
+
+        <span class="blog-menu__edge-fade blog-menu__edge-fade--left" aria-hidden="true"></span>
+        <span class="blog-menu__edge-fade blog-menu__edge-fade--right" aria-hidden="true"></span>
+      </div>
+    {%- endif -%}
+
+  </div>
+</nav>
+
+{% schema %}
+{
+  "name": "Blog menu",
+  "tag": "section",
+  "class": "section-blog-menu",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Menu"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Menu heading",
+      "info": "Optional. Leave blank to automatically use the current page's title (e.g. the article/category name)."
+    },
+    {
+      "type": "text",
+      "id": "mobile_label",
+      "label": "Mobile toggle label",
+      "default": "Menu"
+    },
+    {
+      "type": "checkbox",
+      "id": "sticky",
+      "label": "Make menu sticky on scroll",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Menu alignment",
+      "info": "Aligns the nav items within the available space. Has no effect once items overflow into the scrollable/edge-fade state.",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "paragraph",
+      "content": "On article pages, this section first checks the article's \"Menu Item\" metafield (custom.menu_item). If that metafield has entries, they're used instead of the link list below. The Menu setting below is only used as a fallback — on non-article pages, or when the article has no metafield items."
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Menu (fallback)",
+      "info": "Choose a navigation menu from Online Store > Navigation. Top-level links become nav items; any link with nested links becomes a dropdown."
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#111111"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent (hover / active)",
+      "default": "#0A3161"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border",
+      "default": "#e5e5e5"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "paragraph",
+      "content": "If this menu sits directly above the Custom articles section, set matching width values on both so they stay visually aligned."
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 28
+    }
+  ],
+  "presets": [
+    {
+      "name": "Blog menu",
+      "category": "Blog"
+    }
+  ]
+}
+{% endschema %}

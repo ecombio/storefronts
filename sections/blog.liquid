@@ -1,0 +1,177 @@
+{{ 'blog.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign show_image       = section.settings.show_image
+  assign columns          = section.settings.columns | default: 3
+  assign per_page         = section.settings.per_page | default: 6
+  assign pagination_style = section.settings.pagination_style | default: 'numbered'
+
+  if current_tags.size > 0
+    assign raw_tag     = current_tags | join: ' & '
+    assign tag_words   = raw_tag | replace: '-', ' ' | split: ' '
+    assign display_tag = ''
+    for word in tag_words
+      assign cap_word    = word | capitalize
+      assign display_tag = display_tag | append: cap_word | append: ' '
+    endfor
+    assign page_title = display_tag | strip
+  else
+    assign page_title = blog.title | escape
+  endif
+-%}
+
+{%- paginate blog.articles by per_page -%}
+
+<div {% render 'section-width', section: section %}>
+<div class="blog-feed">
+
+  <h1 class="blog-feed__title">{{ page_title }}</h1>
+
+  <div class="blog-feed__grid" style="--columns: {{ columns }};">
+    {%- for article in blog.articles -%}
+      <div class="blog-feed__card">
+
+        {%- if show_image -%}
+          <a href="{{ article.url }}" class="blog-feed__image-link">
+            {%- if article.image -%}
+              {{ article.image | image_url: width: 600 | image_tag: class: 'blog-feed__image', loading: 'lazy', alt: article.title }}
+            {%- else -%}
+              <div class="blog-feed__image blog-feed__image--placeholder"></div>
+            {%- endif -%}
+          </a>
+        {%- endif -%}
+
+        <div class="blog-feed__content">
+          {%- if article.tags.size > 0 -%}
+            <div class="blog-feed__card-tags">
+              {%- for tag in article.tags -%}
+                <a href="{{ blog.url }}/tagged/{{ tag | handle }}" class="blog-feed__card-tag">
+                  {{ tag | replace: '-', ' ' | capitalize }}
+                </a>
+              {%- endfor -%}
+            </div>
+          {%- endif -%}
+
+          <h2 class="blog-feed__heading">
+            <a href="{{ article.url }}" class="blog-feed__heading-link">{{ article.title | escape }}</a>
+          </h2>
+
+          {%- if article.excerpt != blank -%}
+            <p class="blog-feed__excerpt">{{ article.excerpt | strip_html | truncate: 110 }}</p>
+          {%- endif -%}
+
+          <div class="blog-feed__meta">
+            <time datetime="{{ article.published_at | date: '%Y-%m-%d' }}">
+              {{ article.published_at | date: "%b %d, %Y" }}
+            </time>
+            {%- if section.settings.show_author -%}
+              <span class="blog-feed__author">{{ article.author }}</span>
+            {%- endif -%}
+          </div>
+        </div>
+
+      </div>
+    {%- endfor -%}
+  </div>
+
+  {%- if paginate.pages > 1 -%}
+    {%- render 'article-feed-pagination', paginate: paginate, style: pagination_style -%}
+  {%- endif -%}
+
+</div>
+</div>
+
+{%- endpaginate -%}
+
+{{ 'blog.js' | asset_url | script_tag }}
+
+{% schema %}
+{
+  "name": "t:general.blog",
+  "settings": [
+    { "type": "header", "content": "Section layout" },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 3,
+      "label": "Columns on desktop"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_image",
+      "default": true,
+      "label": "Show featured images"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_author",
+      "default": false,
+      "label": "Show author"
+    },
+    {
+      "type": "header",
+      "content": "Pagination"
+    },
+    {
+      "type": "range",
+      "id": "per_page",
+      "min": 3,
+      "max": 24,
+      "step": 3,
+      "default": 6,
+      "label": "Articles per page"
+    },
+    {
+      "type": "select",
+      "id": "pagination_style",
+      "label": "Pagination style",
+      "default": "numbered",
+      "options": [
+        { "value": "numbered", "label": "Numbered pages" },
+        { "value": "prevnext", "label": "Prev / Next only" },
+        { "value": "loadmore", "label": "Load More button" },
+        { "value": "infinite", "label": "Infinite scroll" }
+      ]
+    }
+  ]
+}
+{% endschema %}

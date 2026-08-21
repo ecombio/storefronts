@@ -1,0 +1,145 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-article",
+      "custom_css": [],
+      "settings": {
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 28
+      }
+    },
+    "product_grid_yE6ADt": {
+      "type": "product-grid",
+      "blocks": {
+        "product_VtyCAq": {
+          "type": "product",
+          "settings": {
+            "product": "ace-p-51-bullet-gen-3-electric-bike"
+          }
+        },
+        "product_MEREkY": {
+          "type": "product",
+          "settings": {
+            "product": ""
+          }
+        },
+        "product_kaCqap": {
+          "type": "product",
+          "settings": {
+            "product": ""
+          }
+        },
+        "product_D4UtT3": {
+          "type": "product",
+          "settings": {
+            "product": ""
+          }
+        }
+      },
+      "block_order": [
+        "product_VtyCAq",
+        "product_MEREkY",
+        "product_kaCqap",
+        "product_D4UtT3"
+      ],
+      "disabled": true,
+      "name": "Product Grid",
+      "settings": {
+        "section_width": "",
+        "custom_width": 80,
+        "section_padding": 32,
+        "layout_style": "split",
+        "heading": "Shop the edit",
+        "description": "",
+        "view_all_label": "View all",
+        "view_all_link": "",
+        "cta_label": "See product"
+      }
+    },
+    "product_with_text_BqDNXb": {
+      "type": "product-with-text",
+      "blocks": {
+        "product_e7MQXV": {
+          "type": "product",
+          "settings": {
+            "product": ""
+          }
+        }
+      },
+      "block_order": [
+        "product_e7MQXV"
+      ],
+      "disabled": true,
+      "name": "Product with text",
+      "settings": {
+        "section_width": "",
+        "custom_width": 80,
+        "section_padding": 40,
+        "product_position": "right",
+        "heading": "Recommended",
+        "body": "<p>The Ultimate Guide to Finding Your Perfect Electric Bike</p>",
+        "cta_label": "See product"
+      }
+    },
+    "author_section_yfETrN": {
+      "type": "author-section",
+      "blocks": {
+        "social_c68Ae4": {
+          "type": "social",
+          "settings": {
+            "platform": "twitter",
+            "url": "",
+            "label": ""
+          }
+        },
+        "social_NteaKn": {
+          "type": "social",
+          "settings": {
+            "platform": "instagram",
+            "url": "",
+            "label": ""
+          }
+        }
+      },
+      "block_order": [
+        "social_c68Ae4",
+        "social_NteaKn"
+      ],
+      "disabled": true,
+      "name": "Author section",
+      "settings": {
+        "eyebrow": "Written by",
+        "author_name": "Jordan Whitfield",
+        "author_role": "Senior Editor, Field Notes",
+        "bio": "<p>Jordan has spent the last decade writing about craft, materials, and the people who make things by hand. When not on deadline, they're refinishing furniture found on the side of the road.</p>",
+        "enable_bio_truncate": true,
+        "bio_lines": 3,
+        "layout": "image-left",
+        "enable_animation": true,
+        "accent_color": "#a13d2e",
+        "card_background": "#ffffff",
+        "border_color": "#e5e5e5",
+        "corner_radius": 12,
+        "enable_shadow": true,
+        "padding_top": 64,
+        "padding_bottom": 64
+      }
+    }
+  },
+  "order": [
+    "main",
+    "product_grid_yE6ADt",
+    "product_with_text_BqDNXb",
+    "author_section_yfETrN"
+  ]
+}

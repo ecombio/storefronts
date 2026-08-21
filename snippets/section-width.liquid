@@ -1,0 +1,85 @@
+{%- comment -%}
+  snippets/section-width.liquid
+  ============================================
+  See /guidelines.md ("Section-width pattern") for the full write-up —
+  why this exists, the failure mode it prevents, and the step-by-step
+  checklist for applying it to a new section. This file's own comments
+  below cover usage; guidelines.md covers the reasoning and the running
+  list of sections already migrated.
+  ============================================
+  CANONICAL REFERENCE SOURCE for the theme's three-way section width
+  pattern (Default / Full width / Custom width).
+
+  This is the ONLY place this logic should exist. Do not re-write the
+  width_type/width_class assign or the --section-padding/--custom-width
+  style lines inside an individual section file — render this snippet
+  instead. Every section that needs Section width / Side padding
+  controls should be a thin wrapper around this file, not a fork of it.
+  (This is the fix for a recurring bug: sections that copy-pasted their
+  own scoped/BEM version of this logic — including their own duplicate
+  max-width CSS rules — stopped matching base.css's global
+  .shopify-section > .default-width / .full-width / .custom-width
+  rules, since those rules key off these exact class names. Seen twice
+  now: main-header.css originally, product-information.css second.)
+
+  OUTPUTS a class + style attribute pair, ready to drop directly onto
+  an element:
+
+    <div {% render 'section-width', section: section %}>
+
+  If that element also needs a fixed class of its own (e.g. a section
+  that has other CSS keyed to a stable class name, or a JS hook like
+  data-product-information relying on a predictable selector), pass
+  extra_class — it's merged into the same class attribute rather than
+  requiring a second class="" on the element:
+
+    <div {% render 'section-width', section: section, extra_class: 'product-information' %}>
+
+    → class="product-information default-width" style="..."
+
+  That element MUST be a direct child of .shopify-section — base.css's
+  rules use a child combinator (`.shopify-section > .default-width`,
+  etc.), so wrapping it in another element first breaks the match.
+
+  REQUIRED SCHEMA SETTINGS — copy this block, unmodified, into any
+  section that renders this snippet:
+
+    { "type": "header", "content": "Section layout" },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40, "max": 120, "step": 5, "unit": "rem", "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0, "max": 80, "step": 4, "unit": "px", "default": 28
+    }
+
+  The setting ids (section_width, custom_width, section_padding) are
+  fixed — this snippet reads them by name. Renaming them in one
+  section's schema without updating this snippet breaks that section
+  silently (falls back to the defaults below, no error thrown).
+{%- endcomment -%}
+{%- liquid
+  assign width_type = section.settings.section_width
+  if width_type == blank
+    assign width_class = 'default-width'
+  else
+    assign width_class = width_type
+  endif
+-%}class="{% if extra_class != blank %}{{ extra_class }} {% endif %}{{ width_class }}" style="--section-padding: {{ section.settings.section_padding | default: 28 }}px;{% if width_type == 'custom-width' %} --custom-width: {{ section.settings.custom_width | default: 80 }}rem;{% endif %}"

@@ -1,0 +1,172 @@
+{%- liquid
+  assign has_description = false
+  assign has_shipping    = false
+  assign has_refund      = false
+  assign has_warranty    = false
+
+  if product.description != blank
+    assign has_description = true
+  endif
+
+  assign shipping_page = pages['shipping-policy']
+  assign refund_page   = pages['refund-policy']
+  assign warranty_page = pages['warranty']
+
+  if shipping_page.content != blank
+    assign has_shipping = true
+  endif
+  if refund_page.content != blank
+    assign has_refund = true
+  endif
+  if warranty_page.content != blank
+    assign has_warranty = true
+  endif
+
+  assign policy = product.metafields.custom.product_policy.value
+
+  assign has_custom_shipping = false
+  assign has_custom_refund   = false
+  assign has_custom_warranty = false
+
+  if policy.shipping_policy.value != blank
+    assign has_custom_shipping = true
+  endif
+  if policy.returns_refunds.value != blank
+    assign has_custom_refund = true
+  endif
+  if policy.warranty_policy.value != blank
+    assign has_custom_warranty = true
+  endif
+
+  assign show_shipping = false
+  assign show_refund   = false
+  assign show_warranty = false
+
+  if has_custom_shipping or has_shipping or shop.shipping_policy.body != blank
+    assign show_shipping = true
+  endif
+  if has_custom_refund or has_refund or shop.refund_policy.body != blank
+    assign show_refund = true
+  endif
+  if has_custom_warranty or has_warranty
+    assign show_warranty = true
+  endif
+-%}
+
+<link rel="stylesheet" href="{{ 'product-description.css' | asset_url }}" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="{{ 'product-description.css' | asset_url }}"></noscript>
+<script src="{{ 'product-description.js' | asset_url }}" defer></script>
+
+<div class="pd-wrap">
+
+  {%- if has_description -%}
+  <div class="pd-row">
+    <button class="pd-trigger" type="button" id="PdTriggerDescription" aria-haspopup="dialog" aria-expanded="false" aria-controls="PdPanelDescription">
+      <span>Description</span>
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+  {%- endif -%}
+
+  {%- if show_shipping -%}
+  <div class="pd-row">
+    <button class="pd-trigger" type="button" id="PdTriggerShipping" aria-haspopup="dialog" aria-expanded="false" aria-controls="PdPanelShipping">
+      <span>Shipping Policy</span>
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+  {%- endif -%}
+
+  {%- if show_refund -%}
+  <div class="pd-row">
+    <button class="pd-trigger" type="button" id="PdTriggerRefund" aria-haspopup="dialog" aria-expanded="false" aria-controls="PdPanelRefund">
+      <span>Refund &amp; Return Policy</span>
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+  {%- endif -%}
+
+  {%- if show_warranty -%}
+  <div class="pd-row">
+    <button class="pd-trigger" type="button" id="PdTriggerWarranty" aria-haspopup="dialog" aria-expanded="false" aria-controls="PdPanelWarranty">
+      <span>Warranty</span>
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+  {%- endif -%}
+
+</div>
+
+<div class="pd-overlay" id="PdOverlay" aria-hidden="true"></div>
+
+{%- if has_description -%}
+<div class="pd-panel" id="PdPanelDescription" role="dialog" aria-modal="true" aria-labelledby="PdTitleDescription" aria-hidden="true" tabindex="-1">
+  <div class="pd-panel__header">
+    <h2 class="pd-panel__title" id="PdTitleDescription">Description</h2>
+    <button class="pd-panel__close" type="button" aria-label="Close"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 4L16 16M16 4L4 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="pd-panel__body">{{ product.description }}</div>
+</div>
+{%- endif -%}
+
+{%- if show_shipping -%}
+<div class="pd-panel" id="PdPanelShipping" role="dialog" aria-modal="true" aria-labelledby="PdTitleShipping" aria-hidden="true" tabindex="-1">
+  <div class="pd-panel__header">
+    <h2 class="pd-panel__title" id="PdTitleShipping">Shipping Policy</h2>
+    <button class="pd-panel__close" type="button" aria-label="Close"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 4L16 16M16 4L4 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="pd-panel__body">
+    {%- if has_custom_shipping -%}
+      {{ policy.shipping_policy | metafield_tag }}
+    {%- elsif has_shipping -%}
+      {{ shipping_page.content }}
+    {%- else -%}
+      {{ shop.shipping_policy.body }}
+    {%- endif -%}
+  </div>
+</div>
+{%- endif -%}
+
+{%- if show_refund -%}
+<div class="pd-panel" id="PdPanelRefund" role="dialog" aria-modal="true" aria-labelledby="PdTitleRefund" aria-hidden="true" tabindex="-1">
+  <div class="pd-panel__header">
+    <h2 class="pd-panel__title" id="PdTitleRefund">Refund &amp; Return Policy</h2>
+    <button class="pd-panel__close" type="button" aria-label="Close"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 4L16 16M16 4L4 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="pd-panel__body">
+    {%- if has_custom_refund -%}
+      {{ policy.returns_refunds | metafield_tag }}
+    {%- elsif has_refund -%}
+      {{ refund_page.content }}
+    {%- else -%}
+      {{ shop.refund_policy.body }}
+    {%- endif -%}
+  </div>
+</div>
+{%- endif -%}
+
+{%- if show_warranty -%}
+<div class="pd-panel" id="PdPanelWarranty" role="dialog" aria-modal="true" aria-labelledby="PdTitleWarranty" aria-hidden="true" tabindex="-1">
+  <div class="pd-panel__header">
+    <h2 class="pd-panel__title" id="PdTitleWarranty">Warranty</h2>
+    <button class="pd-panel__close" type="button" aria-label="Close"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 4L16 16M16 4L4 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="pd-panel__body">
+    {%- if has_custom_warranty -%}
+      {{ policy.warranty_policy | metafield_tag }}
+    {%- elsif has_warranty -%}
+      {{ warranty_page.content }}
+    {%- else -%}
+      <p>Please contact us for warranty information.</p>
+    {%- endif -%}
+  </div>
+</div>
+{%- endif -%}

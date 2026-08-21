@@ -1,0 +1,456 @@
+{{ 'newsletter-signup.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'newsletter-signup.js' | asset_url }}" defer="defer"></script>
+
+{%- liquid
+  assign corner = section.settings.corner_cut_size
+  assign border_w = section.settings.border_width
+  assign layout = section.settings.layout
+  assign block_count = section.blocks.size
+-%}
+
+<div class="newsletter-signup section-{{ section.id }}-padding">
+  <div
+    class="newsletter-signup__wrapper newsletter-signup__wrapper--{{ layout }}"
+    style="--nl-max-width: {{ section.settings.max_width }}px; --nl-gap: {{ section.settings.block_gap }}px;"
+  >
+    {%- for block in section.blocks -%}
+      {%- liquid
+        assign border_start = block.settings.border_color_start | default: section.settings.border_color_start
+        assign border_end = block.settings.border_color_end | default: section.settings.border_color_end
+      -%}
+      <div class="newsletter-box" {{ block.shopify_attributes }}>
+
+        {%- if section.settings.eyebrow_text != blank -%}
+          <p class="newsletter-box__eyebrow">{{ section.settings.eyebrow_text }}</p>
+        {%- endif -%}
+
+        <div class="newsletter-box__frame" style="background: linear-gradient(135deg, {{ border_start }}, {{ border_end }});">
+          <div class="newsletter-box__inner">
+
+            {%- case block.type -%}
+
+              {%- when 'email' -%}
+                <div class="newsletter-box__header">
+                  {%- if block.settings.heading != blank -%}
+                    <h3 class="newsletter-box__heading">{{ block.settings.heading }}</h3>
+                  {%- endif -%}
+                  {%- if block.settings.subheading_prefix != blank or block.settings.subheading_link_text != blank -%}
+                    <p class="newsletter-box__subheading">
+                      {{ block.settings.subheading_prefix }}
+                      {%- if block.settings.subheading_link_text != blank -%}
+                        {%- if block.settings.subheading_link_url != blank -%}
+                          <a href="{{ block.settings.subheading_link_url }}" class="newsletter-box__link">{{ block.settings.subheading_link_text }}</a>
+                        {%- else -%}
+                          <span class="newsletter-box__link newsletter-box__link--static">{{ block.settings.subheading_link_text }}</span>
+                        {%- endif -%}
+                      {%- endif -%}
+                    </p>
+                  {%- endif -%}
+                </div>
+
+                {%- capture newsletter_email_form_id -%}NewsletterEmailForm-{{ block.id }}{%- endcapture -%}
+                {%- form 'customer', id: newsletter_email_form_id, class: 'newsletter-box__form' -%}
+                  <input type="hidden" name="contact[tags]" value="newsletter">
+                  <div class="newsletter-box__row">
+                    <label for="NewsletterEmail-{{ block.id }}" class="visually-hidden">{{ block.settings.placeholder }}</label>
+                    <input
+                      type="email"
+                      name="contact[email]"
+                      id="NewsletterEmail-{{ block.id }}"
+                      class="newsletter-box__input"
+                      value="{{ form.email }}"
+                      placeholder="{{ block.settings.placeholder }}"
+                      required
+                      autocomplete="email"
+                    >
+                    <button type="submit" class="newsletter-box__button">
+                      {{ block.settings.button_text }}
+                    </button>
+                  </div>
+
+                  {%- if form.errors -%}
+                    <p class="newsletter-box__message newsletter-box__message--error">
+                      {{ form.errors.messages['email'] | default: 'Please enter a valid email address.' }}
+                    </p>
+                  {%- endif -%}
+
+                  {%- if form.posted_successfully? -%}
+                    <p class="newsletter-box__message newsletter-box__message--success">
+                      Thanks for signing up!
+                    </p>
+                  {%- endif -%}
+
+                  {%- if block.settings.disclaimer != blank -%}
+                    <div class="newsletter-box__disclaimer">{{ block.settings.disclaimer }}</div>
+                  {%- endif -%}
+                {%- endform -%}
+
+              {%- when 'phone' -%}
+                <div class="newsletter-box__header newsletter-box__header--icon">
+                  {%- if block.settings.show_icon -%}
+                    <span class="newsletter-box__icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.15 0-2.26-.2-3.28-.58L4 21l1.66-4.98A8.47 8.47 0 0 1 4 11.5 8.5 8.5 0 1 1 21 11.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                        <circle cx="8.3" cy="11.5" r="0.9" fill="currentColor"/>
+                        <circle cx="12" cy="11.5" r="0.9" fill="currentColor"/>
+                        <circle cx="15.7" cy="11.5" r="0.9" fill="currentColor"/>
+                      </svg>
+                    </span>
+                  {%- endif -%}
+                  <div>
+                    {%- if block.settings.heading != blank -%}
+                      <h3 class="newsletter-box__heading">{{ block.settings.heading }}</h3>
+                    {%- endif -%}
+                    {%- if block.settings.subheading != blank -%}
+                      <p class="newsletter-box__subheading">{{ block.settings.subheading }}</p>
+                    {%- endif -%}
+                  </div>
+                </div>
+
+                <div
+                  class="newsletter-box__form js-newsletter-sms-form"
+                  data-sms-endpoint="{{ block.settings.sms_endpoint }}"
+                >
+                  <div class="newsletter-box__row">
+                    <label for="NewsletterPhone-{{ block.id }}" class="visually-hidden">{{ block.settings.placeholder }}</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      id="NewsletterPhone-{{ block.id }}"
+                      class="newsletter-box__input"
+                      placeholder="{{ block.settings.placeholder }}"
+                      required
+                      autocomplete="tel"
+                    >
+                    <button type="submit" class="newsletter-box__button">
+                      {{ block.settings.button_text }}
+                    </button>
+                  </div>
+
+                  <p class="newsletter-box__message newsletter-box__message--success" hidden>Thanks — you're signed up!</p>
+                  <p class="newsletter-box__message newsletter-box__message--error" hidden>Something went wrong. Please try again.</p>
+
+                  {%- if block.settings.disclaimer != blank -%}
+                    <div class="newsletter-box__disclaimer">{{ block.settings.disclaimer }}</div>
+                  {%- endif -%}
+                </div>
+
+            {%- endcase -%}
+
+          </div>
+        </div>
+      </div>
+    {%- endfor -%}
+  </div>
+</div>
+
+<style>
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top }}px;
+    padding-bottom: {{ section.settings.padding_bottom }}px;
+  }
+
+  .newsletter-signup__wrapper {
+    --nl-border-w: {{ border_w }}px;
+    --nl-corner: {{ corner }}px;
+    --nl-border-start: {{ section.settings.border_color_start }};
+    --nl-border-end: {{ section.settings.border_color_end }};
+    --nl-bg: {{ section.settings.background_color }};
+    --nl-accent: {{ section.settings.accent_color }};
+    --nl-accent-text: {{ section.settings.accent_text_color }};
+    --nl-heading: {{ section.settings.heading_color }};
+    --nl-text: {{ section.settings.text_color }};
+    --nl-link: {{ section.settings.link_color }};
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Mashable Newsletter",
+  "tag": "section",
+  "class": "shopify-section--newsletter-signup",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow_text",
+      "label": "Eyebrow label",
+      "default": "Mashable Deals"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Arrangement",
+      "options": [
+        { "value": "row", "label": "Side by side" },
+        { "value": "column", "label": "Stacked" }
+      ],
+      "default": "row"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "min": 480,
+      "max": 1200,
+      "step": 20,
+      "unit": "px",
+      "label": "Maximum width",
+      "default": 1200
+    },
+    {
+      "type": "range",
+      "id": "block_gap",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Space between boxes",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 48
+    },
+    {
+      "type": "header",
+      "content": "Box style"
+    },
+    {
+      "type": "range",
+      "id": "corner_cut_size",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Cut corner size",
+      "info": "Set to 0 for a plain rectangle.",
+      "default": 42
+    },
+    {
+      "type": "range",
+      "id": "border_width",
+      "min": 0,
+      "max": 6,
+      "step": 1,
+      "unit": "px",
+      "label": "Border thickness",
+      "default": 1
+    },
+    {
+      "type": "color",
+      "id": "border_color_start",
+      "label": "Default border gradient — start",
+      "info": "Used by any block that doesn't set its own border colors below.",
+      "default": "#D946EF"
+    },
+    {
+      "type": "color",
+      "id": "border_color_end",
+      "label": "Default border gradient — end",
+      "default": "#6366F1"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Box background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading",
+      "default": "#0F0F1A"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Body text",
+      "default": "#4B5563"
+    },
+    {
+      "type": "color",
+      "id": "link_color",
+      "label": "Links",
+      "default": "#4F46E5"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Button background",
+      "default": "#5B4FE0"
+    },
+    {
+      "type": "color",
+      "id": "accent_text_color",
+      "label": "Button text",
+      "default": "#FFFFFF"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "email",
+      "name": "Email signup",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Awesome products and offers, hand-picked for you."
+        },
+        {
+          "type": "text",
+          "id": "subheading_prefix",
+          "label": "Subheading text",
+          "default": "Sign up now for"
+        },
+        {
+          "type": "text",
+          "id": "subheading_link_text",
+          "label": "Subheading link text",
+          "default": "Newsletter"
+        },
+        {
+          "type": "url",
+          "id": "subheading_link_url",
+          "label": "Subheading link (optional)"
+        },
+        {
+          "type": "text",
+          "id": "placeholder",
+          "label": "Input placeholder",
+          "default": "Enter Email"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Button text",
+          "default": "Sign Me Up"
+        },
+        {
+          "type": "richtext",
+          "id": "disclaimer",
+          "label": "Disclaimer text",
+          "default": "<p>By clicking Sign Me Up, you confirm you are 16+ and agree to our Terms of Use &amp; Privacy Policy.</p>"
+        },
+        {
+          "type": "header",
+          "content": "Border color (optional)"
+        },
+        {
+          "type": "color",
+          "id": "border_color_start",
+          "label": "Gradient start",
+          "info": "Leave blank to use the section's default border colors."
+        },
+        {
+          "type": "color",
+          "id": "border_color_end",
+          "label": "Gradient end"
+        }
+      ]
+    },
+    {
+      "type": "phone",
+      "name": "SMS signup",
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "show_icon",
+          "label": "Show chat icon",
+          "default": true
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Be the first to know!"
+        },
+        {
+          "type": "text",
+          "id": "subheading",
+          "label": "Subheading",
+          "default": "Get editor selected deals texted right to your phone!"
+        },
+        {
+          "type": "text",
+          "id": "placeholder",
+          "label": "Input placeholder",
+          "default": "Enter Phone Number"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Button text",
+          "default": "Sign Me Up"
+        },
+        {
+          "type": "richtext",
+          "id": "disclaimer",
+          "label": "Disclaimer text",
+          "default": "<p>By signing up, you agree to receive recurring automated SMS marketing messages. Msg and data rates may apply. Reply STOP to opt out, HELP for help. Consent is not a condition of purchase.</p>"
+        },
+        {
+          "type": "text",
+          "id": "sms_endpoint",
+          "label": "SMS provider endpoint URL",
+          "info": "Shopify has no built-in SMS signup form. Paste the API/webhook URL your SMS app (e.g. Postscript, Attentive, Klaviyo) gives you — this section will POST the phone number there. Leave blank to disable submission."
+        },
+        {
+          "type": "header",
+          "content": "Border color (optional)"
+        },
+        {
+          "type": "color",
+          "id": "border_color_start",
+          "label": "Gradient start",
+          "info": "Leave blank to use the section's default border colors. Set both to the same color for a solid border.",
+          "default": "#5B4FE0"
+        },
+        {
+          "type": "color",
+          "id": "border_color_end",
+          "label": "Gradient end",
+          "default": "#5B4FE0"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 2,
+  "presets": [
+    {
+      "name": "Mashable Newsletter",
+      "blocks": [
+        { "type": "email" },
+        { "type": "phone" }
+      ]
+    }
+  ]
+}
+{% endschema %}

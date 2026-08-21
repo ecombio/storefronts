@@ -1,0 +1,88 @@
+/**
+ * blog-card.css
+ * Styling for snippets/blog-card.liquid — the large-format "featured"
+ * card rendered above .blog-posts__grid in custom-articles.liquid.
+ */
+
+.blog-card {
+  display: flex;
+  flex-direction: column;
+  position: relative; /* anchors the stretched-link pseudo-element below */
+}
+
+.blog-card__image-wrapper {
+  display: block;
+  position: relative;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  background-color: var(--color-bg-secondary, #f3f4f6);
+}
+
+.blog-card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.blog-card__content {
+  padding-top: 1.5rem;
+}
+
+.blog-card__eyebrow {
+  font-family: var(--font-primary--family);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted, #6b7280);
+  margin: 0 0 0.75rem 0;
+}
+
+.blog-card__title {
+  font-family: var(--font-primary--family);
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  color: var(--color-black, #111);
+  margin: 0 0 0.75rem 0;
+}
+
+/* Stretched-link pattern: this is the ONE real, focusable link for the
+   whole card. Its ::after covers the entire .blog-card, so clicking or
+   tabbing anywhere on the card activates this single link — same
+   mechanism as .article-card__title-link in article-card.css. */
+.blog-card__title-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.blog-card__title-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.blog-card__title-link:hover,
+.blog-card__title-link:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.blog-card__title-link:focus-visible {
+  outline: 2px solid var(--color-black, #111);
+  outline-offset: 2px;
+}
+
+.blog-card__date {
+  display: block;
+  font-family: var(--font-primary--family);
+  font-size: 0.9375rem;
+  color: var(--color-text-muted, #6b7280);
+}
+
+@media (max-width: 749px) {
+  .blog-card__title {
+    font-size: 1.4rem;
+  }
+}

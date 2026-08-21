@@ -1,0 +1,227 @@
+/* =============================================================
+   Mega Menu
+   File: assets/mega-menu.css
+   Loaded by: snippets/header-menu.liquid (only when a mega-menu
+   block is present in section.blocks)
+
+   Scope: the mega-menu's trigger caret + the full-width dropdown
+   panel (columns of links, optional trending-products rail).
+
+   The panel is position:fixed — see the note at the top of
+   snippets/mega-menu.liquid for why. `top` is set inline by
+   assets/mega-menu.js to the header's live bottom edge; this file
+   only owns left/width/visual styling.
+
+   Desktop (≥1024px) only, same as the rest of .menu-bar — mobile/
+   tablet use the drawer instead.
+   ============================================================= */
+
+@media (min-width: 1024px) {
+
+  .menu-bar__link--mega-menu {
+    cursor: pointer;
+  }
+
+  .menu-bar__item--mega-menu:hover > .menu-bar__link--mega-menu .icon-caret-down,
+  .menu-bar__item--mega-menu:focus-within > .menu-bar__link--mega-menu .icon-caret-down {
+    transform: rotate(180deg);
+  }
+
+  /* ── Panel shell ──
+     Direct-child selector matters here: hover/focus-within on the
+     <li> cascades to this panel over the DOM tree regardless of
+     where it visually renders on screen (fixed positioning moves its
+     box, not its place in the accessibility/hover chain), so keeping
+     the mouse over the panel itself still counts as hovering the
+     parent <li> and keeps it open while the user moves down into it. */
+  .mega-menu__panel {
+    position: fixed;
+    top: 0; /* overwritten inline by mega-menu.js */
+    left: 0;
+    width: 100%;
+    background: #fff;
+    border-top: 1px solid #e5e5e5;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.10);
+    z-index: 300;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-6px);
+    transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.18s;
+  }
+
+  .menu-bar__item--mega-menu:hover > .mega-menu__panel,
+  .menu-bar__item--mega-menu:focus-within > .mega-menu__panel,
+  .mega-menu__panel.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+
+  .mega-menu__panel-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 48px;
+    margin: 0 auto;
+    padding: 32px 24px 40px;
+  }
+
+  /* ── Columns ── */
+  .mega-menu__columns {
+    display: flex;
+    flex: 1;
+    flex-wrap: wrap;
+    gap: 32px;
+  }
+
+  .mega-menu__column {
+    flex: 1 1 160px;
+    min-width: 160px;
+  }
+
+  .mega-menu__column-title {
+    display: block;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #1a1a1a;
+    text-decoration: none;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+    transition: color 0.15s ease;
+  }
+  .mega-menu__column-title:hover {
+    color: var(--hdr-accent);
+  }
+
+  .mega-menu__column-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .mega-menu__column-list li {
+    margin-bottom: 8px;
+  }
+
+  .mega-menu__column-link {
+    font-size: 13px;
+    color: #4b4b4b;
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  .mega-menu__column-link:hover {
+    color: var(--hdr-accent);
+  }
+
+  /* Sub-links (a link that itself has children) render a touch
+     bolder so they read as a mini heading for the sub-list below. */
+  .mega-menu__column-link--parent {
+    color: #1a1a1a;
+    font-weight: 600;
+  }
+
+  /* ── Sub-column list (3rd nesting level: grandchild links) ── */
+  .mega-menu__subcolumn-list {
+    list-style: none;
+    margin: 6px 0 0;
+    padding: 0 0 0 12px;
+  }
+  .mega-menu__subcolumn-list li {
+    margin-bottom: 6px;
+  }
+  .mega-menu__subcolumn-list li:last-child {
+    margin-bottom: 0;
+  }
+
+  .mega-menu__subcolumn-link {
+    font-size: 12.5px;
+    color: #6b6b6b;
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  .mega-menu__subcolumn-link:hover {
+    color: var(--hdr-accent);
+  }
+
+  /* ── Trending products rail ── */
+  .mega-menu__products {
+    flex: 0 0 280px;
+    border-left: 1px solid #eee;
+    padding-left: 32px;
+  }
+
+  .mega-menu__products-heading {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6b6b6b;
+    margin: 0 0 16px;
+  }
+
+  .mega-menu__products-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .mega-menu__product-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .mega-menu__product-image {
+    flex-shrink: 0;
+    display: block;
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f5f5f5;
+  }
+  .mega-menu__product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .mega-menu__product-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .mega-menu__product-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a1a;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .mega-menu__product-price {
+    font-size: 12.5px;
+    color: #6b6b6b;
+    margin-top: 2px;
+  }
+}
+
+/* Mega menu is desktop-only; the mobile drawer handles nav below 1024px */
+@media (max-width: 1023px) {
+  .mega-menu__panel {
+    display: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mega-menu__panel,
+  .menu-bar__item--mega-menu .icon-caret-down {
+    transition: none !important;
+  }
+}

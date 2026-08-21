@@ -1,0 +1,450 @@
+{% comment %}
+  Trust Signals Section — pixel-matched to Back Market
+  Sections: heading block + reinsurance badges
+  Responsive: mobile (1-col) → tablet (2-col) → desktop (4-col row)
+{% endcomment %}
+
+{%- liquid
+  assign bg    = section.settings.background_color
+  assign pad_t = section.settings.padding_top
+  assign pad_b = section.settings.padding_bottom
+-%}
+
+<section
+  class="ts-section"
+  id="shopify-section-{{ section.id }}"
+  style="
+    background-color: {{ bg }};
+    --ts-heading-color: {{ section.settings.heading_color }};
+    --ts-body-color: {{ section.settings.body_color }};
+    --ts-link-color: {{ section.settings.link_color }};
+    --ts-icon-bg: {{ section.settings.icon_bg_color }};
+    --ts-icon-color: {{ section.settings.icon_color }};
+    --ts-badge-text: {{ section.settings.badge_text_color }};
+    --ts-pt: {{ pad_t }}px;
+    --ts-pb: {{ pad_b }}px;
+  "
+  aria-labelledby="ts-heading-{{ section.id }}"
+>
+  <div class="ts-container">
+
+    {%- comment %} ── Hero copy ── {%- endcomment %}
+    {%- if section.settings.heading != blank or section.settings.subheading != blank -%}
+      <div class="ts-copy">
+        {%- if section.settings.heading != blank -%}
+          <h2 class="ts-heading" id="ts-heading-{{ section.id }}">
+            {{- section.settings.heading -}}
+          </h2>
+        {%- endif -%}
+
+        {%- if section.settings.subheading != blank -%}
+          <p class="ts-subheading">
+            {{- section.settings.subheading -}}
+            {%- if section.settings.link_text != blank and section.settings.link_url != blank -%}
+              <a
+                class="ts-link"
+                href="{{ section.settings.link_url }}"
+                {% if section.settings.link_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}
+              >{{ section.settings.link_text }}</a>
+            {%- endif -%}
+          </p>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- comment %} ── Trust badges ── {%- endcomment %}
+    {%- if section.blocks.size > 0 -%}
+      <ul class="ts-badges" role="list" aria-label="{{ 'sections.trust_signals.badges_label' | t: default: 'Trust signals' }}">
+        {%- for block in section.blocks -%}
+          {%- if block.settings.enabled -%}
+            <li class="ts-badge" {{ block.shopify_attributes }}>
+
+              {%- comment %} Icon square {%- endcomment %}
+              <div class="ts-icon-wrap" aria-hidden="true">
+                {%- case block.settings.icon -%}
+                  {%- when 'star' -%}
+                    <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <path fill-rule="evenodd" d="M10.846 3.65c.427-1.026 1.881-1.026 2.308 0l2.008 4.827 5.21.418c1.108.089 1.558 1.472.713 2.195l-3.97 3.4 1.213 5.085c.258 1.082-.918 1.937-1.867 1.357L12 18.208l-4.461 2.724c-.949.58-2.126-.275-1.868-1.357l1.213-5.084-3.97-3.4C2.07 10.366 2.52 8.983 3.628 8.894l5.21-.418 2.008-4.826M12 4.783l-1.835 4.412A1.25 1.25 0 0 1 9.11 9.96l-4.763.382 3.63 3.109a1.25 1.25 0 0 1 .402 1.24L7.27 19.338l4.078-2.491a1.25 1.25 0 0 1 1.303 0l4.079 2.49-1.109-4.648a1.25 1.25 0 0 1 .403-1.24l3.63-3.108-4.765-.382a1.25 1.25 0 0 1-1.054-.766L12 4.782" clip-rule="evenodd"/>
+                    </svg>
+                  {%- when 'checklist' -%}
+                    <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <path fill-rule="evenodd" d="M8.53 4.57a.75.75 0 0 1 0 1.06L6.084 8.077a1.25 1.25 0 0 1-1.768 0L3.47 7.23a.75.75 0 0 1 1.06-1.06L5.2 6.84l2.27-2.27a.75.75 0 0 1 1.06 0m0 5.5a.75.75 0 0 1 0 1.06l-2.446 2.447a1.25 1.25 0 0 1-1.768 0L3.47 12.73a.75.75 0 0 1 1.06-1.06l.67.67 2.27-2.27a.75.75 0 0 1 1.06 0m0 5.5a.75.75 0 0 1 0 1.06l-2.446 2.447a1.25 1.25 0 0 1-1.768 0L3.47 18.23a.75.75 0 0 1 1.06-1.06l.67.67 2.27-2.27a.75.75 0 0 1 1.06 0m2.72-9.07A.75.75 0 0 1 12 5.75h8a.75.75 0 0 1 0 1.5h-8a.75.75 0 0 1-.75-.75m0 11A.75.75 0 0 1 12 16.75h8a.75.75 0 0 1 0 1.5h-8a.75.75 0 0 1-.75-.75m0-5.5A.75.75 0 0 1 12 11.25h8a.75.75 0 0 1 0 1.5h-8A.75.75 0 0 1 11.25 12" clip-rule="evenodd"/>
+                    </svg>
+                  {%- when 'returns' -%}
+                    <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <path d="M7.53 11.53a.75.75 0 0 1-1.06 0L3.823 8.884a1.25 1.25 0 0 1 0-1.768L6.47 4.47a.75.75 0 0 1 1.06 1.06L5.81 7.25H17a.75.75 0 0 1 0 1.5H5.81l1.72 1.72a.75.75 0 0 1 0 1.06M6.25 16A.75.75 0 0 0 7 16.75h11.19l-1.72 1.72a.75.75 0 1 0 1.06 1.06l2.647-2.646a1.25 1.25 0 0 0 0-1.768L17.53 12.47a.75.75 0 0 0-1.06 1.06l1.72 1.72H7A.75.75 0 0 0 6.25 16"/>
+                    </svg>
+                  {%- when 'warranty' -%}
+                    <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <path d="M12.269 6.401a.3.3 0 0 0-.538 0l-.837 1.695a.3.3 0 0 1-.226.165l-1.87.271A.3.3 0 0 0 8.63 9.044l1.354 1.32a.3.3 0 0 1 .086.265l-.32 1.864a.3.3 0 0 0 .436.316l1.673-.88a.3.3 0 0 1 .28 0l1.673.88a.3.3 0 0 0 .435-.316l-.32-1.864a.3.3 0 0 1 .087-.265l1.354-1.32a.3.3 0 0 0-.166-.512l-1.871-.271a.3.3 0 0 1-.226-.165l-.837-1.695"/>
+                      <path fill-rule="evenodd" d="M5.25 9.856a6.75 6.75 0 1 1 13.5 0 6.75 6.75 0 0 1-13.5 0M12 4.606a5.25 5.25 0 1 0 0 10.5 5.25 5.25 0 0 0 0-10.5" clip-rule="evenodd"/>
+                      <path d="m7.813 15.15-1.52 4.179a.3.3 0 0 0 .437.358l1.684-1.025a.3.3 0 0 1 .44.16l.631 1.868a.3.3 0 0 0 .566.007l1.495-4.106a6.7 6.7 0 0 1-3.733-1.44m4.609 1.442a6.7 6.7 0 0 0 3.74-1.422l1.513 4.158a.3.3 0 0 1-.438.358l-1.684-1.025a.3.3 0 0 0-.44.16l-.63 1.868a.3.3 0 0 1-.567.007l-1.494-4.104"/>
+                    </svg>
+                  {%- when 'custom' -%}
+                    {%- if block.settings.custom_svg != blank -%}
+                      {{ block.settings.custom_svg }}
+                    {%- endif -%}
+                {%- endcase -%}
+              </div>
+
+              <div class="ts-badge-body">
+                <span class="ts-badge-label">{{ block.settings.label }}</span>
+                {%- if block.settings.sublabel != blank -%}
+                  <span class="ts-badge-sublabel">{{ block.settings.sublabel }}</span>
+                {%- endif -%}
+              </div>
+
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+
+  </div>
+</section>
+
+{% stylesheet %}
+  .ts-section {
+    padding-top: var(--ts-pt, 48px);
+    padding-bottom: var(--ts-pb, 48px);
+  }
+
+  .ts-container {
+    max-width: 1184px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+  }
+
+  /* ── Copy block ── */
+  .ts-copy {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .ts-heading {
+    font-size: clamp(2rem, 5.5vw, 3.25rem);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    color: var(--ts-heading-color, #0d0d0d);
+    margin: 0;
+  }
+
+  .ts-subheading {
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--ts-body-color, #1a1a1a);
+    margin: 0;
+  }
+
+  .ts-link {
+    color: var(--ts-link-color, #0d0d0d);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    font-weight: inherit;
+  }
+  .ts-link:hover { opacity: 0.65; }
+  .ts-link:focus-visible {
+    outline: 2px solid var(--ts-link-color, #0d0d0d);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* ── Badge list ── */
+  .ts-badges {
+    list-style: none;
+    margin: 0;
+    padding: 12px;
+    width: 100%;
+    background: transparent;
+    border-radius: 8px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* ── Individual badge ── */
+  .ts-badge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* ── Icon square ── */
+  .ts-icon-wrap {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    padding: 8px;
+    background-color: var(--ts-icon-bg, #e0e0ea);
+    color: var(--ts-icon-color, #0d0d0d);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ts-icon-wrap svg {
+    width: 24px;
+    height: 24px;
+    display: block;
+  }
+
+  /* ── Badge text ── */
+  .ts-badge-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    color: var(--ts-badge-text, #0d0d0d);
+  }
+
+  .ts-badge-label {
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+  }
+
+  .ts-badge-sublabel {
+    font-size: 0.8rem;
+    font-weight: 400;
+    opacity: 0.7;
+    line-height: 1.3;
+  }
+
+  /* ── Tablet: 2-col ── */
+  @media (min-width: 600px) {
+    .ts-badges {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .ts-heading {
+      /* allow 2-line wrap on tablet */
+    }
+  }
+
+  /* ── Desktop: 4-col ── */
+  @media (min-width: 960px) {
+    .ts-container {
+      padding: 0 32px;
+    }
+    .ts-badges {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .ts-heading {
+      white-space: nowrap;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ts-link { transition: none; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Trust Signals",
+  "tag": "section",
+  "class": "section-trust-signals",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Where the world shops refurbished tech."
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Everything you love about new, for less."
+    },
+    {
+      "type": "text",
+      "id": "link_text",
+      "label": "Link text",
+      "default": "Guaranteed by the Back Market Promise."
+    },
+    {
+      "type": "url",
+      "id": "link_url",
+      "label": "Link URL"
+    },
+    {
+      "type": "checkbox",
+      "id": "link_new_tab",
+      "label": "Open link in new tab",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Padding top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Padding bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Section background",
+      "default": "#eeeef5"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading",
+      "default": "#0d0d0d"
+    },
+    {
+      "type": "color",
+      "id": "body_color",
+      "label": "Body text",
+      "default": "#1a1a1a"
+    },
+    {
+      "type": "color",
+      "id": "link_color",
+      "label": "Link",
+      "default": "#0d0d0d"
+    },
+    {
+      "type": "color",
+      "id": "icon_bg_color",
+      "label": "Icon background",
+      "default": "#e0e0ea"
+    },
+    {
+      "type": "color",
+      "id": "icon_color",
+      "label": "Icon color",
+      "default": "#0d0d0d"
+    },
+    {
+      "type": "color",
+      "id": "badge_text_color",
+      "label": "Badge text",
+      "default": "#0d0d0d"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "badge",
+      "name": "Trust Badge",
+      "limit": 6,
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "enabled",
+          "label": "Show badge",
+          "default": true
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "options": [
+            { "value": "star",      "label": "Star (refurbishment)" },
+            { "value": "checklist", "label": "Checklist (inspection)" },
+            { "value": "returns",   "label": "Arrows (returns)" },
+            { "value": "warranty",  "label": "Medal (warranty)" },
+            { "value": "custom",    "label": "Custom SVG" }
+          ],
+          "default": "star"
+        },
+        {
+          "type": "html",
+          "id": "custom_svg",
+          "label": "Custom SVG",
+          "info": "Only used when Icon is set to 'Custom SVG'. Paste a 24×24 <svg> element."
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Best-in-class refurbishment"
+        },
+        {
+          "type": "text",
+          "id": "sublabel",
+          "label": "Sublabel (optional)",
+          "info": "Secondary line below the label. Leave blank to hide."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Trust Signals",
+      "blocks": [
+        {
+          "type": "badge",
+          "settings": {
+            "icon": "star",
+            "label": "Best-in-class refurbishment",
+            "enabled": true
+          }
+        },
+        {
+          "type": "badge",
+          "settings": {
+            "icon": "checklist",
+            "label": "Up to 100-point quality inspection",
+            "enabled": true
+          }
+        },
+        {
+          "type": "badge",
+          "settings": {
+            "icon": "returns",
+            "label": "Free 30-day returns",
+            "enabled": true
+          }
+        },
+        {
+          "type": "badge",
+          "settings": {
+            "icon": "warranty",
+            "label": "1-year warranty",
+            "enabled": true
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

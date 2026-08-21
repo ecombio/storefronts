@@ -1,0 +1,82 @@
+/* === Promo Banner (Skip Tracing Style) === */
+.promo-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 16px;
+  padding: 40px 48px;
+  overflow: hidden;
+  color: white;
+  min-height: 220px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.promo-banner__content {
+  max-width: 420px;
+  z-index: 2;
+}
+
+.promo-banner__heading {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 12px 0;
+}
+
+.promo-banner__subtext {
+  font-size: 15px;
+  color: #a1a1aa;
+  margin: 0 0 24px 0;
+}
+
+.promo-banner__button {
+  display: inline-block;
+  background: white;
+  color: #111;
+  font-weight: 600;
+  padding: 10px 24px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.promo-banner__button:hover {
+  background: #f1f1f1;
+  transform: translateY(-1px);
+}
+
+/* Decorative Globe */
+.promo-banner__globe {
+  position: absolute;
+  right: -40px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 280px;
+  height: 280px;
+  z-index: 1;
+}
+
+.globe-ring {
+  position: absolute;
+  inset: 0;
+  border: 2px solid;
+  border-image: linear-gradient(45deg, #22c55e, #eab308) 1;
+  border-radius: 50%;
+  opacity: 0.6;
+}
+
+.globe-dots {
+  position: absolute;
+  inset: 20px;
+  background-image: 
+    radial-gradient(circle, #22c55e 1px, transparent 1px),
+    radial-gradient(circle, #eab308 1px, transparent 1px);
+  background-size: 18px 18px, 26px 26px;
+  background-position: 0 0, 10px 10px;
+  border-radius: 50%;
+  opacity: 0.85;
+  mask-image: radial-gradient(circle, black 60%, transparent 90%);
+}

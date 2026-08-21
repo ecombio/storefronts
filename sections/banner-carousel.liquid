@@ -1,0 +1,767 @@
+{%- liquid
+  assign width_type = section.settings.section_width
+  if width_type == 'full-width'
+    assign width_class = 'banner-carousel-section__full-width'
+  elsif width_type == 'custom-width'
+    assign width_class = 'banner-carousel-section__custom-width'
+  else
+    assign width_class = 'banner-carousel-section__default-width'
+  endif
+-%}
+
+{{ 'banner-carousel.css' | asset_url | stylesheet_tag }}
+{{ 'banner-card.css' | asset_url | stylesheet_tag }}
+
+<div
+  class="banner-carousel-section"
+  {% unless section.settings.enable_animations %}data-animations="off"{% endunless %}
+  style="padding-top: {{ section.settings.padding_top }}px; padding-bottom: {{ section.settings.padding_bottom }}px; background-color: {{ section.settings.bg_color }};"
+>
+  <div
+    class="banner-carousel-section__inner {{ width_class }}"
+    style="
+      --section-padding: {{ section.settings.section_padding }}px;
+      {%- if width_type == 'custom-width' %}
+        --custom-width: {{ section.settings.custom_width }}rem;
+      {%- endif %}
+    "
+  >
+
+    {%- if section.settings.heading != blank or section.settings.subheading != blank or section.settings.view_all_link != blank -%}
+      <div class="banner-carousel-section__header banner-carousel-section__header--align-{{ section.settings.heading_align }}{% if width_type == 'full-width' %} banner-carousel-section__default-width{% endif %}">
+        <div class="banner-carousel-section__heading-group">
+          {%- if section.settings.heading != blank -%}
+            <h2 class="banner-carousel-section__heading">{{ section.settings.heading }}</h2>
+          {%- endif -%}
+          {%- if section.settings.subheading != blank -%}
+            <p class="banner-carousel-section__subheading">{{ section.settings.subheading }}</p>
+          {%- endif -%}
+        </div>
+        {%- if section.settings.view_all_link != blank -%}
+          <a href="{{ section.settings.view_all_link }}" class="banner-carousel-section__view-all">
+            {{- section.settings.view_all_label | default: 'View all' -}}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" width="16" height="16">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </a>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <div
+      class="banner-carousel"
+      data-banner-carousel
+      data-autoplay="{{ section.settings.autoplay }}"
+      data-autoplay-speed="{{ section.settings.autoplay_speed | times: 1000 }}"
+      style="
+        --slides-mobile: {{ section.settings.columns_mobile }};
+        --slides-tablet: {{ section.settings.columns_tablet }};
+        --slides-desktop: {{ section.settings.columns_desktop }};
+        --slide-gap: {{ section.settings.slide_gap }}px;
+        --slide-radius: {{ section.settings.slide_radius }}px;
+        --slide-width-desktop: {{ section.settings.card_width_desktop }}px;
+        --slide-height-desktop: {{ section.settings.height_desktop }}px;
+        --slide-height-mobile: {{ section.settings.height_mobile }}px;
+        --bc-btn-bg: {{ section.settings.bg_color }};
+        --icon-card-bg: {{ section.settings.icon_card_bg_color }};
+        --icon-card-text: {{ section.settings.icon_card_text_color }};
+        --icon-card-padding: {{ section.settings.icon_card_padding }}px;
+        --icon-card-min-height-mobile: {{ section.settings.icon_card_min_height_mobile }}px;
+        --icon-card-min-height-desktop: {{ section.settings.icon_card_min_height_desktop }}px;
+        --icon-card-radius: {{ section.settings.icon_card_radius }}px;
+      "
+    >
+      <div class="banner-carousel__track" data-banner-carousel-track>
+        {%- for block in section.blocks -%}
+          {%- render 'banner-card', block: block, is_first: forloop.first -%}
+        {%- else -%}
+          <div class="banner-carousel__slide" data-banner-carousel-slide>
+            <a href="#" class="banner-carousel__link" tabindex="-1" aria-disabled="true">
+              <span class="banner-carousel__image-wrap">
+                <span class="banner-carousel__placeholder banner-carousel__placeholder--desktop">
+                  {{ 'lifestyle-1' | placeholder_svg_tag: 'banner-carousel__placeholder-svg' }}
+                </span>
+                <span class="banner-carousel__placeholder banner-carousel__placeholder--mobile">
+                  {{ 'lifestyle-2' | placeholder_svg_tag: 'banner-carousel__placeholder-svg' }}
+                </span>
+              </span>
+              <span class="banner-carousel__content banner-carousel__content--center">
+                <span class="banner-carousel__heading banner-carousel__text--center">Add a banner</span>
+                <span class="banner-carousel__subheading banner-carousel__text--center">Add slides in the section settings</span>
+              </span>
+            </a>
+          </div>
+        {%- endfor -%}
+      </div>
+
+      {%- if section.blocks.size > 1 and section.settings.show_arrows -%}
+        <button type="button" class="banner-carousel__btn banner-carousel__btn--prev" data-banner-carousel-prev aria-label="Previous slide">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <button type="button" class="banner-carousel__btn banner-carousel__btn--next" data-banner-carousel-next aria-label="Next slide">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      {%- endif -%}
+
+      {%- if section.blocks.size > 1 and section.settings.show_dots -%}
+        <div class="banner-carousel__dots" data-banner-carousel-dots>
+          {%- for block in section.blocks -%}
+            <button type="button" class="banner-carousel__dot" data-banner-carousel-dot aria-label="Go to slide {{ forloop.index }}"></button>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    </div>
+
+  </div>
+
+  {%- comment -%}
+    Icon-card popups. Rendered once per block at the section level (not
+    inside banner-card.liquid) so the dialog isn't a descendant of the
+    scroll-snap track — matches how banner-iconset.liquid rendered its
+    modals. modal_id here must stay in sync with the 'bcModal-' | append:
+    block.id format banner-card.liquid uses for the trigger button's
+    data-bc-modal-open value.
+  {%- endcomment -%}
+  {%- for block in section.blocks -%}
+    {%- if block.type == 'icon_card' and block.settings.modal_enable -%}
+      {%- assign modal_id = 'bcModal-' | append: block.id -%}
+      <div
+        class="bc-modal"
+        id="{{ modal_id }}"
+        data-bc-modal
+        aria-hidden="true"
+        role="dialog"
+        aria-modal="true"
+        {% if block.settings.modal_heading != blank %}aria-labelledby="{{ modal_id }}-heading"{% endif %}
+      >
+        <div class="bc-modal__backdrop" data-bc-modal-close tabindex="-1"></div>
+        <div class="bc-modal__panel">
+          <button type="button" class="bc-modal__close" data-bc-modal-close aria-label="Close">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+
+          {%- if block.settings.modal_heading != blank -%}
+            <h3 class="bc-modal__heading" id="{{ modal_id }}-heading">{{ block.settings.modal_heading }}</h3>
+          {%- endif -%}
+
+          {%- if block.settings.modal_intro != blank -%}
+            <p class="bc-modal__intro">{{ block.settings.modal_intro | newline_to_br }}</p>
+          {%- endif -%}
+
+          {%- for i in (1..3) -%}
+            {%- assign heading_key = 'modal_section_' | append: i | append: '_heading' -%}
+            {%- assign body_key = 'modal_section_' | append: i | append: '_body' -%}
+            {%- assign sec_heading = block.settings[heading_key] -%}
+            {%- assign sec_body = block.settings[body_key] -%}
+            {%- if sec_heading != blank or sec_body != blank -%}
+              <div class="bc-modal__section">
+                {%- if sec_heading != blank -%}<h4 class="bc-modal__section-heading">{{ sec_heading }}</h4>{%- endif -%}
+                {%- if sec_body != blank -%}<p class="bc-modal__section-body">{{ sec_body | newline_to_br }}</p>{%- endif -%}
+              </div>
+            {%- endif -%}
+          {%- endfor -%}
+
+          {%- if block.settings.modal_link_url != blank -%}
+            <a href="{{ block.settings.modal_link_url }}" class="bc-modal__link">{{ block.settings.modal_link_label | default: 'Learn more' }} &rarr;</a>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+  {%- endfor -%}
+</div>
+
+<script src="{{ 'banner-carousel.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Banner carousel",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Header"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading"
+    },
+    {
+      "type": "select",
+      "id": "heading_align",
+      "label": "Heading alignment",
+      "options": [
+        { "value": "start",  "label": "Left"   },
+        { "value": "center", "label": "Center" },
+        { "value": "end",    "label": "Right"  }
+      ],
+      "default": "start"
+    },
+    {
+      "type": "header",
+      "content": "View all link"
+    },
+    {
+      "type": "text",
+      "id": "view_all_label",
+      "label": "View all label",
+      "default": "View all"
+    },
+    {
+      "type": "url",
+      "id": "view_all_link",
+      "label": "View all link",
+      "info": "Leave blank to hide the view all link"
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "header",
+      "content": "Animation"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_animations",
+      "label": "Enable hover animations",
+      "info": "View all hover, arrow hover, and dot scale effects",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 1,
+      "max": 6,
+      "step": 0.5,
+      "label": "Slides per view (desktop)",
+      "info": "Used for dot pagination and arrow step distance. Actual visible count is also affected by the fixed card width below.",
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "card_width_desktop",
+      "min": 200,
+      "max": 600,
+      "step": 10,
+      "unit": "px",
+      "label": "Card width (desktop/tablet)",
+      "info": "Fixed width per card at tablet and desktop sizes, instead of stretching to fill the row",
+      "default": 400
+    },
+    {
+      "type": "range",
+      "id": "columns_tablet",
+      "min": 1,
+      "max": 4,
+      "step": 0.5,
+      "label": "Slides per view (tablet)",
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "columns_mobile",
+      "min": 1,
+      "max": 3,
+      "step": 0.5,
+      "label": "Slides per view (mobile)",
+      "info": "A value above 1 (e.g. 1.5) shows a peek of the next slide as a scroll hint",
+      "default": 1.5
+    },
+    {
+      "type": "range",
+      "id": "slide_gap",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Gap between slides",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "height_desktop",
+      "min": 200,
+      "max": 800,
+      "step": 10,
+      "unit": "px",
+      "label": "Image height (desktop/tablet)",
+      "default": 380
+    },
+    {
+      "type": "range",
+      "id": "height_mobile",
+      "min": 150,
+      "max": 600,
+      "step": 10,
+      "unit": "px",
+      "label": "Image height (mobile)",
+      "default": 240
+    },
+    {
+      "type": "range",
+      "id": "slide_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Slide corner radius",
+      "default": 20
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Show pagination dots",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show arrows",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Auto-rotate slides",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "label": "Change slides every",
+      "default": 5
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Section background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Icon card style"
+    },
+    {
+      "type": "color",
+      "id": "icon_card_bg_color",
+      "label": "Icon card background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "icon_card_text_color",
+      "label": "Icon card text color",
+      "default": "#1d1d1f"
+    },
+    {
+      "type": "range",
+      "id": "icon_card_padding",
+      "min": 8,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "label": "Icon card padding",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "icon_card_min_height_mobile",
+      "min": 120,
+      "max": 400,
+      "step": 10,
+      "unit": "px",
+      "label": "Icon card min height (mobile)",
+      "default": 200
+    },
+    {
+      "type": "range",
+      "id": "icon_card_min_height_desktop",
+      "min": 120,
+      "max": 400,
+      "step": 10,
+      "unit": "px",
+      "label": "Icon card min height (desktop/tablet)",
+      "default": 220
+    },
+    {
+      "type": "range",
+      "id": "icon_card_radius",
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "label": "Icon card corner radius",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Section padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 0
+    }
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image",
+          "info": "A placeholder image is shown if blank"
+        },
+        {
+          "type": "image_picker",
+          "id": "mobile_image",
+          "label": "Mobile image",
+          "info": "Optional. Used on small screens instead of the image above"
+        },
+        {
+          "type": "range",
+          "id": "image_scale",
+          "min": 100,
+          "max": 200,
+          "step": 5,
+          "unit": "%",
+          "label": "Image zoom",
+          "info": "Zooms into the image, cropping out empty/whitespace margins baked into the source file",
+          "default": 100
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link",
+          "info": "Link to a product, collection, blog, page, or any URL"
+        },
+        {
+          "type": "header",
+          "content": "Text"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading"
+        },
+        {
+          "type": "range",
+          "id": "heading_font_size",
+          "min": 14,
+          "max": 72,
+          "step": 1,
+          "unit": "px",
+          "label": "Heading font size",
+          "default": 32
+        },
+        {
+          "type": "select",
+          "id": "heading_align",
+          "label": "Heading alignment",
+          "options": [
+            { "value": "left",   "label": "Left"   },
+            { "value": "center", "label": "Center" },
+            { "value": "right",  "label": "Right"  }
+          ],
+          "default": "left"
+        },
+        {
+          "type": "text",
+          "id": "subheading",
+          "label": "Subheading"
+        },
+        {
+          "type": "range",
+          "id": "subheading_font_size",
+          "min": 10,
+          "max": 32,
+          "step": 1,
+          "unit": "px",
+          "label": "Subheading font size",
+          "default": 16
+        },
+        {
+          "type": "select",
+          "id": "subheading_align",
+          "label": "Subheading alignment",
+          "options": [
+            { "value": "left",   "label": "Left"   },
+            { "value": "center", "label": "Center" },
+            { "value": "right",  "label": "Right"  }
+          ],
+          "default": "left"
+        },
+        {
+          "type": "text",
+          "id": "price_text",
+          "label": "Price / details text",
+          "info": "e.g. \"From $399 or $33.25/mo. for 12 mo.\""
+        },
+        {
+          "type": "range",
+          "id": "price_font_size",
+          "min": 10,
+          "max": 28,
+          "step": 1,
+          "unit": "px",
+          "label": "Price / details font size",
+          "default": 14
+        },
+        {
+          "type": "select",
+          "id": "price_align",
+          "label": "Price / details alignment",
+          "options": [
+            { "value": "left",   "label": "Left"   },
+            { "value": "center", "label": "Center" },
+            { "value": "right",  "label": "Right"  }
+          ],
+          "default": "left"
+        },
+        {
+          "type": "checkbox",
+          "id": "price_truncate",
+          "label": "Keep price / details on one line",
+          "info": "Truncates with an ellipsis (...) instead of wrapping to a second line",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Button label"
+        },
+        {
+          "type": "range",
+          "id": "button_font_size",
+          "min": 10,
+          "max": 24,
+          "step": 1,
+          "unit": "px",
+          "label": "Button font size",
+          "default": 14
+        },
+        {
+          "type": "select",
+          "id": "button_align",
+          "label": "Button alignment",
+          "options": [
+            { "value": "left",   "label": "Left"   },
+            { "value": "center", "label": "Center" },
+            { "value": "right",  "label": "Right"  }
+          ],
+          "default": "center"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Text color",
+          "info": "Applies to the heading, subheading, price/details, and button label. Use a dark color (like #1d1d1f) when the image/background is light, or white when it's dark.",
+          "default": "#1d1d1f"
+        },
+        {
+          "type": "select",
+          "id": "content_position",
+          "label": "Content block position",
+          "info": "Controls where the text block sits on the image; use the alignment settings above to control how each line of text aligns within that block.",
+          "options": [
+            { "value": "top-left", "label": "Top left" },
+            { "value": "top-center", "label": "Top center" },
+            { "value": "top-right", "label": "Top right" },
+            { "value": "center", "label": "Center" },
+            { "value": "bottom-left", "label": "Bottom left" },
+            { "value": "bottom-center", "label": "Bottom center" },
+            { "value": "bottom-right", "label": "Bottom right" }
+          ],
+          "default": "top-left"
+        }
+      ]
+    },
+    {
+      "type": "icon_card",
+      "name": "Icon card",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "icon",
+          "label": "Icon"
+        },
+        {
+          "type": "range",
+          "id": "icon_width",
+          "min": 16,
+          "max": 80,
+          "step": 2,
+          "unit": "px",
+          "label": "Icon size",
+          "default": 32
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "Card text",
+          "info": "Basic HTML is allowed and not escaped — e.g. <span style=\"color:#0071e3\">colored words</span>, <b>bold</b>, or <sup>1</sup> for a footnote mark.",
+          "default": "Enjoy this feature. It only takes a moment to set up."
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link",
+          "info": "Makes the whole card clickable. Leave blank for a non-clickable card."
+        },
+        {
+          "type": "header",
+          "content": "Popup (optional)"
+        },
+        {
+          "type": "checkbox",
+          "id": "modal_enable",
+          "label": "Open a popup when this card is clicked",
+          "info": "Overrides the link above — the popup opens instead.",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "modal_heading",
+          "label": "Popup heading"
+        },
+        {
+          "type": "textarea",
+          "id": "modal_intro",
+          "label": "Popup intro text"
+        },
+        {
+          "type": "text",
+          "id": "modal_section_1_heading",
+          "label": "Section 1 heading"
+        },
+        {
+          "type": "textarea",
+          "id": "modal_section_1_body",
+          "label": "Section 1 body"
+        },
+        {
+          "type": "text",
+          "id": "modal_section_2_heading",
+          "label": "Section 2 heading"
+        },
+        {
+          "type": "textarea",
+          "id": "modal_section_2_body",
+          "label": "Section 2 body"
+        },
+        {
+          "type": "text",
+          "id": "modal_section_3_heading",
+          "label": "Section 3 heading"
+        },
+        {
+          "type": "textarea",
+          "id": "modal_section_3_body",
+          "label": "Section 3 body"
+        },
+        {
+          "type": "url",
+          "id": "modal_link_url",
+          "label": "Popup \"Learn more\" link"
+        },
+        {
+          "type": "text",
+          "id": "modal_link_label",
+          "label": "Popup link label",
+          "default": "Learn more"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Banner carousel",
+      "blocks": [
+        { "type": "slide" },
+        { "type": "slide" },
+        { "type": "slide" }
+      ]
+    },
+    {
+      "name": "Icon card row",
+      "blocks": [
+        { "type": "icon_card" },
+        { "type": "icon_card" },
+        { "type": "icon_card" },
+        { "type": "icon_card" }
+      ]
+    }
+  ]
+}
+{% endschema %}

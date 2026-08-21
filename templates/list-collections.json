@@ -1,0 +1,1810 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "slideshow_zzfKYQ": {
+      "type": "slideshow",
+      "blocks": {
+        "slide_DiUPNP": {
+          "type": "slide",
+          "settings": {
+            "eyebrow": "New arrivals",
+            "heading": "Summer Edit",
+            "subtext": "Fresh styles just landed — explore the full collection.",
+            "cta_label": "Shop now",
+            "link_type": "collection",
+            "link_collection": "",
+            "link_product": "",
+            "link_blog": "",
+            "link_page": "",
+            "link_url": "",
+            "open_new_tab": false
+          }
+        },
+        "slide_hWYyEd": {
+          "type": "slide",
+          "settings": {
+            "eyebrow": "Staff pick",
+            "heading": "Featured Product",
+            "subtext": "",
+            "cta_label": "View product",
+            "link_type": "product",
+            "link_collection": "",
+            "link_product": "",
+            "link_blog": "",
+            "link_page": "",
+            "link_url": "",
+            "open_new_tab": false
+          }
+        },
+        "slide_gnJGV8": {
+          "type": "slide",
+          "settings": {
+            "eyebrow": "From the journal",
+            "heading": "Style Notes",
+            "subtext": "",
+            "cta_label": "Read more",
+            "link_type": "blog",
+            "link_collection": "",
+            "link_product": "",
+            "link_blog": "",
+            "link_page": "",
+            "link_url": "",
+            "open_new_tab": false
+          }
+        }
+      },
+      "block_order": [
+        "slide_DiUPNP",
+        "slide_hWYyEd",
+        "slide_gnJGV8"
+      ],
+      "name": "Slideshow",
+      "settings": {
+        "section_width": "full-width",
+        "custom_width": 80,
+        "section_padding": 0,
+        "slide_height": 600,
+        "slide_height_mobile": 380,
+        "autoplay": true,
+        "autoplay_speed": 5000,
+        "loop": true,
+        "transition_effect": "slide",
+        "show_navigation": true,
+        "show_pagination": true,
+        "overlay_opacity": 35,
+        "text_color": "#ffffff",
+        "accent_color": "#000000",
+        "dot_color": "#ffffff",
+        "nav_bg_color": "#ffffff40",
+        "nav_icon_color": "#ffffff",
+        "accessibility_label": "Featured content"
+      }
+    },
+    "collection_carousel_6ViUnU": {
+      "type": "collection-carousel",
+      "blocks": {
+        "collection_tb6yrT": {
+          "type": "collection",
+          "settings": {
+            "collection": "electric-bikes",
+            "title": "Mac",
+            "image": "shopify://shop_images/store-card-13-mac-nav-202603_ff62bd66-7746-4d2d-9faa-eb9fb0a9feb5.png"
+          }
+        },
+        "collection_yAmr6X": {
+          "type": "collection",
+          "settings": {
+            "collection": "electric-cargo-bikes",
+            "title": "iPhone",
+            "image": "shopify://shop_images/store-card-13-iphone-nav-202509.png"
+          }
+        },
+        "collection_jh4GrK": {
+          "type": "collection",
+          "settings": {
+            "collection": "electric-city-bikes",
+            "title": "iPad",
+            "image": "shopify://shop_images/store-card-13-ipad-nav-202405.png"
+          }
+        },
+        "collection_hRLRPp": {
+          "type": "collection",
+          "settings": {
+            "collection": "electric-fat-bikes",
+            "title": "Apple Watch",
+            "image": "shopify://shop_images/store-card-13-watch-nav-202509.png"
+          }
+        },
+        "collection_b6gMpt": {
+          "type": "collection",
+          "settings": {
+            "collection": "electric-folding-bikes",
+            "title": "Apple Vision Pro",
+            "image": "shopify://shop_images/store-card-13-vision-pro-nav-202401.png"
+          }
+        },
+        "collection_J6aT7L": {
+          "type": "collection",
+          "settings": {
+            "collection": "electric-mountain-bikes",
+            "title": "AirPods",
+            "image": "shopify://shop_images/store-card-13-airpods-nav-202509.png"
+          }
+        },
+        "collection_hm7Ymr": {
+          "type": "collection",
+          "settings": {
+            "collection": "",
+            "title": "AirTag",
+            "image": "shopify://shop_images/store-card-13-airtags-nav-202601.png"
+          }
+        },
+        "collection_jXkieR": {
+          "type": "collection",
+          "settings": {
+            "collection": "",
+            "title": "Apple TV 4K",
+            "image": "shopify://shop_images/store-card-13-appletv-nav-202210.png"
+          }
+        },
+        "collection_CJjqjz": {
+          "type": "collection",
+          "settings": {
+            "collection": "",
+            "title": "HomePod",
+            "image": "shopify://shop_images/store-card-13-homepod-nav-202301.png"
+          }
+        },
+        "collection_WrEnig": {
+          "type": "collection",
+          "settings": {
+            "collection": "",
+            "title": "Accessories",
+            "image": "shopify://shop_images/store-card-13-accessories-nav-202603.png"
+          }
+        }
+      },
+      "block_order": [
+        "collection_tb6yrT",
+        "collection_yAmr6X",
+        "collection_jh4GrK",
+        "collection_hRLRPp",
+        "collection_b6gMpt",
+        "collection_J6aT7L",
+        "collection_hm7Ymr",
+        "collection_jXkieR",
+        "collection_CJjqjz",
+        "collection_WrEnig"
+      ],
+      "name": "Collection carousel",
+      "settings": {
+        "heading": "Shop by category",
+        "subheading": "",
+        "heading_align": "start",
+        "view_all_label": "View all",
+        "view_all_link": "#",
+        "image_shape": "landscape",
+        "enable_animations": false,
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 24,
+        "bg_color": "#ffffff",
+        "text_color": "#121212",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
+    "banner_carousel_RXwVMx": {
+      "type": "banner-carousel",
+      "blocks": {
+        "slide_trjGCk": {
+          "type": "slide",
+          "disabled": true,
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 19,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 14,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "center"
+          }
+        },
+        "slide_wDzmaV": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_7UkR7E": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_jjCCTM": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_Bgttzp": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_VKia4N": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_WQjyyW": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_H7d9jq": {
+          "type": "slide",
+          "disabled": true,
+          "settings": {
+            "image_scale": 100,
+            "link": "",
+            "heading": "",
+            "heading_font_size": 32,
+            "heading_align": "left",
+            "subheading": "",
+            "subheading_font_size": 16,
+            "subheading_align": "left",
+            "price_text": "",
+            "price_font_size": 14,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 14,
+            "button_align": "center",
+            "text_color": "#1d1d1f",
+            "content_position": "top-left"
+          }
+        },
+        "slide_ey7GmK": {
+          "type": "slide",
+          "disabled": true,
+          "settings": {
+            "image_scale": 100,
+            "link": "",
+            "heading": "",
+            "heading_font_size": 32,
+            "heading_align": "center",
+            "subheading": "",
+            "subheading_font_size": 16,
+            "subheading_align": "center",
+            "price_text": "",
+            "price_font_size": 14,
+            "price_align": "center",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 14,
+            "button_align": "center",
+            "text_color": "#ffffff",
+            "content_position": "center"
+          }
+        },
+        "slide_de64D6": {
+          "type": "slide",
+          "disabled": true,
+          "settings": {
+            "image_scale": 100,
+            "link": "",
+            "heading": "",
+            "heading_font_size": 32,
+            "heading_align": "left",
+            "subheading": "",
+            "subheading_font_size": 16,
+            "subheading_align": "left",
+            "price_text": "",
+            "price_font_size": 14,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 14,
+            "button_align": "center",
+            "text_color": "#1d1d1f",
+            "content_position": "top-left"
+          }
+        },
+        "slide_HyLW6i": {
+          "type": "slide",
+          "disabled": true,
+          "settings": {
+            "image_scale": 100,
+            "link": "",
+            "heading": "",
+            "heading_font_size": 32,
+            "heading_align": "center",
+            "subheading": "",
+            "subheading_font_size": 16,
+            "subheading_align": "center",
+            "price_text": "",
+            "price_font_size": 14,
+            "price_align": "center",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 14,
+            "button_align": "center",
+            "text_color": "#ffffff",
+            "content_position": "center"
+          }
+        }
+      },
+      "block_order": [
+        "slide_trjGCk",
+        "slide_wDzmaV",
+        "slide_7UkR7E",
+        "slide_jjCCTM",
+        "slide_Bgttzp",
+        "slide_VKia4N",
+        "slide_WQjyyW",
+        "slide_H7d9jq",
+        "slide_ey7GmK",
+        "slide_de64D6",
+        "slide_HyLW6i"
+      ],
+      "custom_css": [],
+      "name": "Banner carousel",
+      "settings": {
+        "heading": "Heading",
+        "subheading": "",
+        "heading_align": "start",
+        "view_all_label": "View all",
+        "view_all_link": "#",
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 24,
+        "enable_animations": true,
+        "columns_desktop": 4,
+        "card_width_desktop": 320,
+        "columns_tablet": 1,
+        "columns_mobile": 1.5,
+        "slide_gap": 16,
+        "height_desktop": 420,
+        "height_mobile": 320,
+        "slide_radius": 10,
+        "show_dots": true,
+        "show_arrows": true,
+        "autoplay": false,
+        "autoplay_speed": 5,
+        "bg_color": "#ffffff",
+        "icon_card_bg_color": "#ffffff",
+        "icon_card_text_color": "#1d1d1f",
+        "icon_card_padding": 24,
+        "icon_card_min_height_mobile": 200,
+        "icon_card_min_height_desktop": 220,
+        "icon_card_radius": 16,
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "banner_carousel_b8AQYR": {
+      "type": "banner-carousel",
+      "blocks": {
+        "slide_cwtrgk": {
+          "type": "slide",
+          "disabled": true,
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 19,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 14,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "center"
+          }
+        },
+        "slide_nTnEiE": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_rzexmc": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_kcjbcH": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_Q8UgcU": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_UyUAHP": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_JYMLQD": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_ByV6NG": {
+          "type": "slide",
+          "disabled": true,
+          "settings": {
+            "image_scale": 100,
+            "link": "",
+            "heading": "",
+            "heading_font_size": 32,
+            "heading_align": "left",
+            "subheading": "",
+            "subheading_font_size": 16,
+            "subheading_align": "left",
+            "price_text": "",
+            "price_font_size": 14,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 14,
+            "button_align": "center",
+            "text_color": "#1d1d1f",
+            "content_position": "top-left"
+          }
+        },
+        "slide_KeQHer": {
+          "type": "slide",
+          "disabled": true,
+          "settings": {
+            "image_scale": 100,
+            "link": "",
+            "heading": "",
+            "heading_font_size": 32,
+            "heading_align": "center",
+            "subheading": "",
+            "subheading_font_size": 16,
+            "subheading_align": "center",
+            "price_text": "",
+            "price_font_size": 14,
+            "price_align": "center",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 14,
+            "button_align": "center",
+            "text_color": "#ffffff",
+            "content_position": "center"
+          }
+        },
+        "slide_rAEKVX": {
+          "type": "slide",
+          "disabled": true,
+          "settings": {
+            "image_scale": 100,
+            "link": "",
+            "heading": "",
+            "heading_font_size": 32,
+            "heading_align": "left",
+            "subheading": "",
+            "subheading_font_size": 16,
+            "subheading_align": "left",
+            "price_text": "",
+            "price_font_size": 14,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 14,
+            "button_align": "center",
+            "text_color": "#1d1d1f",
+            "content_position": "top-left"
+          }
+        },
+        "slide_XkFhQK": {
+          "type": "slide",
+          "disabled": true,
+          "settings": {
+            "image_scale": 100,
+            "link": "",
+            "heading": "",
+            "heading_font_size": 32,
+            "heading_align": "center",
+            "subheading": "",
+            "subheading_font_size": 16,
+            "subheading_align": "center",
+            "price_text": "",
+            "price_font_size": 14,
+            "price_align": "center",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 14,
+            "button_align": "center",
+            "text_color": "#ffffff",
+            "content_position": "center"
+          }
+        }
+      },
+      "block_order": [
+        "slide_cwtrgk",
+        "slide_nTnEiE",
+        "slide_rzexmc",
+        "slide_kcjbcH",
+        "slide_Q8UgcU",
+        "slide_UyUAHP",
+        "slide_JYMLQD",
+        "slide_ByV6NG",
+        "slide_KeQHer",
+        "slide_rAEKVX",
+        "slide_XkFhQK"
+      ],
+      "custom_css": [
+        ".banner-carousel__track {padding: 24px 12px; /* room for the 24px shadow blur so it isn't clipped */}",
+        ".banner-carousel {margin: -24px -12px; /* compensate so surrounding spacing stays the same */}"
+      ],
+      "name": "Banner carousel",
+      "settings": {
+        "heading": "Heading",
+        "subheading": "",
+        "heading_align": "start",
+        "view_all_label": "View all",
+        "view_all_link": "#",
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 24,
+        "enable_animations": true,
+        "columns_desktop": 4,
+        "card_width_desktop": 320,
+        "columns_tablet": 1,
+        "columns_mobile": 1.5,
+        "slide_gap": 16,
+        "height_desktop": 420,
+        "height_mobile": 320,
+        "slide_radius": 10,
+        "show_dots": true,
+        "show_arrows": true,
+        "autoplay": false,
+        "autoplay_speed": 5,
+        "bg_color": "#ffffff",
+        "icon_card_bg_color": "#ffffff",
+        "icon_card_text_color": "#1d1d1f",
+        "icon_card_padding": 24,
+        "icon_card_min_height_mobile": 200,
+        "icon_card_min_height_desktop": 220,
+        "icon_card_radius": 16,
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "banner_iconset_hKtfmY": {
+      "type": "banner-iconset",
+      "blocks": {
+        "card_f7zgC4": {
+          "type": "card",
+          "settings": {
+            "icon": "shopify://shop_images/13075200.png",
+            "icon_width": 80,
+            "text": "<span style=\"color:#0071e3\">Trade in your current device.</span> Get credit toward a new one.<sup>†</sup>",
+            "link": "shopify://collections",
+            "modal_enable": false,
+            "modal_heading": "",
+            "modal_intro": "",
+            "modal_section_1_heading": "",
+            "modal_section_1_body": "",
+            "modal_section_2_heading": "",
+            "modal_section_2_body": "",
+            "modal_section_3_heading": "",
+            "modal_section_3_body": "",
+            "modal_link_url": "",
+            "modal_link_label": "Learn more"
+          }
+        },
+        "card_7iVCjr": {
+          "type": "card",
+          "settings": {
+            "icon_width": 32,
+            "text": "Enjoy this feature. It only takes a moment to set up.",
+            "link": "",
+            "modal_enable": false,
+            "modal_heading": "",
+            "modal_intro": "",
+            "modal_section_1_heading": "",
+            "modal_section_1_body": "",
+            "modal_section_2_heading": "",
+            "modal_section_2_body": "",
+            "modal_section_3_heading": "",
+            "modal_section_3_body": "",
+            "modal_link_url": "",
+            "modal_link_label": "Learn more"
+          }
+        },
+        "card_BeDHjU": {
+          "type": "card",
+          "settings": {
+            "icon_width": 32,
+            "text": "Enjoy this feature. It only takes a moment to set up.",
+            "link": "",
+            "modal_enable": false,
+            "modal_heading": "",
+            "modal_intro": "",
+            "modal_section_1_heading": "",
+            "modal_section_1_body": "",
+            "modal_section_2_heading": "",
+            "modal_section_2_body": "",
+            "modal_section_3_heading": "",
+            "modal_section_3_body": "",
+            "modal_link_url": "",
+            "modal_link_label": "Learn more"
+          }
+        },
+        "card_AcccMw": {
+          "type": "card",
+          "settings": {
+            "icon_width": 32,
+            "text": "Enjoy this feature. It only takes a moment to set up.",
+            "link": "",
+            "modal_enable": false,
+            "modal_heading": "",
+            "modal_intro": "",
+            "modal_section_1_heading": "",
+            "modal_section_1_body": "",
+            "modal_section_2_heading": "",
+            "modal_section_2_body": "",
+            "modal_section_3_heading": "",
+            "modal_section_3_body": "",
+            "modal_link_url": "",
+            "modal_link_label": "Learn more"
+          }
+        },
+        "card_TRPRtg": {
+          "type": "card",
+          "settings": {
+            "icon_width": 32,
+            "text": "Enjoy this feature. It only takes a moment to set up.",
+            "link": "",
+            "modal_enable": false,
+            "modal_heading": "",
+            "modal_intro": "",
+            "modal_section_1_heading": "",
+            "modal_section_1_body": "",
+            "modal_section_2_heading": "",
+            "modal_section_2_body": "",
+            "modal_section_3_heading": "",
+            "modal_section_3_body": "",
+            "modal_link_url": "",
+            "modal_link_label": "Learn more"
+          }
+        }
+      },
+      "block_order": [
+        "card_f7zgC4",
+        "card_7iVCjr",
+        "card_BeDHjU",
+        "card_AcccMw",
+        "card_TRPRtg"
+      ],
+      "name": "Icon feature banner",
+      "settings": {
+        "heading": "The Apple Store difference.",
+        "subheading": "Even more reasons to shop with us.",
+        "heading_align": "start",
+        "heading_color": "#1d1d1f",
+        "subheading_color": "#6e6e73",
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 24,
+        "enable_animations": true,
+        "columns_desktop": 4,
+        "card_width_desktop": 320,
+        "columns_tablet": 3,
+        "columns_mobile": 1.2,
+        "slide_gap": 16,
+        "card_padding": 24,
+        "card_min_height_desktop": 220,
+        "card_min_height_mobile": 200,
+        "card_radius": 16,
+        "show_dots": false,
+        "show_arrows": true,
+        "arrow_visibility": "always",
+        "autoplay": false,
+        "autoplay_speed": 5,
+        "bg_color": "rgba(0,0,0,0)",
+        "card_bg_color": "#ffffff",
+        "text_color": "#1d1d1f",
+        "padding_top": 40,
+        "padding_bottom": 40
+      }
+    },
+    "featured_collection_JfBFTj": {
+      "type": "featured-collection",
+      "name": "Featured Collection",
+      "settings": {
+        "collection": "electric-bikes",
+        "heading": "",
+        "limit": 8,
+        "show_view_all": true,
+        "view_all_text": "View all",
+        "show_atc_button": false,
+        "show_compare_checkbox": false,
+        "show_wishlist_button": false,
+        "show_quickview_button": false,
+        "show_sale_badge": false,
+        "show_vendor_label": false,
+        "show_reviews_badge": false,
+        "show_savings_row": false,
+        "show_eta_badge": false,
+        "layout_style": "row",
+        "show_arrows": true,
+        "arrow_visibility": "hover",
+        "show_dots": false,
+        "mobile_layout_style": "grid",
+        "enable_promo_card": true,
+        "promo_image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+        "promo_link": "shopify://collections/electric-bikes",
+        "promo_heading": "Apple Watch Series 11",
+        "promo_subheading": "The ultimate way to watch your health.",
+        "promo_price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+        "promo_price_truncate": false,
+        "promo_button_label": "",
+        "promo_content_position": "top-left",
+        "promo_image_scale": 100,
+        "promo_text_color": "#000000",
+        "promo_heading_size": 16,
+        "promo_subheading_size": 10,
+        "promo_price_size": 10,
+        "promo_button_size": 10,
+        "promo_custom_width": true,
+        "promo_width_px": 400,
+        "promo_custom_width_mobile": false,
+        "promo_width_px_mobile": 160,
+        "promo_height_mobile": 320,
+        "promo_height_desktop": 390,
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 24,
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "featured_collection_r8WzTj": {
+      "type": "featured-collection",
+      "name": "Featured Collection",
+      "settings": {
+        "collection": "electric-bikes",
+        "heading": "",
+        "limit": 8,
+        "show_view_all": true,
+        "view_all_text": "View all",
+        "show_atc_button": false,
+        "show_compare_checkbox": false,
+        "show_wishlist_button": false,
+        "show_quickview_button": false,
+        "show_sale_badge": false,
+        "show_vendor_label": false,
+        "show_reviews_badge": false,
+        "show_savings_row": false,
+        "show_eta_badge": false,
+        "layout_style": "row",
+        "show_arrows": true,
+        "arrow_visibility": "hover",
+        "show_dots": false,
+        "mobile_layout_style": "grid",
+        "enable_promo_card": true,
+        "promo_image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+        "promo_link": "shopify://collections/electric-bikes",
+        "promo_heading": "Apple Watch Series 11",
+        "promo_subheading": "The ultimate way to watch your health.",
+        "promo_price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+        "promo_price_truncate": false,
+        "promo_button_label": "",
+        "promo_content_position": "top-left",
+        "promo_image_scale": 100,
+        "promo_text_color": "#000000",
+        "promo_heading_size": 16,
+        "promo_subheading_size": 10,
+        "promo_price_size": 10,
+        "promo_button_size": 10,
+        "promo_custom_width": true,
+        "promo_width_px": 400,
+        "promo_custom_width_mobile": false,
+        "promo_width_px_mobile": 160,
+        "promo_height_mobile": 320,
+        "promo_height_desktop": 390,
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 24,
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "banner_carousel_ExGWdx": {
+      "type": "banner-carousel",
+      "blocks": {
+        "slide_R4NXet": {
+          "type": "slide",
+          "disabled": true,
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 19,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 14,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "center"
+          }
+        },
+        "slide_chtBkd": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_7EqVG4": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_Hi8JMw": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_3yfiYP": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_AKAiib": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_VQiMet": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_xecEYd": {
+          "type": "slide",
+          "disabled": true,
+          "settings": {
+            "image_scale": 100,
+            "link": "",
+            "heading": "",
+            "heading_font_size": 32,
+            "heading_align": "left",
+            "subheading": "",
+            "subheading_font_size": 16,
+            "subheading_align": "left",
+            "price_text": "",
+            "price_font_size": 14,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 14,
+            "button_align": "center",
+            "text_color": "#1d1d1f",
+            "content_position": "top-left"
+          }
+        },
+        "slide_JUPjQD": {
+          "type": "slide",
+          "disabled": true,
+          "settings": {
+            "image_scale": 100,
+            "link": "",
+            "heading": "",
+            "heading_font_size": 32,
+            "heading_align": "center",
+            "subheading": "",
+            "subheading_font_size": 16,
+            "subheading_align": "center",
+            "price_text": "",
+            "price_font_size": 14,
+            "price_align": "center",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 14,
+            "button_align": "center",
+            "text_color": "#ffffff",
+            "content_position": "center"
+          }
+        },
+        "slide_mAReVj": {
+          "type": "slide",
+          "disabled": true,
+          "settings": {
+            "image_scale": 100,
+            "link": "",
+            "heading": "",
+            "heading_font_size": 32,
+            "heading_align": "left",
+            "subheading": "",
+            "subheading_font_size": 16,
+            "subheading_align": "left",
+            "price_text": "",
+            "price_font_size": 14,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 14,
+            "button_align": "center",
+            "text_color": "#1d1d1f",
+            "content_position": "top-left"
+          }
+        },
+        "slide_aMXbWD": {
+          "type": "slide",
+          "disabled": true,
+          "settings": {
+            "image_scale": 100,
+            "link": "",
+            "heading": "",
+            "heading_font_size": 32,
+            "heading_align": "center",
+            "subheading": "",
+            "subheading_font_size": 16,
+            "subheading_align": "center",
+            "price_text": "",
+            "price_font_size": 14,
+            "price_align": "center",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 14,
+            "button_align": "center",
+            "text_color": "#ffffff",
+            "content_position": "center"
+          }
+        }
+      },
+      "block_order": [
+        "slide_R4NXet",
+        "slide_chtBkd",
+        "slide_7EqVG4",
+        "slide_Hi8JMw",
+        "slide_3yfiYP",
+        "slide_AKAiib",
+        "slide_VQiMet",
+        "slide_xecEYd",
+        "slide_JUPjQD",
+        "slide_mAReVj",
+        "slide_aMXbWD"
+      ],
+      "custom_css": [
+        ".banner-carousel__track {padding: 24px 12px; /* room for the 24px shadow blur so it isn't clipped */}",
+        ".banner-carousel {margin: -24px -12px; /* compensate so surrounding spacing stays the same */}"
+      ],
+      "name": "Banner carousel",
+      "settings": {
+        "heading": "Heading",
+        "subheading": "",
+        "heading_align": "start",
+        "view_all_label": "View all",
+        "view_all_link": "#",
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 24,
+        "enable_animations": true,
+        "columns_desktop": 4,
+        "card_width_desktop": 320,
+        "columns_tablet": 1,
+        "columns_mobile": 1.5,
+        "slide_gap": 16,
+        "height_desktop": 420,
+        "height_mobile": 320,
+        "slide_radius": 10,
+        "show_dots": true,
+        "show_arrows": true,
+        "autoplay": false,
+        "autoplay_speed": 5,
+        "bg_color": "#ffffff",
+        "icon_card_bg_color": "#ffffff",
+        "icon_card_text_color": "#1d1d1f",
+        "icon_card_padding": 24,
+        "icon_card_min_height_mobile": 200,
+        "icon_card_min_height_desktop": 220,
+        "icon_card_radius": 16,
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "banner_carousel_wxqXkR": {
+      "type": "banner-carousel",
+      "blocks": {
+        "slide_thmpkF": {
+          "type": "slide",
+          "disabled": true,
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 19,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 14,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "center"
+          }
+        },
+        "slide_VUEN49": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_khwJik": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_EA6xgB": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_FqywVK": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_hwb6JA": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_nVG8Hh": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/store-card-40-watch-s11-202509.jpg",
+            "image_scale": 100,
+            "link": "shopify://collections/electric-bikes",
+            "heading": "Apple Watch Series 11",
+            "heading_font_size": 14,
+            "heading_align": "left",
+            "subheading": "The ultimate way to watch your health.",
+            "subheading_font_size": 10,
+            "subheading_align": "left",
+            "price_text": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±",
+            "price_font_size": 10,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 10,
+            "button_align": "center",
+            "text_color": "#000000",
+            "content_position": "top-left"
+          }
+        },
+        "slide_4b9fUa": {
+          "type": "slide",
+          "disabled": true,
+          "settings": {
+            "image_scale": 100,
+            "link": "",
+            "heading": "",
+            "heading_font_size": 32,
+            "heading_align": "left",
+            "subheading": "",
+            "subheading_font_size": 16,
+            "subheading_align": "left",
+            "price_text": "",
+            "price_font_size": 14,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 14,
+            "button_align": "center",
+            "text_color": "#1d1d1f",
+            "content_position": "top-left"
+          }
+        },
+        "slide_ayTVLd": {
+          "type": "slide",
+          "disabled": true,
+          "settings": {
+            "image_scale": 100,
+            "link": "",
+            "heading": "",
+            "heading_font_size": 32,
+            "heading_align": "center",
+            "subheading": "",
+            "subheading_font_size": 16,
+            "subheading_align": "center",
+            "price_text": "",
+            "price_font_size": 14,
+            "price_align": "center",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 14,
+            "button_align": "center",
+            "text_color": "#ffffff",
+            "content_position": "center"
+          }
+        },
+        "slide_qgFa9g": {
+          "type": "slide",
+          "disabled": true,
+          "settings": {
+            "image_scale": 100,
+            "link": "",
+            "heading": "",
+            "heading_font_size": 32,
+            "heading_align": "left",
+            "subheading": "",
+            "subheading_font_size": 16,
+            "subheading_align": "left",
+            "price_text": "",
+            "price_font_size": 14,
+            "price_align": "left",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 14,
+            "button_align": "center",
+            "text_color": "#1d1d1f",
+            "content_position": "top-left"
+          }
+        },
+        "slide_n4n7nX": {
+          "type": "slide",
+          "disabled": true,
+          "settings": {
+            "image_scale": 100,
+            "link": "",
+            "heading": "",
+            "heading_font_size": 32,
+            "heading_align": "center",
+            "subheading": "",
+            "subheading_font_size": 16,
+            "subheading_align": "center",
+            "price_text": "",
+            "price_font_size": 14,
+            "price_align": "center",
+            "price_truncate": false,
+            "button_label": "",
+            "button_font_size": 14,
+            "button_align": "center",
+            "text_color": "#ffffff",
+            "content_position": "center"
+          }
+        }
+      },
+      "block_order": [
+        "slide_thmpkF",
+        "slide_VUEN49",
+        "slide_khwJik",
+        "slide_EA6xgB",
+        "slide_FqywVK",
+        "slide_hwb6JA",
+        "slide_nVG8Hh",
+        "slide_4b9fUa",
+        "slide_ayTVLd",
+        "slide_qgFa9g",
+        "slide_n4n7nX"
+      ],
+      "custom_css": [
+        ".banner-carousel__track {padding: 24px 12px; /* room for the 24px shadow blur so it isn't clipped */}",
+        ".banner-carousel {margin: -24px -12px; /* compensate so surrounding spacing stays the same */}"
+      ],
+      "name": "Banner carousel",
+      "settings": {
+        "heading": "Heading",
+        "subheading": "",
+        "heading_align": "start",
+        "view_all_label": "View all",
+        "view_all_link": "#",
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 24,
+        "enable_animations": true,
+        "columns_desktop": 4,
+        "card_width_desktop": 320,
+        "columns_tablet": 1,
+        "columns_mobile": 1.5,
+        "slide_gap": 16,
+        "height_desktop": 420,
+        "height_mobile": 320,
+        "slide_radius": 10,
+        "show_dots": true,
+        "show_arrows": true,
+        "autoplay": false,
+        "autoplay_speed": 5,
+        "bg_color": "#ffffff",
+        "icon_card_bg_color": "#ffffff",
+        "icon_card_text_color": "#1d1d1f",
+        "icon_card_padding": 24,
+        "icon_card_min_height_mobile": 200,
+        "icon_card_min_height_desktop": 220,
+        "icon_card_radius": 16,
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "pill_carousel_6JNGH4": {
+      "type": "pill-carousel",
+      "blocks": {
+        "pill_FB9H3m": {
+          "type": "pill",
+          "settings": {
+            "collection": "",
+            "label": "",
+            "link": "",
+            "mark_as_active": false
+          }
+        },
+        "pill_JDDbfR": {
+          "type": "pill",
+          "settings": {
+            "collection": "",
+            "label": "",
+            "link": "",
+            "mark_as_active": false
+          }
+        },
+        "pill_A8JTkP": {
+          "type": "pill",
+          "settings": {
+            "collection": "",
+            "label": "",
+            "link": "",
+            "mark_as_active": false
+          }
+        },
+        "pill_qKKmDn": {
+          "type": "pill",
+          "settings": {
+            "collection": "",
+            "label": "",
+            "link": "",
+            "mark_as_active": false
+          }
+        },
+        "pill_h3z7Kc": {
+          "type": "pill",
+          "settings": {
+            "collection": "",
+            "label": "",
+            "link": "",
+            "mark_as_active": false
+          }
+        },
+        "pill_nCfVqQ": {
+          "type": "pill",
+          "settings": {
+            "collection": "",
+            "label": "",
+            "link": "",
+            "mark_as_active": false
+          }
+        },
+        "pill_RPGtVi": {
+          "type": "pill",
+          "settings": {
+            "collection": "",
+            "label": "",
+            "link": "",
+            "mark_as_active": false
+          }
+        }
+      },
+      "block_order": [
+        "pill_FB9H3m",
+        "pill_JDDbfR",
+        "pill_A8JTkP",
+        "pill_qKKmDn",
+        "pill_h3z7Kc",
+        "pill_nCfVqQ",
+        "pill_RPGtVi"
+      ],
+      "name": "Pill carousel",
+      "settings": {
+        "heading": "Quick Links",
+        "subheading": "",
+        "heading_align": "start",
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 24,
+        "rich_text": "<p>Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.Add supporting copy here.v</p>",
+        "view_all_label": "View all",
+        "view_all_link": "",
+        "pill_size": "medium",
+        "pill_bg_color": "#f2f2f2",
+        "pill_text_color": "#121212",
+        "pill_border_color": "#e0e0e0",
+        "pill_active_bg_color": "#121212",
+        "pill_active_text_color": "#ffffff",
+        "bg_color": "#ffffff",
+        "text_color": "#121212",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
+    "main": {
+      "type": "list-collections",
+      "disabled": true,
+      "settings": {
+        "heading": "Collections",
+        "heading_size": "h1",
+        "sort_by": "alphabetical",
+        "columns_desktop": 4,
+        "columns_mobile": "2",
+        "image_ratio": "square",
+        "show_collection_description": false,
+        "show_product_count": true,
+        "enable_filtering": true,
+        "collections_per_page": 24,
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    }
+  },
+  "order": [
+    "slideshow_zzfKYQ",
+    "collection_carousel_6ViUnU",
+    "banner_carousel_RXwVMx",
+    "banner_carousel_b8AQYR",
+    "banner_iconset_hKtfmY",
+    "featured_collection_JfBFTj",
+    "featured_collection_r8WzTj",
+    "banner_carousel_ExGWdx",
+    "banner_carousel_wxqXkR",
+    "pill_carousel_6JNGH4",
+    "main"
+  ]
+}

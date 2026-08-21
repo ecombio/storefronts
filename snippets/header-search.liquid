@@ -1,0 +1,108 @@
+{%- comment -%}
+  NOTE: The <link> for header-search.css and the <script src="header-search.js">
+  + window.HS_TRENDING / window.HS_TYPEWRITER_OPTS setup used to live in this
+  snippet. Since this snippet is rendered more than once per page (desktop bar
+  + mobile, and drawer variants if enabled), that caused header-search.js to be
+  loaded and executed multiple times — registering duplicate event listeners
+  and duplicate typewriter animation loops on the same input. That loading is
+  now hoisted to the parent section (main-header.liquid) so it happens exactly
+  once regardless of how many header-search instances exist on the page.
+  This snippet is markup-only from here down.
+
+  FIX: added data-search-variant="{{ sfx }}" on the root element. This is the
+  exact same "sfx" string Liquid already uses to build unique DOM ids
+  (id="HeaderSearchForm-{{ sfx }}", id="HeaderSearchResults-{{ sfx }}"), now
+  also exposed to JS. header-search.js previously guessed the variant by
+  testing for CSS classes like "header-search--desktop" / "header-search--mobile",
+  which never matched the real variant strings this section actually passes
+  (desktop-bar / mobile / overlay / drawer variants) and silently fell through
+  to a shared "search" fallback for more than one of them. Two simultaneously-
+  mounted instances (e.g. overlay + mobile row, or either drawer variant)
+  could end up sharing that fallback, producing duplicate DOM ids
+  (id="HsOption-search-0") and colliding typewriter resume state (both
+  instances writing to the same _twState slot). Reading data-search-variant
+  directly guarantees every instance gets its own distinct, stable slot id.
+{%- endcomment -%}
+
+{%- liquid
+  assign predictive = true
+  if enable_predictive_search == false
+    assign predictive = false
+  endif
+  assign sfx = variant | default: 'desktop'
+  assign show_typewriter = true
+  if enable_typewriter == false
+    assign show_typewriter = false
+  endif
+-%}
+
+<div class="header-search header-search--{{ sfx }}{% unless predictive %} header-search--basic{% endunless %}"
+     data-search-root
+     data-search-variant="{{ sfx }}"
+     {%- if predictive %}
+     data-predictive
+     data-predictive-search-url="{{ routes.predictive_search_url }}"
+     data-search-url="{{ routes.search_url }}"
+     {%- endif %}
+     {%- if show_typewriter %} data-typewriter-enabled{% endif %}>
+
+  <form action="{{ routes.search_url }}" method="get" role="search"
+        class="header-search__form"
+        id="HeaderSearchForm-{{ sfx }}"
+        autocomplete="off">
+
+    <input type="hidden" name="type" value="product">
+    <label class="visually-hidden" for="HeaderSearch-{{ sfx }}">Search</label>
+
+    <input type="search" name="q"
+           id="HeaderSearch-{{ sfx }}"
+           class="header-search__input"
+           data-search-input
+           placeholder="What are you looking for?"
+           value="{{ search.terms | escape }}"
+           autocorrect="off" autocapitalize="off" spellcheck="false"
+           {%- if predictive %}
+           role="combobox"
+           aria-expanded="false"
+           aria-owns="HeaderSearchResults-{{ sfx }}"
+           aria-controls="HeaderSearchResults-{{ sfx }}"
+           aria-haspopup="listbox"
+           aria-autocomplete="list"
+           {%- endif %}>
+
+    <span class="header-search__typewriter" data-search-typewriter aria-hidden="true"></span>
+
+    <button type="button" class="header-search__clear" data-search-clear hidden aria-label="Clear search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+
+    <button type="button" class="header-search__voice" data-search-voice hidden aria-label="Search by voice">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+        <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
+      </svg>
+    </button>
+
+    <button type="submit" class="header-search__submit" aria-label="Search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+    </button>
+
+  </form>
+
+  {%- if predictive -%}
+    <div class="header-search__panel"
+         id="HeaderSearchResults-{{ sfx }}"
+         data-search-results
+         role="listbox"
+         aria-label="Search suggestions"
+         tabindex="-1"
+         hidden></div>
+    <span class="visually-hidden" role="status" aria-live="polite" data-search-status></span>
+  {%- endif -%}
+
+</div>

@@ -1,0 +1,92 @@
+{%- comment -%}
+  sections/example-width-section.liquid
+
+  2026-07-26 — Restored the three-way Section width control (Default /
+  Full width / Custom width). The width_type/width_class logic and the
+  --section-padding/--custom-width style attribute are no longer written
+  here directly — they're rendered from snippets/section-width.liquid,
+  which is now the single reference source for this pattern theme-wide.
+  This file is intentionally a thin wrapper: if you're editing width
+  logic and find yourself changing anything other than which section
+  this markup wraps, you're probably editing the wrong file — go to
+  snippets/section-width.liquid instead.
+
+  APPLYING THIS TO OTHER SECTIONS:
+  1. Copy the "Section layout" schema block from
+     snippets/section-width.liquid's header comment into that section's
+     {% schema %} settings array, unmodified (ids must match exactly:
+     section_width, custom_width, section_padding).
+  2. Put {% render 'section-width', section: section %} inside that
+     section's outermost element's opening tag — as shown below — and
+     make sure that element is a direct child of .shopify-section.
+  3. Do not hand-roll the width_type/width_class logic again in that
+     section. If the pattern needs to change (new width mode, different
+     defaults), change it once in snippets/section-width.liquid and
+     every section adopting this pattern picks it up automatically.
+{%- endcomment -%}
+
+<div {% render 'section-width', section: section %}>
+  <div class="section" style="padding-block: var(--section-spacing);">
+    <h2>{{ section.settings.heading | default: 'Example section' }}</h2>
+    <p>
+      This block's outer div is a direct child of the section's
+      .shopify-section grid wrapper, so its width class (default-width
+      / full-width / custom-width) — rendered from the shared
+      snippets/section-width.liquid — controls how it spans that grid.
+      Its side padding comes from this section's own "Side padding"
+      setting, independent of the global Body side padding setting.
+    </p>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Example width section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Example section"
+    },
+    { "type": "header", "content": "Section layout" },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 28
+    }
+  ],
+  "presets": [
+    {
+      "name": "Example width section"
+    }
+  ]
+}
+{% endschema %}

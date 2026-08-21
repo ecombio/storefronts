@@ -1,0 +1,125 @@
+{%- comment -%}
+  snippets/featured-highlights.liquid
+  ============================================
+  Renders a product's curated "Featured Highlights" carousel, sourced
+  from custom.featured_highlights (list.metaobject_reference ->
+  featured_highlight). Replaces the old sections/feature-highlights.liquid
+  merchant-block version — content now lives on the product as data,
+  not as section blocks tied to a specific template instance.
+
+  Metaobject "Featured highlight" fields expected:
+    - image       -> Image field type (NOT generic File field)
+    - heading     -> Single line text
+    - description -> Rich text
+    - link        -> Link field type (optional — stores both a url and
+                      text; only .url is used here). When present, the
+                      whole card becomes a clickable <a> wrapping the
+                      image, heading, and description.
+
+  Title priority (highest wins):
+    1. `title` param passed into the render tag
+    2. product.metafields.custom.featured_highlights_title (optional — add this
+       metafield definition only if you want a per-product title in the admin)
+    3. Hardcoded default below ("Featured Highlights")
+
+  Usage:
+    {% render 'featured-highlights', product: product %}
+    {% render 'featured-highlights', product: product, title: 'Tech Specs' %}
+{%- endcomment -%}
+
+{%- liquid
+  assign highlights = product.metafields.custom.featured_highlights.value
+  assign section_title = title | default: product.metafields.custom.featured_highlights_title.value | default: 'Featured Highlights'
+-%}
+
+{%- if highlights != blank -%}
+  <link rel="stylesheet" href="{{ 'featured-highlights.css' | asset_url }}" media="print" onload="this.media='all'">
+  <noscript>
+    <link rel="stylesheet" href="{{ 'featured-highlights.css' | asset_url }}">
+  </noscript>
+  <script src="{{ 'featured-highlights.js' | asset_url }}" defer></script>
+
+  <div class="featured-highlights" id="FeaturedHighlights-{{ product.id }}" data-featured-highlights>
+    {%- if section_title != blank -%}
+      <div class="featured-highlights__header">
+        <h2 class="featured-highlights__heading">{{ section_title }}</h2>
+      </div>
+    {%- endif -%}
+
+    <div class="featured-highlights__carousel" data-featured-carousel>
+
+      <button
+        type="button"
+        class="featured-highlights__arrow featured-highlights__arrow--prev"
+        data-featured-prev
+        aria-label="Previous featured highlights"
+        aria-controls="FeaturedTrack-{{ product.id }}"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+          <path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <div class="featured-highlights__track" id="FeaturedTrack-{{ product.id }}" data-featured-track role="list">
+        {%- for highlight in highlights -%}
+          {%- liquid
+            assign has_link = false
+            if highlight.link.value.url != blank
+              assign has_link = true
+            endif
+          -%}
+          <div class="featured-highlights__item" id="FeaturedHighlight-{{ highlight.id }}" data-featured-item role="listitem">
+            {%- if has_link -%}
+              <a
+                href="{{ highlight.link.value.url }}"
+                class="featured-highlights__item-link"
+                {%- if highlight.link.value.text != blank %} aria-label="{{ highlight.link.value.text }}"{% endif %}
+              >
+            {%- endif -%}
+
+              <div class="featured-highlights__frame">
+                {%- if highlight.image != blank -%}
+                  {{
+                    highlight.image
+                    | image_url: width: 800
+                    | image_tag:
+                      loading: 'lazy',
+                      class: 'featured-highlights__image',
+                      sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 80vw',
+                      widths: '400,600,800,1000'
+                  }}
+                {%- else -%}
+                  {{ 'lifestyle-1' | placeholder_svg_tag: 'featured-highlights__image featured-highlights__image--placeholder' }}
+                {%- endif -%}
+              </div>
+
+              {%- if highlight.heading != blank -%}
+                <h3 class="featured-highlights__item-heading">{{ highlight.heading }}</h3>
+              {%- endif -%}
+
+              {%- if highlight.description != blank -%}
+                <div class="featured-highlights__item-description">{{ highlight.description | metafield_tag }}</div>
+              {%- endif -%}
+
+            {%- if has_link -%}
+              </a>
+            {%- endif -%}
+          </div>
+        {%- endfor -%}
+      </div>
+
+      <button
+        type="button"
+        class="featured-highlights__arrow featured-highlights__arrow--next"
+        data-featured-next
+        aria-label="Next featured highlights"
+        aria-controls="FeaturedTrack-{{ product.id }}"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+          <path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+    </div>
+  </div>
+{%- endif -%}

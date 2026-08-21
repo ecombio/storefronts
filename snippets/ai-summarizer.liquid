@@ -1,0 +1,93 @@
+{% comment %}
+  Snippet: ai-summarizer.liquid
+  Usage:   {% render 'ai-summarizer', article: article %}
+  Place directly after {{ article.content }} in your article template.
+
+  On click:
+    1. Resolves the prompt: uses article.metafields.custom.ai_summarizer if set,
+       otherwise falls back to a built-in default prompt.
+    2. Appends the prompt as ?q= to the AI URL so it pre-fills the chat input.
+    3. Also copies it to clipboard as a reliable fallback.
+    4. Shows a toast with clear next-step instructions.
+
+  No API keys. No backend. No streaming.
+{% endcomment %}
+
+{% assign excerpt = article.content | strip_html | strip_newlines | truncate: 2000 %}
+{% assign custom_prompt = article.metafields.custom.ai_summarizer | escape %}
+
+<nav
+  class="ai-summarizer"
+  aria-label="Summarize this article with AI"
+  data-title="{{ article.title | escape }}"
+  data-excerpt="{{ excerpt | escape }}"
+  {% if custom_prompt != blank %}data-custom-prompt="{{ custom_prompt }}"{% endif %}
+>
+  <span class="ai-summarizer__label">Summarize with</span>
+
+  <div class="ai-summarizer__scroll">
+    <ul class="ai-summarizer__list">
+
+      <li class="ai-summarizer__item">
+        <button class="ai-summarizer__btn" data-ai="claude" data-url="https://claude.ai/new" type="button">
+          <img class="ai-summarizer__btn-icon" src="https://cdn.jsdelivr.net/gh/glincker/thesvg@main/public/icons/claude/default.svg" width="16" height="16" alt="">
+          <span>Claude</span>
+        </button>
+      </li>
+
+      <li class="ai-summarizer__item">
+        <button class="ai-summarizer__btn" data-ai="chatgpt" data-url="https://chatgpt.com/" type="button">
+          <img class="ai-summarizer__btn-icon" src="https://upload.wikimedia.org/wikipedia/commons/e/ef/ChatGPT-Logo.svg" width="16" height="16" alt="">
+          <span>ChatGPT</span>
+        </button>
+      </li>
+
+      <li class="ai-summarizer__item">
+        <button class="ai-summarizer__btn" data-ai="gemini" data-url="https://gemini.google.com/app" type="button">
+          <img class="ai-summarizer__btn-icon" src="https://upload.wikimedia.org/wikipedia/commons/1/1d/Google_Gemini_icon_2025.svg" width="16" height="16" alt="">
+          <span>Gemini</span>
+        </button>
+      </li>
+
+      <li class="ai-summarizer__item">
+        <button class="ai-summarizer__btn" data-ai="grok" data-url="https://grok.com/" type="button">
+          <img class="ai-summarizer__btn-icon" src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/grok.svg" width="16" height="16" alt="">
+          <span>Grok</span>
+        </button>
+      </li>
+
+      <li class="ai-summarizer__item">
+        <button class="ai-summarizer__btn" data-ai="perplexity" data-url="https://www.perplexity.ai/" type="button">
+          <img class="ai-summarizer__btn-icon" src="https://cdn.jsdelivr.net/gh/glincker/thesvg@main/public/icons/perplexity/default.svg" width="16" height="16" alt="">
+          <span>Perplexity</span>
+        </button>
+      </li>
+
+      {% comment %}
+      <li class="ai-summarizer__item">
+        <button class="ai-summarizer__btn" data-ai="mistral" data-url="https://chat.mistral.ai/" type="button">
+          <img class="ai-summarizer__btn-icon" src="https://cdn.jsdelivr.net/gh/glincker/thesvg@main/public/icons/mistral/default.svg" width="16" height="16" alt="">
+          <span>Mistral</span>
+        </button>
+      </li>
+
+      <li class="ai-summarizer__item">
+        <button class="ai-summarizer__btn" data-ai="deepseek" data-url="https://chat.deepseek.com/" type="button">
+          <img class="ai-summarizer__btn-icon" src="https://cdn.jsdelivr.net/gh/glincker/thesvg@main/public/icons/deepseek/default.svg" width="16" height="16" alt="">
+          <span>DeepSeek</span>
+        </button>
+      </li>
+      {% endcomment %}
+
+    </ul>
+  </div>
+</nav>
+
+<div class="ai-summarizer-toast" id="ai-summarizer-toast" role="status" aria-live="polite">
+  <span class="ai-summarizer-toast__icon" aria-hidden="true">
+    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3 8l3.5 3.5L13 4.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </span>
+  <span class="ai-summarizer-toast__text"></span>
+</div>

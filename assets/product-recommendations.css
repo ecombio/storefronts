@@ -1,0 +1,251 @@
+/* ============================================================
+   product-recommendations.css
+   Self-contained — pairs with sections/product-recommendations.liquid
+   and assets/product-recommendations.js only. Does not depend on
+   product-carousel.css. All classes prefixed .pr- to avoid collisions.
+   ============================================================ */
+
+.pr-carousel {
+  --pr-arrow-size:   30px;
+  --pr-dot-size:     5px;
+  --pr-dot-gap:      4px;
+  --pr-dot-color:    rgba(0,0,0,.15);
+  --pr-dot-active:   #111;
+  --pr-arrow-bg:     #fff;
+  --pr-arrow-border: #ddd;
+  --pr-arrow-hover:  #f4f4f4;
+
+  --_pr-cols-desktop: 4; /* overridden inline per-section from settings */
+  --_pr-cols-mobile:  2;
+
+  display: block;
+  padding-top: var(--pr-pad-top, 48px);
+  padding-bottom: var(--pr-pad-bottom, 48px);
+  padding-inline: var(--section-padding, 24px);
+  box-sizing: border-box;
+}
+
+.pr-carousel--side-arrows {
+  padding-inline: 32px;
+}
+
+.pr-carousel[hidden] {
+  display: none;
+}
+
+/* ── Header ── */
+.pr-carousel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.pr-carousel__heading-group {
+  flex: 1;
+  min-width: 0;
+}
+.pr-carousel__heading {
+  margin: 0 0 4px;
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-weight: 500;
+  line-height: 1.2;
+}
+.pr-carousel__subheading {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #666;
+}
+.pr-carousel__arrows--top {
+  display: flex;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+/* ── Stage / track ── */
+.pr-carousel__stage {
+  position: relative;
+}
+.pr-carousel__track-wrapper {
+  overflow: hidden;
+  padding-block: 4px;
+}
+.pr-carousel__track {
+  display: flex;
+  gap: var(--pr-gap, 16px);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.pr-carousel__track.is-dragging {
+  cursor: grabbing;
+  transition: none;
+}
+
+/* ── Slides ──
+   Mobile floor uses the mobile column count; desktop is fully driven
+   by --_pr-cols-desktop so a merchant's chosen column count is never
+   silently overridden by a fixed min-width. */
+.pr-carousel__slide {
+  flex: 0 0 calc(
+    (100% - var(--pr-gap, 16px) * (var(--_pr-cols-mobile) - 1)) / var(--_pr-cols-mobile)
+  );
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .pr-carousel__slide {
+    flex: 0 0 calc(
+      (100% - var(--pr-gap, 16px) * (var(--_pr-cols-desktop) - 1)) / var(--_pr-cols-desktop)
+    );
+  }
+}
+
+/* ── Bottom nav row (dots + arrows) ── */
+.pr-carousel__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+/* ── Arrows ── */
+.pr-carousel__arrow {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--pr-arrow-size);
+  height: var(--pr-arrow-size);
+  border-radius: 50%;
+  border: 0.5px solid var(--pr-arrow-border);
+  background: var(--pr-arrow-bg);
+  color: #222;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s, box-shadow 0.15s;
+}
+.pr-carousel__arrow:hover {
+  background: var(--pr-arrow-hover);
+}
+.pr-carousel__arrow:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: 2px;
+}
+.pr-carousel__arrow[disabled],
+.pr-carousel__arrow.is-hidden {
+  opacity: 0.28;
+  pointer-events: none;
+}
+.pr-carousel__arrows {
+  display: flex;
+  gap: 5px;
+}
+
+.pr-carousel__arrow--side {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 36px;
+  height: 36px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+}
+.pr-carousel__arrow--side-prev { left: -18px; }
+.pr-carousel__arrow--side-next { right: -18px; }
+.pr-carousel__arrow--side:hover {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+}
+.pr-carousel__arrow--side[disabled],
+.pr-carousel__arrow--side.is-hidden {
+  opacity: 0.28;
+  pointer-events: none;
+  box-shadow: none;
+}
+
+/* ── Dots ── */
+.pr-carousel__dots {
+  display: flex;
+  align-items: center;
+  gap: var(--pr-dot-gap);
+  flex-wrap: wrap;
+}
+.pr-carousel__dot {
+  width: var(--pr-dot-size);
+  height: var(--pr-dot-size);
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  background: var(--pr-dot-color);
+  cursor: pointer;
+  transition: background 0.2s, width 0.2s, border-radius 0.2s;
+}
+.pr-carousel__dot.is-active {
+  background: var(--pr-dot-active);
+  width: 14px;
+  border-radius: 3px;
+}
+
+/* ============================================================
+   PLACEHOLDER CARD — shown while the real recommendations fetch
+   is in flight. Section stays [hidden] during this phase; these
+   never actually become visible unless JS is disabled or the
+   fetch fails, in which case the whole section stays hidden per
+   the "hidden" attribute controlled in the Liquid/JS.
+   ============================================================ */
+.pr-placeholder-card {
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+  border: 0.5px solid #eee;
+}
+.pr-placeholder-card__image {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: #f5f5f5;
+  overflow: hidden;
+}
+.pr-placeholder-card__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+@keyframes pr-shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+.pr-placeholder-card__body {
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pr-placeholder-card__line {
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #e8e8e8 25%, #d4d4d4 50%, #e8e8e8 75%);
+  background-size: 400px 100%;
+  animation: pr-shimmer 1.4s ease-in-out infinite;
+}
+.pr-placeholder-card__line--title       { width: 85%; height: 14px; }
+.pr-placeholder-card__line--title-short { width: 60%; }
+.pr-placeholder-card__line--price       { width: 35%; height: 14px; margin-top: 4px; }
+
+/* ── Color schemes ── */
+.pr-carousel.cs-gray   { background: #F9FAFB; }
+.pr-carousel.cs-dark   { background: #111827; color: #fff; }
+.pr-carousel.cs-dark .pr-carousel__subheading { color: #9CA3AF; }
+.pr-carousel.cs-accent { background: #EEF2FF; }
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .pr-carousel__track { transition: none; }
+  .pr-carousel__dot   { transition: none; }
+  .pr-placeholder-card__line { animation: none; }
+}

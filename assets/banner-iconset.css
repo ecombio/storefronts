@@ -1,0 +1,396 @@
+.banner-iconset-section {
+  --bi-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* The prev/next arrow buttons used to sit partway outside
+     .banner-iconset (left: -10px / right: -10px), which combined with
+     .banner-iconset's own negative margin (see below) escaped every
+     ancestor up to this section and produced a page-level horizontal
+     scrollbar. The buttons are now positioned inward instead (see
+     .banner-iconset__btn--prev/--next below), matching
+     banner-carousel.css, so that's fixed at the source. overflow-x is
+     kept clipped here regardless, as a safety net against any other
+     future overflow source. */
+  overflow-x: hidden;
+  overflow-y: visible;
+}
+
+@supports (overflow-x: clip) {
+  .banner-iconset-section {
+    overflow-x: clip;
+  }
+}
+
+/* Content width/padding is handled entirely by the theme's global
+   .default-width / .full-width / .custom-width utility classes
+   (base.css SECTION GRID SYSTEM), applied directly on
+   .banner-iconset-section via this section's own "Section layout"
+   settings. .banner-iconset-section__inner is intentionally just a
+   plain wrapper now — it carries no width/padding of its own, so
+   there's only one source of truth for this section's horizontal
+   layout instead of two competing ones. */
+
+.banner-iconset-section__heading {
+  margin: 0 0 20px;
+  font-size: 1.8rem;
+  line-height: 1.3;
+}
+
+.banner-iconset-section__heading--align-center {
+  text-align: center;
+}
+
+.banner-iconset-section__heading--align-end {
+  text-align: right;
+}
+
+.banner-iconset-section__heading-main {
+  font-weight: 700;
+}
+
+.banner-iconset-section__heading-sub {
+  font-weight: 400;
+  margin-left: 6px;
+}
+
+@media screen and (min-width: 750px) {
+  .banner-iconset-section__heading {
+    font-size: 2.1rem;
+  }
+}
+
+.banner-iconset {
+  position: relative;
+  --bi-fade-width: 28px;
+}
+
+.banner-iconset.has-overflow-start .banner-iconset__track {
+  -webkit-mask-image: linear-gradient(to right, transparent, black var(--bi-fade-width));
+  mask-image: linear-gradient(to right, transparent, black var(--bi-fade-width));
+}
+
+.banner-iconset.has-overflow-end .banner-iconset__track {
+  -webkit-mask-image: linear-gradient(to left, transparent, black var(--bi-fade-width));
+  mask-image: linear-gradient(to left, transparent, black var(--bi-fade-width));
+}
+
+.banner-iconset.has-overflow-start.has-overflow-end .banner-iconset__track {
+  -webkit-mask-image: linear-gradient(to right, transparent, black var(--bi-fade-width), black calc(100% - var(--bi-fade-width)), transparent);
+  mask-image: linear-gradient(to right, transparent, black var(--bi-fade-width), black calc(100% - var(--bi-fade-width)), transparent);
+}
+
+.banner-iconset__track {
+  display: flex;
+  width: 100%;
+  gap: var(--slide-gap, 16px);
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 16px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  /* overflow-x: auto forces overflow-y to compute to a non-visible value
+     too, which would hard-clip the card box-shadow since shadows don't
+     count toward scrollWidth/scrollHeight. This padding gives the shadow
+     room to render (16px blur + 4px hover lift = 20px top, 16px sides/
+     bottom); the negative margin on .banner-iconset below cancels it
+     back out so surrounding spacing is unaffected. scroll-padding-inline
+     keeps scroll-snap-type: x mandatory from collapsing this padding on
+     load. Same fix as the banner carousel section. */
+  padding: 20px 16px 16px;
+}
+
+.banner-iconset__track::-webkit-scrollbar {
+  display: none;
+}
+
+.banner-iconset {
+  margin: -20px -16px -16px;
+}
+
+.banner-iconset__slide {
+  flex: 0 0 calc((100% - (var(--slides-mobile, 1) - 1) * var(--slide-gap, 16px)) / var(--slides-mobile, 1));
+  min-width: 0;
+  scroll-snap-align: start;
+  display: flex;
+}
+
+@media screen and (min-width: 750px) {
+  .banner-iconset__slide {
+    flex: 0 0 var(--card-width-desktop, 220px);
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .banner-iconset__slide {
+    flex: 0 0 var(--card-width-desktop, 220px);
+  }
+}
+
+.banner-iconset__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  min-height: var(--card-min-height-mobile, 200px);
+  padding: var(--card-padding, 24px);
+  background: var(--card-bg, #ffffff);
+  border-radius: var(--card-radius, 16px);
+  text-decoration: none;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s var(--bi-ease), box-shadow 0.3s var(--bi-ease);
+}
+
+.banner-iconset__card:hover,
+.banner-iconset__card:focus-visible {
+  transform: translateY(-4px);
+  box-shadow: 0 0 16px rgba(0, 0, 0, 0.12);
+}
+
+@media screen and (min-width: 750px) {
+  .banner-iconset__card {
+    min-height: var(--card-min-height-desktop, 220px);
+  }
+}
+
+.banner-iconset__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.banner-iconset__icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.banner-iconset__text {
+  font-size: 1.5rem;
+  line-height: 1.4;
+}
+
+.banner-iconset__text b,
+.banner-iconset__text strong {
+  font-weight: 700;
+}
+
+.banner-iconset__text sup {
+  font-size: 0.7em;
+}
+
+/* Arrows
+   ------------------------------------------------------------------
+   Positioned as positive insets (inward from the edge) at every
+   breakpoint, matching banner-carousel.css's .banner-carousel__btn — not
+   the negative offsets this used to have. Negative offsets pushed the
+   buttons outside .banner-iconset's box, which (combined with
+   .banner-iconset's own negative margin) escaped the section and
+   triggered a page-level horizontal scrollbar; positioning inward keeps
+   the buttons within bounds, which fixes that at the source and also
+   stops them overlapping the last visible card's text. */
+.banner-iconset__btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(127, 127, 127, 0.25);
+  background: var(--bc-btn-bg, #fff);
+  color: #121212;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 3;
+  box-shadow: 0 4px 14px -6px rgba(0, 0, 0, 0.25);
+  transition: border-color 0.2s var(--bi-ease), opacity 0.2s var(--bi-ease), transform 0.2s var(--bi-ease);
+}
+
+.banner-iconset__btn:hover {
+  border-color: currentColor;
+  transform: translateY(-50%) scale(1.08);
+}
+
+.banner-iconset__btn[disabled] {
+  opacity: 0.35;
+  pointer-events: none;
+  cursor: default;
+  box-shadow: none;
+}
+
+.banner-iconset__btn:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.banner-iconset__btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.banner-iconset__btn--prev {
+  left: 12px;
+}
+
+.banner-iconset__btn--next {
+  right: 12px;
+}
+
+@media screen and (min-width: 990px) {
+  .banner-iconset__btn--prev {
+    left: 24px;
+  }
+
+  .banner-iconset__btn--next {
+    right: 24px;
+  }
+}
+
+/* Hover-reveal — banner-carousel's arrows are always visible; this is an
+   iconset-specific addition on top of that reference, since the cards
+   here sit directly against a section background rather than a full-
+   bleed image, so idle arrows read as more visually intrusive. Scoped to
+   (hover: hover) and (pointer: fine) so touch devices — which have no
+   hover state to reveal the buttons with — always show them instead of
+   getting an arrow that's invisible and untappable. Disabled buttons
+   (at either end of the track) stay dimmed via the existing [disabled]
+   opacity rule regardless of hover state. */
+/* Hover-reveal — opt-in via this section's "Arrow visibility" setting
+   (default "always" — arrows stay visible at all times, same as before
+   this setting existed). Only applies when a merchant switches it to
+   "On hover", via data-arrow-visibility="hover" set on .banner-iconset
+   in banner-iconset.liquid. banner-carousel's arrows have no such
+   setting and are always visible; this brings the same opt-in pattern
+   featured-collection.css already uses for its own arrow_visibility
+   setting, so the two stay consistent. Scoped to
+   (hover: hover) and (pointer: fine) so touch devices — which have no
+   hover state to reveal the buttons with — always show them regardless
+   of this setting, instead of getting an arrow that's invisible and
+   untappable. Disabled buttons (at either end of the track) stay
+   dimmed via the existing [disabled] opacity rule regardless of hover
+   state.
+   Combines opacity with a scale(0.85 -> 1) pop instead of a flat fade,
+   matching featured-collection.css's own hover-reveal treatment so
+   both components read the same way. transform is layered on top of
+   the existing translateY(-50%) (needed for vertical centering) rather
+   than replacing it — same pattern as the :hover scale(1.08) rule
+   above. */
+@media (hover: hover) and (pointer: fine) {
+  .banner-iconset[data-arrow-visibility="hover"] .banner-iconset__btn {
+    opacity: 0;
+    transform: translateY(-50%) scale(0.85);
+  }
+
+  .banner-iconset[data-arrow-visibility="hover"]:hover .banner-iconset__btn,
+  .banner-iconset[data-arrow-visibility="hover"]:focus-within .banner-iconset__btn {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+
+  .banner-iconset[data-arrow-visibility="hover"]:hover .banner-iconset__btn:hover {
+    transform: translateY(-50%) scale(1.08);
+  }
+
+  .banner-iconset[data-arrow-visibility="hover"] .banner-iconset__btn[disabled] {
+    opacity: 0;
+  }
+
+  .banner-iconset[data-arrow-visibility="hover"]:hover .banner-iconset__btn[disabled],
+  .banner-iconset[data-arrow-visibility="hover"]:focus-within .banner-iconset__btn[disabled] {
+    opacity: 0.35;
+    transform: translateY(-50%) scale(1);
+  }
+}
+
+/* Dots */
+.banner-iconset__dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+/* Author display:flex above beats the UA [hidden]{display:none} rule at
+   equal specificity, so setting dotsWrapper.hidden = true in JS needs
+   this explicit override to actually hide the wrapper. */
+.banner-iconset__dots[hidden] {
+  display: none;
+}
+
+.banner-iconset__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  background: rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: background 0.2s var(--bi-ease), transform 0.2s var(--bi-ease);
+}
+
+.banner-iconset__dot.is-active {
+  background: #1d1d1f;
+  transform: scale(1.2);
+}
+
+/* Animation toggle */
+.banner-iconset-section[data-animations="off"] .banner-iconset__btn,
+.banner-iconset-section[data-animations="off"] .banner-iconset__dot,
+.banner-iconset-section[data-animations="off"] .banner-iconset__card {
+  transition: none;
+}
+
+.banner-iconset-section[data-animations="off"] .banner-iconset__dot.is-active {
+  transform: none;
+}
+
+.banner-iconset-section[data-animations="off"] .banner-iconset__card:hover,
+.banner-iconset-section[data-animations="off"] .banner-iconset__card:focus-visible {
+  transform: none;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);
+}
+
+@media screen and (max-width: 749px) {
+  .banner-iconset__btn {
+    width: 34px;
+    height: 34px;
+  }
+
+  .banner-iconset__btn svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .banner-iconset__btn--prev {
+    left: 8px;
+  }
+
+  .banner-iconset__btn--next {
+    right: 8px;
+  }
+
+  .banner-iconset {
+    --bi-fade-width: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .banner-iconset__track {
+    transition: none;
+  }
+
+  .banner-iconset__btn,
+  .banner-iconset__dot,
+  .banner-iconset__card {
+    transition: none !important;
+  }
+
+  .banner-iconset__card:hover,
+  .banner-iconset__card:focus-visible {
+    transform: none !important;
+  }
+}

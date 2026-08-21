@@ -1,0 +1,161 @@
+{%- comment -%}
+  snippets/quick-view-description.liquid
+  ======================================
+  Full-width tab row rendered BELOW the two-column media/detail grid.
+
+  Tabs (always rendered, regardless of content):
+    1. Description         — product.description
+    2. Shipping Policy     — shop.policies.shipping_policy.body
+    3. Returns & Refunds   — shop.policies.refund_policy.body
+    4. Warranty Policy     — product.metafields.custom.warranty_policy
+                             (falls back to shop.policies.privacy_policy if blank)
+
+  If a tab's content is blank, the panel shows a "Nothing to see here"
+  placeholder instead of hiding the tab.
+
+  CRITICAL: shop.policies is NOT accessible inside render-tag scope.
+  The parent section (sections/quick-view.liquid) must pass all policy
+  body strings as explicit parameters before calling this snippet.
+
+  Parameters:
+    product          {Object}  required
+    shipping_policy  {String}  optional — shop.policies.shipping_policy.body
+    refund_policy    {String}  optional — shop.policies.refund_policy.body
+    warranty_policy  {String}  optional — product metafield or custom string
+
+  JS hooks:
+    [data-qv-desc-wrap]  — root; double-init guard lives here
+    [data-qv-tab]        — tab buttons (roving tabindex)
+    [data-qv-tab-panel]  — panels toggled by JS via .is-active + aria-hidden
+{%- endcomment -%}
+
+{%- liquid
+  assign empty_state = 'Nothing to see here'
+-%}
+
+<div class="quick-view__desc-wrap" data-qv-desc-wrap>
+
+  {%- comment -%}── Tab strip ──{%- endcomment -%}
+  <div class="quick-view__tabs" role="tablist" aria-label="Product information">
+
+    <button
+      type="button"
+      class="quick-view__tab is-active"
+      role="tab"
+      id="qv-tab-desc-{{ product.id }}"
+      aria-selected="true"
+      aria-controls="qv-panel-desc-{{ product.id }}"
+      tabindex="0"
+      data-qv-tab
+    >Description</button>
+
+    <button
+      type="button"
+      class="quick-view__tab"
+      role="tab"
+      id="qv-tab-ship-{{ product.id }}"
+      aria-selected="false"
+      aria-controls="qv-panel-ship-{{ product.id }}"
+      tabindex="-1"
+      data-qv-tab
+    >Shipping Policy</button>
+
+    <button
+      type="button"
+      class="quick-view__tab"
+      role="tab"
+      id="qv-tab-refund-{{ product.id }}"
+      aria-selected="false"
+      aria-controls="qv-panel-refund-{{ product.id }}"
+      tabindex="-1"
+      data-qv-tab
+    >Returns &amp; Refunds</button>
+
+    <button
+      type="button"
+      class="quick-view__tab"
+      role="tab"
+      id="qv-tab-warranty-{{ product.id }}"
+      aria-selected="false"
+      aria-controls="qv-panel-warranty-{{ product.id }}"
+      tabindex="-1"
+      data-qv-tab
+    >Warranty Policy</button>
+
+  </div>{%- comment -%}/.quick-view__tabs{%- endcomment -%}
+
+  {%- comment -%}── Tab panels ──{%- endcomment -%}
+
+  <div
+    class="quick-view__tab-panel is-active"
+    role="tabpanel"
+    id="qv-panel-desc-{{ product.id }}"
+    aria-labelledby="qv-tab-desc-{{ product.id }}"
+    aria-hidden="false"
+    data-qv-tab-panel
+    tabindex="0"
+  >
+    <div class="quick-view__tab-panel-inner rte">
+      {%- if product.description != blank -%}
+        {{- product.description -}}
+      {%- else -%}
+        <p>{{ empty_state }}</p>
+      {%- endif -%}
+    </div>
+  </div>
+
+  <div
+    class="quick-view__tab-panel"
+    role="tabpanel"
+    id="qv-panel-ship-{{ product.id }}"
+    aria-labelledby="qv-tab-ship-{{ product.id }}"
+    aria-hidden="true"
+    data-qv-tab-panel
+    tabindex="0"
+  >
+    <div class="quick-view__tab-panel-inner rte">
+      {%- if shipping_policy != blank -%}
+        {{- shipping_policy -}}
+      {%- else -%}
+        <p>{{ empty_state }}</p>
+      {%- endif -%}
+    </div>
+  </div>
+
+  <div
+    class="quick-view__tab-panel"
+    role="tabpanel"
+    id="qv-panel-refund-{{ product.id }}"
+    aria-labelledby="qv-tab-refund-{{ product.id }}"
+    aria-hidden="true"
+    data-qv-tab-panel
+    tabindex="0"
+  >
+    <div class="quick-view__tab-panel-inner rte">
+      {%- if refund_policy != blank -%}
+        {{- refund_policy -}}
+      {%- else -%}
+        <p>{{ empty_state }}</p>
+      {%- endif -%}
+    </div>
+  </div>
+
+  <div
+    class="quick-view__tab-panel"
+    role="tabpanel"
+    id="qv-panel-warranty-{{ product.id }}"
+    aria-labelledby="qv-tab-warranty-{{ product.id }}"
+    aria-hidden="true"
+    data-qv-tab-panel
+    tabindex="0"
+  >
+    <div class="quick-view__tab-panel-inner rte">
+      {%- if warranty_policy != blank -%}
+        {{- warranty_policy -}}
+      {%- else -%}
+        <p>{{ empty_state }}</p>
+      {%- endif -%}
+    </div>
+  </div>
+
+</div>{%- comment -%}/.quick-view__desc-wrap{%- endcomment -%}

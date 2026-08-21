@@ -1,0 +1,673 @@
+[
+  {
+    "name": "Predictive Search",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Behaviour"
+      },
+      {
+        "type": "range",
+        "id": "search_debounce_ms",
+        "label": "Debounce delay (ms)",
+        "info": "How long to wait after the user stops typing before firing the search. Lower = faster but more API calls.",
+        "min": 100,
+        "max": 600,
+        "step": 50,
+        "default": 200,
+        "unit": "ms"
+      },
+      {
+        "type": "range",
+        "id": "search_min_chars",
+        "label": "Minimum characters to trigger search",
+        "min": 1,
+        "max": 4,
+        "step": 1,
+        "default": 2
+      },
+      {
+        "type": "header",
+        "content": "Result Limits"
+      },
+      {
+        "type": "range",
+        "id": "search_max_products",
+        "label": "Max product results",
+        "min": 1,
+        "max": 10,
+        "step": 1,
+        "default": 5
+      },
+      {
+        "type": "range",
+        "id": "search_max_collections",
+        "label": "Max collection results",
+        "min": 0,
+        "max": 5,
+        "step": 1,
+        "default": 2
+      },
+      {
+        "type": "range",
+        "id": "search_max_queries",
+        "label": "Max query suggestions",
+        "min": 0,
+        "max": 6,
+        "step": 1,
+        "default": 3
+      },
+      {
+        "type": "header",
+        "content": "Recent Searches"
+      },
+      {
+        "type": "range",
+        "id": "search_recent_limit",
+        "label": "Recent searches to remember",
+        "min": 1,
+        "max": 10,
+        "step": 1,
+        "default": 5
+      },
+      {
+        "type": "header",
+        "content": "Trending Searches"
+      },
+      {
+        "type": "text",
+        "id": "search_trending_1",
+        "label": "Trending search 1",
+        "default": "sofa"
+      },
+      {
+        "type": "text",
+        "id": "search_trending_2",
+        "label": "Trending search 2",
+        "default": "dining table"
+      },
+      {
+        "type": "text",
+        "id": "search_trending_3",
+        "label": "Trending search 3",
+        "default": "accent chair"
+      },
+      {
+        "type": "text",
+        "id": "search_trending_4",
+        "label": "Trending search 4",
+        "default": "floor lamp"
+      },
+      {
+        "type": "text",
+        "id": "search_trending_5",
+        "label": "Trending search 5",
+        "default": "bookshelf"
+      },
+      {
+        "type": "header",
+        "content": "Search Input"
+      },
+      {
+        "type": "text",
+        "id": "search_placeholder",
+        "label": "Input placeholder text",
+        "default": "What are you looking for?"
+      },
+      {
+        "type": "header",
+        "content": "Category Filter"
+      },
+      {
+        "type": "checkbox",
+        "id": "search_show_category",
+        "label": "Show category filter pill",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "search_category_1_label",
+        "label": "Category 1 label",
+        "default": "Furniture"
+      },
+      {
+        "type": "text",
+        "id": "search_category_1_value",
+        "label": "Category 1 tag (must match product tag in Shopify)",
+        "default": "furniture"
+      },
+      {
+        "type": "text",
+        "id": "search_category_2_label",
+        "label": "Category 2 label",
+        "default": "Lighting"
+      },
+      {
+        "type": "text",
+        "id": "search_category_2_value",
+        "label": "Category 2 tag",
+        "default": "lighting"
+      },
+      {
+        "type": "text",
+        "id": "search_category_3_label",
+        "label": "Category 3 label",
+        "default": "Storage"
+      },
+      {
+        "type": "text",
+        "id": "search_category_3_value",
+        "label": "Category 3 tag",
+        "default": "storage"
+      },
+      {
+        "type": "text",
+        "id": "search_category_4_label",
+        "label": "Category 4 label",
+        "default": "Décor"
+      },
+      {
+        "type": "text",
+        "id": "search_category_4_value",
+        "label": "Category 4 tag",
+        "default": "decor"
+      },
+      {
+        "type": "text",
+        "id": "search_category_5_label",
+        "label": "Category 5 label",
+        "default": "Outdoor"
+      },
+      {
+        "type": "text",
+        "id": "search_category_5_value",
+        "label": "Category 5 tag",
+        "default": "outdoor"
+      },
+      {
+        "type": "header",
+        "content": "Colours"
+      },
+      {
+        "type": "color",
+        "id": "search_accent_color",
+        "label": "Accent colour",
+        "info": "Used for the active category pill and focus ring.",
+        "default": "#1a1a1a"
+      },
+      {
+        "type": "color",
+        "id": "search_highlight_bg",
+        "label": "Match highlight colour",
+        "info": "Background of the matched text inside result titles.",
+        "default": "#FFF3CD"
+      },
+      {
+        "type": "color",
+        "id": "search_hover_bg",
+        "label": "Result row hover background",
+        "default": "#F5F5F5"
+      },
+      {
+        "type": "color",
+        "id": "search_border_focus",
+        "label": "Input focus border colour",
+        "default": "#1a1a1a"
+      }
+    ]
+  },
+
+  {
+    "name": "theme_info",
+    "theme_name": "ECOMBIO",
+    "theme_version": "1.0.0",
+    "theme_author": "ECOMBIO",
+    "theme_documentation_url": "https://ecombio.com",
+    "theme_support_url": "https://ecombio.com/support"
+  },
+
+  {
+    "name": "Logo & Favicon",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Logo"
+      },
+      {
+        "type": "image_picker",
+        "id": "logo",
+        "label": "Logo image"
+      },
+      {
+        "type": "range",
+        "id": "logo_width",
+        "min": 80,
+        "max": 300,
+        "step": 10,
+        "default": 140,
+        "unit": "px",
+        "label": "Logo width"
+      },
+      {
+        "type": "header",
+        "content": "Favicon"
+      },
+      {
+        "type": "image_picker",
+        "id": "favicon",
+        "label": "Favicon image",
+        "info": "Recommended: square PNG at 180×180px. Displayed at 32px in browser tabs."
+      }
+    ]
+  },
+
+  {
+    "name": "t:general.theme_presets",
+    "settings": [
+      {
+        "type": "select",
+        "id": "theme_preset",
+        "label": "t:labels.theme_style",
+        "default": "",
+        "options": [
+          {
+            "value": "",
+            "label": "Default - Launchpad"
+          },
+          {
+            "value": "marketplace",
+            "label": "Hyper - Marketplace"
+          },
+          {
+            "value": "storefront",
+            "label": "Focus - Storefront"
+          }
+        ],
+        "info": "Default - Launchpad is the main style. The other options are available but currently on standby."
+      }
+    ]
+  },
+
+  {
+    "name": "t:general.density",
+    "settings": [
+      {
+        "type": "header",
+        "content": "t:general.density_and_spacing"
+      },
+      {
+        "type": "range",
+        "id": "section_spacing_scale",
+        "label": "t:labels.section_spacing",
+        "min": 0.5,
+        "max": 2,
+        "step": 0.1,
+        "default": 1,
+        "unit": "x",
+        "info": "Controls vertical spacing between sections. Lower = tighter (Hyper). Higher = more breathing room (Focus)."
+      },
+      {
+        "type": "range",
+        "id": "card_padding",
+        "label": "t:labels.card_padding",
+        "min": 8,
+        "max": 40,
+        "step": 2,
+        "default": 16,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "grid_gap",
+        "label": "t:labels.grid_gap",
+        "min": 8,
+        "max": 40,
+        "step": 2,
+        "default": 16,
+        "unit": "px"
+      }
+    ]
+  },
+
+  {
+    "name": "t:general.typography",
+    "settings": [
+      {
+        "type": "header",
+        "content": "t:general.fonts"
+      },
+      {
+        "type": "font_picker",
+        "id": "type_primary_font",
+        "default": "work_sans_n4",
+        "label": "t:general.primary"
+      }
+    ]
+  },
+
+  {
+    "name": "t:general.layout",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Header"
+      },
+      {
+        "type": "select",
+        "id": "header_max_width",
+        "label": "Header width",
+        "options": [
+          { "value": "100%",   "label": "Full width" },
+          { "value": "120rem", "label": "Wide" },
+          { "value": "1184px", "label": "Default" },
+          { "value": "80rem",  "label": "Narrow" }
+        ],
+        "default": "100%"
+      },
+      {
+        "type": "range",
+        "id": "header_margin",
+        "label": "Header side padding",
+        "min": 0,
+        "max": 80,
+        "step": 4,
+        "default": 24,
+        "unit": "px"
+      },
+      {
+        "type": "header",
+        "content": "Body"
+      },
+      {
+        "type": "select",
+        "id": "max_page_width",
+        "label": "Body width",
+        "options": [
+          { "value": "100%",   "label": "Full width" },
+          { "value": "120rem", "label": "Wide" },
+          { "value": "1184px", "label": "Default" },
+          { "value": "80rem",  "label": "Narrow" }
+        ],
+        "default": "1184px"
+      },
+      {
+        "type": "range",
+        "id": "min_page_margin",
+        "label": "Body side padding",
+        "min": 0,
+        "max": 80,
+        "step": 1,
+        "default": 24,
+        "unit": "px"
+      },
+      {
+        "type": "header",
+        "content": "Footer"
+      },
+      {
+        "type": "select",
+        "id": "footer_max_width",
+        "label": "Footer width",
+        "options": [
+          { "value": "100%",   "label": "Full width" },
+          { "value": "120rem", "label": "Wide" },
+          { "value": "1184px", "label": "Default" },
+          { "value": "80rem",  "label": "Narrow" }
+        ],
+        "default": "100%"
+      },
+      {
+        "type": "range",
+        "id": "footer_margin",
+        "label": "Footer side padding",
+        "min": 0,
+        "max": 80,
+        "step": 4,
+        "default": 24,
+        "unit": "px"
+      }
+    ]
+  },
+
+  {
+    "name": "t:general.colors",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Base"
+      },
+      {
+        "type": "color",
+        "id": "background_color",
+        "default": "#FFFFFF",
+        "label": "t:labels.background"
+      },
+      {
+        "type": "color",
+        "id": "foreground_color",
+        "default": "#333333",
+        "label": "t:labels.foreground"
+      },
+      {
+        "type": "color",
+        "id": "text_muted_color",
+        "label": "Muted text",
+        "info": "Used for descriptions, secondary copy, and metadata across the site.",
+        "default": "#6B7280"
+      },
+      {
+        "type": "color",
+        "id": "border_color",
+        "label": "Border",
+        "default": "#E5E7EB"
+      },
+      {
+        "type": "header",
+        "content": "Accent"
+      },
+      {
+        "type": "color",
+        "id": "accent_color",
+        "label": "Accent",
+        "info": "Used for links, active states, and highlighted UI elements.",
+        "default": "#4F46E5"
+      },
+      {
+        "type": "color",
+        "id": "accent_color_hover",
+        "label": "Accent (hover)",
+        "default": "#4338CA"
+      },
+      {
+        "type": "header",
+        "content": "Add to cart"
+      },
+      {
+        "type": "color",
+        "id": "atc_color",
+        "label": "Add to cart button",
+        "default": "#F5C518"
+      },
+      {
+        "type": "color",
+        "id": "atc_color_hover",
+        "label": "Add to cart button (hover)",
+        "default": "#E6B800"
+      },
+      {
+        "type": "header",
+        "content": "Sale"
+      },
+      {
+        "type": "color",
+        "id": "sale_color",
+        "label": "Sale price",
+        "default": "#DC2626"
+      },
+      {
+        "type": "color",
+        "id": "save_badge_color",
+        "label": "Savings badge text",
+        "default": "#D97706"
+      },
+      {
+        "type": "header",
+        "content": "Inputs"
+      },
+      {
+        "type": "range",
+        "id": "input_corner_radius",
+        "min": 0,
+        "max": 10,
+        "step": 1,
+        "unit": "px",
+        "label": "t:labels.input_corner_radius",
+        "default": 4
+      }
+    ]
+  },
+
+  {
+    "name": "Reviews",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Reviews app"
+      },
+      {
+        "type": "select",
+        "id": "reviews_provider",
+        "label": "Reviews app",
+        "info": "Choose which reviews app powers star ratings and review widgets sitewide. Individual sections can still override this if they have their own Reviews app setting.",
+        "options": [
+          { "value": "yotpo", "label": "Yotpo" },
+          { "value": "judgeme", "label": "Judge.me" }
+        ],
+        "default": "yotpo"
+      }
+    ]
+  },
+
+  {
+    "name": "Color schemes",
+    "settings": [
+      {
+        "type": "color_scheme_group",
+        "id": "color_schemes",
+        "definition": [
+          {
+            "type": "color",
+            "id": "background",
+            "label": "Background",
+            "default": "#FFFFFF"
+          },
+          {
+            "type": "color",
+            "id": "text",
+            "label": "Text",
+            "default": "#121212"
+          },
+          {
+            "type": "color",
+            "id": "text_muted",
+            "label": "Muted text",
+            "default": "#6B7280"
+          },
+          {
+            "type": "color",
+            "id": "border",
+            "label": "Border",
+            "default": "#E5E7EB"
+          },
+          {
+            "type": "color",
+            "id": "button",
+            "label": "Primary button background",
+            "default": "#4F46E5"
+          },
+          {
+            "type": "color",
+            "id": "button_label",
+            "label": "Primary button text",
+            "default": "#FFFFFF"
+          },
+          {
+            "type": "color",
+            "id": "secondary_button_label",
+            "label": "Secondary button / link text",
+            "default": "#121212"
+          },
+          {
+            "type": "color",
+            "id": "shadow",
+            "label": "Shadow",
+            "default": "#121212"
+          }
+        ],
+        "role": {
+          "text": "text",
+          "background": "background",
+          "links": "secondary_button_label",
+          "icons": "text",
+          "primary_button": "button",
+          "on_primary_button": "button_label",
+          "primary_button_border": "button",
+          "secondary_button": "background",
+          "on_secondary_button": "secondary_button_label",
+          "secondary_button_border": "secondary_button_label"
+        }
+      }
+    ]
+  },
+
+  {
+    "name": "t:general.header",
+    "settings": [
+      {
+        "type": "header",
+        "content": "t:general.header_settings"
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_sticky_header",
+        "label": "Sticky",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_header_autohide",
+        "label": "Autohide",
+        "info": "Hide the header when scrolling down, reveal it when scrolling back up.",
+        "default": false,
+        "visible_if": "{{ settings.enable_sticky_header }}"
+      }
+    ]
+  },
+
+  {
+    "name": "t:general.product_cards",
+    "settings": [
+      {
+        "type": "header",
+        "content": "t:general.product_cards"
+      },
+      {
+        "type": "select",
+        "id": "product_card_style",
+        "label": "t:labels.card_style",
+        "options": [
+          { "value": "minimal",  "label": "t:options.card.minimal" },
+          { "value": "bordered", "label": "t:options.card.bordered" },
+          { "value": "shadow",   "label": "t:options.card.shadow" }
+        ],
+        "default": "bordered"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_quick_add",
+        "label": "t:labels.show_quick_add",
+        "default": true
+      }
+    ]
+  }
+]

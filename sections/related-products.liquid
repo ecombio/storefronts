@@ -1,0 +1,84 @@
+{%- comment -%}
+  Related products — sections-everywhere.
+
+  On product templates: uses Shopify's native product recommendations
+  endpoint (intent: 'related'), fetched client-side via
+  routes.product_recommendations_url. `recommendations` is blank on the
+  initial server render, so the fallback collection renders immediately
+  and gets swapped out by assets/related-products.js once the real
+  recommendations come back.
+
+  On every other template (collection, index, page, etc.) there is no
+  `product` to key recommendations off, so this always falls back to a
+  merchant-picked collection — defaulting to the current collection
+  when the section happens to be sitting on a collection page and no
+  fallback has been configured.
+{%- endcomment -%}
+{%- liquid
+  assign limit = section.settings.limit | default: 8
+  assign fallback_collection = section.settings.fallback_collection
+  assign is_product_template = false
+  assign result_products = blank
+  assign result_heading = section.settings.heading
+
+  if template.name == 'product' and product != blank
+    assign is_product_template = true
+  endif
+
+  if fallback_collection == blank and collection != blank and collection.products_count > 0
+    assign fallback_collection = collection
+  endif
+
+  if is_product_template and recommendations.performed and recommendations.products_count > 0
+    assign result_products = recommendations.products
+  elsif fallback_collection != blank and fallback_collection.products_count > 0
+    assign result_products = fallback_collection.products | slice: 0, limit
+    assign result_heading = section.settings.fallback_heading | default: section.settings.heading
+  endif
+-%}
+
+<related-products
+  class="related-products"
+  {%- if is_product_template -%}
+    data-recommendations-url="{{ routes.product_recommendations_url }}"
+    data-product-id="{{ product.id }}"
+    data-limit="{{ limit }}"
+    data-section-id="{{ section.id }}"
+  {%- endif -%}
+>
+  {%- if result_products != blank -%}
+    {%- if result_heading != blank -%}
+      <h2 class="related-products__heading">{{ result_heading }}</h2>
+    {%- endif -%}
+    <ul class="related-products__grid" role="list">
+      {%- for related_product in result_products -%}
+        <li class="related-products__item">
+          {%- render 'product-card',
+            product: related_product,
+            show_quickview: section.settings.show_quickview,
+            show_wishlist: section.settings.show_wishlist,
+            show_vendor: section.settings.show_vendor
+          -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  {%- endif -%}
+</related-products>
+
+{% schema %}
+{
+  "name": "Related products",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "You may also like" },
+    { "type": "range", "id": "limit", "label": "Products to show", "min": 2, "max": 12, "step": 1, "default": 8 },
+    { "type": "collection", "id": "fallback_collection", "label": "Fallback collection", "info": "Used on product pages until recommendations load, and as the product source everywhere else. Defaults to the current collection if left blank on a collection page." },
+    { "type": "text", "id": "fallback_heading", "label": "Fallback heading", "info": "Leave blank to reuse the heading above." },
+    { "type": "checkbox", "id": "show_quickview", "label": "Show quick view", "default": true },
+    { "type": "checkbox", "id": "show_wishlist", "label": "Show wishlist button", "default": true },
+    { "type": "checkbox", "id": "show_vendor", "label": "Show vendor", "default": true }
+  ],
+  "presets": [{ "name": "Related products" }]
+}
+{% endschema %}

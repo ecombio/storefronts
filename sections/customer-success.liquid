@@ -1,0 +1,371 @@
+<link rel="stylesheet" href="{{ 'customer-success.css' | asset_url }}" media="print" onload="this.media='all'">
+<noscript>{{ 'customer-success.css' | asset_url | stylesheet_tag }}</noscript>
+
+{%- style -%}
+  .section-{{ section.id }} {
+    padding-top: {{ section.settings.padding_top }}px;
+    padding-bottom: {{ section.settings.padding_bottom }}px;
+    {%- if section.settings.background_color != blank -%}
+      --customer-bg: {{ section.settings.background_color }};
+    {%- endif -%}
+    {%- if section.settings.text_color != blank -%}
+      --customer-text: {{ section.settings.text_color }};
+    {%- endif -%}
+    {%- if section.settings.accent_color != blank -%}
+      --customer-accent: {{ section.settings.accent_color }};
+    {%- endif -%}
+  }
+  @media screen and (max-width: 749px) {
+    .section-{{ section.id }} {
+      padding-top: {{ section.settings.padding_top_mobile }}px;
+      padding-bottom: {{ section.settings.padding_bottom_mobile }}px;
+    }
+  }
+{%- endstyle -%}
+
+{%- liquid
+  assign customer_success_class = 'customer-success section-' | append: section.id | append: ' color-' | append: section.settings.color_scheme
+-%}
+<div
+  {% render 'section-width', section: section, extra_class: customer_success_class %}
+  data-section-id="{{ section.id }}"
+  data-section-type="customer-success"
+  data-autoplay="{{ section.settings.autoplay }}"
+  data-autoplay-speed="{{ section.settings.autoplay_speed | default: 5 }}"
+>
+  <div class="customer-success__inner">
+
+    <div class="customer-success__content">
+      {%- if section.settings.show_quote_icon -%}
+        <svg class="customer-success__quote-icon" viewBox="0 0 32 24" aria-hidden="true" focusable="false">
+          <path d="M0 24V13.5C0 8.5 1.3 4.9 3.9 2.7 6.1 0.9 8.6 0 11.4 0v4.8c-1.7 0-3 0.6-4 1.9-0.9 1.1-1.4 2.6-1.4 4.5h5.4V24H0zm17.2 0V13.5c0-5 1.3-8.6 3.9-10.8C23.3 0.9 25.8 0 28.6 0v4.8c-1.7 0-3 0.6-4 1.9-0.9 1.1-1.4 2.6-1.4 4.5H28.6V24H17.2z" fill="currentColor"/>
+        </svg>
+      {%- endif -%}
+
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="customer-success__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+      {%- endif -%}
+
+      {%- if section.blocks.size > 0 -%}
+        <div
+          class="customer-success__reviews"
+          data-reviews
+          role="group"
+          aria-roledescription="carousel"
+          aria-label="{{ section.settings.eyebrow | default: 'Customer reviews' | escape }}"
+        >
+          {%- for block in section.blocks -%}
+            {%- case block.type -%}
+              {%- when 'review' -%}
+                <div
+                  class="customer-success__review{% if forloop.first %} is-active{% endif %}"
+                  data-review-index="{{ forloop.index0 }}"
+                  {% unless forloop.first %}hidden{% endunless %}
+                  {{ block.shopify_attributes }}
+                >
+                  {%- if block.settings.rating > 0 -%}
+                    <div class="customer-success__rating" aria-hidden="true">
+                      {%- assign full_stars = block.settings.rating -%}
+                      {%- for i in (1..5) -%}
+                        <svg class="customer-success__star{% if i > full_stars %} is-empty{% endif %}" viewBox="0 0 20 20" focusable="false">
+                          <path d="M10 1.5l2.6 5.6 6.1.7-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L1.3 7.8l6.1-.7L10 1.5z" fill="currentColor"/>
+                        </svg>
+                      {%- endfor -%}
+                      <span class="visually-hidden">{{ block.settings.rating }} out of 5 stars</span>
+                    </div>
+                  {%- endif -%}
+
+                  {%- if block.settings.quote != blank -%}
+                    <blockquote class="customer-success__quote">
+                      <p>&ldquo;{{ block.settings.quote }}&rdquo;</p>
+                    </blockquote>
+                  {%- endif -%}
+
+                  {%- if block.settings.author != blank or block.settings.purchase_item != blank -%}
+                    <div class="customer-success__meta">
+                      {%- if block.settings.author != blank -%}
+                        <p class="customer-success__author">{{ block.settings.author | escape }}</p>
+                      {%- endif -%}
+                      {%- if block.settings.purchase_item != blank -%}
+                        <p class="customer-success__purchase">Purchase item: <strong>{{ block.settings.purchase_item | escape }}</strong></p>
+                      {%- endif -%}
+                    </div>
+                  {%- endif -%}
+                </div>
+            {%- endcase -%}
+          {%- endfor -%}
+        </div>
+
+        {%- if section.blocks.size > 1 -%}
+          <div class="customer-success__nav">
+            <button type="button" class="customer-success__nav-btn customer-success__nav-btn--prev" data-carousel-prev aria-label="Previous review">
+              <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+                <path d="M12.5 15L7 10l5.5-5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button type="button" class="customer-success__nav-btn customer-success__nav-btn--next" data-carousel-next aria-label="Next review">
+              <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+                <path d="M7.5 15L13 10 7.5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        {%- endif -%}
+      {%- endif -%}
+    </div>
+
+    <div class="customer-success__media">
+      <div class="customer-success__media-collage">
+        <div class="customer-success__media-primary">
+          {%- if section.settings.primary_image -%}
+            {{
+              section.settings.primary_image
+              | image_url: width: 1200
+              | image_tag:
+                loading: 'lazy',
+                widths: '400, 600, 800, 1200',
+                sizes: '(min-width: 750px) 40vw, 80vw',
+                class: 'customer-success__image',
+                alt: section.settings.primary_image.alt | default: section.settings.eyebrow
+            }}
+          {%- else -%}
+            {{ 'lifestyle-2' | placeholder_svg_tag: 'customer-success__placeholder' }}
+          {%- endif -%}
+        </div>
+        <div class="customer-success__media-secondary">
+          {%- if section.settings.secondary_image -%}
+            {{
+              section.settings.secondary_image
+              | image_url: width: 700
+              | image_tag:
+                loading: 'lazy',
+                widths: '250, 350, 500, 700',
+                sizes: '(min-width: 750px) 20vw, 45vw',
+                class: 'customer-success__image',
+                alt: section.settings.secondary_image.alt | default: section.settings.eyebrow
+            }}
+          {%- else -%}
+            {{ 'lifestyle-1' | placeholder_svg_tag: 'customer-success__placeholder' }}
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="{{ 'customer-success.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Customer success",
+  "tag": "section",
+  "class": "shopify-section--customer-success",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "People are talking"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_quote_icon",
+      "label": "Show quote icon",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Images"
+    },
+    {
+      "type": "image_picker",
+      "id": "primary_image",
+      "label": "Primary image"
+    },
+    {
+      "type": "image_picker",
+      "id": "secondary_image",
+      "label": "Secondary image"
+    },
+    {
+      "type": "header",
+      "content": "Carousel"
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Autoplay reviews",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "label": "Autoplay speed",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "default": 5,
+      "visible_if": "{{ section.settings.autoplay }}"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "info": "Leave blank to inherit the color scheme's background."
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "info": "Leave blank to inherit the color scheme's text color."
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent color",
+      "info": "Used for the nav buttons and quote icon. Leave blank to use the default."
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding (desktop)",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding (desktop)",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Top padding (mobile)",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Bottom padding (mobile)",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    }
+  ],
+  "blocks": [
+    {
+      "type": "review",
+      "name": "Review",
+      "limit": 20,
+      "settings": [
+        {
+          "type": "range",
+          "id": "rating",
+          "label": "Rating",
+          "min": 0,
+          "max": 5,
+          "step": 1,
+          "default": 5
+        },
+        {
+          "type": "textarea",
+          "id": "quote",
+          "label": "Quote",
+          "default": "I have been shopping with this web fashion site for over a year now and I can confidently say it is the best online fashion site out there."
+        },
+        {
+          "type": "text",
+          "id": "author",
+          "label": "Author name",
+          "default": "Robert Smith"
+        },
+        {
+          "type": "text",
+          "id": "purchase_item",
+          "label": "Purchase item (optional)",
+          "default": "Ribbed Tank Top"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Customer success",
+      "blocks": [
+        { "type": "review" },
+        { "type": "review" },
+        { "type": "review" }
+      ]
+    }
+  ]
+}
+{% endschema %}

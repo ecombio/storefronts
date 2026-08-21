@@ -1,0 +1,468 @@
+{{ 'main-header.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign logo       = settings.logo
+  assign logo_width = settings.logo_width | default: 110
+  assign show_acct  = section.settings.show_icon_account
+  assign show_cart  = section.settings.show_icon_cart
+  assign show_wish  = section.settings.show_icon_wishlist
+  assign show_comp  = section.settings.show_icon_compare
+  assign label_acct = section.settings.show_label_account
+  assign label_cart = section.settings.show_label_cart
+  assign label_wish = section.settings.show_label_wishlist
+  assign label_comp = section.settings.show_label_compare
+  assign enable_search_drawer_tablet = section.settings.enable_search_drawer_tablet
+
+  assign section_width = section.settings.section_width
+  case section_width
+    when 'full-width'
+      assign width_class = 'main-header--full-width'
+    when 'custom-width'
+      assign width_class = 'main-header--custom-width'
+    else
+      assign width_class = 'main-header--default-width'
+  endcase
+
+  assign menu_position = section.settings.menu_position | default: 'inline'
+  assign menu_below = false
+  if menu_position == 'below'
+    assign menu_below = true
+  endif
+
+  assign search_style = section.settings.search_style | default: 'icon'
+  assign search_bar = false
+  if search_style == 'bar'
+    assign search_bar = true
+  endif
+
+  assign trending_terms = ''
+  for i in (1..12)
+    assign key = 'trending_' | append: i
+    assign term = section.settings[key]
+    if term != blank
+      assign trending_terms = trending_terms | append: term | append: '||'
+    endif
+  endfor
+  # FIX: the loop above always appends '||' after the last term too,
+  # leaving a trailing delimiter. header-search.js later does
+  # trending_terms | split: '||', so that trailing '||' produced one
+  # extra empty string at the end of window.HS_TRENDING. When the
+  # typewriter cycled to that empty entry, term[0] was undefined and
+  # it briefly typed the literal word "undefined". Stripping the
+  # trailing delimiter here removes that empty array entry entirely.
+  if trending_terms != blank
+    assign trending_terms = trending_terms | split: '||' | join: '||'
+  endif
+
+  assign transparent_header_enabled = false
+  if section.settings.enable_transparent_header != false
+    if request.page_type == 'index'
+      assign transparent_header_enabled = true
+    elsif request.page_type == 'page' and page.handle != blank
+      assign extra_pages_raw = section.settings.transparent_header_page_handles
+      if extra_pages_raw != blank
+        assign extra_pages = extra_pages_raw | split: ','
+        for raw_handle in extra_pages
+          assign candidate_handle = raw_handle | handleize
+          if candidate_handle == page.handle
+            assign transparent_header_enabled = true
+            break
+          endif
+        endfor
+      endif
+    endif
+  endif
+-%}
+
+{%- if transparent_header_enabled -%}
+  <style>
+    @media (min-width: 64rem) {
+      main[role="main"] { padding-top: 0 !important; }
+    }
+  </style>
+{%- endif -%}
+
+{%- capture header_nav_markup -%}
+  {%- render 'header-menu', blocks: section.blocks -%}
+{%- endcapture -%}
+
+<header
+  class="main-header {{ width_class }}{% if section.settings.enable_search_drawer %} main-header--search-drawer-mobile{% endif %}{% if enable_search_drawer_tablet %} main-header--search-drawer-tablet{% endif %}{% if section.settings.logo_position == 'center' %} main-header--logo-center{% endif %}{% if menu_below %} main-header--menu-below{% endif %}{% if search_bar %} main-header--search-bar{% endif %}"
+  id="main-header"
+  role="banner"
+  data-transparent-header="{{ transparent_header_enabled }}"
+  style="
+    --section-padding: {{ section.settings.section_padding }}px;
+    {%- if section_width == 'custom-width' %}
+      --custom-width: {{ section.settings.custom_width }}rem;
+    {%- endif %}
+  "
+>
+  <div class="main-header__bar">
+    <div class="main-header__inner">
+
+      {%- if section.blocks.size > 0 -%}
+        <button type="button"
+                class="ecombio-header__hamburger"
+                id="main-header-menu-trigger"
+                aria-expanded="false"
+                aria-controls="main-header-mobile-nav"
+                aria-label="Open menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      {%- endif -%}
+
+      {%- if section.settings.enable_search_drawer -%}
+        <div class="main-header__search-drawer-mobile-only">
+          {%- render 'header-search-drawer',
+            enable_predictive_search: section.settings.enable_predictive_search,
+            trending_terms: trending_terms,
+            enable_typewriter: section.settings.enable_typewriter,
+            typewriter_type_speed: section.settings.typewriter_type_speed,
+            typewriter_hold_ms: section.settings.typewriter_hold_ms
+          -%}
+        </div>
+      {%- endif -%}
+      {%- if enable_search_drawer_tablet -%}
+        <div class="main-header__search-drawer-tablet-only">
+          {%- render 'header-search-drawer',
+            enable_predictive_search: section.settings.enable_predictive_search,
+            trending_terms: trending_terms,
+            enable_typewriter: section.settings.enable_typewriter,
+            typewriter_type_speed: section.settings.typewriter_type_speed,
+            typewriter_hold_ms: section.settings.typewriter_hold_ms
+          -%}
+        </div>
+      {%- endif -%}
+
+      <div class="main-header__logo">
+        {%- render 'header-logo', logo: logo, logo_width: logo_width -%}
+      </div>
+
+      <div class="main-header__nav-group">
+        {%- unless menu_below -%}
+          <div class="main-header__nav">
+            {{ header_nav_markup }}
+          </div>
+        {%- endunless -%}
+        {%- if search_bar -%}
+          <div class="main-header__search-bar-inline">
+            {%- render 'header-search',
+              enable_predictive_search: section.settings.enable_predictive_search,
+              variant: 'desktop-bar',
+              trending_terms: trending_terms,
+              enable_typewriter: section.settings.enable_typewriter,
+              typewriter_type_speed: section.settings.typewriter_type_speed,
+              typewriter_hold_ms: section.settings.typewriter_hold_ms
+            -%}
+          </div>
+        {%- endif -%}
+      </div>
+
+      <ul class="main-header__icons" role="list" aria-label="Header actions">
+        {%- unless search_bar -%}
+          <li>
+            <button type="button"
+                    class="main-header__search-trigger"
+                    id="main-header-search-trigger"
+                    aria-haspopup="dialog"
+                    aria-expanded="false"
+                    aria-controls="main-header-search-overlay"
+                    aria-label="Search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <span class="visually-hidden">Search</span>
+            </button>
+          </li>
+        {%- endunless -%}
+        {%- if show_wish != false -%}
+          <li class="main-header__icons-item--wishlist">{%- render 'header-wishlist', show_label: label_wish -%}</li>
+        {%- endif -%}
+        {%- if show_comp != false -%}
+          <li>{%- render 'header-compare', show_label: label_comp -%}</li>
+        {%- endif -%}
+        {%- if show_acct != false -%}
+          <li>{%- render 'header-account', show_label: label_acct -%}</li>
+        {%- endif -%}
+        {%- if show_cart != false -%}
+          <li>{%- render 'header-cart', show_label: label_cart -%}</li>
+        {%- endif -%}
+      </ul>
+
+    </div>
+  </div>
+
+  {%- if menu_below -%}
+    <div class="main-header__menu-row">
+      {{ header_nav_markup }}
+    </div>
+  {%- endif -%}
+
+  <div class="main-header__search-row{% if section.settings.enable_search_drawer %} main-header__search-row--drawer-mobile{% endif %}{% if enable_search_drawer_tablet %} main-header__search-row--drawer-tablet{% endif %}">
+    <div class="main-header__search-row-inner">
+      {%- render 'header-search',
+        enable_predictive_search: section.settings.enable_predictive_search,
+        variant: 'mobile',
+        trending_terms: trending_terms,
+        enable_typewriter: section.settings.enable_typewriter,
+        typewriter_type_speed: section.settings.typewriter_type_speed,
+        typewriter_hold_ms: section.settings.typewriter_hold_ms
+      -%}
+    </div>
+  </div>
+
+  {%- unless search_bar -%}
+    <div class="main-header__search-overlay" id="main-header-search-overlay" data-search-overlay hidden>
+      <div class="main-header__search-overlay-backdrop" data-search-overlay-close></div>
+      <div class="main-header__search-overlay-panel" role="dialog" aria-modal="true" aria-label="Search">
+        <div class="main-header__search-overlay-top">
+          <a href="{{ routes.root_url }}" class="main-header__search-overlay-logo" aria-label="{{ shop.name }} home">
+            {%- render 'header-logo', logo: logo, logo_width: 84 -%}
+          </a>
+          <div class="main-header__search-overlay-inner">
+            {%- render 'header-search',
+              enable_predictive_search: section.settings.enable_predictive_search,
+              variant: 'overlay',
+              trending_terms: trending_terms,
+              enable_typewriter: section.settings.enable_typewriter,
+              typewriter_type_speed: section.settings.typewriter_type_speed,
+              typewriter_hold_ms: section.settings.typewriter_hold_ms
+            -%}
+          </div>
+          <button type="button" class="main-header__search-overlay-cancel" data-search-overlay-close>
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  {%- endunless -%}
+
+</header>
+
+<script src="{{ 'main-header.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Main header",
+  "tag": "div",
+  "class": "main-header-section",
+  "settings": [
+    { "type": "header", "content": "Section layout" },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40, "max": 120, "step": 5, "unit": "rem", "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0, "max": 80, "step": 4, "unit": "px", "default": 32
+    },
+    {
+      "type": "select",
+      "id": "logo_position",
+      "label": "Logo position",
+      "info": "Center moves the menu to the left (where the logo currently sits) and places the logo in the middle. Desktop only (1024px+) — mobile and tablet are unaffected. Works with any Menu position or Search style combination.",
+      "options": [
+        { "value": "left", "label": "Left (menu next to logo)" },
+        { "value": "center", "label": "Center (menu on the left)" }
+      ],
+      "default": "left"
+    },
+
+    { "type": "header", "content": "Menu position" },
+    {
+      "type": "select",
+      "id": "menu_position",
+      "label": "Menu position",
+      "info": "Desktop only (1024px+) — mobile/tablet keep the hamburger menu either way.",
+      "options": [
+        { "value": "inline", "label": "Inline with logo (default)" },
+        { "value": "below", "label": "Below header row" }
+      ],
+      "default": "inline"
+    },
+
+    { "type": "header", "content": "Search style" },
+    {
+      "type": "select",
+      "id": "search_style",
+      "label": "Search style",
+      "info": "Desktop only (1024px+) — mobile/tablet always use the search bar shown below the header, and the \"search drawer\" toggles under Mobile/Tablet Division below control that separately. \"Icon\" opens a full-screen search overlay when clicked. \"Bar\" shows an always-visible search input inline in the header, next to the menu.",
+      "options": [
+        { "value": "icon", "label": "Icon (opens overlay)" },
+        { "value": "bar", "label": "Always-visible bar" }
+      ],
+      "default": "icon"
+    },
+
+    { "type": "header", "content": "Transparent header" },
+    {
+      "type": "checkbox",
+      "id": "enable_transparent_header",
+      "label": "Enable transparent header effect",
+      "info": "Turns the whole effect on or off. When unchecked, the header is always solid — everywhere, regardless of the settings below — the exact same as if this feature didn't exist. When checked, the homepage always gets the transparent-over-hero header, plus any pages listed below.",
+      "default": true
+    },
+    {
+      "type": "textarea",
+      "id": "transparent_header_page_handles",
+      "label": "Additional pages (comma-separated)",
+      "info": "The homepage always gets the transparent-over-hero header (when the toggle above is on). To use it on a landing page (Page template) too, enter its handle here — the part of its URL after /pages/. Separate multiple handles with commas, e.g. electric-scooters, electric-skateboards, electric-bikes, accessories. Only works on pages that have a full-width hero/slideshow at the top, same as the homepage.",
+      "default": "electric-scooters, electric-skateboards, electric-bikes, accessories",
+      "visible_if": "{{ section.settings.enable_transparent_header }}"
+    },
+
+    { "type": "header", "content": "Mobile Division (< 640px)" },
+    {
+      "type": "checkbox",
+      "id": "enable_search_drawer",
+      "label": "Enable search drawer icon (mobile only, < 640px)",
+      "default": false
+    },
+
+    { "type": "header", "content": "Tablet Division (640px – 1023px)" },
+    {
+      "type": "checkbox",
+      "id": "enable_search_drawer_tablet",
+      "label": "Enable search drawer icon (tablet only, 640px – 1023px)",
+      "default": false
+    },
+
+    { "type": "header", "content": "Search (all breakpoints)" },
+    { "type": "checkbox", "id": "enable_predictive_search", "label": "Enable predictive search", "default": true },
+    { "type": "checkbox", "id": "enable_typewriter", "label": "Animate placeholder (typewriter effect)", "default": false },
+    { "type": "range", "id": "typewriter_type_speed", "label": "Typing speed", "min": 30, "max": 150, "step": 5, "default": 70, "unit": "ms", "visible_if": "{{ section.settings.enable_typewriter }}" },
+    { "type": "range", "id": "typewriter_hold_ms", "label": "Pause on full word", "min": 1000, "max": 5000, "step": 100, "default": 3200, "unit": "ms", "visible_if": "{{ section.settings.enable_typewriter }}" },
+    { "type": "text", "id": "trending_1", "label": "Trending term 1", "default": "electric scooters", "visible_if": "{{ section.settings.enable_predictive_search }}" },
+    { "type": "text", "id": "trending_2", "label": "Trending term 2", "default": "electric bikes", "visible_if": "{{ section.settings.enable_predictive_search }}" },
+    { "type": "text", "id": "trending_3", "label": "Trending term 3", "default": "electric skateboards", "visible_if": "{{ section.settings.enable_predictive_search }}" },
+    { "type": "text", "id": "trending_4", "label": "Trending term 4", "default": "electric cargo bikes", "visible_if": "{{ section.settings.enable_predictive_search }}" },
+    { "type": "text", "id": "trending_5", "label": "Trending term 5", "default": "electric city bikes", "visible_if": "{{ section.settings.enable_predictive_search }}" },
+    { "type": "text", "id": "trending_6", "label": "Trending term 6", "default": "electric fat bikes", "visible_if": "{{ section.settings.enable_predictive_search }}" },
+    { "type": "text", "id": "trending_7", "label": "Trending term 7", "default": "electric folding bikes", "visible_if": "{{ section.settings.enable_predictive_search }}" },
+    { "type": "text", "id": "trending_8", "label": "Trending term 8", "default": "electric mountain bikes", "visible_if": "{{ section.settings.enable_predictive_search }}" },
+    { "type": "text", "id": "trending_9", "label": "Trending term 9", "default": "commuter electric scooters", "visible_if": "{{ section.settings.enable_predictive_search }}" },
+    { "type": "text", "id": "trending_10", "label": "Trending term 10", "default": "off-road electric scooters", "visible_if": "{{ section.settings.enable_predictive_search }}" },
+    { "type": "text", "id": "trending_11", "label": "Trending term 11", "default": "performance electric scooters", "visible_if": "{{ section.settings.enable_predictive_search }}" },
+    { "type": "text", "id": "trending_12", "label": "Trending term 12", "default": "youth electric scooters", "visible_if": "{{ section.settings.enable_predictive_search }}" },
+
+    { "type": "header", "content": "Icons (all breakpoints)" },
+    { "type": "checkbox", "id": "show_icon_account", "label": "Show account icon", "default": false },
+    { "type": "checkbox", "id": "show_label_account", "label": "Show account label", "default": false },
+    { "type": "checkbox", "id": "show_icon_wishlist", "label": "Show wishlist icon", "default": true },
+    { "type": "checkbox", "id": "show_label_wishlist", "label": "Show wishlist label", "default": false },
+    { "type": "checkbox", "id": "show_icon_compare", "label": "Show compare icon", "default": false },
+    { "type": "checkbox", "id": "show_label_compare", "label": "Show compare label", "default": false },
+    { "type": "checkbox", "id": "show_icon_cart", "label": "Show cart icon", "default": true },
+    { "type": "checkbox", "id": "show_label_cart", "label": "Show cart label", "default": false }
+  ],
+  "blocks": [
+    { "type": "single-link", "name": "Single Link", "settings": [
+      { "type": "text", "id": "label", "label": "Label", "default": "Single Link" },
+      { "type": "url", "id": "link", "label": "URL" },
+      { "type": "text", "id": "icon", "label": "Icon name" }
+    ]},
+    { "type": "link-list", "name": "Link list", "settings": [
+      { "type": "text", "id": "label", "label": "Label" },
+      { "type": "url", "id": "link", "label": "Top-level URL (optional)" },
+      { "type": "link_list", "id": "menu", "label": "Link list menu" },
+      { "type": "text", "id": "icon", "label": "Icon name" }
+    ]},
+    { "type": "mega-menu", "name": "Mega menu", "settings": [
+      { "type": "header", "content": "Nav bar" },
+      { "type": "text", "id": "label", "label": "Label" },
+      { "type": "url", "id": "link", "label": "URL" },
+      { "type": "link_list", "id": "menu", "label": "Menu" },
+      { "type": "text", "id": "icon", "label": "Icon name" },
+      { "type": "header", "content": "Products" },
+      { "type": "checkbox", "id": "show_products", "label": "Show trending products", "default": false }
+    ]},
+    { "type": "showcase", "name": "Showcase", "settings": [
+      { "type": "header", "content": "Nav bar" },
+      { "type": "text", "id": "label", "label": "Label" },
+      { "type": "url", "id": "link", "label": "URL" },
+      { "type": "text", "id": "icon", "label": "Icon name" },
+      { "type": "header", "content": "Panel layout" },
+      { "type": "select", "id": "panel_width", "label": "Panel width", "options": [
+        { "value": "", "label": "Default (aligns with header)" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ], "default": "" },
+      { "type": "range", "id": "panel_custom_width", "label": "Custom width", "min": 40, "max": 120, "step": 5, "unit": "rem", "default": 80, "visible_if": "{{ block.settings.panel_width == 'custom-width' }}" },
+      { "type": "range", "id": "panel_padding", "label": "Side padding", "min": 0, "max": 80, "step": 4, "unit": "px", "default": 24 },
+      { "type": "header", "content": "\"See all\" link" },
+      {
+        "type": "text",
+        "id": "see_all_label",
+        "label": "Link text",
+        "default": "View all",
+        "info": "Shown at the top-right of the Categories panel, next to the \"Categories\" heading."
+      },
+      {
+        "type": "url",
+        "id": "see_all_link",
+        "label": "Link URL",
+        "info": "If left blank, this falls back to the collection the Nav bar URL above points to (if any)."
+      },
+      { "type": "header", "content": "Sidebar (optional)" },
+      { "type": "checkbox", "id": "show_sidebar", "label": "Show sidebar", "default": true },
+      { "type": "text", "id": "sidebar_heading", "label": "Sidebar heading", "default": "Good to know" },
+      { "type": "text", "id": "tip_1_icon", "label": "Tip 1 icon name" },
+      { "type": "text", "id": "tip_1_heading", "label": "Tip 1 heading", "default": "Trade-in" },
+      { "type": "text", "id": "tip_1_body", "label": "Tip 1 body", "default": "Get up to $700 for your old device" },
+      { "type": "text", "id": "tip_2_icon", "label": "Tip 2 icon name" },
+      { "type": "text", "id": "tip_2_heading", "label": "Tip 2 heading" },
+      { "type": "text", "id": "tip_2_body", "label": "Tip 2 body" },
+      { "type": "text", "id": "tip_3_icon", "label": "Tip 3 icon name" },
+      { "type": "text", "id": "tip_3_heading", "label": "Tip 3 heading" },
+      { "type": "text", "id": "tip_3_body", "label": "Tip 3 body" },
+      { "type": "header", "content": "Categories" },
+      { "type": "collection", "id": "cat_1_collection", "label": "Category 1 collection" },
+      { "type": "collection", "id": "cat_2_collection", "label": "Category 2 collection" },
+      { "type": "collection", "id": "cat_3_collection", "label": "Category 3 collection" },
+      { "type": "collection", "id": "cat_4_collection", "label": "Category 4 collection" },
+      { "type": "collection", "id": "cat_5_collection", "label": "Category 5 collection" },
+      { "type": "collection", "id": "cat_6_collection", "label": "Category 6 collection" },
+      { "type": "collection", "id": "cat_7_collection", "label": "Category 7 collection" },
+      { "type": "collection", "id": "cat_8_collection", "label": "Category 8 collection" }
+    ]},
+    { "type": "highlight", "name": "Highlight", "settings": [
+      { "type": "text", "id": "label", "label": "Label", "default": "On Sale" },
+      { "type": "url", "id": "link", "label": "URL" },
+      { "type": "text", "id": "icon", "label": "Icon name" }
+    ]},
+    { "type": "@app" }
+  ],
+  "presets": [
+    {
+      "name": "Main header",
+      "blocks": [
+        { "type": "single-link", "settings": { "label": "Single link", "link": "/collections/all" } },
+        { "type": "link-list", "settings": { "label": "Link list" } },
+        { "type": "mega-menu", "settings": {} },
+        { "type": "showcase", "settings": {} },
+        { "type": "highlight", "settings": { "label": "On Sale", "link": "/collections/sale" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

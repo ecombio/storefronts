@@ -1,0 +1,120 @@
+{% comment %}
+  snippets/sponsored-brands.liquid
+  [2.2] "Sponsored Brands" in-feed ad unit — banner-left + product carousel.
+
+  Product source is merchant-controlled via block.settings.source_mode:
+    "manual"     → block.settings.product_1..product_8
+    "collection" → block.settings.source_collection.products
+
+  Card rendering is delegated to product-card.liquid (is_sponsored: true)
+  so the carousel cards share image/price/reviews/wishlist/quickview/
+  compare/ATC markup and behavior with organic product-grid cards. This
+  snippet owns only ad-unit chrome: the banner panel and the carousel
+  track wrapper/heading.
+
+  Parameters:
+    block      {Object} required — section block, type "sponsored-brands"
+      block.settings.row                {Number}  — used upstream, not here
+      block.settings.banner_image       {Image}
+      block.settings.banner_heading     {String}
+      block.settings.banner_subheading  {String}
+      block.settings.banner_link        {String}
+      block.settings.source_mode        {String}  "manual" | "collection"
+      block.settings.source_collection  {Collection}
+      block.settings.product_1-8        {Product}
+      block.settings.heading            {String}  — carousel heading
+    collection {Object} optional — unused directly; kept in the signature
+                          for parity with sponsored-ads.liquid in case a
+                          future source_mode wants "products from the
+                          collection currently being viewed"
+
+  Asset ownership: this snippet loads no CSS/JS of its own.
+    sponsored-ads.css is loaded once by collection-products.liquid.
+    sponsored-ads.js  is loaded once by collection-products.liquid.
+{% endcomment %}
+
+{%- liquid
+  assign products = block.settings.source_collection.products
+
+  if block.settings.source_mode == 'manual' or products == blank
+    assign products = ''
+  endif
+-%}
+
+<div class="sponsored-brands" data-sponsored-block-id="{{ block.id }}">
+  <span class="sponsored-brands__label">Sponsored</span>
+
+  <div class="sponsored-brands__inner">
+
+    {%- comment -%} ── Banner panel ─────────────────────────────────────── {%- endcomment -%}
+
+    {%- if block.settings.banner_link != blank -%}
+      <a href="{{ block.settings.banner_link }}" class="sponsored-brands__banner">
+    {%- else -%}
+      <div class="sponsored-brands__banner">
+    {%- endif -%}
+
+      {%- if block.settings.banner_image != blank -%}
+        <img
+          class="sponsored-brands__banner-image"
+          src="{{ block.settings.banner_image | image_url: width: 500 }}"
+          alt="{{ block.settings.banner_image.alt | escape | default: block.settings.banner_heading | escape }}"
+          width="500"
+          height="{{ 500 | divided_by: block.settings.banner_image.aspect_ratio | round }}"
+          loading="lazy"
+        >
+      {%- endif -%}
+
+      <span class="sponsored-brands__banner-text">
+        {%- if block.settings.banner_heading != blank -%}
+          <span class="sponsored-brands__banner-heading">{{ block.settings.banner_heading }}</span>
+        {%- endif -%}
+        {%- if block.settings.banner_subheading != blank -%}
+          <span class="sponsored-brands__banner-subheading">{{ block.settings.banner_subheading }}</span>
+        {%- endif -%}
+      </span>
+
+    {%- if block.settings.banner_link != blank -%}
+      </a>
+    {%- else -%}
+      </div>
+    {%- endif -%}
+
+    {%- comment -%} ── Product carousel ─────────────────────────────────── {%- endcomment -%}
+
+    <div class="sponsored-brands__products">
+      {%- if block.settings.heading != blank -%}
+        <span class="sponsored-brands__products-heading">{{ block.settings.heading }}</span>
+      {%- endif -%}
+
+      <ul class="sponsored-brands__track" data-sponsored-track>
+
+        {%- if block.settings.source_mode == 'collection' and products != blank -%}
+
+          {%- for product in products limit: 8 -%}
+            <li class="sponsored-brands__item">
+              {%- render 'product-card', product: product, is_sponsored: true -%}
+            </li>
+          {%- endfor -%}
+
+        {%- else -%}
+
+          {%- for i in (1..8) -%}
+            {%- liquid
+              assign key = 'product_' | append: i
+              assign product = block.settings[key]
+            -%}
+            {%- if product != blank -%}
+              <li class="sponsored-brands__item">
+                {%- render 'product-card', product: product, is_sponsored: true -%}
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+
+        {%- endif -%}
+
+      </ul>
+    </div>
+
+  </div>
+</div>

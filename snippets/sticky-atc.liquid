@@ -1,0 +1,128 @@
+{%- comment -%}
+  snippets/sticky-atc.liquid
+  Sticky Add-to-Cart bar (appears when native Buy Now scrolls out of view)
+{%- endcomment -%}
+
+{{ 'sticky-atc.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sticky-atc.js' | asset_url }}" defer></script>
+
+{%- assign current_variant = product.selected_or_first_available_variant -%}
+{%- assign featured = current_variant.featured_image | default: product.featured_image -%}
+
+<div class="sticky-atc" id="StickyAtc" aria-hidden="true" aria-label="Quick purchase bar">
+  <div class="sticky-atc__inner">
+
+    <!-- Left: Image + Info -->
+    <div class="sticky-atc__product">
+      <div class="sticky-atc__image-wrap">
+        <img
+          src="{{ featured | image_url: width: 96 }}"
+          alt="{{ featured.alt | default: product.title | escape }}"
+          width="48"
+          height="48"
+          loading="lazy"
+          class="sticky-atc__image"
+          id="StickyAtcImage"
+        >
+      </div>
+      <div class="sticky-atc__meta">
+        <p class="sticky-atc__title">{{ product.title }}</p>
+        <p class="sticky-atc__price" id="StickyAtcPrice">
+          <span class="sticky-atc__price-current{% if current_variant.compare_at_price > current_variant.price %} sale-price{% endif %}" id="StickyAtcPriceCurrent">
+            {{ current_variant.price | money }}
+          </span>
+          {%- if current_variant.compare_at_price > current_variant.price -%}
+            <span class="sticky-atc__price-compare" id="StickyAtcPriceCompare">
+              {{ current_variant.compare_at_price | money }}
+            </span>
+          {%- endif -%}
+        </p>
+      </div>
+    </div>
+
+    <!-- Centre: Variant Selectors -->
+    <div class="sticky-atc__variants" id="StickyAtcVariants">
+
+      {%- assign color_option = product.options_with_values | where: 'name', 'Color' | first -%}
+      {%- if color_option -%}
+        {%- assign color_index = color_option.position | minus: 1 -%}
+        <div class="sticky-atc__option">
+          <span class="sticky-atc__option-label">
+            Color: <span class="sticky-atc__option-value" id="StickySelectedColor">{{ current_variant.options[color_index] }}</span>
+          </span>
+          <div class="sticky-atc__swatches">
+            {%- for value in color_option.values -%}
+              {%- assign swatch_color = value | handle -%}
+              <label class="sticky-atc__swatch-label" title="{{ value | escape }}">
+                <input
+                  type="radio"
+                  name="sticky-Color"
+                  value="{{ value | escape }}"
+                  class="sticky-atc__swatch-input"
+                  data-option-name="Color"
+                  {% if current_variant.options[color_index] == value %}checked{% endif %}
+                  aria-label="{{ value | escape }}"
+                >
+                <span class="sticky-atc__swatch" style="background-color: var(--swatch-{{ swatch_color }}, #ccc);"></span>
+              </label>
+            {%- endfor -%}
+          </div>
+        </div>
+      {%- endif -%}
+
+      {%- for option in product.options_with_values -%}
+        {%- if option.name == 'Color' -%}{%- continue -%}{%- endif -%}
+        {%- assign option_index = option.position | minus: 1 -%}
+        <div class="sticky-atc__option">
+          <span class="sticky-atc__option-label">
+            {{ option.name }}: <span class="sticky-atc__option-value" id="StickySelected{{ option.name | handleize | capitalize }}">{{ current_variant.options[option_index] }}</span>
+          </span>
+          <div class="sticky-atc__buttons">
+            {%- for value in option.values -%}
+              <label class="sticky-atc__btn-label">
+                <input
+                  type="radio"
+                  name="sticky-{{ option.name | escape }}"
+                  value="{{ value | escape }}"
+                  class="sticky-atc__radio"
+                  data-option-name="{{ option.name | escape }}"
+                  {% if current_variant.options[option_index] == value %}checked{% endif %}
+                  aria-label="{{ value | escape }}"
+                >
+                <span class="sticky-atc__btn">{{ value }}</span>
+              </label>
+            {%- endfor -%}
+          </div>
+        </div>
+      {%- endfor -%}
+
+    </div>
+
+    <!-- Right: Actions -->
+    <div class="sticky-atc__actions">
+      <button
+        type="button"
+        class="sticky-atc__cta sticky-atc__cta--atc"
+        id="StickyAtcBtn"
+        {% unless current_variant.available %}disabled{% endunless %}
+      >
+        {%- if current_variant.available -%}Add to Cart{%- else -%}Sold Out{%- endif -%}
+      </button>
+
+      {%- form 'product', product, id: 'StickyBuyNowForm', class: 'sticky-atc__bin-form' -%}
+        <input type="hidden" name="id" value="{{ current_variant.id }}" id="StickyVariantId">
+        <input type="hidden" name="quantity" value="1">
+        <button
+          type="submit"
+          name="checkout"
+          class="sticky-atc__cta sticky-atc__cta--bin"
+          id="StickyBuyNow"
+          {% unless current_variant.available %}disabled{% endunless %}
+        >
+          Buy Now
+        </button>
+      {%- endform -%}
+    </div>
+
+  </div>
+</div>

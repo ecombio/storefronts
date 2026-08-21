@@ -1,0 +1,248 @@
+/* ============================================================
+   product-with-text.css
+   Scope: .product-with-text
+   Two-column layout: rich text copy on one side, a single product
+   tile on the other (see reference: "Recommended" heading + body
+   copy alongside one icon-card product).
+
+   SELF-CONTAINED: this file owns its own card design end to end.
+   It does NOT reuse or depend on .product-card__* (product-card.css),
+   .product-grid__* (product-grid.css), or any other asset — even
+   though the tile here looks similar to product-grid's tile, this
+   section can be added independently of product-grid, so its markup
+   and styling must not require that file to be loaded. Namespaced
+   entirely under .product-with-text with its own
+   --product-with-text-* custom properties.
+
+   NOTE: unchanged by the demo-preset update — that change only
+   touched schema defaults/presets in the .liquid file.
+   ============================================================ */
+
+.product-with-text,
+.product-with-text *,
+.product-with-text *::before,
+.product-with-text *::after {
+  box-sizing: border-box;
+}
+
+.product-with-text {
+  --product-with-text-card-bg:        #ffffff;
+  --product-with-text-card-border:    #E5E7EB;
+  --product-with-text-media-bg:       #F3F4F6;
+  --product-with-text-radius:         14px;
+  --product-with-text-radius-sm:      8px;
+  --product-with-text-text:           #111827;
+  --product-with-text-text-secondary: #6B7280;
+  --product-with-text-cta-bg:         #2563EB;
+  --product-with-text-cta-bg-hover:   #1D4ED8;
+  --product-with-text-cta-text:       #ffffff;
+  --product-with-text-transition:     0.2s ease;
+  --product-with-text-gutter:         3rem;
+
+  padding: var(--section-padding, 2.5rem) 1rem;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.product-with-text__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--product-with-text-gutter);
+}
+
+/* Flips visual order without changing DOM order (text stays first
+   in source for a11y/SEO regardless of which side it renders on). */
+.product-with-text--product-left .product-with-text__product {
+  order: -1;
+}
+
+/* ── Reveal-on-scroll wrapper (see product-with-text.js) ──
+   Same opacity/transform + no-JS + reduced-motion fallback pattern
+   used by product-gallery.css and product-grid.css, kept local to
+   this file rather than shared, per the self-containment rule. */
+.product-with-text__inner {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.product-with-text__inner.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+html:not(.js) .product-with-text__inner {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-with-text__inner {
+    transition: none;
+  }
+}
+
+/* ── Text column ── */
+.product-with-text__text {
+  min-width: 0;
+}
+
+.product-with-text__heading {
+  margin: 0 0 0.9rem;
+  font-size: clamp(1.3rem, 2.2vw, 1.7rem);
+  font-weight: 700;
+  color: var(--product-with-text-text);
+  line-height: 1.3;
+}
+
+.product-with-text__body {
+  font-size: 0.92rem;
+  line-height: 1.75;
+  color: var(--product-with-text-text-secondary);
+}
+
+.product-with-text__body p {
+  margin: 0 0 1rem;
+}
+
+.product-with-text__body p:last-child {
+  margin-bottom: 0;
+}
+
+/* ── Product column ── */
+.product-with-text__product {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
+
+.product-with-text__card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 220px;
+  padding: 1rem;
+  background: var(--product-with-text-card-bg);
+  border: 1px solid var(--product-with-text-card-border);
+  border-radius: var(--product-with-text-radius);
+  text-align: center;
+  text-decoration: none;
+  transition: box-shadow var(--product-with-text-transition), transform var(--product-with-text-transition);
+}
+
+.product-with-text__card:hover {
+  box-shadow: 0 8px 20px -6px rgba(0,0,0,0.12);
+  transform: translateY(-2px);
+}
+
+.product-with-text__media {
+  aspect-ratio: 1;
+  border-radius: var(--product-with-text-radius-sm);
+  background: var(--product-with-text-media-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin-bottom: 0.9rem;
+}
+
+.product-with-text__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.product-with-text__placeholder-svg {
+  width: 42%;
+  height: auto;
+  opacity: 0.4;
+  color: var(--product-with-text-text-secondary);
+}
+
+.product-with-text__name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--product-with-text-text);
+  margin: 0 0 0.3rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.product-with-text__price {
+  font-size: 0.85rem;
+  color: var(--product-with-text-text-secondary);
+  margin: 0 0 1rem;
+}
+
+.product-with-text__price s {
+  margin-right: 0.35rem;
+}
+
+.product-with-text__price--sale {
+  color: var(--product-with-text-text);
+  font-weight: 600;
+}
+
+.product-with-text__cta {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  margin-top: auto;
+  background: var(--product-with-text-cta-bg);
+  color: var(--product-with-text-cta-text);
+  border: none;
+  border-radius: var(--product-with-text-radius-sm);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--product-with-text-transition);
+}
+
+.product-with-text__card:hover .product-with-text__cta {
+  background: var(--product-with-text-cta-bg-hover);
+}
+
+.product-with-text__empty {
+  font-size: 0.85rem;
+  color: var(--product-with-text-text-secondary);
+  text-align: center;
+  padding: 1.5rem;
+  border: 1px dashed var(--product-with-text-card-border);
+  border-radius: var(--product-with-text-radius);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .product-with-text__inner {
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+    text-align: center;
+  }
+
+  .product-with-text--product-left .product-with-text__product {
+    order: initial;
+  }
+
+  .product-with-text__card {
+    max-width: 240px;
+    margin-inline: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-with-text__card,
+  .product-with-text__cta {
+    transition: none;
+  }
+
+  .product-with-text__card:hover {
+    transform: none;
+  }
+}

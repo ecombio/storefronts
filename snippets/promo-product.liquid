@@ -1,0 +1,26 @@
+{% comment %}
+  snippets/promo-product.liquid
+
+  Renders a single sponsored product card.
+  Reuses the existing 'product-card' snippet and adds an optional
+  sponsored label on top of it.
+
+  Expects:
+    block - a section block of type 'promo_product'
+{% endcomment %}
+
+{%- liquid
+  assign product = block.settings.product
+-%}
+
+{%- if product != blank -%}
+  <div class="promo-product" {{ block.shopify_attributes }}>
+    {%- render 'product-card', product: product -%}
+
+    {%- if block.settings.sponsored -%}
+      <span class="promo-product__sponsored-label">
+        {{ block.settings.sponsor_name | default: 'Sponsored' }}
+      </span>
+    {%- endif -%}
+  </div>
+{%- endif -%}

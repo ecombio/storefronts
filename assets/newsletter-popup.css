@@ -1,0 +1,235 @@
+/* =============================================================
+   Newsletter Popup
+   File: assets/newsletter-popup.css
+   Loaded by: sections/newsletter-popup.liquid
+
+   TOKENS: --np-* variables are set inline on .newsletter-popup by
+   the section (from settings.bg_color / settings.text_color), with
+   the same fallback-chain pattern as footer-newsletter.css — if a
+   value isn't set, fall back to the shared --hdr-* tokens rather
+   than a second hardcoded palette, so this stays visually
+   consistent with header/footer if the merchant hasn't customized
+   the popup's colors yet.
+
+   BREAKPOINT: aligned to 639px/1024px to match the rest of the
+   theme (see footer-newsletter.css note 3) rather than the
+   previous one-off 749px.
+
+   UNITS: intentionally px, not rem, throughout this file. If the
+   theme scales its root font-size responsively (fluid type via
+   clamp()/vw), a rem-based popup shrinks or grows right along with
+   it — including in ways that don't track 1:1 with browser zoom or
+   viewport width, since zooming out changes the effective CSS
+   viewport width the theme's clamp() sees. Fixing this component's
+   sizing to px makes it a stable, self-contained widget regardless
+   of what the page's own type scale is doing.
+   ============================================================= */
+
+.newsletter-popup {
+  --np-bg: var(--hdr-bg, #ffffff);
+  --np-text: var(--hdr-text, #111111);
+  --np-border: var(--hdr-border, #e5e5e5);
+  --np-error: #d02e2e;
+
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.newsletter-popup__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+.newsletter-popup__modal {
+  position: relative;
+  padding: 32px 36px;
+  border-radius: 8px;
+  pointer-events: auto;
+  background: var(--np-bg);
+  color: var(--np-text);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+
+.newsletter-popup__close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.6;
+}
+
+.newsletter-popup__close:hover {
+  opacity: 1;
+}
+
+.newsletter-popup__image img {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+.newsletter-popup__content {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  text-align: left;
+}
+
+.newsletter-popup__text {
+  flex: 1 1 auto;
+}
+
+.newsletter-popup__action {
+  flex: 0 0 auto;
+}
+
+.newsletter-popup__heading {
+  margin: 0 0 6px;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--np-text);
+}
+
+.newsletter-popup__subtext {
+  font-size: 15px;
+  line-height: 1.35;
+  color: var(--np-text);
+  opacity: 0.75;
+}
+
+.newsletter-popup__subtext p {
+  margin: 0;
+}
+
+.newsletter-popup__field-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
+
+.newsletter-popup__input {
+  flex: 1 1 220px;
+  height: 50px;
+  box-sizing: border-box;
+  padding: 0 16px;
+  border: 1px solid var(--np-border);
+  border-radius: 6px;
+  background: var(--np-bg);
+  color: var(--np-text);
+  font-size: 15px;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.newsletter-popup__input::placeholder {
+  color: var(--np-text);
+  opacity: 0.6;
+}
+
+.newsletter-popup__input:focus-visible {
+  outline: none;
+  border-color: var(--np-text);
+  box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.07);
+}
+
+.newsletter-popup__button {
+  height: 50px;
+  box-sizing: border-box;
+  padding: 0 22px;
+  border: none;
+  border-radius: 6px;
+  background: var(--color-button, #111);
+  color: var(--color-button-text, #fff);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s ease;
+}
+/* NOTE: --color-button / --color-button-text assumed to come from the
+   theme's global button/color-scheme system, same assumption as
+   footer-newsletter.css's __submit rule. Falls back to #111 / #fff
+   if that system isn't present. */
+
+.newsletter-popup__button:hover {
+  opacity: 0.85;
+}
+
+.newsletter-popup__disclaimer {
+  font-size: 13px;
+  opacity: 0.6;
+  margin: 8px 0 0;
+  color: var(--np-text);
+}
+
+.newsletter-popup__error {
+  color: var(--np-error);
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+.newsletter-popup__success {
+  color: var(--np-text);
+  font-size: 14px;
+}
+
+/* Center variant: dimmed overlay, wider bar-style modal, horizontal content */
+.newsletter-popup--center .newsletter-popup__overlay {
+  pointer-events: auto;
+}
+
+.newsletter-popup--center .newsletter-popup__modal {
+  max-width: 680px;
+  width: 90%;
+  margin: 10vh auto;
+}
+
+/* Corner variant: no dimming, narrow card, content stacks vertically */
+.newsletter-popup--corner .newsletter-popup__overlay {
+  display: none;
+}
+
+.newsletter-popup--corner .newsletter-popup__modal {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  left: auto;
+  margin: 0;
+  max-width: 460px;
+  width: min(460px, calc(100vw - 40px));
+}
+
+.newsletter-popup--corner .newsletter-popup__content {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+@media (max-width: 639px) {
+  .newsletter-popup--hide-mobile {
+    display: none !important;
+  }
+
+  .newsletter-popup--corner .newsletter-popup__modal {
+    bottom: 12px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+    max-width: none;
+  }
+
+  .newsletter-popup--center .newsletter-popup__content {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: left;
+  }
+}

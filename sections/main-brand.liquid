@@ -1,0 +1,143 @@
+{{ 'main-brand.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign width_type = section.settings.section_width
+  if width_type == blank
+    assign width_class = 'brand-directory__default-width'
+  else
+    assign width_class = 'brand-directory__' | append: width_type
+  endif
+-%}
+
+<div class="brand-directory" id="brand-directory-{{ section.id }}">
+  <div
+    class="{{ width_class }}"
+    style="
+      --section-padding: {{ section.settings.section_padding }}px;
+      {%- if width_type == 'custom-width' %}
+        --custom-width: {{ section.settings.custom_width }}rem;
+      {%- endif %}
+    "
+  >
+    <div class="brand-directory__header">
+      {% if section.settings.heading != blank %}
+        <h1 class="brand-directory__heading">{{ section.settings.heading }}</h1>
+      {% endif %}
+      {% if section.settings.description != blank %}
+        <div class="brand-directory__description">{{ section.settings.description }}</div>
+      {% endif %}
+    </div>
+
+    {% assign vendors = shop.vendors | sort_natural %}
+
+    {% capture present_letters_raw %}{% for vendor in vendors %}{% assign first_char = vendor | slice: 0, 1 | upcase %}{% assign first_char_num = first_char | times: 1 %}{% if first_char_num > 0 or first_char == "0" %}0-9,{% else %}{{ first_char }},{% endif %}{% endfor %}{% endcapture %}
+    {% assign present_letters = present_letters_raw | split: "," | uniq %}
+
+    <nav class="brand-directory__alpha-nav" aria-label="Jump to letter">
+      {% assign nav_letters = "0-9,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z" | split: "," %}
+      {% for letter in nav_letters %}
+        {% if present_letters contains letter %}
+          <a href="#brand-letter-{{ letter | handle }}-{{ section.id }}">{{ letter }}</a>
+        {% else %}
+          <span class="is-disabled">{{ letter }}</span>
+        {% endif %}
+      {% endfor %}
+    </nav>
+
+    <div class="brand-directory__list">
+      {% assign current_bucket = "" %}
+      {% for vendor in vendors %}
+        {% assign first_char = vendor | slice: 0, 1 | upcase %}
+        {% assign first_char_num = first_char | times: 1 %}
+        {% if first_char_num > 0 or first_char == "0" %}
+          {% assign bucket = "0-9" %}
+        {% else %}
+          {% assign bucket = first_char %}
+        {% endif %}
+
+        {% if bucket != current_bucket %}
+          {% unless current_bucket == "" %}
+            </div>
+          {% endunless %}
+          {% assign current_bucket = bucket %}
+          <h2 class="brand-directory__letter" id="brand-letter-{{ bucket | handle }}-{{ section.id }}">{{ bucket }}</h2>
+          <div class="brand-directory__row">
+        {% endif %}
+
+        {% assign brand_url = '/collections/all?filter.v.vendor=' | append: vendor | url_param_escape %}
+
+        <a
+          href="{{ brand_url }}"
+          class="brand-directory__item"
+        >
+          {{ vendor }}
+        </a>
+      {% endfor %}
+      {% unless current_bucket == "" %}
+        </div>
+      {% endunless %}
+    </div>
+  </div>
+</div>
+
+<script src="{{ 'main-brand.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Brand directory",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "All Brands"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description"
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 28
+    }
+  ],
+  "presets": [
+    {
+      "name": "Brand directory"
+    }
+  ]
+}
+{% endschema %}

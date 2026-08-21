@@ -1,0 +1,347 @@
+{%- comment -%}
+  sections/cart.liquid
+
+  Full-page cart. Shares the ecombio design-token layer (--ecd-*) declared
+  in cart-drawer.css so colours, radii, and type stay in sync with the drawer
+  without duplicating any variables.
+
+  Assets loaded via theme.liquid:
+    cart-drawer.css            → shared tokens
+    cart-recommendations.css   → rec rail styles (shared with drawer — same BEM classes)
+    main-cart.css              → page-specific layout
+    cart-drawer.js             → drawer + EcombioCart API (needed for the
+                                 open-drawer links and badge updates)
+    cart-page-recommendations.js → page-native rec rail logic (NOT cart-recommendations.js —
+                                 that one is drawer-only; see its own header for why)
+    main-cart.js               → qty/remove/subtotal for the page table,
+                                 plus the init event that triggers recs
+
+  The recs shell (snippets/cart-recommendations.liquid) is shared markup,
+  rendered below the items table here and inside the drawer elsewhere.
+{%- endcomment -%}
+{{ 'main-cart.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign show_related        = section.settings.show_related
+  assign show_complementary  = section.settings.show_complementary
+  assign related_label       = section.settings.related_label       | default: 'You may also like'
+  assign complementary_label = section.settings.complementary_label | default: 'Frequently bought together'
+  assign rec_limit           = section.settings.rec_limit           | default: 4
+-%}
+
+{%- comment -%}
+  cart-page-recommendations.js reads rec config directly from this element
+  (#ecombio-cart-page-config) — no drawer dependency, no id monkey-patching.
+  main-cart.js dispatches 'cart:page:recs:init' on load so recs fetch once
+  the DOM is ready.
+{%- endcomment -%}
+<div
+  id="ecombio-cart-page-config"
+  data-show-related="{{ show_related }}"
+  data-show-complementary="{{ show_complementary }}"
+  data-rec-limit="{{ rec_limit }}"
+  hidden
+  aria-hidden="true"
+></div>
+
+<main
+  class="ecombio-cart-page"
+  id="ecombio-cart-page"
+  data-ecombio-cart-page
+  aria-label="Cart"
+>
+
+  <div class="ecombio-cart-page__inner">
+
+    {%- if cart.item_count == 0 -%}
+
+      <div class="ecombio-cart-page__empty">
+        <svg class="ecombio-cart-page__empty-icon" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <path d="M16 10a4 4 0 0 1-8 0"></path>
+        </svg>
+        <h1 class="ecombio-cart-page__empty-heading">Your cart is empty</h1>
+        <a href="{{ routes.all_products_collection_url }}" class="ecombio-btn ecombio-btn--primary">
+          Continue shopping
+        </a>
+      </div>
+
+    {%- else -%}
+
+      <div class="ecombio-cart-page__layout">
+
+        {%- comment -%} ── Left column: items table ── {%- endcomment -%}
+        <div class="ecombio-cart-page__items-col" data-ecombio-cart-page-items>
+
+          <h1 class="ecombio-cart-page__heading">
+            Your Cart
+            <span
+              class="ecombio-cart-page__count"
+              data-ecombio-cart-count
+              aria-live="polite"
+              aria-atomic="true"
+            >({{ cart.item_count }})</span>
+          </h1>
+
+          <table class="ecombio-cart-page__table" data-ecombio-cart-table>
+            <thead class="ecombio-cart-page__thead">
+              <tr>
+                <th scope="col" class="ecombio-cart-page__th ecombio-cart-page__th--product">Product</th>
+                <th scope="col" class="ecombio-cart-page__th ecombio-cart-page__th--price">Price</th>
+                <th scope="col" class="ecombio-cart-page__th ecombio-cart-page__th--qty">Quantity</th>
+                <th scope="col" class="ecombio-cart-page__th ecombio-cart-page__th--total">Total</th>
+                <th scope="col" class="ecombio-cart-page__th ecombio-cart-page__th--remove">
+                  <span class="visually-hidden">Remove</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {%- for item in cart.items -%}
+                <tr
+                  class="ecombio-cart-page__row"
+                  data-cart-item-key="{{ item.key }}"
+                  data-cart-product-id="{{ item.product_id }}"
+                >
+
+                  {%- comment -%} Product cell {%- endcomment -%}
+                  <td class="ecombio-cart-page__td ecombio-cart-page__td--product">
+                    <div class="ecombio-cart-page__product">
+                      <a href="{{ item.url }}" class="ecombio-cart-page__item-image-link" tabindex="-1" aria-hidden="true">
+                        {%- if item.image -%}
+                          {{-
+                            item.image
+                            | image_url: width: 200
+                            | image_tag:
+                              width: 100,
+                              height: 100,
+                              loading: 'lazy',
+                              class: 'ecombio-cart-page__item-image',
+                              sizes: '100px',
+                              widths: '100, 200'
+                          -}}
+                        {%- else -%}
+                          <div class="ecombio-cart-page__item-image ecombio-cart-page__item-image--placeholder"></div>
+                        {%- endif -%}
+                      </a>
+                      <div class="ecombio-cart-page__item-meta">
+                        <a href="{{ item.url }}" class="ecombio-cart-page__item-title">
+                          {{ item.product.title }}
+                        </a>
+                        {%- unless item.product.has_only_default_variant -%}
+                          <p class="ecombio-cart-page__item-variant">{{ item.variant.title }}</p>
+                        {%- endunless -%}
+                        {%- if item.selling_plan_allocation -%}
+                          <p class="ecombio-cart-page__item-selling-plan">{{ item.selling_plan_allocation.selling_plan.name }}</p>
+                        {%- endif -%}
+                      </div>
+                    </div>
+                  </td>
+
+                  {%- comment -%} Unit price cell {%- endcomment -%}
+                  <td class="ecombio-cart-page__td ecombio-cart-page__td--price" data-label="Price">
+                    {%- if item.original_price != item.final_price -%}
+                      <s class="ecombio-cart-page__price--was">{{ item.original_price | money }}</s>
+                    {%- endif -%}
+                    <span class="ecombio-cart-page__price">{{ item.final_price | money }}</span>
+                  </td>
+
+                  {%- comment -%} Quantity cell {%- endcomment -%}
+                  <td class="ecombio-cart-page__td ecombio-cart-page__td--qty" data-label="Quantity">
+                    <div
+                      class="ecombio-cart-page__qty"
+                      role="group"
+                      aria-label="Quantity for {{ item.product.title | escape }}"
+                    >
+                      <button
+                        type="button"
+                        class="ecombio-cart-page__qty-btn"
+                        data-ecombio-page-qty-change
+                        data-key="{{ item.key }}"
+                        data-delta="-1"
+                        aria-label="{% if item.quantity == 1 %}Remove {{ item.product.title | escape }} from cart{% else %}Decrease quantity of {{ item.product.title | escape }}{% endif %}"
+                      >
+                        {%- if item.quantity == 1 -%}
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                            <path d="M10 11v6M14 11v6"></path>
+                            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
+                          </svg>
+                        {%- else -%}
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                          </svg>
+                        {%- endif -%}
+                      </button>
+
+                      <span
+                        class="ecombio-cart-page__qty-value"
+                        data-qty-value="{{ item.key }}"
+                        aria-live="polite"
+                      >{{ item.quantity }}</span>
+
+                      <button
+                        type="button"
+                        class="ecombio-cart-page__qty-btn"
+                        data-ecombio-page-qty-change
+                        data-key="{{ item.key }}"
+                        data-delta="1"
+                        aria-label="Increase quantity of {{ item.product.title | escape }}"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                          <line x1="12" y1="5" x2="12" y2="19"></line>
+                          <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+
+                  {%- comment -%} Line total cell {%- endcomment -%}
+                  <td class="ecombio-cart-page__td ecombio-cart-page__td--total" data-label="Total">
+                    {%- if item.original_line_price != item.final_line_price -%}
+                      <s class="ecombio-cart-page__price--was">{{ item.original_line_price | money }}</s>
+                    {%- endif -%}
+                    <span
+                      class="ecombio-cart-page__price"
+                      data-line-price="{{ item.key }}"
+                    >{{ item.final_line_price | money }}</span>
+                  </td>
+
+                  {%- comment -%} Remove cell {%- endcomment -%}
+                  <td class="ecombio-cart-page__td ecombio-cart-page__td--remove">
+                    <button
+                      type="button"
+                      class="ecombio-cart-page__remove"
+                      data-ecombio-page-remove-item
+                      data-key="{{ item.key }}"
+                      aria-label="Remove {{ item.product.title | escape }} from cart"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                        <path d="M10 11v6M14 11v6"></path>
+                        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
+                      </svg>
+                    </button>
+                  </td>
+
+                </tr>
+              {%- endfor -%}
+            </tbody>
+          </table>
+
+          {%- comment -%} Rec rail below items {%- endcomment -%}
+          {%- render 'cart-recommendations',
+                show_related: show_related,
+                show_complementary: show_complementary,
+                related_label: related_label,
+                complementary_label: complementary_label
+          -%}
+
+        </div>
+
+        {%- comment -%} ── Right column: order summary ── {%- endcomment -%}
+        <aside class="ecombio-cart-page__summary" aria-label="Order summary" data-ecombio-cart-page-summary>
+
+          <h2 class="ecombio-cart-page__summary-heading">Order summary</h2>
+
+          {%- if cart.cart_level_discount_applications.size > 0 -%}
+            <ul class="ecombio-cart-page__discounts" aria-label="Applied discounts">
+              {%- for discount in cart.cart_level_discount_applications -%}
+                <li class="ecombio-cart-page__discount">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                    <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                  </svg>
+                  {{ discount.title | escape }}
+                  <span class="ecombio-cart-page__discount-amount">(−{{ discount.total_allocated_amount | money }})</span>
+                </li>
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+
+          <div class="ecombio-cart-page__subtotal-row">
+            <span>Subtotal</span>
+            <span data-ecombio-cart-subtotal>{{ cart.total_price | money_with_currency }}</span>
+          </div>
+
+          <p class="ecombio-cart-page__tax-note">{{ 'cart.general.taxes_and_shipping' | t }}</p>
+
+          <a
+            href="{{ routes.checkout_url }}"
+            class="ecombio-btn ecombio-btn--primary ecombio-cart-page__checkout"
+          >
+            Check out
+          </a>
+
+          <a href="{{ routes.all_products_collection_url }}" class="ecombio-cart-page__continue">
+            Continue shopping
+          </a>
+
+        </aside>
+
+      </div>
+
+    {%- endif -%}
+
+    {%- comment -%} Loading overlay — covers the whole page during AJAX updates {%- endcomment -%}
+    <div
+      class="ecombio-cart-page__loading"
+      data-ecombio-page-loading
+      aria-hidden="true"
+      hidden
+    >
+      <div class="ecombio-cart-page__spinner" role="status" aria-label="Updating cart"></div>
+    </div>
+
+  </div>
+</main>
+{{- 'cart-page-recommendations.js' | asset_url | script_tag }}
+{{- 'main-cart.js' | asset_url | script_tag }}
+{% schema %}
+{
+  "name": "Cart",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Product Recommendations"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_related",
+      "label": "Show \"You may also like\"",
+      "info": "Powered by Shopify's recommendation engine. Works out of the box — no configuration needed.",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "related_label",
+      "label": "\"You may also like\" heading",
+      "default": "You may also like"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_complementary",
+      "label": "Show \"Frequently bought together\"",
+      "info": "Requires the Shopify Search & Discovery app. You must also configure complementary products per product in your Admin.",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "complementary_label",
+      "label": "\"Frequently bought together\" heading",
+      "default": "Frequently bought together"
+    },
+    {
+      "type": "range",
+      "id": "rec_limit",
+      "label": "Products to show per rail",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 4
+    }
+  ]
+}
+{% endschema %}

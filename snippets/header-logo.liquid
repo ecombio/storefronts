@@ -1,0 +1,33 @@
+{% comment %}
+  Header — Logo
+  File: snippets/header-logo.liquid
+
+  Leaf component — renders the shop logo (or text fallback) linked to home.
+  Styles: assets/header-logo.css (loaded below).
+
+  Parameters:
+    logo       {image}   — required. e.g. settings.logo
+    logo_width {integer} — required. base render width in px (2x is derived)
+{% endcomment %}
+
+{{ 'header-logo.css' | asset_url | stylesheet_tag }}
+
+<a href="{{ routes.root_url }}"
+   class="main-header__logo-link"
+   style="--logo-width: {{ logo_width }}px"
+   aria-label="{{ shop.name }} — home">
+  {%- if logo != blank -%}
+    {%- assign logo_2x = logo_width | times: 2 -%}
+    <img class="main-header__logo-img"
+         src="{{ logo | image_url: width: logo_width }}"
+         srcset="{{ logo | image_url: width: logo_width }} 1x,
+                 {{ logo | image_url: width: logo_2x }} 2x"
+         alt="{{ logo.alt | default: shop.name | escape }}"
+         width="{{ logo_width }}"
+         height="{{ logo_width | divided_by: logo.aspect_ratio | round }}"
+         loading="eager"
+         fetchpriority="high">
+  {%- else -%}
+    <span class="main-header__logo-text">{{ shop.name }}</span>
+  {%- endif -%}
+</a>

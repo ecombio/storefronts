@@ -1,0 +1,256 @@
+{%- comment -%}
+  snippets/quickview-detail.liquid
+  Right column (desktop) / bottom section (mobile) of the Quick View modal.
+
+  Renders (in order):
+    • Vendor
+    • Title (linked to PDP)
+    • Judge.me reviews widget
+    • Price block               [data-qv-price]
+    • Variant options           .qv__options  (swatches + pills)
+    • Hidden variant <select>   [data-qv-variant-select]
+    • Variant JSON island       [data-qv-variant-data]
+    • ETA metafield             .qv__eta
+    • Add to cart button        [data-atc-btn]
+    • View full details link    .qv__pdp-link
+
+  Parameters (passed via render tag from sections/product-quickview.liquid):
+    qv_product      {Object}  required — Shopify product object
+    qv_variants     {Array}   required — product.variants
+    first_variant   {Object}  required — first available (or first) variant
+    qv_options      {Array}   required — product.options_with_values
+    has_single_var  {Boolean} required — true when product has only default variant
+    on_sale         {Boolean} required — true when compare_at_price > price
+    save_pct        {Number}  required — integer % saved (0 when not on sale)
+    eta_text        {String}  optional — custom.eta_text metafield value
+
+  JS hooks:
+    [data-qv-price]           — container replaced by updateVariant() on option change
+    [data-qv-swatch]          — color option buttons
+    [data-qv-option-btn]      — non-color option buttons (size, material…)
+    [data-qv-option-selected] — live label span updated by JS on selection
+    [data-qv-variant-select]  — hidden <select> kept in sync with active variant
+    [data-qv-variant-data]    — <script> JSON island parsed by initVariantUI()
+    [data-atc-btn]            — handled by product-card.js initAddToCart()
+    [data-atc-label]          — label span swapped during ATC lifecycle
+{%- endcomment -%}
+
+<div class="qv__detail">
+
+  {%- comment -%}── Vendor ──{%- endcomment -%}
+  {%- if qv_product.vendor != blank -%}
+    <p class="qv__vendor">{{ qv_product.vendor }}</p>
+  {%- endif -%}
+
+  {%- comment -%}── Title ──{%- endcomment -%}
+  <h2 class="qv__title">
+    <a href="{{ qv_product.url }}" class="qv__title-link">
+      {{- qv_product.title -}}
+    </a>
+  </h2>
+
+  {%- comment -%}── Judge.me reviews widget ──{%- endcomment -%}
+  <div class="qv__reviews">
+    <div
+      class="jdgm-widget jdgm-preview-badge"
+      data-id="{{ qv_product.id }}"
+      data-auto-install="false"
+    ></div>
+  </div>
+
+  {%- comment -%}── Price ──{%- endcomment -%}
+  <div class="qv__price" data-qv-price>
+    {%- if on_sale -%}
+      <span class="qv__price-current qv__price-current--sale">
+        {{- first_variant.price | money -}}
+      </span>
+      <s class="qv__price-compare">
+        {{- first_variant.compare_at_price | money -}}
+      </s>
+      <span class="qv__price-save-badge">Save {{ save_pct }}%</span>
+    {%- else -%}
+      <span class="qv__price-current">
+        {{- first_variant.price | money -}}
+      </span>
+    {%- endif -%}
+  </div>
+
+  {%- comment -%}────────────────────────────────────────────────────────────
+    VARIANT OPTIONS
+    Each product option renders as:
+      • Color / Colour  → circular swatch buttons  [data-qv-swatch]
+      • All others      → pill buttons             [data-qv-option-btn]
+
+    data-option-index (0-based) on every button lets JS reconstruct the
+    full currentOptions array when matching variants after any selection.
+  ──────────────────────────────────────────────────────────────────────{%- endcomment -%}
+  {%- unless has_single_var -%}
+    <div class="qv__options">
+      {%- for option in qv_options -%}
+        {%- liquid
+          assign opt_index      = forloop.index0
+          assign opt_name_lower = option.name | downcase
+          assign is_color       = false
+          if opt_name_lower == 'color' or opt_name_lower == 'colour'
+            assign is_color = true
+          endif
+          assign first_value = option.values | first
+        -%}
+
+        <div class="qv__option" data-option-name="{{ option.name | escape }}">
+
+          <div class="qv__option-label">
+            <span class="qv__option-name">{{ option.name }}:</span>
+            <span class="qv__option-selected" data-qv-option-selected>
+              {{- first_value -}}
+            </span>
+          </div>
+
+          <div
+            class="qv__option-values{% if is_color %} qv__option-values--swatches{% endif %}"
+            role="radiogroup"
+            aria-label="{{ option.name }}"
+          >
+            {%- for value in option.values -%}
+              {%- liquid
+                assign is_first     = forloop.first
+                assign value_handle = value | handleize
+              -%}
+
+              {%- if is_color -%}
+                {%- comment -%}
+                  Color swatch — background driven by --swatch-color CSS custom property.
+                  Falls back to #ccc when the handle doesn't match a known color name.
+                  Override per-color by uploading swatch-{handle}.png to Files
+                  and referencing via a metaobject if needed.
+                {%- endcomment -%}
+                <button
+                  type="button"
+                  class="qv__swatch{% if is_first %} is-active{% endif %}"
+                  data-qv-swatch
+                  data-option-index="{{ opt_index }}"
+                  data-value="{{ value | escape }}"
+                  data-color-value="{{ value_handle }}"
+                  aria-label="{{ value | escape }}"
+                  aria-checked="{{ is_first }}"
+                  style="--swatch-color: {{ value_handle }};"
+                >
+                  <span class="qv__swatch-inner" aria-hidden="true"></span>
+                </button>
+
+              {%- else -%}
+                <button
+                  type="button"
+                  class="qv__option-btn{% if is_first %} is-active{% endif %}"
+                  data-qv-option-btn
+                  data-option-index="{{ opt_index }}"
+                  data-value="{{ value | escape }}"
+                  aria-label="{{ option.name }}: {{ value | escape }}"
+                  aria-checked="{{ is_first }}"
+                >
+                  {{- value -}}
+                </button>
+              {%- endif -%}
+
+            {%- endfor -%}
+          </div>
+
+        </div>
+      {%- endfor -%}
+    </div>
+  {%- endunless -%}
+
+  {%- comment -%}────────────────────────────────────────────────────────────
+    VARIANT DATA
+    Two purely-data elements consumed by product-quickview.js:
+      1. Hidden <select> — kept in sync by updateVariant(); aria-hidden from AT
+      2. JSON island     — parsed by initVariantUI() for variant matching,
+                           price updates, image swaps, and availability
+    Scoped by product ID so multiple QVs in one session never collide.
+  ──────────────────────────────────────────────────────────────────────{%- endcomment -%}
+  <select
+    class="qv__variant-select"
+    data-qv-variant-select
+    aria-label="Selected variant"
+    aria-hidden="true"
+    tabindex="-1"
+  >
+    {%- for variant in qv_variants -%}
+      <option
+        value="{{ variant.id }}"
+        {% if variant.id == first_variant.id %}selected{% endif %}
+        {% unless variant.available %}disabled{% endunless %}
+      >
+        {{ variant.title }}
+      </option>
+    {%- endfor -%}
+  </select>
+
+  <script
+    type="application/json"
+    id="qv-variant-data-{{ qv_product.id }}"
+    data-qv-variant-data
+  >
+    [
+      {%- for variant in qv_variants -%}
+        {
+          "id":               {{ variant.id }},
+          "title":            {{ variant.title | json }},
+          "available":        {{ variant.available }},
+          "price":            {{ variant.price }},
+          "compare_at_price": {{ variant.compare_at_price | default: 'null' }},
+          "options":          {{ variant.options | json }},
+          "featured_image":   {%- if variant.featured_image -%}
+            {
+              "src": {{ variant.featured_image | image_url: width: 800 | json }},
+              "alt": {{ variant.featured_image.alt | default: variant.title | json }}
+            }
+          {%- else -%}null{%- endif -%}
+        }{% unless forloop.last %},{% endunless %}
+      {%- endfor -%}
+    ]
+  </script>
+
+  {%- comment -%}── ETA metafield ──{%- endcomment -%}
+  {%- if eta_text != blank -%}
+    <div class="qv__eta" aria-label="Estimated delivery">
+      <svg class="qv__eta-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+        <rect x="1" y="4" width="9" height="7" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M10 6.5h1.5l1.5 2V11h-3V6.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+        <circle cx="3.5" cy="11.5" r="1" fill="currentColor"/>
+        <circle cx="10.5" cy="11.5" r="1" fill="currentColor"/>
+      </svg>
+      <span>{{ eta_text }}</span>
+    </div>
+  {%- endif -%}
+
+  {%- comment -%}── Add to cart ──{%- endcomment -%}
+  <div class="qv__atc-wrap">
+    <button
+      type="button"
+      class="qv__atc{% unless first_variant.available %} qv__atc--soldout{% endunless %}"
+      data-atc-btn
+      data-variant-id="{{ first_variant.id }}"
+      data-product-title="{{ qv_product.title | escape }}"
+      {% unless first_variant.available %}disabled{% endunless %}
+      aria-label="Add {{ qv_product.title | escape }} to cart"
+    >
+      <span data-atc-label>
+        {%- if first_variant.available -%}Add to cart{%- else -%}Sold out{%- endif -%}
+      </span>
+    </button>
+  </div>
+
+  {%- comment -%}── View full details ──{%- endcomment -%}
+  <a
+    href="{{ qv_product.url }}"
+    class="qv__pdp-link"
+    aria-label="View full details for {{ qv_product.title | escape }}"
+  >
+    View full details
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M2 6h8M6 2l4 4-4 4"/>
+    </svg>
+  </a>
+
+</div>{%- comment -%} /.qv__detail {%- endcomment -%}

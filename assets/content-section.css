@@ -1,0 +1,280 @@
+/**
+ * assets/content-section.css
+ * ---------------------------------------------------------
+ * Styles for sections/content-section.liquid.
+ *
+ * Section width/side-padding (.default-width / .full-width /
+ * .custom-width, --section-padding, --custom-width) is handled
+ * globally by base.css via snippets/section-width.liquid — this
+ * file intentionally does not redefine that. See
+ * snippets/section-width.liquid for why.
+ *
+ * Brand tokens below (font stack, muted/accent color, radius,
+ * transition timing, focus ring) mirror the ones defined in
+ * assets/header-section.css so this section reads as part of
+ * the same visual system. Kept scoped to .content-section
+ * (not :root) so it can't leak into or collide with the
+ * header's own token names.
+ *
+ * --content-media-ratio is set per-instance by the liquid file
+ * from the image's/video's real aspect ratio (falls back to a
+ * sane default otherwise) and drives .content-section__media-wrap.
+ * This reserves real height for the media column up front, which
+ * both prevents layout shift while media loads AND keeps a video
+ * embed from collapsing to 0px height once the click-to-play
+ * facade button is swapped out for an iframe (the facade used to
+ * be the only element carrying its own aspect-ratio).
+ * ---------------------------------------------------------
+ */
+
+.content-section {
+  --content-font:      var(--font-primary--family, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif);
+  --content-muted:      #707072;
+  --content-accent:     #111111;
+  --content-radius:      8px;
+  --content-radius-pill: 9999px;
+  --content-transition: 150ms ease;
+  --content-focus:      #2563eb;
+
+  background-color: var(--content-bg, transparent);
+  color: var(--content-text, inherit);
+  font-family: var(--content-font);
+}
+
+.content-section__inner {
+  display: flex;
+  flex-direction: column;
+  /* Column gap is merchant-tunable for the desktop side-by-side
+     layout (up to 120px) but reused as the mobile stacked gap too.
+     Cap it on mobile so a large desktop gap doesn't blow out the
+     vertical spacing between stacked media/content blocks. */
+  gap: min(var(--content-gap, 64px), 32px);
+}
+
+.content-section__inner--align-start {
+  align-items: flex-start;
+}
+
+.content-section__inner--align-center {
+  align-items: center;
+}
+
+.content-section__inner--align-end {
+  align-items: flex-end;
+}
+
+/* Mobile stacking order. Default: media first, content second. */
+.content-section__media {
+  order: 1;
+  width: 100%;
+}
+
+.content-section__content {
+  order: 2;
+  width: 100%;
+}
+
+.content-section--mobile-content-first .content-section__media {
+  order: 2;
+}
+
+.content-section--mobile-content-first .content-section__content {
+  order: 1;
+}
+
+.content-section__media-wrap {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  border-radius: var(--content-radius);
+  aspect-ratio: var(--content-media-ratio, 4 / 3);
+}
+
+.content-section__media-wrap--placeholder {
+  background-color: #e5e5e5;
+}
+
+.content-section__image,
+.content-section__video,
+.content-section__video-poster,
+.content-section__placeholder {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Video facade (YouTube / Vimeo) */
+.content-section__video-facade {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background-color: #000;
+  cursor: pointer;
+}
+
+.content-section__video-facade:focus-visible {
+  outline: 2px solid var(--content-focus);
+  outline-offset: 2px;
+}
+
+.content-section__play-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.92);
+  transform: translate(-50%, -50%);
+  transition: transform var(--content-transition);
+}
+
+.content-section__video-facade:hover .content-section__play-icon,
+.content-section__video-facade:focus-visible .content-section__play-icon {
+  transform: translate(-50%, -50%) scale(1.08);
+}
+
+.content-section__play-icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 54%;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 11px 0 11px 18px;
+  border-color: transparent transparent transparent var(--content-accent);
+  transform: translate(-50%, -50%);
+}
+
+/* Content column */
+.content-section__content-inner {
+  max-width: 42rem;
+}
+
+.content-section__subheading {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--content-muted);
+}
+
+.content-section__heading {
+  margin: 0 0 16px;
+  font-size: 2rem;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.content-section__text {
+  margin: 0 0 24px;
+}
+
+.content-section__text.rte > *:last-child {
+  margin-bottom: 0;
+}
+
+.content-section__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.content-section__buttons .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 28px;
+  border-radius: var(--content-radius-pill);
+  border: 1.5px solid transparent;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--content-transition),
+    color var(--content-transition),
+    border-color var(--content-transition),
+    opacity var(--content-transition);
+}
+
+.content-section__buttons .button:focus-visible {
+  outline: 2px solid var(--content-focus);
+  outline-offset: 2px;
+}
+
+.content-section__buttons .button[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.content-section__buttons .button--primary {
+  background-color: var(--content-accent);
+  border-color: var(--content-accent);
+  color: #ffffff;
+}
+
+.content-section__buttons .button--primary:hover {
+  opacity: 0.85;
+}
+
+.content-section__buttons .button--secondary {
+  background-color: #f5f5f5;
+  border-color: #f5f5f5;
+  color: var(--content-accent);
+}
+
+.content-section__buttons .button--secondary:hover {
+  background-color: #eaeaea;
+  border-color: #eaeaea;
+}
+
+.content-section__buttons .button--outline {
+  background-color: transparent;
+  border-color: var(--content-accent);
+  color: var(--content-accent);
+}
+
+.content-section__buttons .button--outline:hover {
+  background-color: var(--content-accent);
+  color: #ffffff;
+}
+
+@media screen and (min-width: 750px) {
+  .content-section__inner {
+    flex-direction: row;
+    gap: var(--content-gap, 64px);
+  }
+
+  .content-section--reverse .content-section__inner {
+    flex-direction: row-reverse;
+  }
+
+  .content-section__media {
+    flex: 0 0 var(--content-media-width, 50%);
+    width: var(--content-media-width, 50%);
+  }
+
+  .content-section__content {
+    flex: 1 1 auto;
+    width: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .content-section__play-icon,
+  .content-section__buttons .button {
+    transition: none;
+  }
+}

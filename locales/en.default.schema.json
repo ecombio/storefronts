@@ -1,0 +1,128 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin language editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "general": {
+    "404": "Not found",
+    "article": "Article",
+    "block": "Block",
+    "blog": "Blog",
+    "cart": "Cart",
+    "collection": "Collection",
+    "collections": "Collections",
+    "collection_card": "Collection card",
+    "collections_grid": "Collections grid",
+    "colors": "Colors",
+    "column": "Column",
+    "content": "Content",
+    "custom_section": "Custom section",
+    "density": "Density & Spacing",
+    "density_and_spacing": "Density & Spacing",
+    "fonts": "Fonts",
+    "footer": "Footer",
+    "group": "Group",
+    "header": "Header",
+    "header_settings": "Header Settings",
+    "layout": "Layout",
+    "main": "Main",
+    "page": "Page",
+    "password": "Password",
+    "primary": "Primary",
+    "product": "Product",
+    "product_cards": "Product Cards",
+    "row": "Row",
+    "search": "Search",
+    "secondary": "Secondary",
+    "section": "Section",
+    "settings": "Settings",
+    "sidebar": "Sidebar",
+    "text": "Text",
+    "theme": "Theme",
+    "theme_presets": "Theme Presets",
+    "typography": "Typography",
+    "pagination": {
+      "label": "Pagination",
+      "previous": "Previous",
+      "next": "Next"
+    }
+  },
+  "labels": {
+    "alignment": "Alignment",
+    "background": "Background",
+    "card_padding": "Card Padding",
+    "card_style": "Card Style",
+    "foreground": "Foreground",
+    "grid_gap": "Grid Gap",
+    "grid_item_width": "Grid Item Width",
+    "input_corner_radius": "Input Corner Radius",
+    "layout_direction": "Layout Direction",
+    "menu": "Menu",
+    "customer_account_menu": "Customer Account Menu",
+    "padding": "Padding",
+    "page_margin": "Page Margin",
+    "page_width": "Page Width",
+    "search_style": "Search Style",
+    "section_spacing": "Section Spacing Scale",
+    "show_payment_icons": "Show Payment Icons",
+    "show_quick_add": "Show Quick Add Button",
+    "sticky_header": "Enable Sticky Header",
+    "text_style": "Text Style",
+    "text": "Text",
+    "theme_style": "Theme Style"
+  },
+  "options": {
+    "alignment": {
+      "left": "Left",
+      "center": "Center",
+      "right": "Right"
+    },
+    "direction": {
+      "horizontal": "Horizontal",
+      "vertical": "Vertical"
+    },
+    "page_width": {
+      "narrow": "Narrow",
+      "wide": "Wide"
+    },
+    "size": {
+      "large": "Large",
+      "small": "Small"
+    },
+    "text_style": {
+      "title": "Title",
+      "subtitle": "Subtitle",
+      "normal": "Normal Text"
+    },
+    "theme_style": {
+      "hyper": "Hyper - Marketplace",
+      "focus": "Focus - Storefront"
+    },
+    "card": {
+      "minimal": "Minimal",
+      "bordered": "Bordered",
+      "shadow": "With Shadow"
+    },
+    "search": {
+      "icon_only": "Icon Only",
+      "full_width": "Full Width"
+    }
+  },
+  "collections": {
+    "general": {
+      "no_matches": "No products found"
+    }
+  },
+  "product_recommendations": {
+    "related_name": "Related products",
+    "complementary_name": "Complementary products",
+    "settings": {
+      "limit_label": "Number of products to show"
+    }
+  }
+}

@@ -1,0 +1,300 @@
+/*
+  videos.css
+  Merge of product-videos.css (carousel/section-level layout — heading,
+  track, slot sizing, arrows) and product-video.css (each slot's inner
+  markup — thumbnail, play button overlay, video/embed).
+
+  Rendered either by snippets/product-video.liquid (theme sections)
+  or hand-coded HTML (e.g. pasted into a product description).
+
+  Example: one carousel slot using a self-hosted Shopify CDN video.
+
+  <div class="product-videos__item" data-video-item role="listitem">
+    <div class="product-video" data-product-video>
+      <div class="product-video__frame">
+
+        <button
+          type="button"
+          class="product-video__play-trigger"
+          data-video-play-trigger
+          aria-label="Play video: Ride demo"
+        >
+          <img
+            class="product-video__thumbnail"
+            src="https://cdn.shopify.com/s/files/.../ride-demo-thumb.jpg"
+            alt="Ace P-51 ride demo"
+            loading="lazy"
+          >
+          <span class="product-video__play-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26" focusable="false">
+              <path d="M8 5v14l11-7z" fill="currentColor"/>
+            </svg>
+          </span>
+        </button>
+
+        <div class="product-video__media" data-video-media hidden>
+          <div data-video-type="native">
+            <video class="product-video__video-el" controls preload="none" playsinline>
+              <source
+                src="https://cdn.shopify.com/videos/c/o/v/aaea60fa37a1450d842e6c5d87593edb.mp4"
+                type="video/mp4"
+              >
+            </video>
+          </div>
+        </div>
+
+      </div>
+      <p class="product-video__caption">Ride demo</p>
+    </div>
+  </div>
+
+  On load, .product-video__media stays [hidden] and the thumbnail/play
+  button are what's visible. product-video.js listens for a click on
+  [data-video-play-trigger], then unhides [data-video-media] and calls
+  .play() on the <video> inside it — no page reload, no iframe needed,
+  since this is a direct .mp4 source rather than a YouTube/Vimeo embed.
+*/
+
+/* ---- carousel / section-level (formerly product-videos.css) ---- */
+
+.product-videos,
+.product-videos * {
+  box-sizing: border-box;
+}
+
+.product-videos {
+  padding-block: 32px;
+}
+
+.product-videos__header {
+  margin-bottom: 1.25rem;
+}
+
+.product-videos__heading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.product-videos__carousel {
+  position: relative;
+}
+
+.product-videos__track {
+  --items: 4;
+  --gap: 1rem;
+  display: flex;
+  gap: var(--gap);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--gap);
+  scrollbar-width: none;
+  width: 100%;
+}
+
+.product-videos__track::-webkit-scrollbar {
+  display: none;
+}
+
+.product-videos__item {
+  flex: 0 0 calc((100% - (var(--gap) * (var(--items) - 1))) / var(--items));
+  scroll-snap-align: start;
+}
+
+.product-videos__arrow {
+  all: unset;
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #fff;
+  color: #111827;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 2px 8px rgba(17, 24, 39, 0.15);
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.product-videos__arrow--prev {
+  left: 0.75rem;
+}
+
+.product-videos__arrow--next {
+  right: 0.75rem;
+}
+
+.product-videos__arrow:hover {
+  background: #F3F4F6;
+}
+
+.product-videos__arrow:focus-visible {
+  outline: 2px solid #4F46E5;
+  outline-offset: 2px;
+}
+
+.product-videos__arrow[disabled] {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
+}
+
+@media (max-width: 74.99rem) {
+  .product-videos__track {
+    --items: 3;
+  }
+}
+
+@media (max-width: 47.99rem) {
+  .product-videos__track {
+    --items: 2;
+  }
+}
+
+@media (max-width: 30rem) {
+  .product-videos__track {
+    --items: 1.15;
+  }
+
+  .product-videos__arrow {
+    display: none;
+  }
+}
+
+/* ---- slot-level (formerly product-video.css) ---- */
+
+.product-video,
+.product-video * {
+  box-sizing: border-box;
+}
+
+.product-video {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: 100%;
+  height: 100%;
+}
+
+.product-video__frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #111827;
+}
+
+.product-video__play-trigger {
+  all: unset;
+  position: absolute;
+  inset: 0;
+  display: block;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
+.product-video__play-trigger:disabled {
+  cursor: default;
+}
+
+.product-video__play-trigger:focus-visible {
+  outline: 2px solid #4F46E5;
+  outline-offset: 2px;
+}
+
+.product-video__thumbnail {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-video__thumbnail--placeholder {
+  background: #E5E7EB;
+}
+
+.product-video__play-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(17, 24, 39, 0.55);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.product-video__play-icon svg {
+  margin-left: 3px;
+}
+
+.product-video__play-trigger:hover .product-video__play-icon,
+.product-video__play-trigger:focus-visible .product-video__play-icon {
+  background: rgba(17, 24, 39, 0.8);
+  transform: translate(-50%, -50%) scale(1.06);
+}
+
+.product-video[data-video-playing] .product-video__play-trigger {
+  display: none;
+}
+
+.product-video__media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+}
+
+.product-video__media[hidden] {
+  display: none;
+}
+
+.product-video__media > div,
+.product-video__video-el,
+.product-video__media iframe {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 0;
+}
+
+.product-video__video-el {
+  object-fit: cover;
+}
+
+.product-video__caption {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: #374151;
+}
+
+/* ---- shared ---- */
+
+@media (prefers-reduced-motion: reduce) {
+  .product-videos__track {
+    scroll-behavior: auto;
+  }
+
+  .product-videos__arrow {
+    transition: none;
+  }
+
+  .product-video__play-icon {
+    transition: none;
+  }
+}

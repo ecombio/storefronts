@@ -1,0 +1,154 @@
+{% comment %}
+  Renders a single collection card. Self-contained and reusable — safe to
+  render from any section, any number of times per page.
+
+  Accepts:
+  - card_collection: {Object} collection object [required]
+  - card_custom_image: {Object} image object to override the main thumbnail [optional]
+  - card_custom_title: {String} title override [optional]
+  - card_image_ratio: {String} 'adapt' | 'square' | 'portrait' | 'landscape' [optional, default: 'square']
+  - card_show_count: {Boolean} show the item count line [optional, default: true]
+  - card_color_scheme: {String} color scheme class, e.g. 'scheme-1' [optional]
+  - card_id: {String} unique id for this instance, used for CSS scoping [required]
+  - card_load_assets: {Boolean} pass true on exactly one render per page —
+      typically forloop.first from the calling section's loop — so
+      collection-card.css / collection-card.js are only linked once
+      no matter how many cards render. [optional, default: false]
+
+  Usage (see sections/collection-cards.liquid for the reference caller):
+  {% render 'collection-card',
+    card_collection: block.settings.collection,
+    card_custom_image: block.settings.custom_image,
+    card_custom_title: block.settings.custom_title,
+    card_image_ratio: section.settings.image_ratio,
+    card_show_count: section.settings.show_product_count,
+    card_color_scheme: section.settings.card_color_scheme,
+    card_id: block.id,
+    card_load_assets: forloop.first
+  %}
+{% endcomment %}
+
+{%- if card_load_assets -%}
+  {{ 'collection-card.css' | asset_url | stylesheet_tag }}
+  {{ 'collection-card.js' | asset_url | script_tag }}
+{%- endif -%}
+
+{%- liquid
+  assign card_image_ratio = card_image_ratio | default: 'square'
+
+  # main image fallback chain: custom image -> collection featured image -> first product image
+  if card_custom_image
+    assign main_image = card_custom_image
+  elsif card_collection.featured_image
+    assign main_image = card_collection.featured_image
+  elsif card_collection.products.first.featured_image
+    assign main_image = card_collection.products.first.featured_image
+  else
+    assign main_image = null
+  endif
+
+  # thumbnail stack: custom metafield images -> first 3 products in the collection
+  assign meta_thumbs = card_collection.metafields.foxtheme.collection-thumbnails.value
+  if meta_thumbs != blank
+    assign thumb_source = 'metafield'
+  else
+    assign thumb_source = 'products'
+  endif
+
+  assign card_title = card_custom_title | default: card_collection.title | default: 'Collection'
+-%}
+
+<a
+  href="{{ card_collection.url }}"
+  class="collection-card {% if card_color_scheme %}color-{{ card_color_scheme }}{% endif %}"
+  id="CollectionCard-{{ card_id }}"
+  data-collection-card
+  aria-label="{{ card_title | escape }}"
+>
+  {% style %}
+    #CollectionCard-{{ card_id }} {
+      --collection-card-ratio:
+        {%- case card_image_ratio -%}
+          {%- when 'portrait' -%} 5 / 6
+          {%- when 'landscape' -%} 4 / 3
+          {%- when 'adapt' -%} {{ main_image.aspect_ratio | default: 1 }}
+          {%- else -%} 1 / 1
+        {%- endcase -%};
+    }
+  {% endstyle %}
+
+  <div class="collection-card__media-wrap">
+    <div class="collection-card__main-media">
+      {%- if main_image -%}
+        {{
+          main_image
+          | image_url: width: 800
+          | image_tag:
+            loading: 'lazy',
+            sizes: '(min-width: 990px) 25vw, 50vw',
+            widths: '275, 550, 800',
+            class: 'collection-card__image',
+            attributes: 'data-main-image'
+        }}
+      {%- else -%}
+        {{ 'collection-apparel-1' | placeholder_svg_tag: 'collection-card__image collection-card__image--placeholder' }}
+      {%- endif -%}
+    </div>
+
+    <div class="collection-card__thumbs" role="presentation">
+      {%- if thumb_source == 'metafield' -%}
+        {%- for thumb in meta_thumbs limit: 3 -%}
+          <div class="collection-card__thumb" data-thumb>
+            {{
+              thumb
+              | image_url: width: 300
+              | image_tag: loading: 'lazy', sizes: '120px', widths: '150, 300', class: 'collection-card__thumb-image'
+            }}
+          </div>
+        {%- endfor -%}
+      {%- else -%}
+        {%- for product in card_collection.products limit: 3 -%}
+          <div class="collection-card__thumb" data-thumb>
+            {%- if product.featured_image -%}
+              {{
+                product.featured_image
+                | image_url: width: 300
+                | image_tag: loading: 'lazy', sizes: '120px', widths: '150, 300', class: 'collection-card__thumb-image'
+              }}
+            {%- else -%}
+              {{ 'product-1' | placeholder_svg_tag: 'collection-card__thumb-image collection-card__image--placeholder' }}
+            {%- endif -%}
+          </div>
+        {%- endfor -%}
+      {%- endif -%}
+
+      {%- comment -%} pad out empty thumb slots so the grid doesn't collapse unevenly {%- endcomment -%}
+      {%- if thumb_source == 'metafield' -%}
+        {%- assign thumb_count = meta_thumbs.size -%}
+      {%- else -%}
+        {%- assign thumb_count = card_collection.products.size -%}
+      {%- endif -%}
+      {%- if thumb_count < 3 -%}
+        {%- assign missing = 3 | minus: thumb_count -%}
+        {%- for i in (1..missing) -%}
+          <div class="collection-card__thumb collection-card__thumb--empty" aria-hidden="true"></div>
+        {%- endfor -%}
+      {%- endif -%}
+    </div>
+  </div>
+
+  <div class="collection-card__content">
+    <div class="collection-card__text">
+      <p class="collection-card__title">{{ card_title }}</p>
+      {%- if card_show_count and card_collection != blank -%}
+        <p class="collection-card__count">
+          {{ card_collection.all_products_count }}
+          {%- if card_collection.all_products_count == 1 %} Item{% else %} Items{% endif -%}
+        </p>
+      {%- endif -%}
+    </div>
+    <span class="collection-card__button button button--secondary" aria-hidden="true">
+      Shop
+    </span>
+  </div>
+</a>

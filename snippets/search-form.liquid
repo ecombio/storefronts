@@ -1,0 +1,192 @@
+{% comment %}
+  Search Form — always-visible bar
+  File: snippets/search-form.liquid
+
+  Rendered by snippets/header-search.liquid — called twice:
+    {%- render 'search-form', ..., id_suffix: 'desktop' -%}
+    {%- render 'search-form', ..., id_suffix: 'mobile'  -%}
+
+  This snippet owns the .hs wrapper div and the always-visible bar inside
+  it: category pill, text input, clear button, submit button. It NEVER
+  renders dropdown markup directly in Liquid.
+
+  The dropdown/bottom-sheet (.hs__dropdown, .hs__backdrop) is created and
+  appended into this same .hs wrapper at RUNTIME by header-search.js —
+  but only when HS_CONFIG.ENABLE_PREDICTIVE is true. This keeps the CSS
+  positioning correct (the dropdown is `position: absolute` relative to
+  .hs, so it must live inside this wrapper) without requiring two Liquid
+  files to agree on shared markup structure. snippets/search-modal.liquid
+  exists alongside this file only to hold the inline HS_SETTINGS config
+  script; it injects no dropdown HTML of its own.
+
+  NOTE — POST-PIVOT (snippet, not block): header-search is now a plain
+  snippet rendered once from sections/main-header.liquid, not a
+  merchant-addable block, so there is exactly one desktop instance and
+  one mobile instance on the page, ever. The old `block_id` param (which
+  folded a Shopify block.id into every element id to keep multiple
+  Header Search blocks from colliding) has been removed — id_suffix
+  alone ('desktop' | 'mobile') is now guaranteed unique.
+
+  Params (all passed explicitly from snippets/header-search.liquid):
+    id_suffix      {String}  — 'desktop' | 'mobile'
+    show_category  {Boolean} — show/hide the category pill
+    cat_1..3_label {String}  — category pill labels
+    cat_1..3_value {String}  — category pill tag values
+    accent_color   {String}  — CSS accent colour
+    highlight_bg   {String}  — match highlight background (used by modal,
+                                but the CSS var lives on the shared .hs
+                                wrapper so it's set here too)
+    hover_bg       {String}  — row hover background (same as above)
+    border_focus   {String}  — focus border colour
+    predictive     {Boolean} — whether predictive search is enabled.
+                                Controls aria-controls/aria-haspopup wiring
+                                and the .hs--basic modifier class. Does NOT
+                                control whether the modal renders — that's
+                                header-search.liquid's job.
+
+  BEM prefix: .hs  (matches assets/header-search.css)
+{% endcomment %}
+
+{%- assign sfx       = id_suffix     | default: 'desktop' -%}
+{%- assign show_cat  = show_category | default: true -%}
+
+{%- comment -%}
+  Same false-vs-default guard as the predictive toggle: a real `false`
+  must not get swapped back to `true` by the `default` filter.
+{%- endcomment -%}
+{%- if predictive == false -%}
+  {%- assign is_predictive = false -%}
+{%- else -%}
+  {%- assign is_predictive = true -%}
+{%- endif -%}
+
+<div class="hs{% unless is_predictive %} hs--basic{% endunless %}"
+     id="hs-{{ sfx }}"
+     data-search-instance="{{ sfx }}"
+     data-predictive="{{ is_predictive }}"
+     style="
+       --hs-accent:       {{ accent_color  | default: '#1a1a1a' }};
+       --hs-highlight-bg: {{ highlight_bg  | default: '#FFF3CD' }};
+       --hs-bg-hover:     {{ hover_bg      | default: '#F5F5F5' }};
+       --hs-border-focus: {{ border_focus  | default: '#1a1a1a' }};
+     ">
+
+  <form action="{{ routes.search_url }}"
+        method="get"
+        role="search"
+        class="hs__form"
+        id="hs-form-{{ sfx }}"
+        autocomplete="off">
+
+    <input type="hidden" name="type" value="product">
+
+    {%- comment -%} ── CATEGORY PILL ── {%- endcomment -%}
+    {%- if show_cat -%}
+      <div class="hs__category" id="hs-cat-wrap-{{ sfx }}">
+
+        <button type="button"
+                class="hs__cat-btn"
+                id="hs-cat-btn-{{ sfx }}"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+                aria-controls="hs-cat-list-{{ sfx }}">
+          <span class="hs__cat-label" id="hs-cat-label-{{ sfx }}">All</span>
+          <svg class="hs__chevron" width="12" height="12" viewBox="0 0 20 20"
+               fill="none" stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 8l5 5 5-5"/>
+          </svg>
+        </button>
+
+        <ul class="hs__cat-list"
+            id="hs-cat-list-{{ sfx }}"
+            role="listbox"
+            aria-labelledby="hs-cat-btn-{{ sfx }}"
+            hidden>
+
+          <li role="option" aria-selected="true"
+              data-value="" data-label="All"
+              tabindex="0">All Categories</li>
+
+          {%- if cat_1_label != blank and cat_1_value != blank -%}
+            <li role="option" aria-selected="false"
+                data-value="{{ cat_1_value | escape }}"
+                data-label="{{ cat_1_label | escape }}"
+                tabindex="0">{{ cat_1_label | escape }}</li>
+          {%- endif -%}
+
+          {%- if cat_2_label != blank and cat_2_value != blank -%}
+            <li role="option" aria-selected="false"
+                data-value="{{ cat_2_value | escape }}"
+                data-label="{{ cat_2_label | escape }}"
+                tabindex="0">{{ cat_2_label | escape }}</li>
+          {%- endif -%}
+
+          {%- if cat_3_label != blank and cat_3_value != blank -%}
+            <li role="option" aria-selected="false"
+                data-value="{{ cat_3_value | escape }}"
+                data-label="{{ cat_3_label | escape }}"
+                tabindex="0">{{ cat_3_label | escape }}</li>
+          {%- endif -%}
+
+        </ul>
+
+        <input type="hidden"
+               class="hs__cat-value"
+               id="hs-cat-value-{{ sfx }}"
+               name="q[category]"
+               value="">
+
+        <span class="hs__divider" aria-hidden="true"></span>
+      </div>
+    {%- endif -%}
+
+    {%- comment -%} ── SEARCH INPUT ── {%- endcomment -%}
+    <input type="search"
+           name="q"
+           id="hs-input-{{ sfx }}"
+           class="hs__input"
+           placeholder="What are you looking for?"
+           aria-label="Search products"
+           {%- if is_predictive %}
+           aria-autocomplete="list"
+           aria-controls="hs-dropdown-{{ sfx }}"
+           aria-expanded="false"
+           role="combobox"
+           {%- endif %}
+           autocorrect="off"
+           autocomplete="off"
+           spellcheck="false">
+
+    {%- comment -%} ── CLEAR BUTTON ── {%- endcomment -%}
+    <button type="button"
+            class="hs__clear"
+            id="hs-clear-{{ sfx }}"
+            aria-label="Clear search"
+            hidden>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6"  y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+
+    {%- comment -%}
+      MIC BUTTON — injected by header-search.js, only when
+      HS_CONFIG.ENABLE_PREDICTIVE is true AND Web Speech API is available.
+      Nothing to render here either way.
+    {%- endcomment -%}
+
+    {%- comment -%} ── SUBMIT ── {%- endcomment -%}
+    <button type="submit" class="hs__submit" aria-label="Search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+    </button>
+
+  </form>
+
+</div>

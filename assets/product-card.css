@@ -1,0 +1,496 @@
+.product-card,
+.product-card *,
+.product-card *::before,
+.product-card *::after {
+  box-sizing: border-box;
+}
+
+.product-card {
+  --product-card-accent:          #4F46E5;
+  --product-card-accent-hover:    #4338CA;
+  --product-card-sale-badge:      #DC2626;
+  --product-card-save-badge:      #D97706;
+  --product-card-surface:         #ffffff;
+  --product-card-border:          #E5E7EB;
+  --product-card-text:            #111827;
+  --product-card-text-secondary:  #6B7280;
+  --product-card-radius:          10px;
+  --product-card-radius-sm:       6px;
+  --product-card-transition:      0.2s ease;
+
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-radius: var(--product-card-radius);
+  background: var(--product-card-surface);
+  border: 1px solid var(--product-card-border);
+  overflow: hidden;
+  height: 100%;
+  transition: box-shadow var(--product-card-transition), transform var(--product-card-transition);
+
+  container-type: inline-size;
+  container-name: product-card;
+}
+
+.product-card:hover {
+  box-shadow: 0 8px 24px -4px rgba(0,0,0,0.12);
+  transform: translateY(-2px);
+}
+
+.product-card__img-zone {
+  position: relative;
+  flex-shrink: 0;
+  background: #F9FAFB;
+  overflow: hidden;
+  aspect-ratio: 1;
+}
+
+.product-card__image-wrapper {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.product-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: opacity 0.3s ease, transform 0.35s ease;
+}
+
+.product-card__img--primary {
+  position: relative;
+  z-index: 1;
+}
+
+.product-card__img--secondary {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  opacity: 0;
+}
+
+/* Only zones with a real second image get the swap — product-card.liquid
+   adds --has-hover exclusively when card_image2 exists, so single-image
+   cards never fade into empty space.
+
+   !important added deliberately: this pattern was silently broken by a
+   later, more specific or later-loaded rule targeting .product-card__img.
+   The hover swap is a core interaction, not a cosmetic nicety, so it
+   wins regardless of load order or specificity creep elsewhere in the
+   theme's CSS bundle. */
+.product-card__img-zone--has-hover:hover .product-card__img--secondary {
+  opacity: 1 !important;
+}
+
+.product-card__img-zone--has-hover:hover .product-card__img--primary {
+  opacity: 0 !important;
+}
+
+.product-card__img-zone:hover .product-card__img {
+  transform: scale(1.04);
+}
+
+.product-card__img-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F3F4F6;
+}
+
+.product-card__placeholder-svg {
+  width: 55%;
+  height: auto;
+  opacity: 0.22;
+}
+
+.product-card__wishlist-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(4px);
+  color: var(--product-card-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 3;
+  opacity: 0;
+  transition: opacity var(--product-card-transition), color var(--product-card-transition);
+}
+
+.product-card:hover .product-card__wishlist-btn,
+.product-card__wishlist-btn[aria-pressed="true"] {
+  opacity: 1;
+}
+
+.product-card__wishlist-btn[aria-pressed="true"] {
+  color: #EF4444;
+}
+
+.product-card__wishlist-btn[aria-pressed="true"] .product-card__wishlist-path {
+  fill: #EF4444;
+  stroke: #EF4444;
+}
+
+.product-card__wishlist-btn:hover {
+  background: #fff;
+  color: #EF4444;
+}
+
+.product-card__quickview-btn {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(6px);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  background: #fff;
+  color: #111;
+  border: 1px solid #d0d0d0;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease,
+              border-color 0.15s, background 0.15s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.product-card__quickview-btn svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.product-card__img-zone:hover .product-card__quickview-btn,
+.product-card__img-zone:focus-within .product-card__quickview-btn {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+.product-card__quickview-btn:hover {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+
+@media (hover: none) {
+  .product-card__quickview-btn {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+  }
+}
+
+.product-card__badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: var(--product-card-sale-badge);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  pointer-events: none;
+  text-transform: uppercase;
+  z-index: 1;
+}
+
+.product-card__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  padding: 12px 12px 14px;
+  gap: 6px;
+}
+
+.product-card__vendor {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--product-card-text-secondary);
+  line-height: 1;
+}
+
+/* -webkit-line-clamp + display: -webkit-box already truncates at 2
+   lines with a trailing ellipsis — supported in every current
+   evergreen browser (Chrome/Edge/Safari always, Firefox since v68),
+   so no fallback is needed. `line-clamp` is included alongside the
+   prefixed version now that it's landed as an unprefixed standard
+   property in newer engines, in case the vendor-prefixed form is ever
+   deprecated. A `title` attribute was also added on the anchor in
+   product-card.liquid so the full, untruncated name is still
+   available as a native hover tooltip and to screen readers that
+   don't handle line-clamp truncation gracefully. */
+.product-card__title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--product-card-text);
+  text-decoration: none;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+.product-card__title:hover {
+  color: var(--product-card-accent);
+}
+
+.product-card__reviews {
+  min-height: 18px;
+  font-size: 0.75rem;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Swapped from Judge.me (.jdgm-widget) to Yotpo (.yotpo-widget-instance)
+   now that product cards render the Yotpo star-rating snippet instead.
+   Same wrapping/truncation fix as before, just retargeted at Yotpo's
+   markup -- verify against the live rendered badge, since Yotpo's
+   internal DOM structure differs from Judge.me's and the `*` selector
+   may need narrowing to a more specific child element if the
+   !important overrides don't land the same way. */
+.product-card__reviews .yotpo-widget-instance,
+.product-card__reviews .yotpo-widget-instance * {
+  max-width: 100%;
+  white-space: normal !important;
+  flex-wrap: wrap !important;
+}
+
+@container product-card (max-width: 260px) {
+  .product-card__reviews .yotpo-widget-instance {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 2px !important;
+  }
+}
+
+.product-card__pricing {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.product-card__price {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--product-card-text);
+  line-height: 1;
+}
+
+/* Regular price — shown struck through, stacked above the sale price,
+   only while on sale. Empty `<span aria-hidden>` variant (see
+   product-card.liquid) uses visibility: hidden rather than being
+   omitted from the DOM entirely — that reserves the same line-height
+   whether or not this row is showing (sale off, or the "Show savings
+   row" section setting is off), so a mixed grid of on-sale and
+   regular-price cards keeps the sale price and everything below it
+   (badge, ETA, buttons) aligned at the same vertical position across
+   a row instead of jumping around per-card. */
+.product-card__price--compare {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--product-card-text-secondary);
+  line-height: 1.3;
+}
+
+.product-card__price--compare s {
+  text-decoration-color: var(--product-card-text-secondary);
+}
+
+.product-card__price--sale {
+  color: var(--product-card-sale-badge);
+}
+
+/* Savings badge — now its own stacked line under the sale price
+   (previously sat inline next to the struck-through comp value in a
+   shared .product-card__savings-row). Same visibility: hidden
+   spacer treatment as .product-card__price--compare above, for the
+   same row-alignment reason. */
+.product-card__save-badge {
+  display: inline-block;
+  align-self: flex-start;
+  background: #FEF3C7;
+  color: var(--product-card-save-badge);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.product-card__price--compare.is-hidden,
+.product-card__save-badge.is-hidden {
+  visibility: hidden;
+}
+
+.product-card__eta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  color: var(--product-card-text-secondary);
+  line-height: 1.3;
+}
+
+.product-card__eta-icon {
+  flex-shrink: 0;
+  color: var(--product-card-text-secondary);
+}
+
+.product-card__bottom-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.product-card__atc-btn {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+  padding: 8px 10px;
+  border-radius: var(--product-card-radius-sm);
+  border: none;
+  background: #f5c518;
+  color: #111;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: background var(--product-card-transition);
+  white-space: nowrap;
+}
+
+.product-card__atc-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #e6b800;
+  transform: translateX(-100%);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.product-card__atc-btn:hover::before {
+  transform: translateX(0);
+}
+
+.product-card__atc-btn [data-atc-label] {
+  position: relative;
+  z-index: 1;
+}
+
+.product-card__atc-btn.is-loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.product-card__atc-btn.is-added {
+  background: #059669;
+}
+
+.product-card__atc-btn.is-added::before {
+  display: none;
+}
+
+.product-card__compare-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  font-size: 0.72rem;
+  color: var(--product-card-text-secondary);
+  white-space: nowrap;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.product-card__compare-checkbox {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--product-card-accent);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.product-card__compare-text {
+  line-height: 1;
+}
+
+@media (max-width: 767px) {
+  .product-card__body {
+    padding: 10px 10px 12px;
+    gap: 5px;
+  }
+
+  .product-card__price {
+    font-size: 0.9rem;
+  }
+
+  .product-card__atc-btn {
+    font-size: 0.72rem;
+    padding: 7px 8px;
+  }
+
+  .product-card__bottom-row {
+    flex-wrap: wrap;
+  }
+
+  .product-card__compare-label {
+    flex-basis: 100%;
+  }
+
+  .product-card__wishlist-btn {
+    opacity: 1;
+  }
+}
+
+@container product-card (max-width: 260px) {
+  .product-card__bottom-row {
+    flex-wrap: wrap;
+  }
+
+  .product-card__compare-label {
+    flex-basis: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-card,
+  .product-card__img,
+  .product-card__atc-btn::before {
+    transition: none;
+  }
+  .product-card:hover {
+    transform: none;
+  }
+}

@@ -1,0 +1,73 @@
+<link rel="stylesheet" href="{{ 'expert-reviews.css' | asset_url }}" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="{{ 'video-modal.css' | asset_url }}" media="print" onload="this.media='all'">
+<noscript>
+  <link rel="stylesheet" href="{{ 'expert-reviews.css' | asset_url }}">
+  <link rel="stylesheet" href="{{ 'video-modal.css' | asset_url }}">
+</noscript>
+<script src="{{ 'video-section.js' | asset_url }}" defer></script>
+<script src="{{ 'video-card.js' | asset_url }}" defer></script>
+<script src="{{ 'video-modal.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign reviews = blank
+  if product != blank and product.metafields.custom.expert_reviews != blank
+    assign reviews = product.metafields.custom.expert_reviews.value
+  endif
+-%}
+
+{%- if reviews.size > 0 -%}
+  <div class="expert-reviews" id="ExpertReviews-{{ product.id }}" data-video-section>
+
+    <div class="expert-reviews__header">
+      <h2 class="expert-reviews__heading">Expert Reviews</h2>
+    </div>
+
+    <div class="expert-reviews__carousel" data-video-carousel>
+
+      <button
+        type="button"
+        class="expert-reviews__arrow expert-reviews__arrow--prev"
+        data-video-prev
+        aria-label="Previous reviews"
+        aria-controls="ExpertReviewsTrack-{{ product.id }}"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+          <path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <div
+        class="expert-reviews__track"
+        id="ExpertReviewsTrack-{{ product.id }}"
+        data-video-track
+        role="list"
+      >
+        {%- for review in reviews -%}
+          <div
+            class="expert-reviews__item"
+            id="ExpertReview-{{ review.id }}"
+            data-video-item
+            role="listitem"
+          >
+            {%- render 'expert-review-card', review: review -%}
+          </div>
+        {%- endfor -%}
+      </div>
+
+      <button
+        type="button"
+        class="expert-reviews__arrow expert-reviews__arrow--next"
+        data-video-next
+        aria-label="Next reviews"
+        aria-controls="ExpertReviewsTrack-{{ product.id }}"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+          <path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+    </div>
+  </div>
+
+  {%- render 'video-modal' -%}
+{%- endif -%}

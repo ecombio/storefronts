@@ -1,0 +1,319 @@
+{%- comment -%}
+  sections/related-articles.liquid
+
+  Self-contained related articles carousel. No external CSS/JS
+  assets, no third-party library — pure CSS scroll-snap + vanilla JS,
+  scoped to this section only.
+
+  Data source: collection.metafields.custom.related_post_cards.value
+  (list.article_reference metafield — see prior discussion). Only
+  works when rendered in a context where `collection` exists (e.g.
+  collection template).
+
+  Section layout: uses the SHARED global width classes from base.css
+  (.shopify-section > .default-width / .full-width / .custom-width),
+  same pattern as sections/example-width-section.liquid. Do NOT
+  reintroduce section-scoped width/padding CSS here.
+
+  Carousel bleed: .related-articles bleeds out to the edge of the
+  padded container (negative margin = --section-padding) and then
+  re-applies that same padding on itself, so the track's edge cards
+  sit flush with the container edge. The prev/next buttons sit
+  `8px` inset from that edge, layered on top of the edge card, instead
+  of floating in the section's side-padding gutter (which is what
+  caused a strip of empty space + a floating disconnected arrow).
+{%- endcomment -%}
+
+{%- liquid
+  assign width_type = section.settings.section_width
+  if width_type == blank
+    assign width_class = 'default-width'
+  else
+    assign width_class = width_type
+  endif
+
+  assign articles = collection.metafields.custom.related_post_cards.value
+  assign show_image = section.settings.show_image
+-%}
+
+{% if articles != blank %}
+  <div
+    class="{{ width_class }}"
+    style="
+      --section-padding: {{ section.settings.section_padding }}px;
+      {%- if width_type == 'custom-width' %}
+        --custom-width: {{ section.settings.custom_width }}rem;
+      {%- endif %}
+    "
+  >
+    <div class="related-articles-wrapper" id="related-articles-{{ section.id }}">
+      {% if section.settings.heading != blank %}
+        <h2 class="related-articles__title">{{ section.settings.heading }}</h2>
+      {% endif %}
+
+      <div
+        class="related-articles{% unless show_image %} related-articles--hide-images{% endunless %}"
+        data-related-articles
+        data-section-id="{{ section.id }}"
+      >
+        <div class="related-articles__track" data-related-articles-track tabindex="0">
+          {% for article in articles %}
+            <a href="{{ article.url }}" class="related-articles__card">
+              {% if show_image %}
+                <div class="related-articles__card-image">
+                  {% if article.image %}
+                    <img
+                      src="{{ article.image | image_url: width: 600 }}"
+                      alt="{{ article.image.alt | default: article.title | escape }}"
+                      loading="lazy"
+                      width="600"
+                      height="{{ 600 | divided_by: article.image.aspect_ratio }}"
+                    >
+                  {% else %}
+                    <div class="related-articles__card-image-placeholder"></div>
+                  {% endif %}
+                </div>
+              {% endif %}
+              <div class="related-articles__card-body">
+                {% if article.published_at %}
+                  <span class="related-articles__card-date">{{ article.published_at | date: '%B %d, %Y' }}</span>
+                {% endif %}
+                <h3 class="related-articles__card-title">{{ article.title }}</h3>
+                {% if article.excerpt != blank %}
+                  <p class="related-articles__card-excerpt">{{ article.excerpt | strip_html | truncatewords: 18 }}</p>
+                {% endif %}
+              </div>
+            </a>
+          {% endfor %}
+        </div>
+
+        <button
+          type="button"
+          class="related-articles__button related-articles__button--prev"
+          aria-label="Previous articles"
+          data-related-articles-prev
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </button>
+
+        <button
+          type="button"
+          class="related-articles__button related-articles__button--next"
+          aria-label="Next articles"
+          data-related-articles-next
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    #related-articles-{{ section.id }} {
+      --card-gap: 16px;
+      --card-width: 280px;
+    }
+
+    #related-articles-{{ section.id }} .related-articles__title {
+      margin: 0 0 1.5rem;
+      font-size: 2rem;
+    }
+
+    #related-articles-{{ section.id }} .related-articles {
+      position: relative;
+      margin-inline: calc(var(--section-padding, 0px) * -1);
+      padding-inline: var(--section-padding, 0px);
+    }
+
+    #related-articles-{{ section.id }} .related-articles__track {
+      display: flex;
+      gap: var(--card-gap);
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+    #related-articles-{{ section.id }} .related-articles__track::-webkit-scrollbar {
+      display: none;
+    }
+
+    #related-articles-{{ section.id }} .related-articles__card {
+      flex: 0 0 var(--card-width);
+      scroll-snap-align: start;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+
+    #related-articles-{{ section.id }} .related-articles__card-image {
+      aspect-ratio: 3 / 2;
+      overflow: hidden;
+      border-radius: 8px;
+      background: #f2f2f2;
+    }
+    #related-articles-{{ section.id }} .related-articles__card-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    #related-articles-{{ section.id }} .related-articles__card-image-placeholder {
+      width: 100%;
+      height: 100%;
+      background: #e8e8e8;
+    }
+
+    #related-articles-{{ section.id }} .related-articles--hide-images .related-articles__card-image {
+      display: none;
+    }
+
+    #related-articles-{{ section.id }} .related-articles__card-body {
+      padding-top: 0.75rem;
+    }
+    #related-articles-{{ section.id }} .related-articles__card-date {
+      font-size: 1.2rem;
+      opacity: 0.6;
+    }
+    #related-articles-{{ section.id }} .related-articles__card-title {
+      margin: 0.25rem 0;
+      font-size: 1.6rem;
+      line-height: 1.3;
+    }
+    #related-articles-{{ section.id }} .related-articles__card-excerpt {
+      font-size: 1.3rem;
+      opacity: 0.75;
+      margin: 0;
+    }
+
+    #related-articles-{{ section.id }} .related-articles__button {
+      position: absolute;
+      top: 40%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,0.15);
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 2;
+    }
+    #related-articles-{{ section.id }} .related-articles__button svg {
+      width: 18px;
+      height: 18px;
+    }
+    #related-articles-{{ section.id }} .related-articles__button--prev { left: 8px; }
+    #related-articles-{{ section.id }} .related-articles__button--next { right: 8px; }
+
+    #related-articles-{{ section.id }} .related-articles__button:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+
+    @media (max-width: 749px) {
+      #related-articles-{{ section.id }} .related-articles__button { display: none; }
+    }
+  </style>
+
+  <script>
+    (function () {
+      var root = document.querySelector('[data-related-articles][data-section-id="{{ section.id }}"]');
+      if (!root) return;
+
+      var track = root.querySelector('[data-related-articles-track]');
+      var prevBtn = root.querySelector('[data-related-articles-prev]');
+      var nextBtn = root.querySelector('[data-related-articles-next]');
+
+      function scrollByCard(direction) {
+        var card = track.querySelector('.related-articles__card');
+        if (!card) return;
+        var gap = parseFloat(getComputedStyle(root).getPropertyValue('--card-gap')) || 16;
+        var distance = card.getBoundingClientRect().width + gap;
+        track.scrollBy({ left: direction * distance, behavior: 'smooth' });
+      }
+
+      function updateButtons() {
+        var maxScroll = track.scrollWidth - track.clientWidth - 1;
+        prevBtn.disabled = track.scrollLeft <= 0;
+        nextBtn.disabled = track.scrollLeft >= maxScroll;
+      }
+
+      prevBtn.addEventListener('click', function () { scrollByCard(-1); });
+      nextBtn.addEventListener('click', function () { scrollByCard(1); });
+      track.addEventListener('scroll', updateButtons, { passive: true });
+      window.addEventListener('resize', updateButtons);
+
+      updateButtons();
+    })();
+  </script>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Related Articles",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Related Articles"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_image",
+      "label": "Show images",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 28
+    }
+  ],
+  "presets": [
+    {
+      "name": "Related Articles"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,395 @@
+/* ================================================================
+   Product Spotlight Slider — product-spotlight-slider.css
+   Place in: /assets/product-spotlight-slider.css
+   ================================================================ */
+
+/* ── Section shell ── */
+.pss {
+  padding-top: var(--pss-padding-top, 40px);
+  padding-bottom: var(--pss-padding-bottom, 40px);
+}
+
+/* ── Two-column layout: banner | slider ── */
+.pss__wrapper {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 0;
+  align-items: stretch;
+}
+
+@media (max-width: 899px) {
+  .pss__wrapper {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ================================================================
+   LEFT: Promo Banner
+   ================================================================ */
+.pss__banner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: var(--pss-banner-bg, #e8e5de);
+  color: var(--pss-banner-text, #1a1a1a);
+  border-radius: 16px 0 0 16px;
+  overflow: hidden;
+  min-height: 280px;
+  padding: 24px 20px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 899px) {
+  .pss__banner {
+    border-radius: 16px 16px 0 0;
+    min-height: 220px;
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 20px;
+  }
+}
+
+/* Banner background image (product photo) */
+.pss__banner-image {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.pss__banner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center bottom;
+  transition: transform 0.5s ease;
+}
+
+.pss__banner:hover .pss__banner-img {
+  transform: scale(1.04);
+}
+
+.pss__banner-image--placeholder {
+  background: #d0ccc4;
+}
+
+.pss__banner-placeholder-svg {
+  width: 60%;
+  height: 60%;
+  opacity: 0.3;
+}
+
+/* Text content sits on top of image */
+.pss__banner-content {
+  position: relative;
+  z-index: 2;
+}
+
+.pss__banner-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 0 0 6px;
+  opacity: 0.7;
+}
+
+.pss__banner-heading {
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1.15;
+  margin: 0 0 16px;
+  letter-spacing: -0.01em;
+}
+
+.pss__banner-heading p { margin: 0; }
+
+.pss__banner-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 18px;
+  border-radius: 100px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  background: var(--pss-banner-text, #1a1a1a);
+  color: var(--pss-banner-bg, #e8e5de);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  letter-spacing: 0.02em;
+}
+
+.pss__banner-btn:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+/* ================================================================
+   RIGHT: Slider
+   ================================================================ */
+.pss__slider-wrap {
+  position: relative;
+  overflow: hidden;
+}
+
+.pss__track {
+  display: flex;
+  gap: 1px;                      /* tight seam between cards */
+  overflow-x: auto;
+  overflow-y: visible;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  cursor: grab;
+  padding-bottom: 2px;           /* room for box-shadow */
+}
+
+.pss__track::-webkit-scrollbar { display: none; }
+.pss__track.is-dragging { cursor: grabbing; scroll-behavior: auto; }
+
+/* ================================================================
+   Product Card
+   ================================================================ */
+.pss__card {
+  flex: 0 0 auto;
+  width: 220px;
+  background: #f7f6f4;
+  border-radius: 0;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  transition: background 0.2s ease;
+}
+
+/* First card: rounded left-top if banner is present */
+.pss__card:first-child {
+  border-radius: 0 0 0 0;
+}
+
+.pss__card:last-child {
+  border-radius: 0 16px 16px 0;
+}
+
+@media (max-width: 899px) {
+  .pss__card:first-child { border-radius: 0; }
+  .pss__card:last-child  { border-radius: 0 0 16px 16px; }
+  .pss__card { width: 180px; }
+}
+
+@media (max-width: 599px) {
+  .pss__card { width: 160px; }
+}
+
+/* ── Card image ── */
+.pss__card-image-wrap {
+  position: relative;
+  background: #f0efec;
+}
+
+.pss__card-link {
+  display: block;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+}
+
+.pss__card-image {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.pss__card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 12px;
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.pss__card:hover .pss__card-img {
+  transform: scale(1.06);
+}
+
+.pss__card-img--placeholder {
+  background: #e4e3e0;
+  color: #aaa;
+  padding: 24px;
+}
+
+/* ── Badges ── */
+.pss__badge {
+  position: absolute;
+  z-index: 2;
+  border-radius: 100px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  line-height: 1.4;
+  pointer-events: none;
+}
+
+.pss__badge--sale {
+  top: 10px;
+  left: 10px;
+  background: var(--pss-accent, #c0392b);
+  color: #fff;
+}
+
+.pss__badge--fast {
+  bottom: 10px;
+  left: 10px;
+  background: #fff9e6;
+  color: #b07d00;
+  border: 1px solid #f0d060;
+}
+
+/* ── Card info ── */
+.pss__card-info {
+  padding: 12px 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.pss__card-type {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #888;
+  margin: 0;
+}
+
+.pss__card-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 0;
+  color: #111;
+}
+
+.pss__card-title a {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.2s ease;
+}
+
+.pss__card-title a:hover { color: var(--pss-accent, #c0392b); }
+
+/* ── Pricing ── */
+.pss__card-price {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 2px;
+  flex-wrap: wrap;
+}
+
+.pss__price {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #111;
+}
+
+.pss__price--sale {
+  color: var(--pss-accent, #c0392b);
+}
+
+.pss__price--compare {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #aaa;
+  text-decoration: line-through;
+}
+
+/* ── Swatches ── */
+.pss__swatches {
+  display: flex;
+  gap: 5px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.pss__swatch {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  flex-shrink: 0;
+}
+
+.pss__swatch:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px rgba(0,0,0,0.25);
+}
+
+.pss__swatch--label {
+  background: #ddd;
+  font-size: 0.55rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #555;
+}
+
+/* ================================================================
+   Navigation buttons
+   ================================================================ */
+.pss__nav {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  gap: 8px;
+  z-index: 4;
+}
+
+.pss__nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: #fff;
+  color: #111;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.18s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.pss__nav-btn:hover {
+  background: #f5f5f5;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.14);
+  transform: scale(1.06);
+}
+
+.pss__nav-btn[disabled] {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .pss__card-img,
+  .pss__banner-img,
+  .pss__swatch,
+  .pss__nav-btn,
+  .pss__banner-btn {
+    transition: none !important;
+  }
+}

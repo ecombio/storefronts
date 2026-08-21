@@ -1,0 +1,310 @@
+/* ============================================================
+   Example markup this file styles:
+
+   <div class="product-grid">
+     <div class="product-grid__header">
+       <h2 class="product-grid__heading">Shop the edit</h2>
+       <a href="/collections/electric-bikes" class="product-grid__view-all">View all</a>
+     </div>
+     <ul class="product-grid__grid" role="list">
+       <li class="product-grid__item">
+         <a href="#" class="product-grid__card" aria-disabled="true" tabindex="-1">
+           <span class="product-grid__media">
+             <img src="https://placehold.co/400x400/f2f2f2/999999?text=Product+1" alt="Placeholder product 1" class="product-grid__img" loading="lazy" width="400" height="400">
+           </span>
+           <span class="product-grid__name">Product Name</span>
+           <span class="product-grid__price">$25.99</span>
+           <span class="product-grid__cta">See product</span>
+         </a>
+       </li>
+       <li class="product-grid__item">
+         <a href="#" class="product-grid__card" aria-disabled="true" tabindex="-1">
+           <span class="product-grid__media">
+             <img src="https://placehold.co/400x400/f2f2f2/999999?text=Product+2" alt="Placeholder product 2" class="product-grid__img" loading="lazy" width="400" height="400">
+           </span>
+           <span class="product-grid__name">Product Name</span>
+           <span class="product-grid__price">$25.99</span>
+           <span class="product-grid__cta">See product</span>
+         </a>
+       </li>
+       <li class="product-grid__item">
+         <a href="#" class="product-grid__card" aria-disabled="true" tabindex="-1">
+           <span class="product-grid__media">
+             <img src="https://placehold.co/400x400/f2f2f2/999999?text=Product+3" alt="Placeholder product 3" class="product-grid__img" loading="lazy" width="400" height="400">
+           </span>
+           <span class="product-grid__name">Product Name</span>
+           <span class="product-grid__price">$25.99</span>
+           <span class="product-grid__cta">See product</span>
+         </a>
+       </li>
+       <li class="product-grid__item">
+         <a href="#" class="product-grid__card" aria-disabled="true" tabindex="-1">
+           <span class="product-grid__media">
+             <img src="https://placehold.co/400x400/f2f2f2/999999?text=Product+4" alt="Placeholder product 4" class="product-grid__img" loading="lazy" width="400" height="400">
+           </span>
+           <span class="product-grid__name">Product Name</span>
+           <span class="product-grid__price">$25.99</span>
+           <span class="product-grid__cta">See product</span>
+         </a>
+       </li>
+     </ul>
+   </div>
+   ============================================================ */
+
+/* ============================================================
+   product-grid.css
+   Scope: .product-grid
+   Fixed 2x2 grid (max 4 products) of minimal "icon card" product
+   tiles — rounded light-gray media box, centered name/price, solid
+   CTA button. NOT a carousel (same "no overflow-x, no scroll-snap"
+   rule as product-gallery.css) and NOT the same card as
+   product-card.css.
+
+   SELF-CONTAINED: this is its own card design end to end — it does
+   NOT use or extend .product-card__*, and does not depend on
+   product-row.css or product-gallery.css. That's intentional: this
+   section renders a visually distinct, simpler tile (see reference:
+   rounded icon placeholder + centered text + full-width CTA button)
+   rather than the photo-forward merchandising card used elsewhere,
+   so it gets its own namespace (.product-grid) and its own
+   --product-grid-* custom properties, same reasoning
+   product-gallery.css gives for staying separate from
+   product-row.css.
+
+   LAYOUT: fixed at 2 columns (2x2 for the max of 4 products) on
+   desktop and tablet. No longer merchant-configurable — the
+   "Columns" section setting was removed along with the
+   --product-grid-columns custom property it used to set inline.
+   ============================================================ */
+
+.product-grid,
+.product-grid *,
+.product-grid *::before,
+.product-grid *::after {
+  box-sizing: border-box;
+}
+
+.product-grid {
+  --product-grid-card-bg:       #ffffff;
+  --product-grid-card-border:   #E5E7EB;
+  --product-grid-media-bg:      #F3F4F6;
+  --product-grid-radius:        14px;
+  --product-grid-radius-sm:     8px;
+  --product-grid-text:          #111827;
+  --product-grid-text-secondary:#6B7280;
+  --product-grid-cta-bg:        #2563EB;
+  --product-grid-cta-bg-hover:  #1D4ED8;
+  --product-grid-cta-text:      #ffffff;
+  --product-grid-transition:    0.2s ease;
+
+  padding: var(--section-padding, 2rem) 1rem;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* ── Header: heading + "view all" link, side by side ── */
+.product-grid__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.product-grid__heading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--product-grid-text);
+}
+
+.product-grid__view-all {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: inherit;
+  text-decoration: underline;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Intro variant: centered heading + supporting copy ──
+   Same pattern as product-gallery--intro, kept local to this file. */
+.product-grid--intro .product-grid__header {
+  display: block;
+  text-align: center;
+  max-width: 640px;
+  margin-inline: auto;
+  margin-bottom: 1.5rem;
+}
+
+.product-grid--intro .product-grid__heading {
+  margin-bottom: 0.5rem;
+}
+
+.product-grid__description {
+  font-size: 0.9rem;
+  color: var(--product-grid-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.product-grid__empty {
+  font-size: 0.9rem;
+  color: var(--product-grid-text-secondary);
+  text-align: center;
+  padding: 2rem 0;
+}
+
+/* ── Grid ──
+   Fixed at 2 columns (2x2 for up to 4 products, enforced by
+   max_blocks: 4 in the section schema). No longer reads a
+   --product-grid-columns custom property from the liquid file. */
+.product-grid__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(160px, 1fr));
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  /* Grid never scrolls — reflows via the breakpoint below instead,
+     same guarantee product-gallery.css makes (minus its narrow-
+     container safety net, which isn't needed here since these tiles
+     have no long title/price/button text to protect at min-width). */
+}
+
+.product-grid__item {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+/* Applied by product-grid.js via IntersectionObserver. If JS never
+   runs (blocked/fails), items stay visible via the no-JS fallback
+   below rather than permanently hidden. */
+.product-grid__item.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+html:not(.js) .product-grid__item {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+/* ── Card ── */
+.product-grid__card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1rem;
+  background: var(--product-grid-card-bg);
+  border: 1px solid var(--product-grid-card-border);
+  border-radius: var(--product-grid-radius);
+  text-align: center;
+  text-decoration: none;
+  transition: box-shadow var(--product-grid-transition), transform var(--product-grid-transition);
+}
+
+.product-grid__card:hover {
+  box-shadow: 0 8px 20px -6px rgba(0,0,0,0.12);
+  transform: translateY(-2px);
+}
+
+.product-grid__media {
+  aspect-ratio: 1;
+  border-radius: var(--product-grid-radius-sm);
+  background: var(--product-grid-media-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin-bottom: 0.9rem;
+}
+
+.product-grid__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.product-grid__placeholder-svg {
+  width: 42%;
+  height: auto;
+  opacity: 0.4;
+  color: var(--product-grid-text-secondary);
+}
+
+.product-grid__name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--product-grid-text);
+  margin: 0 0 0.3rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.product-grid__price {
+  font-size: 0.85rem;
+  color: var(--product-grid-text-secondary);
+  margin: 0 0 1rem;
+}
+
+.product-grid__price s {
+  margin-right: 0.35rem;
+}
+
+.product-grid__price--sale {
+  color: var(--product-grid-text);
+  font-weight: 600;
+}
+
+.product-grid__cta {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  margin-top: auto;
+  background: var(--product-grid-cta-bg);
+  color: var(--product-grid-cta-text);
+  border: none;
+  border-radius: var(--product-grid-radius-sm);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--product-grid-transition);
+}
+
+.product-grid__card:hover .product-grid__cta {
+  background: var(--product-grid-cta-bg-hover);
+}
+
+/* ── Responsive ──
+   Only one breakpoint needed now: the grid is already 2 columns by
+   default, so the old "989px: 4 -> 2 columns" rule is gone. Below
+   589px it still stacks to a single column. */
+@media (max-width: 589px) {
+  .product-grid__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .product-grid {
+    padding: 1.5rem 0.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-grid__item,
+  .product-grid__card,
+  .product-grid__cta {
+    transition: none;
+  }
+
+  .product-grid__card:hover {
+    transform: none;
+  }
+}

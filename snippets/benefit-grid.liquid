@@ -1,0 +1,131 @@
+{% comment %}
+  Renders the benefit grid from the product's custom.benefits_grid metafield
+  Usage: {% render 'benefit-grid', product: product %}
+
+  Expected metaobject fields per entry (definition: Benefits):
+    icon    - file reference (image/svg)
+    title   - single line text (e.g. "2 Year Warranty")
+    tooltip - single line text, OPTIONAL (shown on hover/focus for more detail)
+    link    - link type, OPTIONAL (value has .url and .text — opens in a new tab)
+
+  Layout: 2 columns on small screens, 4 columns at 1024px and up, matching
+  a typical trust-badge row placed after the buybox or under the gallery.
+{% endcomment %}
+
+{% assign benefit_items = product.metafields.custom.benefits_grid.value %}
+
+{% if benefit_items != blank %}
+  <div class="benefit-grid">
+    {% for item in benefit_items %}
+      {% comment %} Skip entries with nothing to show {% endcomment %}
+      {% if item.title.value == blank %}
+        {% continue %}
+      {% endif %}
+
+      {% assign has_link = false %}
+      {% if item.link.value.url != blank %}
+        {% assign has_link = true %}
+      {% endif %}
+
+      {% assign has_tooltip = false %}
+      {% if item.tooltip.value != blank %}
+        {% assign has_tooltip = true %}
+      {% endif %}
+
+      {% if has_link %}
+        <a
+          href="{{ item.link.value.url }}"
+          class="benefit-item"
+          target="_blank"
+          rel="noopener noreferrer"
+          {% if has_tooltip %}title="{{ item.tooltip.value | escape }}"{% endif %}
+        >
+      {% else %}
+        <div
+          class="benefit-item"
+          {% if has_tooltip %}title="{{ item.tooltip.value | escape }}"{% endif %}
+        >
+      {% endif %}
+
+        {% if item.icon.value != blank %}
+          <div class="benefit-icon">
+            {{ item.icon.value | image_url: width: 48 | image_tag:
+              loading: 'lazy',
+              width: 24,
+              height: 24,
+              alt: ''
+            }}
+          </div>
+        {% endif %}
+
+        <h3 class="benefit-title">{{ item.title.value }}</h3>
+
+      {% if has_link %}
+        </a>
+      {% else %}
+        </div>
+      {% endif %}
+
+    {% endfor %}
+  </div>
+{% endif %}
+
+{% style %}
+  .benefit-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem 0.5rem;
+    margin: 1rem 0;
+  }
+
+  @media (min-width: 1024px) {
+    .benefit-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .benefit-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background-color: rgba(0, 0, 0, 0.03);
+    border-radius: 8px;
+    padding: 0.5rem 0.5rem;
+    text-decoration: none;
+    color: inherit;
+    height: 100%;
+  }
+
+  a.benefit-item:hover {
+    background-color: rgba(0, 0, 0, 0.06);
+  }
+
+  div.benefit-item {
+    cursor: default;
+    user-select: none;
+  }
+
+  .benefit-icon {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+  }
+
+  .benefit-icon img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .benefit-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.2;
+  }
+{% endstyle %}

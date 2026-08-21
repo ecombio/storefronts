@@ -1,0 +1,234 @@
+/* ============================================
+   Section width classes (local, independent of
+   global --page-margin / --page-width — see
+   sections/example-width-section.liquid)
+   ============================================ */
+.blog-carousel__default-width,
+.blog-carousel__full-width,
+.blog-carousel__custom-width {
+  box-sizing: border-box;
+  width: 100%;
+  padding-inline: var(--section-padding);
+}
+
+.blog-carousel__default-width {
+  max-width: var(--page-width, 1200px);
+  margin-inline: auto;
+}
+
+.blog-carousel__custom-width {
+  max-width: var(--custom-width);
+  margin-inline: auto;
+}
+
+/* ============================================
+   Blog carousel component
+   ============================================ */
+.blog-carousel {
+  --carousel-gap: 24px;
+  position: relative;
+  display: block;
+  font-family: var(--font-primary--family);
+  color: var(--color-black);
+}
+
+/* Header */
+.blog-carousel__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.blog-carousel__header-text {
+  max-width: 40em;
+}
+
+/* Small flag-color accent mark — restrained, not a banner */
+.blog-carousel__header-text::before {
+  content: '';
+  display: block;
+  width: 32px;
+  height: 3px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.85rem;
+  background: linear-gradient(
+    90deg,
+    var(--color-red) 0%,
+    var(--color-red) 32%,
+    var(--color-white) 32%,
+    var(--color-white) 66%,
+    var(--color-blue) 66%,
+    var(--color-blue) 100%
+  );
+}
+
+.blog-carousel__subheading {
+  margin: 0 0 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-blue);
+}
+
+.blog-carousel__heading {
+  margin: 0;
+  color: var(--color-black);
+  letter-spacing: -0.01em;
+}
+
+.blog-carousel__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-left: auto;
+}
+
+.blog-carousel__view-all {
+  white-space: nowrap;
+}
+
+/* Arrow nav */
+.blog-carousel__nav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.blog-carousel__nav-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(17, 17, 17, 0.12);
+  background: var(--color-white);
+  color: var(--color-black);
+  cursor: pointer;
+  transition: background-color var(--transition-base), border-color var(--transition-base),
+    color var(--transition-base), transform var(--transition-fast), box-shadow var(--transition-base);
+  padding: 0;
+}
+
+.blog-carousel__nav-button:hover:not(:disabled) {
+  background-color: var(--color-blue);
+  border-color: var(--color-blue);
+  color: var(--color-white);
+  box-shadow: 0 4px 14px rgba(10, 49, 97, 0.22);
+}
+
+.blog-carousel__nav-button:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.blog-carousel__nav-button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.blog-carousel__nav-button:focus-visible {
+  outline: 2px solid var(--color-blue);
+  outline-offset: 2px;
+}
+
+/* Viewport / track */
+.blog-carousel__viewport {
+  overflow: hidden;
+}
+
+.blog-carousel__track {
+  display: flex;
+  gap: var(--carousel-gap);
+  margin: 0;
+  padding: 0.25rem 0.25rem 1rem;
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: 0.25rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.blog-carousel__track::-webkit-scrollbar {
+  display: none;
+}
+
+.blog-carousel__track:focus-visible {
+  outline: 2px solid var(--color-blue);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
+
+.blog-carousel__slide {
+  flex: 0 0 calc((100% - (var(--slides-mobile) - 1) * var(--carousel-gap)) / var(--slides-mobile));
+  scroll-snap-align: start;
+  min-width: 0;
+}
+
+@media screen and (min-width: 750px) {
+  .blog-carousel__slide {
+    flex-basis: calc((100% - (var(--slides-tablet) - 1) * var(--carousel-gap)) / var(--slides-tablet));
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .blog-carousel__slide {
+    flex-basis: calc((100% - (var(--slides-desktop) - 1) * var(--carousel-gap)) / var(--slides-desktop));
+  }
+}
+
+/* Dots */
+.blog-carousel__dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.blog-carousel__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  padding: 0;
+  border: none;
+  background-color: rgba(17, 17, 17, 0.16);
+  cursor: pointer;
+  transition: background-color var(--transition-base), transform var(--transition-fast);
+}
+
+.blog-carousel__dot:hover {
+  background-color: var(--color-blue);
+}
+
+.blog-carousel__dot[aria-selected="true"] {
+  background-color: var(--color-red);
+  transform: scale(1.25);
+}
+
+.blog-carousel__dot:focus-visible {
+  outline: 2px solid var(--color-blue);
+  outline-offset: 2px;
+}
+
+/* Empty state */
+.blog-carousel__empty {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--color-black);
+  opacity: 0.6;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .blog-carousel__track {
+    scroll-behavior: auto;
+  }
+  .blog-carousel__nav-button,
+  .blog-carousel__dot {
+    transition: none;
+  }
+}

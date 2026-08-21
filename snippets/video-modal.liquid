@@ -1,0 +1,46 @@
+{%- comment -%}
+  snippets/video-modal.liquid
+  ============================================
+  Shared lightbox used by every video-card trigger on the page.
+  Renders once as a hidden dialog; assets/video-modal.js listens for
+  the 'video-card:play' event dispatched by assets/video-card.js,
+  builds either a native <video> or a YouTube/Vimeo iframe inside
+  [data-video-modal-media], and toggles [hidden] off.
+
+  RENDER THIS ONCE PER PAGE. If a page could have more than one
+  section using video cards (e.g. two Videos sections), only render
+  this snippet from one of them — or better, move the
+  {% render 'video-modal' %} call to theme.liquid, just before
+  </body>, so it's rendered exactly once regardless of how many
+  sections use video cards. video-modal.js removes duplicate
+  [data-video-modal] elements if it finds them, but that's a safety
+  net, not a substitute for rendering it once.
+{%- endcomment -%}
+<div
+  class="video-modal"
+  id="VideoModal"
+  data-video-modal
+  role="dialog"
+  aria-modal="true"
+  aria-label="Video player"
+  hidden
+>
+  <div class="video-modal__overlay" data-video-modal-overlay></div>
+
+  <div class="video-modal__dialog">
+    <button
+      type="button"
+      class="video-modal__close"
+      data-video-modal-close
+      aria-label="Close video"
+    >
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+        <path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+
+    <div class="video-modal__media" data-video-modal-media></div>
+
+    <p class="video-modal__caption" data-video-modal-caption hidden></p>
+  </div>
+</div>

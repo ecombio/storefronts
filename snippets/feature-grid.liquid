@@ -1,0 +1,186 @@
+{% comment %}
+  Renders the feature grid from the product's custom.feature_grid metafield
+  Usage: {% render 'feature-grid', product: product %}
+
+  Expected metaobject fields per entry:
+    icon        - file reference (image/svg)
+    title       - single line text. NOT shown as visible text — used as a
+                  hover/focus tooltip on the whole tile (e.g. a longer
+                  classification note like "Class 2 (throttle assist up
+                  to 20 mph)"). Falls back to labeling the icon's alt text
+                  if `label` is blank.
+    label       - single line text. Visible small caption above the
+                  headline (e.g. "Top Speed"). This is the field that used
+                  to live in `title` before `title` became tooltip-only.
+    description - single line text (bold visible headline, e.g. "Max 28 MPH")
+    subtitle     - single line text, OPTIONAL (small bold line under description)
+                   only renders if the field exists and has a value
+    link        - url type, OPTIONAL
+
+  Note: `title` is intentionally hidden from visible layout and only
+  exposed via the native `title` attribute. This means it will NOT be
+  reachable by hover on touch/mobile devices — if that content matters on
+  mobile, it needs to live in `label`, `description`, or `subtitle` instead.
+{% endcomment %}
+
+{% assign feature_items = product.metafields.custom.feature_grid.value %}
+
+{% if feature_items != blank %}
+  <div class="feature-grid">
+    {% for item in feature_items %}
+      {% comment %} Skip entries with nothing meaningful to show {% endcomment %}
+      {% if item.label.value == blank and item.description.value == blank %}
+        {% continue %}
+      {% endif %}
+
+      {% assign has_link = false %}
+      {% if item.link.value != blank %}
+        {% assign has_link = true %}
+      {% endif %}
+
+      {% assign icon_alt = item.label.value | default: item.title.value | default: '' %}
+
+      {% if has_link %}
+        <a
+          href="{{ item.link.value }}"
+          class="feature-tile"
+          {% if item.title.value != blank %}title="{{ item.title.value | escape }}"{% endif %}
+        >
+      {% else %}
+        <div
+          class="feature-tile"
+          {% if item.title.value != blank %}title="{{ item.title.value | escape }}"{% endif %}
+        >
+      {% endif %}
+
+        {% if item.icon.value != blank %}
+          <div class="feature-icon">
+            {{ item.icon.value | image_url: width: 96 | image_tag:
+              loading: 'lazy',
+              width: 48,
+              height: 48,
+              alt: icon_alt
+            }}
+          </div>
+        {% endif %}
+
+        <div class="feature-text">
+          {% if item.label.value != blank %}
+            <p class="feature-uptitle">{{ item.label.value }}</p>
+          {% endif %}
+          {% if item.description.value != blank %}
+            <p class="feature-headline">{{ item.description.value }}</p>
+          {% endif %}
+          {% if item.subtitle.value != blank %}
+            <p class="feature-subtitle">{{ item.subtitle.value }}</p>
+          {% endif %}
+        </div>
+
+      {% if has_link %}
+        </a>
+      {% else %}
+        </div>
+      {% endif %}
+
+    {% endfor %}
+  </div>
+{% endif %}
+
+{% style %}
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+
+  .feature-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    padding: 0.875rem;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 10px;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+  }
+
+  a.feature-tile:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.15);
+  }
+
+  @media (min-width: 425px) {
+    .feature-tile {
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: flex-start;
+      text-align: left;
+    }
+  }
+
+  .feature-icon {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+  }
+
+  @media (min-width: 768px) {
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+    }
+  }
+
+  .feature-icon img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .feature-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+    align-items: center;
+  }
+
+  @media (min-width: 425px) {
+    .feature-text {
+      align-items: flex-start;
+    }
+  }
+
+  .feature-uptitle {
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: rgba(0, 0, 0, 0.75);
+    margin: 0;
+  }
+
+  .feature-headline {
+    font-size: 1rem;
+    font-weight: 600;
+    color: inherit;
+    margin: 0;
+    line-height: 1.25;
+  }
+
+  .feature-subtitle {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: inherit;
+    margin: 0;
+  }
+{% endstyle %}

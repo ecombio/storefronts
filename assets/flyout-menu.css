@@ -1,0 +1,350 @@
+/* =============================================================================
+   Flyout Menu  |  assets/flyout-menu.css
+
+   Sidebar-style "browse all categories" flyout: a left-hand list of
+   top-level categories, with a content panel on the right that swaps to
+   show that category's columns. Pattern: hover/focus a category on the
+   left → its panel becomes active on the right (only one
+   .flyout-panel__panel has .is-active at a time).
+
+   Branding matches the rest of the header nav (same accent token as
+   header.css / header-menu.css, white panel, 14px radius, same shadow
+   language as mega-menu.css) so it reads as one family of components.
+
+   Markup is rendered by snippets/flyout-menu.liquid, called from the
+   'flyout' case in sections/header-menu.liquid. Pure CSS — no Liquid,
+   no build step.
+
+   Replaces assets/flyout.css. No promo-image styling — removed.
+
+   CHANGELOG (this revision):
+   - CHANGED (breaking layout change, pairs with the matching
+     snippets/flyout-menu.liquid rewrite): .flyout-panel__columns no
+     longer renders a fixed 2-bucket layout. Liquid now emits one
+     .flyout-panel__column PER L2 link directly (no bucketing math), and
+     this file lays those columns out as a horizontal, WRAPPING flexbox
+     row instead of a fixed-count CSS grid. This means the number of
+     columns on screen always matches the number of L2 links exactly —
+     1, 3, 7, whatever a merchant adds — with no hardcoded column count
+     anywhere in this file to fall out of sync with the markup.
+   - REMOVED: the old `.flyout-panel__columns { display: grid;
+     grid-template-columns: repeat(2, max-content); }` rule, and the
+     earlier --full-width attempts that hardcoded repeat(3, ...) and
+     then repeat(2, minmax(220px, 1fr)) — both of those were guesses at
+     a column count and both could drift out of sync with however many
+     L2 links Liquid actually rendered. Flexbox + flex-wrap removes the
+     need to guess a count at all.
+   - MOVED: .flyout-panel__all-link is no longer nested inside a column
+     (there's no longer a "last column" to nest it in — see Liquid
+     changelog). It's now a direct child of .flyout-panel__panel,
+     rendered as its own full-row element below the columns, with a
+     top border to separate it visually from the column content above.
+   - CHANGED: .flyout-panel__panel switched from `flex-direction: row`
+     (default, with a single child) to `flex-direction: column`, since
+     it now has two stacked children: the columns row, then the all-link
+     row beneath it.
+   - .flyout-panel--full-width now only widens spacing (gap, min column
+     width) for the same flex-wrap layout — it still never touches
+     display/visibility of .flyout-panel__panel, which remains the only
+     thing controlling which category's panel is shown (driven by
+     .is-active, set via JS in assets/flyout-menu.js).
+   - FIXED (earlier): ".flyout-panel:hover" could never match because the
+     panel is display:none by default. Replaced with
+     ".menu-bar__item--has-flyout:hover" so the panel opens on hover.
+   - FIXED (earlier): open selector had no keyboard fallback. Hover and
+     the JS ".is-open" toggle were covered, but a keyboard user tabbing
+     into a link *inside* the panel with the mouse no longer over the
+     trigger could lose the panel mid-tab. Added ":focus-within" as a
+     third condition so CSS alone keeps the panel open while focus is
+     inside it.
+   - FIXED (earlier): .flyout-panel__content had no height cap, so a
+     category panel taller than the sidebar's 70vh could grow past the
+     viewport with no scroll. Added the same max-height + overflow-y
+     treatment used on .flyout-panel__categories.
+   - FIXED (earlier): accent color was hardcoded as #c4301c throughout
+     (category hover/active states, "all" link, etc.), which doesn't
+     match the site's actual design token, --hdr-accent (#e11d27),
+     declared in header.css / header-menu.css. Swapped all instances to
+     var(--hdr-accent, #e11d27) so this file follows the same source of
+     truth as the rest of the header. Fallback value kept in case this
+     file is ever loaded somewhere header.css isn't.
+   - Added a small opacity/translateY transition on open so it doesn't
+     just snap into view.
+   ============================================================================= */
+
+.flyout-panel {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 400;
+  padding-top: 12px;
+  margin-top: -1px;
+  max-width: calc(100vw - 48px);
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.14s ease, transform 0.14s ease;
+}
+
+/* Hover-to-open (desktop) + click-to-open (touch/keyboard, toggled via
+   JS .is-open) + focus-within (keyboard tabbing into the panel itself) */
+.menu-bar__item--has-flyout:hover > .flyout-panel,
+.menu-bar__item--has-flyout.is-open > .flyout-panel,
+.menu-bar__item--has-flyout:focus-within > .flyout-panel {
+  display: block;
+  z-index: 9999;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.flyout-panel__container {
+  display: flex;
+  align-items: stretch;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.10);
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  width: max-content;
+  max-width: calc(100vw - 48px);
+}
+
+/* ── Style modifier: Full-width span ──────────────────────────────────
+   Toggled via the "Flyout panel style" block setting. Only changes
+   sizing/spacing — never touches display or visibility of
+   .flyout-panel__panel / .flyout-panel__content, so "only the active
+   category shows" (driven by .is-active further down this file) is
+   completely unaffected by which style is selected. */
+
+.flyout-panel--full-width {
+  left: 50%;
+  transform: translate(-50%, -4px);
+  width: calc(100vw - 48px);
+  max-width: 1400px;
+}
+
+.menu-bar__item--has-flyout:hover > .flyout-panel--full-width,
+.menu-bar__item--has-flyout.is-open > .flyout-panel--full-width,
+.menu-bar__item--has-flyout:focus-within > .flyout-panel--full-width {
+  transform: translate(-50%, 0);
+}
+
+.flyout-panel--full-width .flyout-panel__container {
+  width: 100%;
+}
+
+.flyout-panel--full-width .flyout-panel__content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Full-width just gives each column more breathing room (wider gap,
+   higher min-width) — column COUNT still comes purely from however
+   many .flyout-panel__column elements Liquid rendered (flex-wrap), so
+   this never needs to know or guess that number. */
+.flyout-panel--full-width .flyout-panel__columns {
+  gap: 12px 64px;
+}
+
+.flyout-panel--full-width .flyout-panel__column {
+  min-width: 200px;
+}
+
+/* ── Left: category sidebar ── */
+
+.flyout-panel__categories {
+  list-style: none;
+  margin: 0;
+  padding: 12px 0;
+  width: 248px;
+  flex-shrink: 0;
+  background: #fafafa;
+  border-right: 1px solid #e5e7eb;
+  overflow-y: auto;
+  max-height: 70vh;
+}
+
+.flyout-panel__category {
+  border-left: 3px solid transparent;
+}
+
+.flyout-panel__category-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 20px 10px 17px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #1f2937;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.flyout-panel__category-link .icon-caret-right {
+  opacity: 0;
+  color: var(--hdr-accent, #e11d27);
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+
+.flyout-panel__category-link:hover,
+.flyout-panel__category-link:focus-visible {
+  background: #f3f4f6;
+  color: var(--hdr-accent, #e11d27);
+}
+
+.flyout-panel__category.is-active {
+  border-left-color: var(--hdr-accent, #e11d27);
+}
+
+.flyout-panel__category.is-active .flyout-panel__category-link {
+  background: #fdf2f1;
+  color: var(--hdr-accent, #e11d27);
+}
+
+.flyout-panel__category.is-active .flyout-panel__category-link .icon-caret-right,
+.flyout-panel__category-link:hover .icon-caret-right,
+.flyout-panel__category-link:focus-visible .icon-caret-right {
+  opacity: 1;
+}
+
+/* ── Right: content panels ── */
+
+.flyout-panel__content {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  /* FIXED: match the sidebar's height cap so a tall category panel
+     scrolls instead of growing past the viewport with no way to reach
+     the rest of it. */
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* Single source of truth for which category's panel is visible.
+   IMPORTANT: do not add display/visibility rules for
+   .flyout-panel__panel anywhere else in this file (including inside
+   .flyout-panel--full-width) — everything must funnel through
+   .is-active here, or every category renders stacked/visible at once. */
+.flyout-panel__panel {
+  display: none;
+  flex-direction: column;
+  gap: 20px;
+  padding: 28px 32px;
+}
+
+.flyout-panel__panel.is-active {
+  display: flex;
+}
+
+/* One column per L2 link, laid out as a horizontal row. flex-wrap
+   means the column COUNT is whatever Liquid actually rendered — never
+   a number hardcoded here — and if there are too many columns to fit
+   on one line, they wrap to a second line instead of overflowing or
+   getting clipped. */
+.flyout-panel__columns {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px 40px;
+  width: 100%;
+}
+
+.flyout-panel__column {
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+}
+
+.flyout-panel__group {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #111827;
+  text-decoration: none;
+  padding: 6px 0;
+  white-space: nowrap;
+  transition: color 0.12s ease;
+}
+
+.flyout-panel__group:hover,
+.flyout-panel__group:focus-visible,
+.flyout-panel__group[aria-current="page"] {
+  color: var(--hdr-accent, #e11d27);
+}
+
+.flyout-panel__sublist {
+  list-style: none;
+  margin: 0 0 4px;
+  padding: 0;
+}
+
+.flyout-panel__sublink {
+  display: block;
+  font-size: 13px;
+  font-weight: 400;
+  color: #4b5563;
+  text-decoration: none;
+  padding: 4px 0 4px 14px;
+  white-space: nowrap;
+  transition: color 0.12s ease;
+}
+
+.flyout-panel__sublink:hover,
+.flyout-panel__sublink:focus-visible,
+.flyout-panel__sublink[aria-current="page"] {
+  color: var(--hdr-accent, #e11d27);
+}
+
+/* Now a full-row sibling beneath .flyout-panel__columns (not nested in
+   a column), separated with a top border since it's no longer visually
+   anchored to any single column. */
+.flyout-panel__all-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--hdr-accent, #e11d27);
+  text-decoration: none;
+}
+
+.flyout-panel__all-link .icon-arrow-right {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.15s ease;
+}
+
+.flyout-panel__all-link:hover .icon-arrow-right,
+.flyout-panel__all-link:focus-visible .icon-arrow-right {
+  transform: translateX(3px);
+}
+
+/* ── Responsive cap (panel hidden below desktop breakpoint, matching
+     menu-bar's own breakpoint in header-menu.css) ── */
+
+@media (max-width: 1023px) {
+  .flyout-panel {
+    display: none !important;
+  }
+}
+
+/* =============================================================================
+   REDUCED MOTION
+   ============================================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .flyout-panel,
+  .flyout-panel--full-width,
+  .flyout-panel__category-link,
+  .flyout-panel__category-link .icon-caret-right,
+  .flyout-panel__group,
+  .flyout-panel__sublink,
+  .flyout-panel__all-link .icon-arrow-right {
+    transition: none !important;
+  }
+}

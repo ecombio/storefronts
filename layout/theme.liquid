@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}">
+  <head>
+    <meta name="msvalidate.01" content="C1E71D8DED0A2EEC5AC7E43995BD7CA6" />
+
+    {{ 'base.css'                  | asset_url | stylesheet_tag }}
+    {{ 'theme.css'                 | asset_url | stylesheet_tag }}
+    {{ 'header-group.css'          | asset_url | stylesheet_tag }}
+    {{ 'quick-view.css'            | asset_url | stylesheet_tag }}
+    {{ 'collection-layout.css'     | asset_url | stylesheet_tag }}
+    {{ 'compare-bar.css'           | asset_url | stylesheet_tag }}
+    {{ 'section-accordion.css'     | asset_url | stylesheet_tag }}
+    {{ 'related-products.css'      | asset_url | stylesheet_tag }}
+    {{ 'product-card.css'      | asset_url | stylesheet_tag }}
+    {{ 'article-card.css'      | asset_url | stylesheet_tag }}
+    
+    {{ 'star-rating.css'            | asset_url | stylesheet_tag }}
+    {% render 'css-variables' %}
+
+    {%- comment -%}
+      cart-drawer.css, cart-recommendations.css, and progress-bar.css are
+      intentionally NOT queued here. All three are self-contained: they're
+      loaded by sections/cart-drawer.liquid, snippets/cart-recommendations.liquid,
+      and snippets/progress-bar.liquid respectively, the moment (and only if)
+      those templates actually render. Queuing them here too would double-load
+      them on every page.
+
+      star-rating.css IS queued here, deliberately breaking that
+      pattern: snippets/star-rating.liquid is meant to be rendered
+      from many places (product page, product cards, collection grids), so
+      its CSS is loaded globally once rather than re-queued per-template.
+    {%- endcomment -%}
+
+    {% unless settings.type_primary_font.system? %}
+      <link rel="preconnect" href="https://fonts.shopifycdn.com" crossorigin>
+      {{ settings.type_primary_font | font_url | preload_tag: as: 'font', crossorigin: 'anonymous' }}
+    {% endunless %}
+
+    {{ 'critical.css' | asset_url | stylesheet_tag: preload: true }}
+
+    {% render 'meta-tags' %}
+
+    {% if settings.favicon != blank %}
+      <link rel="icon" type="image/png"
+            href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
+    {% endif %}
+
+    {{ content_for_header }}
+  </head>
+
+  <body class="{{ settings.theme_preset | default: 'ecombio' }}" data-header-layout="{{ settings.header_layout }}">
+
+    <div id="header-group-wrapper">
+      {% sections 'header-group' %}
+    </div>
+
+    <main role="main">
+      {{ content_for_layout }}
+    </main>
+
+    <footer role="contentinfo">
+      <div class="page-width--footer">
+        {% sections 'footer-group' %}
+      </div>
+    </footer>
+
+    {{- 'base.js' | asset_url | script_tag }}
+    {{- 'theme.js' | asset_url | script_tag }}
+    {{- 'header-group.js' | asset_url | script_tag }}
+    {{- 'countdown-timer.js'    | asset_url | script_tag }}
+    {{- 'copy-to-clipboard.js'  | asset_url | script_tag }}
+    {{- 'collection-filters.js' | asset_url | script_tag }}
+    {{- 'product-card.js'       | asset_url | script_tag }}
+
+    {%- comment -%}
+      cart-drawer.js and cart-recommendations.js are intentionally NOT
+      queued here — see the CSS note above. The section/snippet that
+      render the drawer are what pull in their own scripts.
+    {%- endcomment -%}
+
+    {% render 'compare-bar' %}
+    {% section 'cart-drawer' %}
+    {% section 'quick-view' %}
+
+    <script src="{{ 'quick-view.js' | asset_url }}" defer></script>
+    <script src="https://cdn-widgetsrepository.yotpo.com/v1/loader/GVq3qDsSZ94vLoElcTQgzekz90KJDVehGX1oASx7" async></script>
+  </body>
+</html>

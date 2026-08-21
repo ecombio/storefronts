@@ -1,0 +1,126 @@
+/* assets/collection-feed.css
+   Styles for snippets/collection-feed.liquid — panel wrapper, empty
+   state, pagination, product grid, and article grid. (product-card,
+   sub-collection, promo-banner, promo-carousel, and article-card
+   keep their own separate stylesheets, loaded by the snippet
+   alongside this file.) */
+
+/* ---------- Panel wrapper ---------- */
+
+.collection-feed {
+  width: 100%;
+}
+
+.collection-feed__panel {
+  width: 100%;
+}
+
+.collection-feed__panel[hidden] {
+  display: none;
+}
+
+/* ---------- Empty state ---------- */
+
+.collection-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 4rem 1rem;
+  color: #6b6b6b;
+  font-size: 1rem;
+}
+
+/* ---------- Pagination ---------- */
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 2.5rem;
+}
+
+.pagination__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.25rem;
+  height: 2.25rem;
+  padding: 0 0.6rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #1a1a1a;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.pagination__link:hover {
+  background: #f0f0f0;
+}
+
+.pagination__link--current {
+  background: #1a1a1a;
+  color: #fff;
+}
+
+/* ---------- Product grid ----------
+   --columns is set inline (from the merchant's "Columns" setting,
+   2–6) on #product-feed. Each breakpoint below caps the *effective*
+   column count with min(), so:
+     - it never exceeds this breakpoint's max (4 / 3 / 2 / 1)
+     - it still respects a merchant setting LOWER than that max
+       (e.g. Columns set to 2 stays at 2 even on desktop/tablet) */
+.product-feed__grid {
+  display: grid;
+  grid-template-columns: repeat(min(var(--columns, 4), 4), 1fr);
+  gap: 1.5rem;
+}
+
+/* Tablet — 768px to 1024px: cap at 3 */
+@media (max-width: 1024px) {
+  .product-feed__grid {
+    grid-template-columns: repeat(min(var(--columns, 4), 3), 1fr);
+  }
+}
+
+/* Mobile — up to 768px: cap at 2 */
+@media (max-width: 768px) {
+  .product-feed__grid {
+    grid-template-columns: repeat(min(var(--columns, 4), 2), 1fr);
+    gap: 1rem;
+  }
+}
+
+/* Small mobile — up to 480px: cap at 1 */
+@media (max-width: 480px) {
+  .product-feed__grid {
+    grid-template-columns: repeat(min(var(--columns, 4), 1), 1fr);
+    gap: 0.75rem;
+  }
+}
+
+/* ---------- Article grid ---------- */
+
+.article-feed {
+  display: grid;
+  grid-template-columns: repeat(min(var(--columns, 4), 4), 1fr);
+  gap: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .article-feed {
+    grid-template-columns: repeat(min(var(--columns, 4), 3), 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .article-feed {
+    grid-template-columns: repeat(min(var(--columns, 4), 2), 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .article-feed {
+    grid-template-columns: repeat(min(var(--columns, 4), 1), 1fr);
+  }
+}

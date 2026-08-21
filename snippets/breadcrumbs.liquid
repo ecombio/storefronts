@@ -1,0 +1,46 @@
+{%- liquid
+  assign vendor_handle  = product.vendor | handleize
+  assign parent_col     = nil
+  assign child_col      = nil
+  assign largest_count  = -1
+  assign smallest_count = 999999
+
+  for col in product.collections
+    if col.handle != vendor_handle
+      if col.all_products_count > largest_count
+        assign parent_col    = col
+        assign largest_count = col.all_products_count
+      endif
+    endif
+  endfor
+
+  for col in product.collections
+    if col.handle != vendor_handle and col.handle != parent_col.handle
+      if col.all_products_count < smallest_count
+        assign child_col      = col
+        assign smallest_count = col.all_products_count
+      endif
+    endif
+  endfor
+-%}
+
+<nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+  <div class="breadcrumbs-container">
+
+    <a href="/">Home</a>
+
+    {%- if parent_col -%}
+      <span class="breadcrumb-divider" aria-hidden="true"><span class="divider-line"></span></span>
+      <a href="{{ parent_col.url }}">{{ parent_col.title }}</a>
+    {%- endif -%}
+
+    {%- if child_col -%}
+      <span class="breadcrumb-divider" aria-hidden="true"><span class="divider-line"></span></span>
+      <a href="{{ child_col.url }}">{{ child_col.title }}</a>
+    {%- endif -%}
+
+    <span class="breadcrumb-divider" aria-hidden="true"><span class="divider-line"></span></span>
+    <span class="breadcrumb-current" aria-current="page">{{ product.title }}</span>
+
+  </div>
+</nav>

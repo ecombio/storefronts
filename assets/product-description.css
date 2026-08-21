@@ -1,0 +1,156 @@
+/* ─── Trigger rows ────────────────────────────────────────── */
+.pd-wrap {
+  margin-top: 4px;
+  border-top: 1px solid #E5E5E5;
+}
+
+.pd-row {
+  border-bottom: 1px solid #E5E5E5;
+}
+
+.pd-trigger {
+  display:         flex;
+  justify-content: space-between;
+  align-items:     center;
+  width:           100%;
+  padding:         17px 0;
+  background:      none;
+  border:          none;
+  cursor:          pointer;
+  font-family:     'Instrument Sans', sans-serif;
+  font-size:       22px;
+  font-weight:     700;
+  line-height:     32px;
+  color:           #000000;
+  text-align:      left;
+}
+
+.pd-trigger svg {
+  flex-shrink: 0;
+  transition:  transform 0.25s ease;
+}
+
+.pd-trigger[aria-expanded="true"] svg {
+  transform: rotate(90deg);
+}
+
+/* ─── Overlay ─────────────────────────────────────────────── */
+.pd-overlay {
+  display:    none;
+  position:   fixed;
+  inset:      0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index:    900;
+  opacity:    0;
+  transition: opacity 0.3s ease;
+}
+
+.pd-overlay.is-visible { display: block; }
+.pd-overlay.is-open    { opacity: 1; }
+
+/* ─── Panel — desktop (right) ─────────────────────────────── */
+.pd-panel {
+  position:       fixed;
+  top:            0;
+  right:          0;
+  bottom:         0;
+  width:          min(520px, 90vw);
+  background:     #FFFFFF;
+  z-index:        901;
+  display:        flex;
+  flex-direction: column;
+  transform:      translateX(100%);
+  transition:     transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow:       hidden;
+  border-radius:  16px 0 0 16px;
+}
+
+.pd-panel.is-open { transform: translateX(0); }
+
+/* ─── Panel header ────────────────────────────────────────── */
+.pd-panel__header {
+  display:         flex;
+  justify-content: space-between;
+  align-items:     flex-start;
+  padding:         28px 32px 20px;
+  border-bottom:   1px solid #E5E5E5;
+  flex-shrink:     0;
+}
+
+.pd-panel__title {
+  font-family:   'Instrument Sans', sans-serif;
+  font-size:     22px;
+  font-weight:   700;
+  line-height:   30px;
+  margin:        0;
+  padding-right: 16px;
+  color:         #000000;
+}
+
+.pd-panel__close {
+  background:  none;
+  border:      none;
+  cursor:      pointer;
+  padding:     4px;
+  color:       #000000;
+  flex-shrink: 0;
+  line-height: 1;
+  margin-top:  2px;
+  transition:  opacity 0.2s;
+}
+
+.pd-panel__close:hover { opacity: 0.5; }
+
+/* ─── Panel body ──────────────────────────────────────────── */
+.pd-panel__body {
+  flex:            1;
+  overflow-y:      auto;
+  padding:         28px 32px 48px;
+  font-family:     'Instrument Sans', sans-serif;
+  font-size:       15px;
+  line-height:     24px;
+  color:           #666666;
+  scrollbar-width: thin;
+  scrollbar-color: #ccc transparent;
+}
+
+.pd-panel__body::-webkit-scrollbar       { width: 4px; }
+.pd-panel__body::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+
+.pd-panel__body p            { margin: 0 0 16px 0; }
+.pd-panel__body p:last-child { margin-bottom: 0; }
+
+.pd-panel__body h1,
+.pd-panel__body h2,
+.pd-panel__body h3 {
+  font-weight: 700;
+  margin:      0 0 12px 0;
+  color:       #000000;
+}
+
+.pd-panel__body ul,
+.pd-panel__body ol {
+  padding-left: 20px;
+  margin:       0 0 16px 0;
+}
+
+.pd-panel__body li { margin-bottom: 6px; }
+
+/* ─── Panel — mobile/tablet (bottom) ─────────────────────── */
+@media (max-width: 768px) {
+  .pd-panel {
+    top:           auto;
+    right:         0;
+    bottom:        0;
+    left:          0;
+    width:         100%;
+    max-height:    85vh;
+    transform:     translateY(100%);
+    border-radius: 16px 16px 0 0;
+  }
+
+  .pd-panel.is-open { transform: translateY(0); }
+
+  .pd-panel__header { padding: 20px 20px 16px; }
+  .pd-panel__body   { padding: 20px 20px 40px; }
+}

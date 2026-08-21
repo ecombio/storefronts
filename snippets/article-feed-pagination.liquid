@@ -1,0 +1,83 @@
+{% comment %}
+  Snippet: article-feed-pagination
+  Parameters:
+    - paginate: the paginate object from the parent section
+    - style:    "numbered" | "prevnext" | "loadmore" | "infinite"
+{% endcomment %}
+
+{%- assign style = style | default: 'numbered' -%}
+
+<nav class="article-feed__pagination article-feed__pagination--{{ style }}" aria-label="Article pagination">
+
+  {%- case style -%}
+
+    {%- when 'numbered' -%}
+      {%- if paginate.previous -%}
+        <a href="{{ paginate.previous.url }}" class="article-feed__page-btn article-feed__page-btn--prev" aria-label="Previous page">
+          &larr;
+        </a>
+      {%- else -%}
+        <span class="article-feed__page-btn article-feed__page-btn--prev is-disabled" aria-disabled="true">&larr;</span>
+      {%- endif -%}
+
+      {%- for part in paginate.parts -%}
+        {%- if part.is_link -%}
+          <a href="{{ part.url }}" class="article-feed__page-btn">{{ part.title }}</a>
+        {%- elsif part.title == paginate.current_page -%}
+          <span class="article-feed__page-btn is-current" aria-current="page">{{ part.title }}</span>
+        {%- else -%}
+          <span class="article-feed__page-ellipsis">&hellip;</span>
+        {%- endif -%}
+      {%- endfor -%}
+
+      {%- if paginate.next -%}
+        <a href="{{ paginate.next.url }}" class="article-feed__page-btn article-feed__page-btn--next" aria-label="Next page">
+          &rarr;
+        </a>
+      {%- else -%}
+        <span class="article-feed__page-btn article-feed__page-btn--next is-disabled" aria-disabled="true">&rarr;</span>
+      {%- endif -%}
+
+    {%- when 'prevnext' -%}
+      {%- if paginate.previous -%}
+        <a href="{{ paginate.previous.url }}" class="article-feed__page-btn article-feed__page-btn--prev">
+          &larr; Previous
+        </a>
+      {%- else -%}
+        <span class="article-feed__page-btn article-feed__page-btn--prev is-disabled">&larr; Previous</span>
+      {%- endif -%}
+
+      <span class="article-feed__page-count">
+        Page {{ paginate.current_page }} of {{ paginate.pages }}
+      </span>
+
+      {%- if paginate.next -%}
+        <a href="{{ paginate.next.url }}" class="article-feed__page-btn article-feed__page-btn--next">
+          Next &rarr;
+        </a>
+      {%- else -%}
+        <span class="article-feed__page-btn article-feed__page-btn--next is-disabled">Next &rarr;</span>
+      {%- endif -%}
+
+    {%- when 'loadmore' -%}
+      {%- if paginate.next -%}
+        <a href="{{ paginate.next.url }}"
+           class="article-feed__load-more"
+           data-load-more>
+          Load more
+        </a>
+      {%- endif -%}
+
+    {%- when 'infinite' -%}
+      {%- if paginate.next -%}
+        <div class="article-feed__infinite-trigger"
+             data-infinite-scroll
+             data-next-url="{{ paginate.next.url }}"
+             aria-hidden="true">
+          <span class="article-feed__infinite-spinner"></span>
+        </div>
+      {%- endif -%}
+
+  {%- endcase -%}
+
+</nav>

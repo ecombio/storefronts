@@ -1,0 +1,101 @@
+{%- comment -%}
+  Renders a single banner carousel slide.
+
+  Accepts:
+  - block: {Object} the slide block (block.type == "slide")
+  - is_first: {Boolean} true for the first slide in the carousel — used to
+    eager-load its image instead of lazy-loading it
+{%- endcomment -%}
+
+{%- liquid
+  assign image = block.settings.image
+  assign mobile_image = block.settings.mobile_image
+  assign link = block.settings.link
+  assign heading = block.settings.heading
+  assign subheading = block.settings.subheading
+  assign price_text = block.settings.price_text
+  assign button_label = block.settings.button_label
+
+  assign img_loading = 'lazy'
+  if is_first
+    assign img_loading = 'eager'
+  endif
+-%}
+
+<div class="banner-carousel__slide" data-banner-carousel-slide {{ block.shopify_attributes }}>
+  <a href="{{ link | default: '#' }}" class="banner-carousel__link" {% if link == blank %}tabindex="-1" aria-disabled="true"{% endif %}>
+    <span class="banner-carousel__image-wrap">
+      {%- if image != blank -%}
+        <img
+          class="banner-carousel__image banner-carousel__image--desktop"
+          src="{{ image | image_url: width: 1500 }}"
+          srcset="{{ image | image_url: width: 750 }} 750w, {{ image | image_url: width: 1100 }} 1100w, {{ image | image_url: width: 1500 }} 1500w, {{ image | image_url: width: 2000 }} 2000w"
+          sizes="100vw"
+          alt="{{ image.alt | default: heading | escape }}"
+          loading="{{ img_loading }}"
+          width="{{ image.width }}"
+          height="{{ image.height }}"
+          style="--bc-img-scale: {{ block.settings.image_scale | default: 100 | divided_by: 100.0 }};"
+        >
+      {%- else -%}
+        <span class="banner-carousel__placeholder banner-carousel__placeholder--desktop">
+          {{ 'lifestyle-1' | placeholder_svg_tag: 'banner-carousel__placeholder-svg' }}
+        </span>
+      {%- endif -%}
+
+      {%- if mobile_image != blank -%}
+        <img
+          class="banner-carousel__image banner-carousel__image--mobile"
+          src="{{ mobile_image | image_url: width: 750 }}"
+          srcset="{{ mobile_image | image_url: width: 450 }} 450w, {{ mobile_image | image_url: width: 750 }} 750w, {{ mobile_image | image_url: width: 1000 }} 1000w"
+          sizes="100vw"
+          alt="{{ mobile_image.alt | default: heading | escape }}"
+          loading="{{ img_loading }}"
+          width="{{ mobile_image.width }}"
+          height="{{ mobile_image.height }}"
+          style="--bc-img-scale: {{ block.settings.image_scale | default: 100 | divided_by: 100.0 }};"
+        >
+      {%- elsif image != blank -%}
+        {%- comment -%}
+          No dedicated mobile image uploaded — fall back to the desktop
+          image at mobile-appropriate widths instead of leaving the mobile
+          slot empty (image--desktop is hidden via CSS below 750px, so
+          without this the slide is blank on phones for any block that
+          only sets "Image").
+        {%- endcomment -%}
+        <img
+          class="banner-carousel__image banner-carousel__image--mobile"
+          src="{{ image | image_url: width: 750 }}"
+          srcset="{{ image | image_url: width: 450 }} 450w, {{ image | image_url: width: 750 }} 750w, {{ image | image_url: width: 1000 }} 1000w"
+          sizes="100vw"
+          alt="{{ image.alt | default: heading | escape }}"
+          loading="{{ img_loading }}"
+          width="{{ image.width }}"
+          height="{{ image.height }}"
+          style="--bc-img-scale: {{ block.settings.image_scale | default: 100 | divided_by: 100.0 }};"
+        >
+      {%- else -%}
+        <span class="banner-carousel__placeholder banner-carousel__placeholder--mobile">
+          {{ 'lifestyle-2' | placeholder_svg_tag: 'banner-carousel__placeholder-svg' }}
+        </span>
+      {%- endif -%}
+    </span>
+
+    {%- if heading != blank or subheading != blank or price_text != blank or button_label != blank -%}
+      <span class="banner-carousel__content banner-carousel__content--{{ block.settings.content_position }}" style="color: {{ block.settings.text_color | default: '#ffffff' }};">
+        {%- if heading != blank -%}
+          <span class="banner-carousel__heading banner-carousel__text--{{ block.settings.heading_align | default: 'center' }}" style="font-size: {{ block.settings.heading_font_size | default: 32 }}px;">{{ heading }}</span>
+        {%- endif -%}
+        {%- if subheading != blank -%}
+          <span class="banner-carousel__subheading banner-carousel__text--{{ block.settings.subheading_align | default: 'center' }}" style="font-size: {{ block.settings.subheading_font_size | default: 16 }}px;">{{ subheading }}</span>
+        {%- endif -%}
+        {%- if price_text != blank -%}
+          <span class="banner-carousel__price banner-carousel__text--{{ block.settings.price_align | default: 'center' }}{% if block.settings.price_truncate %} banner-carousel__price--truncate{% endif %}" style="font-size: {{ block.settings.price_font_size | default: 14 }}px;">{{ price_text }}</span>
+        {%- endif -%}
+        {%- if button_label != blank -%}
+          <span class="banner-carousel__button banner-carousel__text--{{ block.settings.button_align | default: 'center' }}" style="font-size: {{ block.settings.button_font_size | default: 14 }}px;">{{ button_label }}</span>
+        {%- endif -%}
+      </span>
+    {%- endif -%}
+  </a>
+</div>

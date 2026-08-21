@@ -1,0 +1,224 @@
+/* ==========================================================================
+   Announcement Bar
+   Uses variables from theme.css
+
+   SECTION LAYOUT (width + padding): mirrors the independent pattern from
+   sections/example-width-section.liquid, also used by sections/main-header
+   and sections/main-footer. --section-padding and --custom-width are LOCAL
+   vars, set inline per-instance from this section's own schema settings
+   (see sections/announcement-bar.liquid) — they never read from the global
+   --page-margin / --page-width vars, so this section's width/padding can't
+   affect, or be affected by, any other section.
+
+   Unlike header/footer, this bar has no existing container to mirror: it's
+   edge-to-edge by design, and its side padding exists to keep slide text
+   clear of the prev/next arrows (28px wide + 8px inset from each edge), not
+   to line up with anything else. Defaults below (Full width, 48px padding,
+   40px fixed on mobile) preserve the bar's original look exactly — "Boxed"
+   (1184px, matching the header's own default width) and "Custom width" are
+   opt-in only.
+
+   CHANGED — the "Stick to top of viewport" setting and its
+   .announcement-bar--sticky-enabled / --autohide-hidden rules have been
+   removed. Sticky positioning for this bar is now handled at the
+   header-group level (assets/header-group.css / .js) via
+   [data-header-stack-member], alongside any other section in
+   config/header-group.json. Keeping a second, independent sticky
+   mechanism here would fight with the group-level one.
+   ========================================================================== */
+
+.announcement-bar {
+  position: relative;
+  background-color: var(--color-blue);
+  color: var(--color-white);
+  text-align: center;
+  overflow: hidden;
+}
+
+/* ── Track & Slides ───────────────────────────────────────────────────── */
+.announcement-bar__track {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding-block: 8px;
+  padding-inline: var(--section-padding, 48px);
+  margin-inline: auto;
+  width: 100%;
+}
+
+/* Width modifiers — same independent-per-section approach as
+   .main-header--default-width / --full-width / --custom-width and
+   .main-footer--default-width / --full-width / --custom-width, scoped to
+   this section's own BEM namespace (this theme has no shared global width
+   utility classes). "Full width" needs no max-width rule of its own — it's
+   the bar's natural, un-constrained state — but is still named explicitly
+   here for clarity and to match the other two modifiers' shape. */
+.announcement-bar--full-width .announcement-bar__track {
+  max-width: none;
+}
+
+.announcement-bar--boxed .announcement-bar__track {
+  max-width: 1184px;
+}
+
+.announcement-bar--custom-width .announcement-bar__track {
+  max-width: var(--custom-width);
+}
+
+.announcement-bar__slide {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  flex-wrap: wrap;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+  font-family: var(--font-body, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+  animation: ab-fade 0.3s ease;
+}
+
+.announcement-bar__slide.is-active {
+  display: flex;
+}
+
+@keyframes ab-fade {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Message */
+.announcement-bar__message {
+  margin: 0;
+  color: inherit;
+}
+
+.announcement-bar__message--link {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+  transition: border-color 0.15s ease;
+}
+
+.announcement-bar__message--link:hover {
+  border-color: var(--color-white);
+}
+
+/* ── Countdown ────────────────────────────────────────────────────────── */
+.announcement-bar__countdown {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.countdown__unit em {
+  font-style: normal;
+  font-size: 0.625rem;
+  opacity: 0.7;
+  text-transform: uppercase;
+}
+
+.countdown__sep {
+  opacity: 0.6;
+  margin: 0 2px;
+}
+
+/* Button inside countdown */
+.announcement-bar__btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-white);
+  text-decoration: none;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.announcement-bar__btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: var(--color-white);
+}
+
+/* ── Navigation Arrows ────────────────────────────────────────────────── */
+.announcement-bar__arrow {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.15s ease;
+  z-index: 2;
+}
+
+.announcement-bar__arrow:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: var(--color-white);
+}
+
+.announcement-bar__arrow--prev { left: 8px; right: auto; }
+.announcement-bar__arrow--next { right: 8px; }
+
+/* When the bar is also dismissible, the close button claims the far-right
+   8px slot, so shift the next-arrow inward to avoid overlapping it. */
+.announcement-bar--dismissible .announcement-bar__arrow--next {
+  right: 44px;
+}
+
+/* ── Close Button ─────────────────────────────────────────────────────── */
+.announcement-bar__close {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.15s ease;
+  z-index: 2;
+}
+
+.announcement-bar__close:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: var(--color-white);
+}
+
+/* ── Mobile ───────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .announcement-bar__track {
+    /* Deliberately a fixed value, not var(--section-padding) — mirrors
+       main-header.css / main-footer.css's mobile overrides: mobile stays
+       at the bar's original tighter padding regardless of whatever Side
+       padding value is set for desktop/tablet. */
+    padding-inline: 40px;
+    min-height: 36px;
+  }
+
+  .announcement-bar__slide {
+    font-size: 0.875rem;
+  }
+}

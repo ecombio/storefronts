@@ -1,0 +1,348 @@
+:root {
+  --ecd-rec-card-width:       120px;
+  --ecd-rec-card-image-size:  120px;
+  --ecd-rec-atc-bg:           #f2f2f0;
+  --ecd-rec-atc-bg-hover:     #1a1a1a;
+  --ecd-rec-atc-text-hover:   #ffffff;
+  --ecd-rec-atc-bg-added:     #2e7d32;
+  --ecd-rec-atc-text-added:   #ffffff;
+  --ecd-rec-skeleton-base:    #efefed;
+  --ecd-rec-skeleton-shine:   #f8f8f6;
+  --ecd-rec-nav-size:         26px;
+  --ecd-rec-nav-bg:           #f2f2f0;
+  --ecd-rec-nav-bg-hover:     #e5e5e3;
+  --ecd-rec-nav-icon:         #1a1a1a;
+}
+
+.ecombio-cart-recs__status {
+  position: absolute;
+  width:    1px;
+  height:   1px;
+  padding:  0;
+  margin:   -1px;
+  overflow: hidden;
+  clip:     rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border:   0;
+}
+
+.ecombio-cart-recs {
+  margin-top:  4px;
+  padding-top: 20px;
+  border-top:  1px solid var(--ecd-border-color);
+}
+
+.ecombio-cart-recs__rail {
+  display:        flex;
+  flex-direction: column;
+  gap:            12px;
+}
+
+.ecombio-cart-recs__rail + .ecombio-cart-recs__rail {
+  margin-top:  24px;
+  padding-top: 24px;
+  border-top:  1px solid var(--ecd-border-color);
+}
+
+.ecombio-cart-recs__heading {
+  margin:         0;
+  font-size:      0.75rem;
+  font-weight:    600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color:          var(--ecd-color-text-muted);
+  line-height:    1;
+}
+
+/* CHANGED: scroller is now a positioning context for the overlaid nav
+   buttons instead of a flex row that reserves space for them. This is
+   what stops the "You may also like" rail from losing ~32px on each side
+   just to make room for arrows that used to sit in-flow. */
+.ecombio-cart-recs__scroller {
+  position:  relative;
+  min-width: 0;
+}
+
+.ecombio-cart-recs__list {
+  list-style:                 none;
+  margin:                     0;
+  padding:                    0 0 8px;
+  display:                    flex;
+  flex-direction:             row;
+  align-items:                stretch;
+  min-width:                  0;
+  gap:                        12px;
+  overflow-x:                 auto;
+  overscroll-behavior-x:      contain;
+  scroll-snap-type:           x mandatory;
+  /* CHANGED: keeps a card from snapping directly underneath an overlaid
+     arrow, so the edge card still peeks out instead of being fully hidden. */
+  scroll-padding-inline:      var(--ecd-rec-nav-size);
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width:            none;
+}
+
+.ecombio-cart-recs__list::-webkit-scrollbar {
+  display: none;
+}
+
+/* CHANGED: nav buttons are now absolutely positioned over the rail instead
+   of being flex siblings of the list. They no longer consume horizontal
+   space — they float on top of the first/last card's image, vertically
+   centered against the card image height, with a shadow so they stay
+   legible over photos. */
+.ecombio-cart-recs__nav {
+  position:        absolute;
+  top:             calc((var(--ecd-rec-card-image-size) - var(--ecd-rec-nav-size)) / 2);
+  z-index:         2;
+  appearance:      none;
+  border:          none;
+  width:           var(--ecd-rec-nav-size);
+  height:          var(--ecd-rec-nav-size);
+  border-radius:   50%;
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  padding:         0;
+  background:      var(--ecd-rec-nav-bg);
+  color:           var(--ecd-rec-nav-icon);
+  cursor:          pointer;
+  box-shadow:      0 1px 4px rgba(0, 0, 0, 0.15);
+  transition:      background 150ms ease, opacity 150ms ease;
+}
+
+.ecombio-cart-recs__nav--prev { left:  -4px; }
+.ecombio-cart-recs__nav--next { right: -4px; }
+
+.ecombio-cart-recs__nav svg {
+  width:  14px;
+  height: 14px;
+}
+
+.ecombio-cart-recs__nav:hover:not(:disabled) {
+  background: var(--ecd-rec-nav-bg-hover);
+}
+
+.ecombio-cart-recs__nav:focus-visible {
+  outline:        2px solid var(--ecd-accent);
+  outline-offset: 2px;
+}
+
+.ecombio-cart-recs__nav:disabled {
+  opacity:        0.35;
+  cursor:         default;
+  pointer-events: none;
+}
+
+.ecombio-cart-recs__nav[hidden] {
+  display: none;
+}
+
+/* Cards: every card in a row now stretches to the same height (align-items:
+   stretch on the list), and card-info fills that stretched height so the
+   Add button consistently sits at the bottom via margin-top:auto, instead
+   of trailing wherever that card's own content happens to end. */
+.ecombio-cart-recs__card {
+  flex-shrink:      0;
+  width:            var(--ecd-rec-card-width);
+  display:          flex;
+  flex-direction:   column;
+  gap:              8px;
+  scroll-snap-align:start;
+}
+
+.ecombio-cart-recs__card-image-link {
+  display:        block;
+  width:          var(--ecd-rec-card-image-size);
+  height:         var(--ecd-rec-card-image-size);
+  border-radius:  var(--ecd-border-radius);
+  overflow:       hidden;
+  background:     var(--ecd-qty-bg);
+  flex-shrink:    0;
+  text-decoration:none;
+}
+
+.ecombio-cart-recs__card-image {
+  display:    block;
+  width:      100%;
+  height:     100%;
+  object-fit: cover;
+  transition: opacity 150ms ease;
+}
+
+.ecombio-cart-recs__card-image-link:hover .ecombio-cart-recs__card-image {
+  opacity: 0.85;
+}
+
+.ecombio-cart-recs__card-image--placeholder {
+  width:      100%;
+  height:     100%;
+  background: var(--ecd-qty-bg);
+}
+
+.ecombio-cart-recs__card-info {
+  display:        flex;
+  flex-direction: column;
+  gap:            4px;
+  min-width:      0;
+  flex:           1 1 auto; /* fill the stretched card height */
+}
+
+.ecombio-cart-recs__card-title {
+  display:            -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow:           hidden;
+  font-size:          0.75rem;
+  font-weight:        500;
+  line-height:        1.35;
+  color:              var(--ecd-color-text-link);
+  text-decoration:    none;
+}
+
+.ecombio-cart-recs__card-title:hover {
+  color:                var(--ecd-color-text-link-hover);
+  text-decoration:      underline;
+  text-underline-offset:2px;
+}
+
+/* Always rendered by the JS (empty when the product has only one variant)
+   so the element exists in the DOM either way, but no reserved min-height:
+   when empty it collapses to nothing rather than leaving a gap. The
+   flex-stretch on .card-info plus margin-top:auto on .card-bottom already
+   handles pinning the Add button to the bottom consistently. */
+.ecombio-cart-recs__card-variant {
+  margin:      0;
+  font-size:   0.6875rem;
+  color:       var(--ecd-color-text-muted);
+  line-height: 1.3;
+}
+
+.ecombio-cart-recs__card-variant:empty {
+  display: none;
+}
+
+.ecombio-cart-recs__card-bottom {
+  display:        flex;
+  flex-direction: column;
+  gap:            6px;
+  margin-top:     auto;
+}
+
+.ecombio-cart-recs__card-price {
+  display:        flex;
+  flex-direction: column;
+  gap:            1px;
+}
+
+.ecombio-cart-recs__price {
+  font-size:   0.8125rem;
+  font-weight: 600;
+  color:       var(--ecd-color-text);
+}
+
+.ecombio-cart-recs__price--was {
+  display:              block;
+  font-size:            0.6875rem;
+  line-height:          1.3;
+  color:                var(--ecd-color-text-muted);
+  text-decoration-color:var(--ecd-color-text-muted);
+}
+
+.ecombio-cart-recs__price--was:empty {
+  display: none;
+}
+
+.ecombio-cart-recs__atc {
+  appearance:   none;
+  border:       none;
+  padding:      6px 10px;
+  border-radius:var(--ecd-qty-border-radius);
+  font-family:  var(--ecd-font-family);
+  font-size:    0.6875rem;
+  font-weight:  600;
+  letter-spacing:0.03em;
+  cursor:       pointer;
+  background:   var(--ecd-rec-atc-bg);
+  color:        var(--ecd-color-text);
+  transition:   background 150ms ease, color 150ms ease, opacity 150ms ease;
+  white-space:  nowrap;
+  width:        100%;
+  text-align:   center;
+  line-height:  1.2;
+  position:     relative;
+}
+
+.ecombio-cart-recs__atc:hover:not(:disabled):not(.is-added) {
+  background: var(--ecd-rec-atc-bg-hover);
+  color:      var(--ecd-rec-atc-text-hover);
+}
+
+.ecombio-cart-recs__atc:focus-visible {
+  outline:        2px solid var(--ecd-accent);
+  outline-offset: 2px;
+}
+
+.ecombio-cart-recs__atc:disabled:not(.is-loading):not(.is-added) {
+  opacity: 0.45;
+  cursor:  not-allowed;
+}
+
+.ecombio-cart-recs__atc.is-loading {
+  opacity:        0.65;
+  cursor:         wait;
+  pointer-events: none;
+}
+
+.ecombio-cart-recs__atc.is-added {
+  background:     var(--ecd-rec-atc-bg-added);
+  color:          var(--ecd-rec-atc-text-added);
+  cursor:         default;
+  pointer-events: none;
+}
+
+.ecombio-cart-recs__skeleton {
+  display:        flex;
+  flex-direction: column;
+  gap:            12px;
+}
+
+.ecombio-cart-recs__skeleton-bar {
+  height:       12px;
+  width:        40%;
+  border-radius:4px;
+  background:   var(--ecd-rec-skeleton-base);
+  animation:    ecd-rec-shimmer 1.4s ease-in-out infinite;
+}
+
+.ecombio-cart-recs__skeleton-cards {
+  display:  flex;
+  gap:      12px;
+  overflow: hidden;
+}
+
+.ecombio-cart-recs__skeleton-card {
+  flex-shrink:  0;
+  width:        var(--ecd-rec-card-width);
+  height:       calc(var(--ecd-rec-card-image-size) + 60px);
+  border-radius:var(--ecd-border-radius);
+  background:   var(--ecd-rec-skeleton-base);
+  animation:    ecd-rec-shimmer 1.4s ease-in-out infinite;
+}
+
+.ecombio-cart-recs__skeleton-card:nth-child(2) { animation-delay: 0.1s; }
+.ecombio-cart-recs__skeleton-card:nth-child(3) { animation-delay: 0.2s; }
+.ecombio-cart-recs__skeleton-card:nth-child(4) { animation-delay: 0.3s; }
+
+@keyframes ecd-rec-shimmer {
+  0%   { background-color: var(--ecd-rec-skeleton-base); }
+  50%  { background-color: var(--ecd-rec-skeleton-shine); }
+  100% { background-color: var(--ecd-rec-skeleton-base); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ecombio-cart-recs__skeleton-bar,
+  .ecombio-cart-recs__skeleton-card {
+    animation: none;
+  }
+}

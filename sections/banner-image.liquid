@@ -1,0 +1,236 @@
+{{ 'banner-image.css' | asset_url | stylesheet_tag }}
+
+<div class="banner-image-section" style="padding-top: {{ section.settings.padding_top }}px; padding-bottom: {{ section.settings.padding_bottom }}px; background-color: {{ section.settings.bg_color }};">
+  <div class="banner-image-section__inner{% if section.settings.full_width %} banner-image-section__inner--full{% else %} page-width{% endif %}">
+    {%- liquid
+      assign image = section.settings.image
+      assign mobile_image = section.settings.mobile_image
+      assign link = section.settings.link
+      assign heading = section.settings.heading
+      assign subheading = section.settings.subheading
+      assign button_label = section.settings.button_label
+    -%}
+
+    <div class="banner-image" data-banner-image style="--banner-height-desktop: {{ section.settings.height_desktop }}px; --banner-height-mobile: {{ section.settings.height_mobile }}px; --banner-radius: {{ section.settings.image_radius }}px; --banner-overlay-opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }};">
+      <a href="{{ link | default: '#' }}" class="banner-image__link" {% if link == blank %}tabindex="-1" aria-disabled="true"{% endif %}>
+        <span class="banner-image__image-wrap">
+          {%- if image != blank -%}
+            <img
+              class="banner-image__image banner-image__image--desktop"
+              data-banner-image-img
+              src="{{ image | image_url: width: 1500 }}"
+              srcset="{{ image | image_url: width: 750 }} 750w, {{ image | image_url: width: 1100 }} 1100w, {{ image | image_url: width: 1500 }} 1500w, {{ image | image_url: width: 2000 }} 2000w"
+              sizes="100vw"
+              alt="{{ image.alt | default: heading | escape }}"
+              loading="lazy"
+              width="{{ image.width }}"
+              height="{{ image.height }}"
+            >
+          {%- else -%}
+            <span class="banner-image__placeholder banner-image__placeholder--desktop">
+              {{ 'lifestyle-1' | placeholder_svg_tag: 'banner-image__placeholder-svg' }}
+            </span>
+          {%- endif -%}
+
+          {%- if mobile_image != blank -%}
+            <img
+              class="banner-image__image banner-image__image--mobile"
+              data-banner-image-img
+              src="{{ mobile_image | image_url: width: 750 }}"
+              srcset="{{ mobile_image | image_url: width: 450 }} 450w, {{ mobile_image | image_url: width: 750 }} 750w, {{ mobile_image | image_url: width: 1000 }} 1000w"
+              sizes="100vw"
+              alt="{{ mobile_image.alt | default: heading | escape }}"
+              loading="lazy"
+              width="{{ mobile_image.width }}"
+              height="{{ mobile_image.height }}"
+            >
+          {%- elsif image == blank -%}
+            <span class="banner-image__placeholder banner-image__placeholder--mobile">
+              {{ 'lifestyle-2' | placeholder_svg_tag: 'banner-image__placeholder-svg' }}
+            </span>
+          {%- endif -%}
+
+          {%- if section.settings.overlay_opacity > 0 -%}
+            <span class="banner-image__scrim" aria-hidden="true"></span>
+          {%- endif -%}
+        </span>
+
+        {%- if heading != blank or subheading != blank or button_label != blank -%}
+          <span class="banner-image__content banner-image__content--{{ section.settings.content_position }} banner-image__content--align-{{ section.settings.text_align }}">
+            {%- if heading != blank -%}
+              <span class="banner-image__heading">{{ heading }}</span>
+            {%- endif -%}
+            {%- if subheading != blank -%}
+              <span class="banner-image__subheading">{{ subheading }}</span>
+            {%- endif -%}
+            {%- if button_label != blank -%}
+              <span class="banner-image__button">{{ button_label }}</span>
+            {%- endif -%}
+          </span>
+        {%- endif -%}
+      </a>
+    </div>
+  </div>
+</div>
+
+<script src="{{ 'banner-image.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Banner image",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image",
+      "info": "A placeholder image is shown if blank"
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_image",
+      "label": "Mobile image",
+      "info": "Optional. Used on small screens instead of the image above"
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "Link",
+      "info": "Link to a product, collection, blog, page, or any URL"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Make section full width",
+      "info": "Off by default to match the site's contained page layout. Turn on for an edge-to-edge banner.",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Text"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label"
+    },
+    {
+      "type": "select",
+      "id": "content_position",
+      "label": "Content position",
+      "options": [
+        { "value": "top-left", "label": "Top left" },
+        { "value": "top-center", "label": "Top center" },
+        { "value": "top-right", "label": "Top right" },
+        { "value": "center", "label": "Center" },
+        { "value": "bottom-left", "label": "Bottom left" },
+        { "value": "bottom-center", "label": "Bottom center" },
+        { "value": "bottom-right", "label": "Bottom right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "text_align",
+      "label": "Text alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "label": "Image overlay darkness",
+      "info": "Darkens the image so overlaid text stays legible",
+      "default": 20
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "height_desktop",
+      "min": 120,
+      "max": 600,
+      "step": 10,
+      "unit": "px",
+      "label": "Banner height (desktop/tablet)",
+      "default": 280
+    },
+    {
+      "type": "range",
+      "id": "height_mobile",
+      "min": 100,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "label": "Banner height (mobile)",
+      "default": 200
+    },
+    {
+      "type": "range",
+      "id": "image_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Banner corner radius",
+      "default": 0
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Section background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Section padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "Banner image"
+    }
+  ]
+}
+{% endschema %}

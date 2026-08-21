@@ -1,0 +1,141 @@
+{% comment %}
+  ECOMBIO Header — Mega Menu Block
+  File: blocks/mega.liquid
+
+  Owns the <li> wrapper + trigger link + mega-menu panel shell for the
+  "mega" block type in sections/header-menu.liquid (called there via
+  {%- render block -%}).
+
+  The column grid + trending-products rail are delegated to
+  snippets/header-mega-menu.liquid. This file additionally builds the
+  optional promo tile (image / heading / subtext / CTA) and positions it
+  relative to the text columns per `promo_position`.
+{% endcomment %}
+
+{%- liquid
+  assign mega_menu = linklists[block.settings.menu]
+  assign trigger_url = block.settings.link | default: mega_menu.links.first.url | default: '#'
+  assign has_promo = false
+  if block.settings.promo_image != blank or block.settings.promo_heading != blank
+    assign has_promo = true
+  endif
+-%}
+
+<li class="menu-bar__item menu-bar__item--has-mega" {{ block.shopify_attributes }}>
+  <a href="{{ trigger_url }}"
+     class="menu-bar__link menu-bar__link--caret"
+     aria-haspopup="true"
+     aria-expanded="false">
+    {%- if block.settings.icon != blank -%}
+      <span class="menu-bar__icon">{%- render 'menu-icon', icon: block.settings.icon -%}</span>
+    {%- endif -%}
+    {{ block.settings.label | default: mega_menu.title | default: 'Shop' }}
+    <svg class="icon-caret-down" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path d="M16.25 7.5L10 13.75L3.75 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {%- if mega_menu != blank and mega_menu.links.size > 0 -%}
+    <div class="mega-menu" role="region">
+      <div class="mega-menu-items{% if has_promo %} mega-menu-items--promo-{{ block.settings.promo_position | default: 'right' }}{% endif %}">
+
+        {%- comment -%} Promo tile rendered before columns when position is left {%- endcomment -%}
+        {%- if has_promo and block.settings.promo_position == 'left' -%}
+          {%- render 'mega-menu-promo', block: block -%}
+        {%- endif -%}
+
+        {%- render 'header-mega-menu', menu: mega_menu, show_products: block.settings.show_products -%}
+
+        {%- comment -%} Promo tile rendered after columns for right (default) or bottom {%- endcomment -%}
+        {%- if has_promo and block.settings.promo_position != 'left' -%}
+          {%- render 'mega-menu-promo', block: block -%}
+        {%- endif -%}
+
+      </div>
+    </div>
+  {%- endif -%}
+</li>
+
+{% schema %}
+{
+  "name": "Mega menu",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Nav bar"
+    },
+    {
+      "type": "text",
+      "id": "label",
+      "label": "Label",
+      "default": "Shop"
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "URL",
+      "info": "Optional. Falls back to first menu link."
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Menu"
+    },
+    {
+      "type": "text",
+      "id": "icon",
+      "label": "Icon name"
+    },
+    {
+      "type": "header",
+      "content": "Products"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_products",
+      "label": "Show trending products",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Promo"
+    },
+    {
+      "type": "select",
+      "id": "promo_position",
+      "label": "Position",
+      "default": "right",
+      "options": [
+        { "value": "right",  "label": "Right" },
+        { "value": "left",   "label": "Left" },
+        { "value": "bottom", "label": "Bottom" }
+      ]
+    },
+    {
+      "type": "image_picker",
+      "id": "promo_image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "promo_heading",
+      "label": "Heading"
+    },
+    {
+      "type": "text",
+      "id": "promo_subtext",
+      "label": "Subtext"
+    },
+    {
+      "type": "text",
+      "id": "promo_cta_label",
+      "label": "Button label"
+    },
+    {
+      "type": "url",
+      "id": "promo_cta_link",
+      "label": "Button URL"
+    }
+  ]
+}
+{% endschema %}

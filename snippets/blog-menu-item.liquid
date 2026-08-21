@@ -1,0 +1,47 @@
+{%- comment -%}
+  Renders one blog-menu nav item, with optional dropdown.
+  Accepts:
+    title    - string
+    url      - string
+    active   - boolean
+    sublinks - array of items exposing either {title,url,active}
+               (Shopify link objects) or {label,link} (menu_item metaobjects)
+{%- endcomment -%}
+{%- if sublinks and sublinks.size > 0 -%}
+  <li class="blog-menu__item blog-menu__item--list">
+    <button
+      type="button"
+      class="blog-menu__link blog-menu__link--parent"
+      data-blog-menu-dropdown-toggle
+      aria-expanded="false"
+      aria-haspopup="true"
+    >
+      {{ title | escape }}
+      <span class="blog-menu__caret" aria-hidden="true"></span>
+    </button>
+
+    <ul class="blog-menu__dropdown" data-blog-menu-dropdown>
+      {%- for sublink in sublinks -%}
+        {%- assign sublink_title = sublink.title | default: sublink.label -%}
+        {%- assign sublink_url = sublink.url | default: sublink.link -%}
+        <li class="blog-menu__dropdown-item">
+          <a
+            href="{{ sublink_url }}"
+            class="blog-menu__dropdown-link{% if sublink.active %} blog-menu__dropdown-link--active{% endif %}"
+          >
+            {{ sublink_title | escape }}
+          </a>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </li>
+{%- else -%}
+  <li class="blog-menu__item blog-menu__item--single">
+    <a
+      href="{{ url }}"
+      class="blog-menu__link{% if active %} blog-menu__link--active{% endif %}"
+    >
+      {{ title | escape }}
+    </a>
+  </li>
+{%- endif -%}

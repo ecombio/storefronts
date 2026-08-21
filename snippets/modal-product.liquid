@@ -1,0 +1,61 @@
+{%- comment -%}
+  Renders a persistent product card under a shoppable video tile:
+  thumbnail on the left, name + price on the right, full-width
+  "Add to Cart" button below (with a chevron toggle for variants
+  when the product has more than one).
+
+  Usage:
+    {% render 'modal-product', product: block.settings.product_1, uid: block.id %}
+{%- endcomment -%}
+
+{%- if product != blank -%}
+  {%- assign variant = product.selected_or_first_available_variant -%}
+  <div class="shoppable-video__card" data-sv-product="{{ uid }}">
+    <a href="{{ product.url }}" class="shoppable-video__card-top">
+      <span class="shoppable-video__card-thumb">
+        {%- if product.featured_image -%}
+          {{ product.featured_image | image_url: width: 100 | image_tag: loading: 'lazy', alt: product.title }}
+        {%- endif -%}
+      </span>
+      <span class="shoppable-video__card-info">
+        <span class="shoppable-video__card-title">{{ product.title }}</span>
+        <span class="shoppable-video__card-price" data-sv-price="{{ uid }}">{{ variant.price | money }}</span>
+      </span>
+    </a>
+
+    {%- unless product.has_only_default_variant -%}
+      <div class="shoppable-video__card-variants js-sv-variants" data-sv-variants="{{ uid }}" hidden>
+        {%- for option in product.options_with_values -%}
+          <select class="shoppable-video__select" data-sv-option="{{ uid }}" data-option-index="{{ forloop.index0 }}" aria-label="{{ option.name }}">
+            {%- for value in option.values -%}
+              <option value="{{ value }}">{{ value }}</option>
+            {%- endfor -%}
+          </select>
+        {%- endfor -%}
+      </div>
+    {%- endunless -%}
+
+    <div class="shoppable-video__card-add-row">
+      <button
+        type="button"
+        class="shoppable-video__card-add js-sv-add"
+        data-sv-add="{{ uid }}"
+        data-variant-id="{{ variant.id }}"
+        {%- unless variant.available %} disabled{% endunless %}
+      >
+        {%- if variant.available -%}Add to Cart{%- else -%}Sold out{%- endif -%}
+      </button>
+      {%- unless product.has_only_default_variant -%}
+        <button type="button" class="shoppable-video__card-chevron-btn js-sv-variant-toggle" data-sv-variant-toggle="{{ uid }}" aria-label="Choose options" aria-expanded="false">
+          <svg class="shoppable-video__card-chevron" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      {%- endunless -%}
+    </div>
+  </div>
+
+  {%- unless product.has_only_default_variant -%}
+    <script type="application/json" class="js-sv-variant-data" data-sv-json="{{ uid }}">{{ product | json }}</script>
+  {%- endunless -%}
+{%- endif -%}

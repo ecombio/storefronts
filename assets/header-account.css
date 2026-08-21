@@ -1,0 +1,78 @@
+/* =============================================================================
+   ECOMBIO Header — Account Icon
+   File: assets/header-account.css
+   Pairs with: snippets/ecombio-header-icon-account.liquid
+
+   Note: also styles any other snippet reusing the same generic
+   .ecombio-header__icon-link / .ecombio-icon / .ecombio-header__icon-label
+   classes (e.g. cart, wishlist, store-finder icons), since they share
+   this markup pattern.
+
+   Depends on custom properties defined in header.css:
+     --hdr-text, --hdr-search-bg
+   Load this file after header.css.
+   ============================================================================= */
+
+.ecombio-header__icons {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.ecombio-icon {
+  display: block;
+  flex-shrink: 0;
+}
+
+.ecombio-header__icon-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  color: var(--hdr-text);
+  font-size: 0.875rem;
+  font-weight: 400;
+  white-space: nowrap;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: transparent;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.ecombio-header__icon-link:hover {
+  background: var(--hdr-search-bg);
+}
+
+/* =============================================================================
+   RESPONSIVE — TABLET  (600px – 1023px)
+   ============================================================================= */
+
+@media (max-width: 1023px) {
+
+  .ecombio-header__icon-label {
+    display: inline;
+  }
+
+  .ecombio-header__icons {
+    gap: 4px;
+  }
+
+}
+
+/* =============================================================================
+   RESPONSIVE — MOBILE  (< 600px)
+   ============================================================================= */
+
+@media (max-width: 599px) {
+
+  .ecombio-header__icon-label {
+    display: none;
+  }
+
+  .ecombio-header__icon-link {
+    padding: 6px;
+  }
+
+}

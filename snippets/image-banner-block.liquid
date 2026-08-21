@@ -1,0 +1,31 @@
+{% comment %}
+  Image Banner Block - Skip Tracing Style
+  Renders a dark promotional banner with heading, subtext, button + decorative globe
+{% endcomment %}
+
+<div class="promo-banner" {{ block.shopify_attributes }}>
+  <div class="promo-banner__content">
+    <h2 class="promo-banner__heading">
+      {{ block.settings.heading | default: "Experience superior skip tracing" }}
+    </h2>
+    
+    <p class="promo-banner__subtext">
+      {{ block.settings.subtext | default: "150+ data points per search." }}
+    </p>
+
+    {%- if block.settings.button_text != blank -%}
+      <a 
+        href="{{ block.settings.button_link | default: '#' }}" 
+        class="promo-banner__button"
+      >
+        {{ block.settings.button_text }}
+      </a>
+    {%- endif -%}
+  </div>
+
+  <!-- Decorative Globe -->
+  <div class="promo-banner__globe">
+    <div class="globe-ring"></div>
+    <div class="globe-dots"></div>
+  </div>
+</div>

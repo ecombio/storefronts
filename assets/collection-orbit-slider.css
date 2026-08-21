@@ -1,0 +1,253 @@
+/* ============================================================
+   Collection Orbit Slider — collection-orbit-slider.css
+   Place in: /assets/collection-orbit-slider.css
+   ============================================================ */
+
+/* ---------- Section shell ---------- */
+.orbit-slider {
+  position: relative;
+  overflow: hidden;
+}
+
+.orbit-slider__container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* ---------- Optional heading ---------- */
+.orbit-slider__heading {
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin: 0 0 16px 4px;
+  color: var(--orbit-text, #111);
+}
+
+/* ---------- Track wrapper (positions nav + fades) ---------- */
+.orbit-slider__track-wrapper {
+  position: relative;
+}
+
+/* ---------- Scrollable track ---------- */
+.orbit-slider__track {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  overflow-x: auto;
+  overflow-y: visible;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;           /* Firefox */
+  -ms-overflow-style: none;        /* IE/Edge */
+  list-style: none;
+  margin: 0;
+  padding: 10px 48px 12px;         /* side padding so first/last items aren't edge-clipped */
+  cursor: grab;
+  user-select: none;
+}
+
+.orbit-slider__track::-webkit-scrollbar {
+  display: none;
+}
+
+.orbit-slider__track.is-dragging {
+  cursor: grabbing;
+  scroll-behavior: auto;
+}
+
+/* ---------- Individual item ---------- */
+.orbit-slider__item {
+  flex: 0 0 auto;
+  width: 110px;                    /* desktop */
+  animation: orbitFadeUp 0.4s both ease-out;
+}
+
+@media (max-width: 767px) {
+  .orbit-slider__item {
+    width: 88px;
+  }
+}
+
+@keyframes orbitFadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- Link ---------- */
+.orbit-slider__link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--orbit-text, #111);
+  padding: 6px 8px;
+  border-radius: 12px;
+  transition: background 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.orbit-slider__link:hover {
+  background: rgba(0,0,0,0.035);
+}
+
+/* ---------- Circle image container ---------- */
+.orbit-slider__circle {
+  position: relative;
+  width: 82px;
+  height: 82px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #f2f2f2;
+  flex-shrink: 0;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.25s ease;
+}
+
+@media (max-width: 767px) {
+  .orbit-slider__circle {
+    width: 66px;
+    height: 66px;
+  }
+}
+
+.orbit-slider__link:hover .orbit-slider__circle {
+  transform: scale(1.07);
+  box-shadow: 0 0 0 3px var(--orbit-accent, #c0392b),
+              0 6px 18px rgba(0,0,0,0.12);
+}
+
+/* ---------- Image ---------- */
+.orbit-slider__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.35s ease;
+}
+
+.orbit-slider__link:hover .orbit-slider__img {
+  transform: scale(1.08);
+}
+
+/* ---------- SVG placeholder ---------- */
+.orbit-slider__placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e8e8e8;
+}
+
+.orbit-slider__placeholder-svg {
+  width: 50%;
+  height: 50%;
+  opacity: 0.5;
+}
+
+/* ---------- Badge ---------- */
+.orbit-slider__badge {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--orbit-accent, #c0392b);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 20px;
+  white-space: nowrap;
+  pointer-events: none;
+  line-height: 1.5;
+}
+
+/* ---------- Label ---------- */
+.orbit-slider__label {
+  font-size: 0.78rem;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.3;
+  color: var(--orbit-text, #111);
+  max-width: 90px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* ---------- Edge fades ---------- */
+.orbit-slider__fade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 56px;
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity 0.3s ease;
+}
+
+.orbit-slider__fade--left {
+  left: 0;
+  background: linear-gradient(to right, var(--orbit-bg, #fff) 20%, transparent);
+}
+
+.orbit-slider__fade--right {
+  right: 0;
+  background: linear-gradient(to left, var(--orbit-bg, #fff) 20%, transparent);
+}
+
+.orbit-slider__fade--hidden {
+  opacity: 0;
+}
+
+/* ---------- Nav buttons ---------- */
+.orbit-slider__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  padding: 0;
+  color: var(--orbit-text, #111);
+}
+
+.orbit-slider__nav:hover {
+  box-shadow: 0 4px 14px rgba(0,0,0,0.16);
+  transform: translateY(-50%) scale(1.06);
+}
+
+.orbit-slider__nav--prev {
+  left: 2px;
+}
+
+.orbit-slider__nav--next {
+  right: 2px;
+}
+
+.orbit-slider__nav[disabled],
+.orbit-slider__nav.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Hide nav on mobile — touch scroll handles it */
+@media (max-width: 767px) {
+  .orbit-slider__nav { display: none; }
+  .orbit-slider__fade { width: 28px; }
+  .orbit-slider__track { padding-left: 12px; padding-right: 12px; }
+}

@@ -1,0 +1,70 @@
+{% comment %}
+  snippets/star-rating.liquid  (Multi-provider Star Rating)
+
+  Single entry point for the star rating badge, regardless of which
+  reviews app is active. This file owns two decisions:
+    1. Which provider's markup to render (Yotpo or Judge.me)
+    2. Should it link to the Reviews Widget?
+
+  Provider-specific markup lives in its own branch below so each
+  provider's data-* attributes only need to be correct in one place.
+  Yotpo's branch still delegates to snippets/yotpo-widgets.liquid
+  (unchanged) to avoid touching that file. Judge.me's markup is small
+  enough to inline directly rather than adding another snippet file.
+
+  Works in two contexts — pass whichever's relevant:
+  - Product pages / product cards: pass `product`
+  - Cart line items: pass `cart_item` (the `item` from a cart loop)
+
+  Usage:
+    {% render 'star-rating', product: product, provider: section.settings.reviews_provider %}
+    {% render 'star-rating', cart_item: item, provider: section.settings.reviews_provider %}
+
+  Optional:
+    {% render 'star-rating', product: product, provider: 'judgeme', link_to_reviews: false %}
+    (set false to render a non-clickable rating, e.g. inside a
+    product card that's already wrapped in its own <a> tag)
+
+    `provider` defaults to 'yotpo' if not passed, so existing calls
+    to this snippet elsewhere in the theme keep working unchanged.
+{% endcomment %}
+
+{%- liquid
+  assign rating_product = product
+  if cart_item
+    assign rating_product = cart_item.product
+  endif
+
+  assign active_provider = provider | default: settings.reviews_provider | default: 'yotpo'
+
+  assign reviews_anchor = '#reviews'
+  if active_provider == 'judgeme'
+    assign reviews_anchor = '#judgeme_product_reviews'
+  endif
+
+  assign link_url = ''
+  if rating_product
+    assign link_url = rating_product.url | append: reviews_anchor
+  endif
+-%}
+
+{%- capture widget_markup -%}
+  {%- if active_provider == 'judgeme' -%}
+    <div
+      style='{{ jm_style }}'
+      class='jdgm-widget jdgm-preview-badge'
+      data-id='{{ rating_product.id }}'
+      data-auto-install='false'
+    >
+      {{ rating_product.metafields.judgeme.badge }}
+    </div>
+  {%- else -%}
+    {%- render 'yotpo-widgets', widget_type: 'yotpo_preview_badge', product: product, cart_item: cart_item -%}
+  {%- endif -%}
+{%- endcapture -%}
+
+{%- if link_to_reviews == false or link_url == blank -%}
+  {{ widget_markup }}
+{%- else -%}
+  <a href="{{ link_url }}" class="star-rating-link">{{ widget_markup }}</a>
+{%- endif -%}

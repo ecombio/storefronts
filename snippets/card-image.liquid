@@ -1,0 +1,110 @@
+{% comment %}
+  ECOMBIO – Card Image Snippet
+  File: snippets/card-image.liquid
+
+  Parameters:
+    block           – the block object
+    section         – the parent section object
+    forloop_index   – 0-based integer for staggered animations
+{% endcomment %}
+
+{%- liquid
+  assign img          = block.settings.image
+  assign img_alt      = block.settings.image_alt | default: block.settings.title | escape
+  assign badge_text   = block.settings.badge_text
+  assign title        = block.settings.title
+  assign link         = block.settings.link
+  assign btn_label    = block.settings.btn_label | default: 'Shop Now'
+  assign show_promo   = block.settings.show_promo_badge
+  assign promo_label  = block.settings.promo_badge_label
+  assign promo_value  = block.settings.promo_badge_value
+
+  assign delay_ms     = forloop_index | times: 60
+-%}
+
+<article
+  class="ic-card"
+  {{ block.shopify_attributes }}
+  style="animation-delay: {{ delay_ms }}ms;"
+  aria-label="{{ title | escape }}"
+>
+
+  {%- comment -%} ── Image ─────────────────────────────────────────────── {%- endcomment -%}
+  <div class="ic-card__image-wrap">
+    {%- if img != blank -%}
+      {%- assign widths = '360,480,600,720,900' -%}
+      {{
+        img
+        | image_url: width: 720
+        | image_tag:
+          loading: 'lazy',
+          widths: widths,
+          sizes: '(max-width: 767px) 85vw, (max-width: 1024px) 45vw, 25vw',
+          alt: img_alt,
+          class: 'ic-card__img'
+      }}
+    {%- else -%}
+      {{ 'product-1' | placeholder_svg_tag: 'ic-card__img ic-card__placeholder-svg' }}
+    {%- endif -%}
+
+    {%- comment -%} ── Category badge (top-left) ──────────────────────── {%- endcomment -%}
+    {%- if badge_text != blank -%}
+      <span class="ic-card__badge" aria-label="Category: {{ badge_text | escape }}">
+        {{ badge_text | escape }}
+      </span>
+    {%- endif -%}
+
+    {%- comment -%} ── Promo badge (top-right circular) ─────────────── {%- endcomment -%}
+    {%- if show_promo -%}
+      <div class="ic-card__promo-badge" aria-label="{{ promo_label | escape }} {{ promo_value | escape }}" role="note">
+        {%- if promo_label != blank -%}
+          <span class="badge-label">{{ promo_label | escape }}</span>
+        {%- endif -%}
+        {%- if promo_value != blank -%}
+          <span class="badge-value">{{ promo_value | escape }}</span>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+  </div>
+
+  {%- comment -%} ── Content: title + CTA ──────────────────────────────── {%- endcomment -%}
+  <div class="ic-card__content">
+    {%- if title != blank -%}
+      <p class="ic-card__title">{{ title | escape }}</p>
+    {%- endif -%}
+
+    {%- if link != blank -%}
+      <a
+        href="{{ link }}"
+        class="ic-card__btn"
+        {%- if block.settings.btn_bg_override != blank -%}
+          style="
+            background: {{ block.settings.btn_bg_override }};
+            {%- if block.settings.btn_text_override != blank -%}
+              color: {{ block.settings.btn_text_override }};
+            {%- endif -%}
+          "
+        {%- endif -%}
+        aria-label="{{ btn_label | escape }} – {{ title | escape }}"
+      >
+        {{ btn_label | escape }}
+      </a>
+    {%- else -%}
+      <span
+        class="ic-card__btn ic-card__btn--no-link"
+        {%- if block.settings.btn_bg_override != blank -%}
+          style="
+            background: {{ block.settings.btn_bg_override }};
+            {%- if block.settings.btn_text_override != blank -%}
+              color: {{ block.settings.btn_text_override }};
+            {%- endif -%}
+          "
+        {%- endif -%}
+        aria-hidden="true"
+      >
+        {{ btn_label | escape }}
+      </span>
+    {%- endif -%}
+  </div>
+
+</article>

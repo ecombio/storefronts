@@ -1,0 +1,42 @@
+{% comment %}
+  ECOMBIO Header — Mega Menu Promo Tile
+  File: snippets/mega-menu-promo.liquid
+
+  Renders the optional image/heading/subtext/CTA tile inside a mega-menu
+  panel. Called from blocks/mega-menu.liquid:
+
+    {%- render 'mega-menu-promo', block: block -%}
+
+  Params:
+    block {block} — the 'mega' block, used to read promo_* settings
+{% endcomment %}
+
+{%- liquid
+  assign img = block.settings.promo_image
+  assign heading = block.settings.promo_heading
+  assign subtext = block.settings.promo_subtext
+  assign cta_label = block.settings.promo_cta_label
+  assign cta_link = block.settings.promo_cta_link | default: '#'
+-%}
+
+<a href="{{ cta_link }}" class="mega-menu__promo mega-menu__promo--{{ block.settings.promo_position | default: 'right' }}">
+  {%- if img != blank -%}
+    <div class="mega-menu__promo-image">
+      {{ img | image_url: width: 480 | image_tag: loading: 'lazy', alt: heading | default: img.alt }}
+    </div>
+  {%- endif -%}
+
+  {%- if heading != blank or subtext != blank or cta_label != blank -%}
+    <div class="mega-menu__promo-text">
+      {%- if heading != blank -%}
+        <p class="mega-menu__promo-heading">{{ heading }}</p>
+      {%- endif -%}
+      {%- if subtext != blank -%}
+        <p class="mega-menu__promo-subtext">{{ subtext }}</p>
+      {%- endif -%}
+      {%- if cta_label != blank -%}
+        <span class="mega-menu__promo-cta">{{ cta_label }}</span>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+</a>

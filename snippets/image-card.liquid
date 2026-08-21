@@ -1,0 +1,151 @@
+{%- comment -%}
+  Renders a single, standalone image card — a promotional image with
+  optional overlaid text and link. Sized entirely by its container
+  (e.g. one cell of a host section's grid) — no carousel/track sizing
+  assumptions, unlike the banner-card.liquid this was derived from.
+
+  Expects image-card.css to already be loaded by the host page/section
+  (same asset-ownership convention as product-card.liquid — see the
+  comment at the top of featured-collection.liquid).
+
+  Accepts:
+  - image: {Object} desktop image
+  - mobile_image: {Object} optional — falls back to `image` at mobile
+    widths if not supplied, so the card is never blank on phones
+  - link: {String/Object} optional — renders an inert, unfocusable
+    link when blank rather than omitting the <a> entirely
+  - heading, subheading, price_text, button_label: {String} optional
+  - content_position: {String} one of top-left/top-center/top-right/
+    center/bottom-left/bottom-center/bottom-right — default 'center'
+  - image_scale: {Number} 100 = no zoom, e.g. 110 = 10% zoomed in
+  - text_color: {String} CSS color — default '#ffffff'
+  - price_truncate: {Boolean} truncates price_text with an ellipsis
+    instead of wrapping — default false
+  - loading: {String} 'lazy' (default) or 'eager' — pass 'eager' for
+    a card the host expects to render above the fold
+
+  Sizing overrides (all optional — each falls back to the default set
+  in image-card.css if not passed):
+  - heading_size, subheading_size, price_size, button_size: {Number}
+    font size in px for each text element
+  - height_mobile, height_desktop: {Number} image-wrap height in px
+  - width: {String} card width at tablet/desktop widths (≥600px) — any
+    valid CSS width value (e.g. '100%', '400px', '24rem'). Defaults to
+    100% (fills its container, same as before this option existed) so
+    passing nothing preserves the old fill-the-grid-cell behavior.
+  - width_mobile: {String} card width at mobile widths (≤599px), set
+    independently of `width` above. Any valid CSS width value. If not
+    passed, image-card.css falls back to 100% at mobile widths — it
+    does NOT inherit `width`, so a merchant's desktop custom width
+    never silently carries over to mobile. See the mobile media query
+    in image-card.css for the exact fallback chain.
+{%- endcomment -%}
+
+{%- liquid
+  assign loading = loading | default: 'lazy'
+  assign img_scale = image_scale | default: 100 | divided_by: 100.0
+  assign position = content_position | default: 'center'
+  assign color = text_color | default: '#ffffff'
+
+  assign card_style = ''
+  if width != blank
+    assign card_style = card_style | append: '--ic-width: ' | append: width | append: ';'
+  endif
+  if width_mobile != blank
+    assign card_style = card_style | append: '--ic-width-mobile: ' | append: width_mobile | append: ';'
+  endif
+  if height_mobile != blank
+    assign card_style = card_style | append: '--ic-height-mobile: ' | append: height_mobile | append: 'px;'
+  endif
+  if height_desktop != blank
+    assign card_style = card_style | append: '--ic-height-desktop: ' | append: height_desktop | append: 'px;'
+  endif
+  if heading_size != blank
+    assign card_style = card_style | append: '--ic-heading-size: ' | append: heading_size | append: 'px;'
+  endif
+  if subheading_size != blank
+    assign card_style = card_style | append: '--ic-subheading-size: ' | append: subheading_size | append: 'px;'
+  endif
+  if price_size != blank
+    assign card_style = card_style | append: '--ic-price-size: ' | append: price_size | append: 'px;'
+  endif
+  if button_size != blank
+    assign card_style = card_style | append: '--ic-button-size: ' | append: button_size | append: 'px;'
+  endif
+-%}
+
+<div class="image-card"{% if card_style != blank %} style="{{ card_style }}"{% endif %}>
+  <a href="{{ link | default: '#' }}" class="image-card__link" {% if link == blank %}tabindex="-1" aria-disabled="true"{% endif %}>
+    <span class="image-card__image-wrap">
+      {%- if image != blank -%}
+        <img
+          class="image-card__image image-card__image--desktop"
+          src="{{ image | image_url: width: 1500 }}"
+          srcset="{{ image | image_url: width: 750 }} 750w, {{ image | image_url: width: 1100 }} 1100w, {{ image | image_url: width: 1500 }} 1500w, {{ image | image_url: width: 2000 }} 2000w"
+          sizes="100vw"
+          alt="{{ image.alt | default: heading | escape }}"
+          loading="{{ loading }}"
+          width="{{ image.width }}"
+          height="{{ image.height }}"
+          style="--ic-img-scale: {{ img_scale }};"
+        >
+      {%- else -%}
+        <span class="image-card__placeholder image-card__placeholder--desktop">
+          {{ 'lifestyle-1' | placeholder_svg_tag: 'image-card__placeholder-svg' }}
+        </span>
+      {%- endif -%}
+
+      {%- if mobile_image != blank -%}
+        <img
+          class="image-card__image image-card__image--mobile"
+          src="{{ mobile_image | image_url: width: 750 }}"
+          srcset="{{ mobile_image | image_url: width: 450 }} 450w, {{ mobile_image | image_url: width: 750 }} 750w, {{ mobile_image | image_url: width: 1000 }} 1000w"
+          sizes="100vw"
+          alt="{{ mobile_image.alt | default: heading | escape }}"
+          loading="{{ loading }}"
+          width="{{ mobile_image.width }}"
+          height="{{ mobile_image.height }}"
+          style="--ic-img-scale: {{ img_scale }};"
+        >
+      {%- elsif image != blank -%}
+        {%- comment -%}
+          Same fallback as banner-card: no dedicated mobile image, reuse
+          the desktop image at mobile-appropriate widths rather than
+          leaving the mobile slot blank.
+        {%- endcomment -%}
+        <img
+          class="image-card__image image-card__image--mobile"
+          src="{{ image | image_url: width: 750 }}"
+          srcset="{{ image | image_url: width: 450 }} 450w, {{ image | image_url: width: 750 }} 750w, {{ image | image_url: width: 1000 }} 1000w"
+          sizes="100vw"
+          alt="{{ image.alt | default: heading | escape }}"
+          loading="{{ loading }}"
+          width="{{ image.width }}"
+          height="{{ image.height }}"
+          style="--ic-img-scale: {{ img_scale }};"
+        >
+      {%- else -%}
+        <span class="image-card__placeholder image-card__placeholder--mobile">
+          {{ 'lifestyle-2' | placeholder_svg_tag: 'image-card__placeholder-svg' }}
+        </span>
+      {%- endif -%}
+    </span>
+
+    {%- if heading != blank or subheading != blank or price_text != blank or button_label != blank -%}
+      <span class="image-card__content image-card__content--{{ position }}" style="color: {{ color }};">
+        {%- if heading != blank -%}
+          <span class="image-card__heading">{{ heading }}</span>
+        {%- endif -%}
+        {%- if subheading != blank -%}
+          <span class="image-card__subheading">{{ subheading }}</span>
+        {%- endif -%}
+        {%- if price_text != blank -%}
+          <span class="image-card__price{% if price_truncate %} image-card__price--truncate{% endif %}">{{ price_text }}</span>
+        {%- endif -%}
+        {%- if button_label != blank -%}
+          <span class="image-card__button">{{ button_label }}</span>
+        {%- endif -%}
+      </span>
+    {%- endif -%}
+  </a>
+</div>

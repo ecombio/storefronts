@@ -1,0 +1,48 @@
+{% comment %}
+  snippets/block-product-row.liquid
+  ------------------------------------------------------------
+  Renders one `product_row_block` metaobject entry from an
+  article's custom.content_blocks list.
+
+  Usage:
+    {% render 'block-product-row', block: block %}
+
+  Expected fields on the metaobject:
+    heading  — single line text, optional
+    products — list of product references
+    layout   — single line text, "grid" or "carousel" (defaults to grid)
+{% endcomment %}
+
+{%- liquid
+  assign heading = block.fields.heading.value
+  assign products = block.fields.products.value
+  assign layout = block.fields.layout.value | default: 'grid'
+-%}
+
+{%- if products.size > 0 -%}
+  <div class="content-block content-block--product-row">
+    {%- if heading != blank -%}
+      <h2>{{ heading }}</h2>
+    {%- endif -%}
+
+    <div class="product-row product-row--{{ layout }}">
+      {%- for product in products -%}
+        <div class="product-row__item">
+          <a href="{{ product.url }}" class="product-row__link">
+            {%- if product.featured_image -%}
+              <img
+                src="{{ product.featured_image | image_url: width: 400 }}"
+                alt="{{ product.featured_image.alt | default: product.title | escape }}"
+                loading="lazy"
+                width="400"
+                height="{{ 400 | divided_by: product.featured_image.aspect_ratio }}"
+              >
+            {%- endif -%}
+            <p class="product-row__title">{{ product.title }}</p>
+            <p class="product-row__price">{{ product.price | money }}</p>
+          </a>
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+{%- endif -%}

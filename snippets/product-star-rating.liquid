@@ -1,0 +1,66 @@
+{% comment %}
+  snippets/product-star-rating.liquid  (Yotpo Star Rating)
+
+  This matches Yotpo's own documented install snippet for this store's
+  account (Yotpo admin > On-Site Widgets > Star Ratings > Publish >
+  Show Instructions) — the instance-based system, same pattern as the
+  Reviews Widget, NOT the older `.yotpo.bottomLine` format some generic
+  install guides reference. Don't mix the two markups.
+
+  Important: Star Ratings has its own Instance ID (1332841), separate
+  from the Reviews Widget's Instance ID (1332840 in
+  sections/product-reviews.liquid). If Yotpo ever shows you a different
+  Instance ID for Star Ratings, update the instance_id param default
+  below.
+
+  Works in two contexts — pass whichever's relevant, the other's data
+  attribute renders blank and Yotpo's script handles that fine:
+  - Product pages / product cards: pass `product`
+  - Cart line items: pass `cart_item` (the `item` from a cart loop)
+
+  Usage:
+    {% render 'product-star-rating', product: product %}
+    {% render 'product-star-rating', cart_item: item %}
+
+  Optional:
+    {% render 'product-star-rating', product: product, link_to_reviews: false %}
+    (set false to render a non-clickable rating, e.g. inside a
+    product card that's already wrapped in its own <a> tag)
+{% endcomment %}
+
+{%- liquid
+  assign instance_id = instance_id | default: '1332841'
+
+  assign resolved_product_id = ''
+  if product
+    assign resolved_product_id = product.id
+  endif
+
+  assign resolved_cart_product_id = ''
+  if cart_item
+    assign resolved_cart_product_id = cart_item.product.id
+  endif
+
+  assign link_url = ''
+  if product
+    assign link_url = product.url | append: '#yotpoReviewsWidget'
+  elsif cart_item
+    assign link_url = cart_item.product.url | append: '#yotpoReviewsWidget'
+  endif
+-%}
+
+{%- capture widget_markup -%}
+  <div
+    class="yotpo-widget-instance"
+    data-yotpo-instance-id="{{ instance_id }}"
+    data-yotpo-product-id="{{ resolved_product_id }}"
+    data-yotpo-cart-product-id="{{ resolved_cart_product_id }}"
+    data-yotpo-section-id="{{ template.name }}"
+  ></div>
+{%- endcapture -%}
+
+{%- if link_to_reviews == false or link_url == blank -%}
+  {{ widget_markup }}
+{%- else -%}
+  <a href="{{ link_url }}" class="star-rating-link">{{ widget_markup }}</a>
+{%- endif -%}

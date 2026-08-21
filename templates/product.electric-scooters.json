@@ -1,0 +1,247 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-product",
+      "custom_css": [],
+      "settings": {
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 28
+      }
+    },
+    "product_information_3j36ph": {
+      "type": "product-information",
+      "name": "Product information",
+      "settings": {
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 28
+      }
+    },
+    "product_reviews_fEiGRj": {
+      "type": "product-reviews",
+      "name": "Product reviews",
+      "settings": {
+        "heading": "",
+        "collapsible": false,
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 24
+      }
+    },
+    "frequently_bought_together_FmGetk": {
+      "type": "frequently-bought-together",
+      "name": "Bought Together",
+      "settings": {
+        "heading": "Frequently bought together",
+        "products_to_show": 2,
+        "total_label": "Total price:",
+        "button_label": "Add all [count] to Cart",
+        "shipping_note": "Some of these items ship sooner than the others.",
+        "color_scheme": "",
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 24
+      }
+    },
+    "product_recommendations_mFdQ7G": {
+      "type": "product-recommendations",
+      "name": "Related products",
+      "settings": {
+        "heading": "You may also like",
+        "subheading": "",
+        "products_to_show": 4,
+        "columns_desktop": 4,
+        "columns_mobile": "2",
+        "card_gap": 16,
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 24,
+        "show_arrows": true,
+        "arrow_position": "bottom",
+        "autoplay": false,
+        "autoplay_interval": 4,
+        "color_scheme": "light",
+        "padding_top": 48,
+        "padding_bottom": 48
+      }
+    },
+    "related_products_cgJiRL": {
+      "type": "related-products",
+      "disabled": true,
+      "name": "Related products",
+      "settings": {
+        "heading": "You may also like",
+        "limit": 8,
+        "fallback_collection": "",
+        "fallback_heading": "",
+        "show_quickview": true,
+        "show_wishlist": true,
+        "show_vendor": true
+      }
+    },
+    "ss_product_reviews_video_tWWzUK": {
+      "type": "ss-product-reviews-video",
+      "blocks": {
+        "review_C8yaXp": {
+          "type": "review",
+          "settings": {
+            "video_url": "https://www.youtube.com/watch?v=_9VUPq3SxOc",
+            "author": "Lori",
+            "stars_count": 5,
+            "text": "Very pleased with this purchase! It's high-quality, easy to use, and reliable. Highly recommend for its efficiency and convenience."
+          }
+        },
+        "review_RbUqLm": {
+          "type": "review",
+          "settings": {
+            "video_url": "https://www.youtube.com/watch?v=_9VUPq3SxOc",
+            "author": "Jillian",
+            "stars_count": 5,
+            "text": "Extremely satisfied with this product! It offers excellent quality and simplicity. I recommend for its effectiveness and user-friendliness."
+          }
+        }
+      },
+      "block_order": [
+        "review_C8yaXp",
+        "review_RbUqLm"
+      ],
+      "name": "SS - Product Reviews (video)",
+      "settings": {
+        "reviews_position": "below_buy",
+        "reviews_meta": "",
+        "reviews_radius": 0,
+        "review_padding_vertical": 8,
+        "review_padding_horizontal": 8,
+        "review_radius": 8,
+        "review_border_thickness": 0,
+        "image_width": 60,
+        "image_radius": 8,
+        "image_border_thickness": 0,
+        "image_ratio": "square",
+        "play_icon_size": 30,
+        "stars_size": 14,
+        "author_custom": false,
+        "author_font": "josefin_sans_n4",
+        "author_size": 14,
+        "author_size_mobile": 14,
+        "author_height": 130,
+        "text_custom": false,
+        "text_font": "josefin_sans_n4",
+        "text_size": 12,
+        "text_size_mobile": 12,
+        "text_height": 130,
+        "text_mt": 4,
+        "arrow_size": 24,
+        "arrow_size_mobile": 24,
+        "arrow_icon_size": 16,
+        "arrow_icon_size_mobile": 16,
+        "arrow_border_thickness": 0,
+        "arrow_show_desktop": true,
+        "arrow_show_mobile": true,
+        "modal_width": 30,
+        "modal_width_mobile": 90,
+        "modal_padding_vertical": 16,
+        "modal_padding_horizontal": 16,
+        "modal_radius": 16,
+        "modal_border_thickness": 0,
+        "modal_overlay": 50,
+        "video_radius": 8,
+        "video_border_thickness": 0,
+        "video_ratio": "original",
+        "video_ratio_mobile": "original",
+        "review_bg_color": "#f3f3f3",
+        "review_border_color": "#000000",
+        "image_border_color": "#000000",
+        "video_border_color": "#000000",
+        "author_color": "#000000",
+        "text_color": "#000000",
+        "arrow_color": "#000000",
+        "arrow_hover_color": "#000000",
+        "arrow_bg_color": "#f3f3f3",
+        "arrow_bg_hover_color": "#dddddd",
+        "arrow_border_color": "#f3f3f3",
+        "arrow_border_hover_color": "#dddddd",
+        "modal_bg_color": "#ffffff",
+        "modal_border_color": "#000000",
+        "modal_close_bg_color": "#000000",
+        "modal_close_icon_color": "#ffffff",
+        "stars_color": "#000000",
+        "play_icon_color": "#ffffff",
+        "background_color": "#f3f3f3",
+        "background_gradient": "",
+        "border_color": "#000000",
+        "margin_top": 10,
+        "margin_bottom": 10,
+        "padding_top": 0,
+        "padding_bottom": 0,
+        "padding_horizontal": 0,
+        "padding_horizontal_mobile": 0,
+        "border_thickness": 0,
+        "lazy": true
+      }
+    },
+    "178686391277d7dac2": {
+      "type": "apps",
+      "blocks": {
+        "judge_me_reviews_videos_carousel_AjWbEL": {
+          "type": "shopify://apps/judge-me-reviews/blocks/videos_carousel/61ccd3b1-a9f2-4160-9fe9-4fec8413e5d8",
+          "settings": {
+            "show_sample_reviews": true,
+            "reviews_selection": "all",
+            "products": [],
+            "filter_pinned": false,
+            "filter_featured": false,
+            "filter_custom_tags": "",
+            "star_rating": "all",
+            "review_type": "photo_and_video",
+            "max_reviews": 20,
+            "show_reviewer_name": true,
+            "stars_size": "medium",
+            "text_size": "medium",
+            "arrows_position": "bottom",
+            "max_width": 1100,
+            "corner_styling": "soft",
+            "header_text_color": "#000000",
+            "card_color": "#7D7D7D",
+            "stars_color": "",
+            "text_color": "#FFFFFF",
+            "arrows_color": "#000000",
+            "show_drop_shadow": false,
+            "show_border": false,
+            "border_color": "#108474",
+            "autoplay_media": true,
+            "transition_speed": 5,
+            "carousel_style": "highlight",
+            "header_text": "Real customer stories",
+            "show_average_rating": true,
+            "rating_display": "default"
+          }
+        }
+      },
+      "block_order": [
+        "judge_me_reviews_videos_carousel_AjWbEL"
+      ],
+      "settings": {}
+    }
+  },
+  "order": [
+    "main",
+    "product_information_3j36ph",
+    "product_reviews_fEiGRj",
+    "frequently_bought_together_FmGetk",
+    "product_recommendations_mFdQ7G",
+    "related_products_cgJiRL",
+    "ss_product_reviews_video_tWWzUK",
+    "178686391277d7dac2"
+  ]
+}

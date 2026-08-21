@@ -1,0 +1,307 @@
+/* ==========================================================================
+   NEWSLETTER SIGNUP COMPONENT
+   assets/newsletter-signup.css
+
+   Loaded once, sitewide, in two places that share this exact file:
+     1. The "Mashable Newsletter" section (sections/newsletter-signup.liquid)
+        — a proper Shopify section with editable blocks (email / phone),
+        already placed below the Article template. New blog posts get
+        this automatically; you do NOT need to add anything for it.
+     2. Any article body HTML that hand-includes a .newsletter-box (see
+        the markup below) — only needed if you want a newsletter box
+        INSIDE the article content itself, separate from the section.
+
+   ------------------------------------------------------------------------
+   HOW TO REUSE THIS FOR A NEW BLOG POST
+   ------------------------------------------------------------------------
+   In most cases: do nothing. The "Mashable Newsletter" section already
+   renders below every article using this template, and its heading /
+   subheading / eyebrow / colors are all editable per-page in the theme
+   editor (Template > Mashable Newsletter > blocks) — no code required.
+
+   Only hand-paste the markup below into an article's HTML editor if you
+   specifically want an extra newsletter box embedded mid-article (e.g.
+   right after an FAQ accordion, like on the electric bikes guide). This
+   is the abstracted, generic version — swap in real copy, endpoint, and
+   colors per post:
+
+     <div class="newsletter-signup">
+       <div class="newsletter-signup__wrapper newsletter-signup__wrapper--column">
+         <div class="newsletter-box" style="--nl-bg: #fff; --nl-heading: #0F0F1A; --nl-text: #4B5563; --nl-link: #4F46E5; --nl-accent: #4F46E5; --nl-accent-text: #fff; --nl-corner: 42px;">
+
+           <p class="newsletter-box__eyebrow">Your eyebrow label</p>
+
+           <div class="newsletter-box__frame" style="background: linear-gradient(135deg, #4F46E5, #818CF8);">
+             <div class="newsletter-box__inner">
+
+               <div class="newsletter-box__header newsletter-box__header--icon">
+                 <span class="newsletter-box__icon">
+                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                     <path d="M22 6l-10 7L2 6"></path>
+                     <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                   </svg>
+                 </span>
+                 <div>
+                   <h3 class="newsletter-box__heading">Your heading</h3>
+                   <p class="newsletter-box__subheading">Your subheading copy.</p>
+                 </div>
+               </div>
+
+               <form class="newsletter-box__form js-newsletter-sms-form" data-sms-endpoint="/apps/sms-signup" action="/apps/sms-signup" method="post">
+                 <div class="newsletter-box__row">
+                   <input class="newsletter-box__input" type="tel" name="phone" placeholder="Phone number" required>
+                   <button class="newsletter-box__button" type="submit">Sign Up</button>
+                 </div>
+                 <p class="newsletter-box__message newsletter-box__message--success" hidden>You're subscribed!</p>
+                 <p class="newsletter-box__message newsletter-box__message--error" hidden>Something went wrong. Please try again.</p>
+                 <div class="newsletter-box__disclaimer">
+                   <p>Your SMS disclaimer / terms copy.</p>
+                 </div>
+               </form>
+
+             </div>
+           </div>
+         </div>
+       </div>
+     </div>
+
+   IMPORTANT — structural gotcha (read before editing):
+   .newsletter-box__eyebrow MUST be a direct child of .newsletter-box,
+   placed BEFORE .newsletter-box__frame opens (as shown above) — NOT
+   nested inside .newsletter-box__frame / .newsletter-box__inner.
+   The frame has a clip-path applied for its cut corner, and clip-path
+   clips ALL descendants including absolutely positioned ones. If the
+   eyebrow ends up inside the frame, it gets visually clipped/mangled
+   no matter what z-index it has. Keep it as a sibling, not a child.
+
+   Also update data-sms-endpoint / action to your real SMS provider URL
+   (Postscript, Attentive, Klaviyo, etc.) before this goes live — it's
+   a placeholder above.
+   ========================================================================== */
+
+.newsletter-signup {
+  font-family: inherit;
+}
+
+.newsletter-signup__wrapper {
+  max-width: var(--nl-max-width, 1200px);
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  gap: var(--nl-gap, 32px);
+}
+
+.newsletter-signup__wrapper--column {
+  flex-direction: column;
+}
+
+.newsletter-signup__wrapper--row {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.newsletter-signup__wrapper--row .newsletter-box {
+  flex: 1 1 320px;
+}
+
+.newsletter-box {
+  position: relative;
+  z-index: 1;
+  margin-top: 14px;
+}
+
+/* Gradient cut-corner frame: outer holds the gradient (set inline per block),
+   inner holds the background, both share the same clip-path so the "cut"
+   lines up perfectly. See the big comment above re: eyebrow placement. */
+.newsletter-box__frame {
+  --shape: polygon(
+    0 0,
+    100% 0,
+    100% calc(100% - var(--nl-corner, 42px)),
+    calc(100% - var(--nl-corner, 42px)) 100%,
+    0 100%
+  );
+  clip-path: var(--shape);
+  padding: var(--nl-border-w, 1px);
+  height: 100%;
+}
+
+.newsletter-box__inner {
+  background: var(--nl-bg, #fff);
+  clip-path: var(--shape);
+  height: 100%;
+  padding: 30px 32px 24px;
+  box-sizing: border-box;
+}
+
+/* Sits directly on top of the border line, like a fieldset legend,
+   so the border line appears to break around the label. Must be a
+   sibling of .newsletter-box__frame, not nested inside it — see the
+   file-level comment above for why. */
+.newsletter-box__eyebrow {
+  position: absolute;
+  top: 0;
+  left: 22px;
+  transform: translateY(-50%);
+  margin: 0;
+  background: var(--nl-bg, #fff);
+  padding: 0 8px;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  color: var(--nl-link, #4F46E5);
+  z-index: 2;
+}
+
+.newsletter-box__header {
+  margin-bottom: 20px;
+}
+
+.newsletter-box__header--icon {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.newsletter-box__icon {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  margin-top: 4px; /* optical correction: centers icon against text baseline, not just box height */
+  border-radius: 50%;
+  border: 1.6px solid var(--nl-heading, #0F0F1A);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--nl-heading, #0F0F1A);
+}
+
+.newsletter-box__icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.newsletter-box__heading {
+  margin: 0 0 6px;
+  font-size: 22px;
+  line-height: 1.25;
+  font-weight: 800;
+  color: var(--nl-heading, #0F0F1A);
+}
+
+.newsletter-box__subheading {
+  margin: 0;
+  font-size: 15px;
+  color: var(--nl-text, #4B5563);
+}
+
+.newsletter-box__link {
+  color: var(--nl-link, #4F46E5);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.newsletter-box__link:hover {
+  text-decoration: underline;
+}
+
+.newsletter-box__link--static {
+  cursor: default;
+}
+
+.newsletter-box__form {
+  margin-top: 18px;
+}
+
+.newsletter-box__row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.newsletter-box__input {
+  flex: 1 1 200px;
+  min-width: 0;
+  padding: 13px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 15px;
+  color: var(--nl-heading, #0F0F1A);
+  background: #fff;
+}
+
+.newsletter-box__input::placeholder {
+  color: #9ca3af;
+}
+
+.newsletter-box__input:focus-visible {
+  outline: 2px solid var(--nl-accent, #4F46E5);
+  outline-offset: 1px;
+}
+
+.newsletter-box__button {
+  flex: 0 0 auto;
+  padding: 13px 28px;
+  border: none;
+  border-radius: 4px;
+  background: var(--nl-accent, #4F46E5);
+  color: var(--nl-accent-text, #fff);
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.newsletter-box__button:hover {
+  opacity: 0.9;
+}
+
+.newsletter-box__button:focus-visible {
+  outline: 2px solid var(--nl-accent, #4F46E5);
+  outline-offset: 2px;
+}
+
+.newsletter-box__message {
+  margin: 10px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.newsletter-box__message--error {
+  color: #dc2626;
+}
+
+.newsletter-box__message--success {
+  color: #16a34a;
+}
+
+.newsletter-box__disclaimer {
+  margin-top: 14px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--nl-text, #4B5563);
+}
+
+.newsletter-box__disclaimer p {
+  margin: 0;
+}
+
+.newsletter-box__disclaimer a {
+  color: var(--nl-link, #4F46E5);
+  text-decoration: underline;
+}
+
+@media screen and (max-width: 749px) {
+  .newsletter-signup__wrapper--row {
+    flex-direction: column;
+  }
+
+  .newsletter-box__row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .newsletter-box__button {
+    width: 100%;
+  }
+}

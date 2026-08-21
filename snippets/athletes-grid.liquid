@@ -1,0 +1,110 @@
+{{ 'athletes-card.css' | asset_url | stylesheet_tag }}
+{{ 'athletes-grid.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign per_page = per_page | default: 9
+  assign load_more_increment = load_more_increment | default: 6
+  assign empty_state_text = empty_state_text | default: 'No articles published yet.'
+  assign demo_count = demo_count | default: 0
+-%}
+
+<div class="athletes-grid-wrapper" data-athletes-grid-wrapper>
+  {%- if heading != blank -%}
+    <h2 class="athletes-grid__heading">{{ heading }}</h2>
+  {%- endif -%}
+
+  {%- if articles.size > 0 -%}
+    <div class="athletes-grid" data-athletes-grid>
+      {%- for a in articles -%}
+        {%- liquid
+          assign card_avatar = blank
+          assign card_avatar_alt = blank
+          assign card_cover_image = blank
+
+          if avatar
+            assign card_avatar = avatar
+            assign card_avatar_alt = avatar_alt | default: heading
+          elsif use_own_photo
+            assign card_avatar = a.image
+            assign card_avatar_alt = a.title
+            assign card_cover_image = a.metafields.custom.athlete_action_photo | default: a.image
+          elsif avatar_lookup
+            for candidate in avatar_lookup
+              assign candidate_key = candidate.metafields.custom.athlete_match_name | default: candidate.title
+              if candidate_key == a.author
+                assign card_avatar = candidate.image
+                assign card_avatar_alt = candidate.title
+                break
+              endif
+            endfor
+          endif
+        -%}
+        <div
+          class="athletes-grid__item"
+          data-athletes-grid-card
+          {%- if forloop.index > per_page %} hidden{% endif -%}
+        >
+          {%- render 'athletes-card', article: a, cover_image: card_cover_image, avatar: card_avatar, avatar_alt: card_avatar_alt, loading: forloop.index -%}
+        </div>
+      {%- endfor -%}
+    </div>
+
+    {%- if articles.size > per_page -%}
+      <button
+        type="button"
+        class="athletes-grid__load-more"
+        data-athletes-grid-load-more
+        data-increment="{{ load_more_increment }}"
+      >
+        Load more
+      </button>
+    {%- endif -%}
+  {%- elsif demo_count > 0 -%}
+    {%- liquid
+      assign demo_names = 'Jordan Vale,Amara Chen,Malik Freeman,Sofia Reyes,Owen Bright,Priya Nair,Devon Marsh,Lena Osei' | split: ','
+      assign demo_sports = 'Track & Field,Swimming,Basketball,Soccer,Wrestling,Gymnastics,Cross Country,Volleyball' | split: ','
+    -%}
+    <div class="athletes-grid" data-athletes-grid>
+      {%- for i in (1..demo_count) -%}
+        {%- assign demo_index = forloop.index0 | modulo: demo_names.size -%}
+        <div class="athletes-grid__item">
+          <div class="athletes-card athletes-card--demo">
+            <div class="athletes-card__media">
+              {{ 'lifestyle-1' | placeholder_svg_tag: 'athletes-card__image athletes-card__image--placeholder' }}
+              <span class="athletes-card__avatar-wrapper">
+                {{ 'lifestyle-1' | placeholder_svg_tag: 'athletes-card__avatar' }}
+              </span>
+            </div>
+            <div class="athletes-card__content">
+              <h3 class="athletes-card__title">{{ demo_names[demo_index] }}</h3>
+              <span class="athletes-card__meta">{{ demo_sports[demo_index] }}</span>
+            </div>
+          </div>
+        </div>
+      {%- endfor -%}
+    </div>
+    <p class="athletes-grid__empty athletes-grid__empty--demo">{{ empty_state_text }}</p>
+  {%- else -%}
+    <p class="athletes-grid__empty">{{ empty_state_text }}</p>
+  {%- endif -%}
+</div>
+
+<script src="{{ 'athletes-grid.js' | asset_url }}" defer="defer"></script>
+{% comment %}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: |-
+    {%- render 'athletes-card',
+                article: a,
+                cover_image: card_cover_image,
+                avatar: card_avatar,
+                avatar_alt: card_avatar_alt,
+                loading: forloop.index <= 4
+              -%}
+  to: "{%- render 'athletes-card', article: a, cover_image: card_cover_image, avatar:
+    card_avatar, avatar_alt: card_avatar_alt, loading: forloop.index -%}"
+  position: 1722..1869
+{% endcomment %}

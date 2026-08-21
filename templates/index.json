@@ -1,0 +1,601 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "slideshow_zzfKYQ": {
+      "type": "slideshow",
+      "blocks": {
+        "slide_hWYyEd": {
+          "type": "slide",
+          "settings": {
+            "eyebrow": "Best seller",
+            "heading": "Our Most Popular Ride",
+            "subtext": "See why riders keep coming back to it.",
+            "cta_label": "View bike",
+            "link_type": "product",
+            "link_collection": "",
+            "link_product": "",
+            "link_blog": "",
+            "link_page": "",
+            "link_url": "",
+            "open_new_tab": false
+          }
+        }
+      },
+      "block_order": [
+        "slide_hWYyEd"
+      ],
+      "name": "Engagement – Brand awareness",
+      "settings": {
+        "section_width": "full-width",
+        "custom_width": 80,
+        "section_padding": 0,
+        "slide_height": 320,
+        "slide_height_mobile": 280,
+        "autoplay": true,
+        "autoplay_speed": 5000,
+        "loop": true,
+        "transition_effect": "slide",
+        "show_navigation": true,
+        "show_pagination": true,
+        "overlay_opacity": 35,
+        "text_color": "#ffffff",
+        "accent_color": "#000000",
+        "dot_color": "#ffffff",
+        "nav_bg_color": "#ffffff40",
+        "nav_icon_color": "#ffffff",
+        "accessibility_label": "Featured content"
+      }
+    },
+    "trust_signals_DYt4Bb": {
+      "type": "trust-signals",
+      "blocks": {
+        "badge_pNpJFx": {
+          "type": "badge",
+          "settings": {
+            "enabled": true,
+            "icon": "star",
+            "custom_svg": "",
+            "label": "Best-in-class refurbishment",
+            "sublabel": ""
+          }
+        },
+        "badge_kLciAA": {
+          "type": "badge",
+          "settings": {
+            "enabled": true,
+            "icon": "checklist",
+            "custom_svg": "",
+            "label": "Up to 100-point quality inspection",
+            "sublabel": ""
+          }
+        },
+        "badge_EqGDAt": {
+          "type": "badge",
+          "settings": {
+            "enabled": true,
+            "icon": "returns",
+            "custom_svg": "",
+            "label": "Free 30-day returns",
+            "sublabel": ""
+          }
+        },
+        "badge_gb3zpa": {
+          "type": "badge",
+          "settings": {
+            "enabled": true,
+            "icon": "warranty",
+            "custom_svg": "",
+            "label": "1-year warranty",
+            "sublabel": ""
+          }
+        }
+      },
+      "block_order": [
+        "badge_pNpJFx",
+        "badge_kLciAA",
+        "badge_EqGDAt",
+        "badge_gb3zpa"
+      ],
+      "name": "Education – Problem identification",
+      "settings": {
+        "heading": "Where the world shops refurbished tech.",
+        "subheading": "Everything you love about new, for less.",
+        "link_text": "Guaranteed by the Back Market Promise.",
+        "link_url": "",
+        "link_new_tab": true,
+        "padding_top": 48,
+        "padding_bottom": 48,
+        "background_color": "#eeeef5",
+        "heading_color": "#0d0d0d",
+        "body_color": "#1a1a1a",
+        "link_color": "#0d0d0d",
+        "icon_bg_color": "#e0e0ea",
+        "icon_color": "#0d0d0d",
+        "badge_text_color": "#0d0d0d"
+      }
+    },
+    "image_grid_6DRDw6": {
+      "type": "image-grid",
+      "blocks": {
+        "card_MG39LN": {
+          "type": "card",
+          "settings": {
+            "label": "Category name",
+            "link": "",
+            "card_color": "#ffffff"
+          }
+        },
+        "card_DDQ9Ay": {
+          "type": "card",
+          "settings": {
+            "label": "Category name",
+            "link": "",
+            "card_color": "#ffffff"
+          }
+        },
+        "card_NYgB3b": {
+          "type": "card",
+          "settings": {
+            "label": "Category name",
+            "link": "",
+            "card_color": "#ffffff"
+          }
+        },
+        "card_fRrNr7": {
+          "type": "card",
+          "settings": {
+            "label": "Category name",
+            "link": "",
+            "card_color": "#ffffff"
+          }
+        },
+        "card_VQLtFe": {
+          "type": "card",
+          "settings": {
+            "label": "Category name",
+            "link": "",
+            "card_color": "#ffffff"
+          }
+        },
+        "card_WNNCbM": {
+          "type": "card",
+          "settings": {
+            "label": "Category name",
+            "link": "",
+            "card_color": "#ffffff"
+          }
+        },
+        "card_LiQQha": {
+          "type": "card",
+          "settings": {
+            "label": "Category name",
+            "link": "",
+            "card_color": "#ffffff"
+          }
+        },
+        "card_r3hLh3": {
+          "type": "card",
+          "settings": {
+            "label": "Category name",
+            "link": "",
+            "card_color": "#ffffff"
+          }
+        }
+      },
+      "block_order": [
+        "card_MG39LN",
+        "card_DDQ9Ay",
+        "card_NYgB3b",
+        "card_fRrNr7",
+        "card_VQLtFe",
+        "card_WNNCbM",
+        "card_LiQQha",
+        "card_r3hLh3"
+      ],
+      "name": "Research – Investigate solutions",
+      "settings": {
+        "heading": "Shop by category",
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 32,
+        "bg_color": "#f5f6f7",
+        "cards_desktop": 4,
+        "cards_tablet": 3,
+        "cards_mobile": 2,
+        "card_gap": 16
+      }
+    },
+    "product_carousel_kwehDg": {
+      "type": "product-carousel",
+      "blocks": {
+        "tab_TxEqtd": {
+          "type": "tab",
+          "settings": {
+            "collection": "",
+            "tab_label": "Price drop",
+            "tab_icon": ""
+          }
+        },
+        "tab_dYpyT4": {
+          "type": "tab",
+          "settings": {
+            "collection": "",
+            "tab_label": "MacBook",
+            "tab_icon": ""
+          }
+        },
+        "tab_9PVaMU": {
+          "type": "tab",
+          "settings": {
+            "collection": "",
+            "tab_label": "iPhone",
+            "tab_icon": ""
+          }
+        }
+      },
+      "block_order": [
+        "tab_TxEqtd",
+        "tab_dYpyT4",
+        "tab_9PVaMU"
+      ],
+      "name": "Evaluation – Assess satisfaction of needs and requirements",
+      "settings": {
+        "heading": "Shop our best deals",
+        "subheading": "",
+        "show_banner": true,
+        "banner_height_desktop": 200,
+        "banner_height_mobile": 160,
+        "products_per_tab": 3,
+        "sort_by": "best-selling",
+        "cards_per_row_desktop": 3,
+        "cards_per_row_mobile": "2",
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 32,
+        "show_arrows": true,
+        "arrow_position": "bottom",
+        "autoplay": false,
+        "autoplay_interval": 4
+      }
+    },
+    "testimonial_carousel_CHpHdj": {
+      "type": "testimonial-carousel",
+      "blocks": {
+        "testimonial_4A9GCV": {
+          "type": "testimonial",
+          "settings": {
+            "video_url": "",
+            "rating": 5,
+            "quote": "This is such a great product, I use it every day!",
+            "reviewer_name": "Jane D.",
+            "reviewer_title": "Verified purchaser",
+            "product_name": "Product name",
+            "product_price": "",
+            "product_compare_price": ""
+          }
+        },
+        "testimonial_GGmpJb": {
+          "type": "testimonial",
+          "settings": {
+            "video_url": "",
+            "rating": 5,
+            "quote": "This is such a great product, I use it every day!",
+            "reviewer_name": "Jane D.",
+            "reviewer_title": "Verified purchaser",
+            "product_name": "Product name",
+            "product_price": "",
+            "product_compare_price": ""
+          }
+        },
+        "testimonial_GJ6dqC": {
+          "type": "testimonial",
+          "settings": {
+            "video_url": "",
+            "rating": 5,
+            "quote": "This is such a great product, I use it every day!",
+            "reviewer_name": "Jane D.",
+            "reviewer_title": "Verified purchaser",
+            "product_name": "Product name",
+            "product_price": "",
+            "product_compare_price": ""
+          }
+        },
+        "testimonial_JXJca8": {
+          "type": "testimonial",
+          "settings": {
+            "video_url": "",
+            "rating": 5,
+            "quote": "This is such a great product, I use it every day!",
+            "reviewer_name": "Jane D.",
+            "reviewer_title": "Verified purchaser",
+            "product_name": "Product name",
+            "product_price": "",
+            "product_compare_price": ""
+          }
+        }
+      },
+      "block_order": [
+        "testimonial_4A9GCV",
+        "testimonial_GGmpJb",
+        "testimonial_GJ6dqC",
+        "testimonial_JXJca8"
+      ],
+      "name": "Justification – Justify and quantify value; internal buy‑in",
+      "settings": {
+        "heading": "Loved by our customers",
+        "show_rating": true,
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 32,
+        "custom_css": ""
+      }
+    },
+    "seo_block_JYrf99": {
+      "type": "seo-block",
+      "disabled": true,
+      "name": "Purchase – Transactional and transitional factors",
+      "settings": {
+        "heading": "Purchase – Transactional and transitional factors",
+        "menu": "",
+        "seo_content": "",
+        "collapse_copy": true,
+        "copy_toggle_label": "Read more",
+        "section_width": "",
+        "custom_width": 80,
+        "section_padding": 28
+      }
+    },
+    "newsletter_w8jDnz": {
+      "type": "newsletter",
+      "name": "Adoption – Onboarding and implementation",
+      "settings": {
+        "color_scheme": "",
+        "heading": "Subscribe to our newsletter",
+        "subheading": "<p>Be the first to hear about new products, restocks, and offers.</p>",
+        "email_label": "Email address",
+        "button_label": "Sign up",
+        "success_message": "Thanks for signing up!",
+        "background_type": "color",
+        "background_overlay_opacity": 30,
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 32
+      }
+    },
+    "content_section_T4GXgP": {
+      "type": "content-section",
+      "name": "Retention — Satisfaction",
+      "settings": {
+        "color_scheme": "",
+        "reverse_layout": false,
+        "vertical_alignment": "center",
+        "media_width": 50,
+        "column_gap": 64,
+        "mobile_media_first": true,
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 32,
+        "media_type": "image",
+        "image": "shopify://shop_images/god_and_adam.jpg",
+        "autoplay": false,
+        "loop": false,
+        "show_controls": true,
+        "subheading": "Retention",
+        "heading": "Satisfaction",
+        "text": "<p><a href=\"/blogs/authors\" title=\"Authors\">SmartBear </a>prioritizes your success with <a href=\"/blogs/authors\" title=\"Authors\">genuine </a>value, clear wins, and authentic care at every touchpoint.<a href=\"/blogs/authors\" title=\"Authors\">SmartBear </a>prioritizes your success with <a href=\"/blogs/authors\" title=\"Authors\">genuine </a>value, clear wins, and authentic care at every touchpoint.</p>",
+        "button_1_label": "Partner with us",
+        "button_1_link": "shopify://collections",
+        "button_1_style": "primary",
+        "button_2_label": "",
+        "button_2_link": "shopify://collections",
+        "button_2_style": "primary",
+        "background_color": "#ffffff",
+        "text_color": "#000000",
+        "padding_top": 32,
+        "padding_bottom": 0,
+        "padding_top_mobile": 48,
+        "padding_bottom_mobile": 48
+      }
+    },
+    "customer_success_iB8aXJ": {
+      "type": "customer-success",
+      "blocks": {
+        "review_LAYLfx": {
+          "type": "review",
+          "settings": {
+            "rating": 5,
+            "quote": "I have been shopping with this web fashion site for over a year now and I can confidently say it is the best online fashion site out there.",
+            "author": "Robert Smith",
+            "purchase_item": "Ribbed Tank Top"
+          }
+        },
+        "review_QVjFgc": {
+          "type": "review",
+          "settings": {
+            "rating": 5,
+            "quote": "I have been shopping with this web fashion site for over a year now and I can confidently say it is the best online fashion site out there.",
+            "author": "Robert Smith",
+            "purchase_item": "Ribbed Tank Top"
+          }
+        },
+        "review_P98rGy": {
+          "type": "review",
+          "settings": {
+            "rating": 5,
+            "quote": "I have been shopping with this web fashion site for over a year now and I can confidently say it is the best online fashion site out there.",
+            "author": "Robert Smith",
+            "purchase_item": "Ribbed Tank Top"
+          }
+        }
+      },
+      "block_order": [
+        "review_LAYLfx",
+        "review_QVjFgc",
+        "review_P98rGy"
+      ],
+      "name": "Retention — Success",
+      "settings": {
+        "color_scheme": "",
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 32,
+        "eyebrow": "People are talking",
+        "show_quote_icon": true,
+        "autoplay": false,
+        "autoplay_speed": 5,
+        "background_color": "",
+        "text_color": "",
+        "accent_color": "",
+        "padding_top": 80,
+        "padding_bottom": 80,
+        "padding_top_mobile": 48,
+        "padding_bottom_mobile": 48
+      }
+    },
+    "collection_carousel_6ViUnU": {
+      "type": "collection-carousel",
+      "blocks": {
+        "collection_fUdbk7": {
+          "type": "collection",
+          "settings": {
+            "collection": "electric-bikes",
+            "title": "Electric Bikes",
+            "image": "shopify://shop_images/PDP_1st-Image_Trike2-Glacier_f6199a35-9819-40d8-bf0b-a4040f262f37.png"
+          }
+        },
+        "collection_YFiTWK": {
+          "type": "collection",
+          "settings": {
+            "collection": "electric-scooters",
+            "title": "Electric Scooters",
+            "image": "shopify://shop_images/ApolloGoStellar_A9__RegularShots_2.png"
+          }
+        },
+        "collection_mn7mTV": {
+          "type": "collection",
+          "settings": {
+            "collection": "",
+            "title": ""
+          }
+        },
+        "collection_nqQdt3": {
+          "type": "collection",
+          "settings": {
+            "collection": "",
+            "title": ""
+          }
+        }
+      },
+      "block_order": [
+        "collection_fUdbk7",
+        "collection_YFiTWK",
+        "collection_mn7mTV",
+        "collection_nqQdt3"
+      ],
+      "name": "Expansion — Up‑sell",
+      "settings": {
+        "heading": "Shop by category",
+        "subheading": "Find the ride built for how you move.",
+        "heading_align": "start",
+        "view_all_label": "View all",
+        "view_all_link": "#",
+        "image_shape": "landscape",
+        "enable_animations": false,
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 24,
+        "bg_color": "#ffffff",
+        "text_color": "#121212",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
+    "featured_collection_JfBFTj": {
+      "type": "featured-collection",
+      "disabled": true,
+      "name": "Expansion — Cross-sell",
+      "settings": {
+        "collection": "electric-bikes",
+        "heading": "Bestsellers",
+        "limit": 8,
+        "show_view_all": true,
+        "view_all_text": "View all",
+        "show_atc_button": true,
+        "show_compare_checkbox": true,
+        "show_wishlist_button": true,
+        "show_quickview_button": true,
+        "show_sale_badge": true,
+        "show_vendor_label": false,
+        "show_reviews_badge": true,
+        "show_savings_row": true,
+        "show_eta_badge": true,
+        "layout_style": "row",
+        "show_arrows": true,
+        "arrow_visibility": "hover",
+        "show_dots": false,
+        "mobile_layout_style": "grid",
+        "enable_promo_card": true,
+        "promo_link": "",
+        "promo_heading": "Not sure where to start?",
+        "promo_subheading": "Take our 2-minute buying guide quiz.",
+        "promo_price_text": "",
+        "promo_price_truncate": false,
+        "promo_button_label": "Take the quiz",
+        "promo_content_position": "top-left",
+        "promo_image_scale": 100,
+        "promo_text_color": "#000000",
+        "promo_heading_size": 16,
+        "promo_subheading_size": 10,
+        "promo_price_size": 10,
+        "promo_button_size": 10,
+        "promo_custom_width": true,
+        "promo_width_px": 400,
+        "promo_custom_width_mobile": false,
+        "promo_width_px_mobile": 160,
+        "promo_height_mobile": 320,
+        "promo_height_desktop": 390,
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 24,
+        "padding_top": 0,
+        "padding_bottom": 32
+      }
+    },
+    "seo_block_kf7aHi": {
+      "type": "seo-block",
+      "name": "Advocacy — Loyalty and Evangelism",
+      "settings": {
+        "heading": "",
+        "menu": "whitehouse",
+        "seo_content": "<h2>Electric Scooters</h2><p>Shop <a href=\"https://ecombio.com/collections/electric-scooters\">electric scooters</a> for commuting, recreational rides, mixed-terrain routes, performance-focused travel, youth riders, and everyday personal electric mobility. Compare models by range, speed capability, motor setup, portability, suspension, tire type, braking system, rider weight capacity, folding design, lighting, and overall ride comfort.</p><h2>Types of Electric Scooters</h2><ul><li><a href=\"https://ecombio.com/collections/commuter-electric-scooters\">Commuter Electric Scooters</a> — A practical choice for daily rides, campus travel, last-mile trips, city errands, and everyday transportation.</li><li><a href=\"https://ecombio.com/collections/off-road-electric-scooters\">Off-Road Electric Scooters</a> — Good for riders who want more capability for rough pavement, gravel paths, hills, and mixed outdoor routes.</li><li><a href=\"https://ecombio.com/collections/performance-electric-scooters\">Performance Electric Scooters</a> — Built for riders comparing stronger acceleration, higher speed potential, longer rides, upgraded braking, and advanced suspension.</li><li><a href=\"https://ecombio.com/collections/electric-scooter-for-kids\">Electric Scooters for Kids</a> — Helpful for families comparing kid, youth, and teen-friendly scooters by age fit, speed range, portability, lighting, and rider limits.</li></ul><h2>More Ways to Shop with Us</h2><p>Start with your main riding need: daily commuting, mixed-terrain riding, higher-performance travel, or a scooter for a younger rider. From there, compare motor power, estimated range, top speed, scooter weight, folded size, tire type, suspension, braking system, deck space, lighting, charging time, and supported rider weight.</p><p>For a deeper breakdown, read our <a href=\"https://ecombio.com/blogs/news/how-to-choose-an-electric-scooter\">How to Choose an Electric Scooter</a> guide, compare tire options in our <a href=\"https://ecombio.com/blogs/news/electric-scooter-tire-guide\">Electric Scooter Tire Guide</a>, or learn how real-world range works in our <a href=\"https://ecombio.com/blogs/news/electric-scooter-range-guide\">Electric Scooter Range Guide</a>.</p>",
+        "collapse_copy": false,
+        "copy_toggle_label": "Read more",
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 28
+      }
+    }
+  },
+  "order": [
+    "slideshow_zzfKYQ",
+    "trust_signals_DYt4Bb",
+    "image_grid_6DRDw6",
+    "product_carousel_kwehDg",
+    "testimonial_carousel_CHpHdj",
+    "seo_block_JYrf99",
+    "newsletter_w8jDnz",
+    "content_section_T4GXgP",
+    "customer_success_iB8aXJ",
+    "collection_carousel_6ViUnU",
+    "featured_collection_JfBFTj",
+    "seo_block_kf7aHi"
+  ]
+}

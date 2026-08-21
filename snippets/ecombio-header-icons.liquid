@@ -1,0 +1,22 @@
+{% comment %}
+  ECOMBIO Header — Right Icons
+  File: snippets/ecombio-header-icons.liquid
+
+  Parameters:
+    show_store   {Boolean} — show/hide Find a Store icon (default: true)
+    show_account {Boolean} — show/hide Account icon (default: true)
+    show_cart    {Boolean} — show/hide Cart icon (default: true)
+
+  Controlled via Theme Settings → Header → Header Icons.
+
+  Snippets used:
+    - snippets/ecombio-header-icon-store.liquid
+    - snippets/ecombio-header-icon-account.liquid
+    - snippets/ecombio-header-icon-cart.liquid
+{% endcomment %}
+
+<div class="ecombio-header__icons">
+  {%- if show_store   != false -%}{%- render 'ecombio-header-icon-store'   -%}{%- endif -%}
+  {%- if show_account != false -%}{%- render 'ecombio-header-icon-account' -%}{%- endif -%}
+  {%- if show_cart    != false -%}{%- render 'ecombio-header-icon-cart'    -%}{%- endif -%}
+</div>{%- comment -%}/.ecombio-header__icons{%- endcomment -%}

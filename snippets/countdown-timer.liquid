@@ -1,0 +1,38 @@
+{% comment %}
+  Renders a countdown timer.
+
+  Accepts:
+  - timer_id {String} - Unique ID for the timer element
+  - type {String} - 'evergreen' or 'fixed'
+  - duration {String} - Evergreen duration: 'every_day', 'every_week', 'every_month'
+  - due_date {String} - Fixed end date/time string e.g. '2025/12/31 11:59 PM'
+
+  Usage:
+  {% render 'countdown-timer', timer_id: block.id, type: block.settings.countdown_type, duration: block.settings.evergreen_duration, due_date: block.settings.end_date %}
+{% endcomment %}
+
+<countdown-timer
+  id="countdown-timer-timer_{{ timer_id }}"
+  class="countdown-timer no-js-hidden block"
+  data-type="{{ type }}"
+  data-duration="{{ duration }}"
+  data-due-date="{{ due_date }}"
+>
+  <div class="countdown-timer__inner inline-flex items-center justify-center">
+    <div class="countdown-timer__block relative inline-flex flex-col items-center justify-center">
+      <div class="relative text-center w-full countdown-timer__number countdown-timer__day h1" data-timer-day="">00</div>
+    </div>
+    <div class="countdown-timer__separator">:</div>
+    <div class="countdown-timer__block relative inline-flex flex-col items-center justify-center">
+      <div class="relative text-center w-full countdown-timer__number countdown-timer__hour h1" data-timer-hour="">00</div>
+    </div>
+    <div class="countdown-timer__separator">:</div>
+    <div class="countdown-timer__block relative inline-flex flex-col items-center justify-center">
+      <div class="relative text-center w-full countdown-timer__number countdown-timer__minute h1" data-timer-minute="">00</div>
+    </div>
+    <div class="countdown-timer__separator">:</div>
+    <div class="countdown-timer__block relative inline-flex flex-col items-center justify-center">
+      <div class="relative text-center w-full countdown-timer__number countdown-timer__sec h1" data-timer-second="">00</div>
+    </div>
+  </div>
+</countdown-timer>

@@ -1,0 +1,189 @@
+{{ 'main-article.css' | asset_url | stylesheet_tag }}
+{{ 'accordion.css'    | asset_url | stylesheet_tag }}
+{{ 'product-row.css'  | asset_url | stylesheet_tag }}
+{{ 'ai-summarizer.css' | asset_url | stylesheet_tag }}
+{{ 'article-player.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign width_type = section.settings.section_width
+  if width_type == blank
+    assign width_class = 'main-article__default-width'
+  else
+    assign width_class = 'main-article__' | append: width_type
+  endif
+-%}
+
+  <div class="article-banner" {% if article.image %}style="background-image: url('{{ article.image | image_url: width: 1600 }}')"{% endif %}>
+    <div class="article-banner__inner">
+      {% if blog.title %}
+        <span class="article-banner__eyebrow">{{ blog.title }}</span>
+      {% endif %}
+      <h1 class="article-banner__title">{{ article.title }}</h1>
+      {% assign date = article.published_at | time_tag: format: 'date' %}
+      <p class="article-banner__meta">{{ 'blog.article_metadata_html' | t: date: date, author: article.author }}</p>
+    </div>
+  </div>
+
+  {% comment %} ── Read Aloud / Follow Along player (fixed dock) ── {% endcomment %}
+  {% render 'article-player' %}
+
+{% comment %} ── Main Article Layout ── {% endcomment %}
+<div
+  class="{{ width_class }}"
+  style="
+    --section-padding: {{ section.settings.section_padding }}px;
+    {%- if width_type == 'custom-width' %}
+      --custom-width: {{ section.settings.custom_width }}rem;
+    {%- endif %}
+  "
+>
+<div class="main-article">
+
+  {% comment %} Left Sidebar {% endcomment %}
+  <aside class="left-sidebar">
+    <div class="sidebar-widget sidebar-widget--sticky">
+      <h3 class="sidebar-widget__title">Table of Contents</h3>
+      <nav class="sidebar-toc" id="toc">
+        <p class="sidebar-widget__text">Loading…</p>
+      </nav>
+    </div>
+  </aside>
+
+  {% comment %} Article Content {% endcomment %}
+  <article class="article-content">
+
+    {% comment %} AI Summarizer {% endcomment %}
+    {% if section.settings.show_ai_summarizer %}
+      {% render 'ai-summarizer', article: article %}
+    {% endif %}
+
+    {% comment %}
+      Scoped wrapper for article-player.js. CONTENT_SELECTOR must point
+      here (not at the outer .article-content grid item), or the word
+      walker will also wrap the AI summarizer card and every comment /
+      comment-form field in <span class="ma-word">, making them
+      clickable-to-seek and included in the read-aloud text.
+    {% endcomment %}
+    <div class="article-content-body">
+      {{ article.content }}
+    </div>
+
+    {% comment %} Comments {% endcomment %}
+    {% if blog.comments_enabled? %}
+      <section class="article-comments" id="comments">
+        <h2>{{ 'blog.article_comments' | t }}</h2>
+
+        {% paginate article.comments by 10 %}
+          {% for comment in article.comments %}
+            <div class="article-comment">
+              <p class="article-comment__author">{{ comment.author }}</p>
+              <p class="article-comment__date">{{ comment.created_at | time_tag: format: 'date' }}</p>
+              <p class="article-comment__body">{{ comment.content }}</p>
+            </div>
+          {% endfor %}
+          {{ paginate | default_pagination: anchor: 'comments' }}
+        {% endpaginate %}
+
+        {% form 'new_comment', article %}
+          <h2>{{ 'blog.comment_form_title' | t }}</h2>
+          {{ form.errors | default_errors }}
+
+          <div class="comment-form__field">
+            <label for="author">{{ 'blog.comment_form_name' | t }}</label>
+            <input type="text" name="comment[author]" id="author" value="{{ form.author }}" required>
+          </div>
+
+          <div class="comment-form__field">
+            <label for="email">{{ 'blog.comment_form_email' | t }}</label>
+            <input type="email" name="comment[email]" id="email" value="{{ form.email }}" required>
+          </div>
+
+          <div class="comment-form__field">
+            <label for="body">{{ 'blog.comment_form_body' | t }}</label>
+            <textarea name="comment[body]" id="body" required>{{ form.body }}</textarea>
+          </div>
+
+          <input type="submit" value="{{ 'blog.comment_form_submit' | t }}" class="comment-form__submit">
+        {% endform %}
+      </section>
+    {% endif %}
+  </article>
+
+  {% comment %} Right Sidebar {% endcomment %}
+  <aside class="right-sidebar">
+    <div class="sidebar-widget sidebar-widget--sticky">
+      <h3 class="sidebar-widget__title">Recent Posts</h3>
+      <ul class="sidebar-recent">
+        {% for post in blog.articles limit: 5 %}
+          {% unless post.handle == article.handle %}
+            <li><a href="{{ post.url }}">{{ post.title }}</a></li>
+          {% endunless %}
+        {% endfor %}
+      </ul>
+    </div>
+
+  </aside>
+
+</div>
+</div>
+
+<script src="{{ 'main-article.js' | asset_url }}" defer></script>
+{% if section.settings.show_ai_summarizer %}
+  <script src="{{ 'ai-summarizer.js' | asset_url }}" defer></script>
+{% endif %}
+<script src="{{ 'article-player.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "t:general.article",
+  "settings": [
+    {
+      "type": "header",
+      "content": "AI summarizer"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_ai_summarizer",
+      "label": "Show AI summarizer",
+      "info": "Adds a card after the article content letting readers open a pre-filled summary prompt in Claude, ChatGPT, Gemini, and other AI tools. Edit the default prompt per-article via the article's ai_summarizer metafield (custom.ai_summarizer).",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 28
+    }
+  ]
+}
+{% endschema %}

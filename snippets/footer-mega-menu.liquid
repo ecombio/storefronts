@@ -1,0 +1,45 @@
+{% comment %}
+  FOOTER MEGA MENU
+  - Accepts menu from section settings (via render parameter)
+  - Supports both 2-level and 3-level navigation
+  - Uses auto-fit columns (no hard-coded column count)
+  - Long links (e.g. policy names) are allowed to wrap
+{% endcomment %}
+
+{{ 'footer-mega-menu.css' | asset_url | stylesheet_tag }}
+
+{% assign footer_menu = menu %}
+
+{% if footer_menu and footer_menu.links.size > 0 %}
+  <div class="footer-mega-menu">
+    <div class="footer-mega-menu__inner">
+      <div class="footer-mega-menu__columns">
+
+        {% for column in footer_menu.links %}
+          {% if column.links.size > 0 %}
+            <div class="footer-mega-menu__column">
+              <!-- Level 1: Column Title -->
+              <h3 class="footer-mega-menu__heading">{{ column.title }}</h3>
+
+              {% for section in column.links %}
+                {% if section.links.size > 0 %}
+                  <!-- Level 2: Section Title + Level 3 Links -->
+                  <div class="footer-mega-menu__section-title">{{ section.title }}</div>
+
+                  {% for link in section.links %}
+                    <a href="{{ link.url }}" class="footer-mega-menu__link">{{ link.title }}</a>
+                  {% endfor %}
+
+                {% else %}
+                  <!-- Fallback for 2-level menus -->
+                  <a href="{{ section.url }}" class="footer-mega-menu__link">{{ section.title }}</a>
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endfor %}
+
+      </div>
+    </div>
+  </div>
+{% endif %}

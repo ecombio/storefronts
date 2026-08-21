@@ -1,0 +1,280 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "header",
+  "name": "Header",
+  "sections": {
+    "announcement-bar": {
+      "type": "announcement-bar",
+      "settings": {
+        "ann_enable": true,
+        "ann_section_width": "",
+        "ann_custom_width": 80,
+        "ann_section_padding": 48,
+        "ann_autorotate": true,
+        "ann_autorotate_speed": 5,
+        "ann_enable_close": true,
+        "ann_1_type": "announcement",
+        "ann_1_text": "✌️ Free Express Shipping on orders $500!",
+        "ann_1_link": "",
+        "ann_1_countdown_type": "evergreen",
+        "ann_1_end_date": "",
+        "ann_1_evergreen_minutes": 720,
+        "ann_1_button_label": "",
+        "ann_1_button_link": "",
+        "ann_2_type": "countdown",
+        "ann_2_text": "Countdown timer",
+        "ann_2_link": "",
+        "ann_2_countdown_type": "evergreen",
+        "ann_2_end_date": "",
+        "ann_2_evergreen_minutes": 720,
+        "ann_2_button_label": "",
+        "ann_2_button_link": "",
+        "ann_3_type": "",
+        "ann_3_text": "",
+        "ann_3_link": "",
+        "ann_3_countdown_type": "evergreen",
+        "ann_3_end_date": "",
+        "ann_3_evergreen_minutes": 720,
+        "ann_3_button_label": "",
+        "ann_3_button_link": "",
+        "ann_4_type": "",
+        "ann_4_text": "",
+        "ann_4_link": "",
+        "ann_4_countdown_type": "evergreen",
+        "ann_4_end_date": "",
+        "ann_4_evergreen_minutes": 720,
+        "ann_4_button_label": "",
+        "ann_4_button_link": "",
+        "ann_5_type": "",
+        "ann_5_text": "",
+        "ann_5_link": "",
+        "ann_5_countdown_type": "evergreen",
+        "ann_5_end_date": "",
+        "ann_5_evergreen_minutes": 720,
+        "ann_5_button_label": "",
+        "ann_5_button_link": ""
+      }
+    },
+    "utility_bar_AD7Pcz": {
+      "type": "utility-bar",
+      "name": "Utility bar",
+      "settings": {
+        "section_width": "custom-width",
+        "custom_width": 70,
+        "section_padding": 32,
+        "enable_bar": true,
+        "bar_style": "hyper",
+        "show_currency": true,
+        "show_locale": true,
+        "link_1_label": "Track Order",
+        "link_1_url": "/apps/track",
+        "link_2_label": "Store Locator",
+        "link_2_url": "/pages/stores",
+        "link_3_label": "Track Order",
+        "link_3_url": "/apps/track"
+      }
+    },
+    "header_section_xhWKmf": {
+      "type": "header-section",
+      "blocks": {
+        "highlight_3eaBKG": {
+          "type": "highlight",
+          "settings": {
+            "label": "On Sale",
+            "link": "shopify://collections",
+            "icon": ""
+          }
+        },
+        "single_link_3U83Va": {
+          "type": "single-link",
+          "settings": {
+            "label": "Single Link",
+            "link": "",
+            "icon": ""
+          }
+        },
+        "showcase_bPmbNB": {
+          "type": "showcase",
+          "name": "Electric Bicycles",
+          "settings": {
+            "label": "Electric Bicycles",
+            "link": "shopify://pages/electric-bikes",
+            "icon": "",
+            "panel_width": "custom-width",
+            "panel_custom_width": 100,
+            "panel_padding": 28,
+            "see_all_label": "View all",
+            "see_all_link": "",
+            "show_sidebar": false,
+            "sidebar_heading": "Good to know",
+            "tip_1_icon": "",
+            "tip_1_heading": "Trade-in",
+            "tip_1_body": "Get up to $700 for your old device",
+            "tip_2_icon": "",
+            "tip_2_heading": "",
+            "tip_2_body": "",
+            "tip_3_icon": "",
+            "tip_3_heading": "",
+            "tip_3_body": "",
+            "cat_1_collection": "electric-cargo-bikes",
+            "cat_2_collection": "electric-city-bikes",
+            "cat_3_collection": "electric-fat-bikes",
+            "cat_4_collection": "electric-folding-bikes",
+            "cat_5_collection": "electric-mountain-bikes",
+            "cat_6_collection": "",
+            "cat_7_collection": "",
+            "cat_8_collection": ""
+          }
+        },
+        "showcase_yXw6ky": {
+          "type": "showcase",
+          "name": "Electric Scooters",
+          "settings": {
+            "label": "Electric Scooters",
+            "link": "shopify://pages/electric-scooters",
+            "icon": "",
+            "panel_width": "custom-width",
+            "panel_custom_width": 100,
+            "panel_padding": 28,
+            "see_all_label": "View all",
+            "see_all_link": "",
+            "show_sidebar": true,
+            "sidebar_heading": "Good to know",
+            "tip_1_icon": "",
+            "tip_1_heading": "Trade-in",
+            "tip_1_body": "Get up to $700 for your old device",
+            "tip_2_icon": "",
+            "tip_2_heading": "",
+            "tip_2_body": "",
+            "tip_3_icon": "",
+            "tip_3_heading": "",
+            "tip_3_body": "",
+            "cat_1_collection": "commuter-electric-scooters",
+            "cat_2_collection": "off-road-electric-scooters",
+            "cat_3_collection": "performance-electric-scooters",
+            "cat_4_collection": "electric-scooter-for-kids",
+            "cat_5_collection": "",
+            "cat_6_collection": "",
+            "cat_7_collection": "",
+            "cat_8_collection": ""
+          }
+        },
+        "showcase_KQpA4U": {
+          "type": "showcase",
+          "name": "Electric Skateboards",
+          "settings": {
+            "label": "Electric Skateboards",
+            "link": "shopify://pages/electric-skateboards",
+            "icon": "",
+            "panel_width": "",
+            "panel_custom_width": 80,
+            "panel_padding": 24,
+            "see_all_label": "View all",
+            "see_all_link": "",
+            "show_sidebar": false,
+            "sidebar_heading": "Good to know",
+            "tip_1_icon": "",
+            "tip_1_heading": "Trade-in",
+            "tip_1_body": "Get up to $700 for your old device",
+            "tip_2_icon": "",
+            "tip_2_heading": "",
+            "tip_2_body": "",
+            "tip_3_icon": "",
+            "tip_3_heading": "",
+            "tip_3_body": "",
+            "cat_1_collection": "",
+            "cat_2_collection": "",
+            "cat_3_collection": "",
+            "cat_4_collection": "",
+            "cat_5_collection": "",
+            "cat_6_collection": "",
+            "cat_7_collection": "",
+            "cat_8_collection": ""
+          }
+        },
+        "showcase_LFN8CD": {
+          "type": "showcase",
+          "name": "Accessories & Parts",
+          "settings": {
+            "label": "Accessories & Parts",
+            "link": "shopify://collections/accessories",
+            "icon": "",
+            "panel_width": "",
+            "panel_custom_width": 80,
+            "panel_padding": 24,
+            "see_all_label": "View all",
+            "see_all_link": "",
+            "show_sidebar": false,
+            "sidebar_heading": "Good to know",
+            "tip_1_icon": "",
+            "tip_1_heading": "Trade-in",
+            "tip_1_body": "Get up to $700 for your old device",
+            "tip_2_icon": "",
+            "tip_2_heading": "",
+            "tip_2_body": "",
+            "tip_3_icon": "",
+            "tip_3_heading": "",
+            "tip_3_body": "",
+            "cat_1_collection": "",
+            "cat_2_collection": "",
+            "cat_3_collection": "",
+            "cat_4_collection": "",
+            "cat_5_collection": "",
+            "cat_6_collection": "",
+            "cat_7_collection": "",
+            "cat_8_collection": ""
+          }
+        },
+        "link_list_z7fz7z": {
+          "type": "link-list",
+          "settings": {
+            "label": "More",
+            "link": "",
+            "menu": "",
+            "icon": ""
+          }
+        }
+      },
+      "block_order": [
+        "highlight_3eaBKG",
+        "single_link_3U83Va",
+        "showcase_bPmbNB",
+        "showcase_yXw6ky",
+        "showcase_KQpA4U",
+        "showcase_LFN8CD",
+        "link_list_z7fz7z"
+      ],
+      "name": "Header Section",
+      "settings": {
+        "section_width": "custom-width",
+        "custom_width": 70,
+        "section_padding": 32,
+        "enable_predictive_search": true,
+        "search_panel_width": "custom-width",
+        "search_panel_custom_width": 100,
+        "search_panel_padding": 16,
+        "show_icon_account": true,
+        "show_label_account": true,
+        "show_icon_wishlist": false,
+        "show_label_wishlist": true,
+        "show_icon_compare": false,
+        "show_label_compare": true,
+        "show_icon_cart": true,
+        "show_label_cart": true
+      }
+    }
+  },
+  "order": [
+    "announcement-bar",
+    "utility_bar_AD7Pcz",
+    "header_section_xhWKmf"
+  ]
+}

@@ -1,0 +1,155 @@
+/* ============================================================
+   promo-banner.css
+   In-feed promotional banner — lives as a grid item inside
+   .collection-feed__grid alongside product cards.
+   ============================================================ */
+
+/* Grid placement -------------------------------------------- */
+.promo-banner {
+  grid-column: span var(--banner-col-span, 2);
+  grid-row: span var(--banner-row-span, 1);
+
+  /* Reset anchor styles */
+  display: block;
+  text-decoration: none;
+  color: var(--banner-text-color, #fff);
+
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+
+  /* Guaranteed height regardless of content presence —
+     the media layer is position:absolute so it never
+     contributes to height on its own.                  */
+  min-height: 200px;
+}
+
+/* Media layer ----------------------------------------------- */
+/* Stretches to fill the full banner; images and fallback
+   are sized relative to this layer.                     */
+.promo-banner__media {
+  display: block;
+  position: absolute;
+  inset: 0;
+}
+
+/* Images ---------------------------------------------------- */
+.promo-banner__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Mobile / desktop image switching */
+.promo-banner__image--mobile  { display: none; }
+.promo-banner__image--desktop { display: block; }
+
+@media (max-width: 768px) {
+  .promo-banner__image--desktop { display: none; }
+  .promo-banner__image--mobile  { display: block; }
+}
+
+/* Overlay --------------------------------------------------- */
+.promo-banner__overlay {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  /* opacity set inline by Liquid */
+  pointer-events: none;
+}
+
+/* Content --------------------------------------------------- */
+.promo-banner__content {
+  position: relative;        /* sits above the overlay */
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.375rem;
+  padding: 1.25rem;
+  height: 100%;
+  min-height: inherit;       /* inherits banner's min-height */
+  box-sizing: border-box;
+  color: var(--banner-text-color, #fff);
+
+  /* Default alignment: left. Modifier classes below override
+     both the cross-axis alignment (align-items) and text-align —
+     the button follows via align-self: auto (see .promo-banner__button). */
+  align-items: flex-start;
+  text-align: left;
+}
+
+.promo-banner__content--center {
+  align-items: center;
+  text-align: center;
+}
+
+.promo-banner__content--right {
+  align-items: flex-end;
+  text-align: right;
+}
+
+/* Typography ------------------------------------------------ */
+.promo-banner__heading {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.promo-banner__subheading {
+  display: block;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  opacity: 0.85;
+}
+
+.promo-banner__button {
+  display: inline-block;
+  margin-block-start: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border: 2px solid currentColor;
+  border-radius: 4px;
+  /* No explicit align-self here on purpose — it defaults to 'auto',
+     which follows whatever align-items is set on the parent
+     .promo-banner__content (left/center/right). This keeps the
+     button in sync with the heading/subheading alignment instead
+     of always sitting on the left. */
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.promo-banner:hover .promo-banner__button {
+  background: var(--banner-text-color, #fff);
+  color: #111;
+}
+
+/* Hover lift on linked banners ------------------------------ */
+a.promo-banner {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+a.promo-banner:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Responsive ------------------------------------------------ */
+@media (max-width: 768px) {
+  /* Always full-width on mobile — spanning is meaningless
+     in a 1 or 2 column grid and can break layout.        */
+  .promo-banner {
+    grid-column: 1 / -1;
+    min-height: 160px;
+  }
+
+  .promo-banner__content {
+    padding: 1rem;
+  }
+
+  .promo-banner__heading {
+    font-size: 1.1rem;
+  }
+}

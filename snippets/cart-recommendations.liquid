@@ -1,0 +1,27 @@
+{%- if show_related or show_complementary -%}
+  {{ 'cart-recommendations.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'cart-recommendations.js' | asset_url }}" defer></script>
+
+  <div
+    class="ecombio-cart-recs"
+    data-ecombio-recs
+    data-related-label="{{ related_label | escape }}"
+    data-complementary-label="{{ complementary_label | escape }}"
+  >
+    <span
+      class="ecombio-cart-recs__status"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    ></span>
+
+    <div class="ecombio-cart-recs__skeleton" aria-hidden="true">
+      <div class="ecombio-cart-recs__skeleton-bar"></div>
+      <div class="ecombio-cart-recs__skeleton-cards">
+        {%- for i in (1..4) -%}
+          <div class="ecombio-cart-recs__skeleton-card"></div>
+        {%- endfor -%}
+      </div>
+    </div>
+  </div>
+{%- endif -%}

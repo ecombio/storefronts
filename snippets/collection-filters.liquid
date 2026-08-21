@@ -1,0 +1,147 @@
+{% comment %}
+  collection-filters.liquid
+  Requires: Shopify Search & Discovery app
+  Supports both collection and search contexts automatically.
+  Loops collection.filters or search.filters — no hardcoded tags, no inline scripts
+{% endcomment %}
+{{ 'collection-filters.css' | asset_url | stylesheet_tag }}
+{%- comment -%} ── Context detection ───────────────────────────────────────── {%- endcomment -%}
+{%- assign _filters = search.filters | default: collection.filters -%}
+
+{%- if search.performed -%}
+  {%- assign _clear_url = routes.search_url | append: '?type=product&q=' | append: search.terms -%}
+{%- else -%}
+  {%- assign _clear_url = collection.url -%}
+{%- endif -%}
+
+{%- assign has_active_filters = false -%}
+{%- for filter in _filters -%}
+  {%- if filter.active_values.size > 0 or filter.min_value.value or filter.max_value.value -%}
+    {%- assign has_active_filters = true -%}
+  {%- endif -%}
+{%- endfor -%}
+
+<aside
+  class="collection-filters"
+  id="collection-filters"
+  aria-label="Product filters"
+>
+
+  <div class="collection-filters__header">
+    <span class="collection-filters__heading">Filters</span>
+    {%- if has_active_filters -%}
+      <a
+        href="{{ _clear_url }}"
+        class="collection-filters__clear"
+        aria-label="Clear all filters"
+      >Clear all</a>
+    {%- endif -%}
+  </div>
+
+  {%- for filter in _filters -%}
+    {%- assign filter_id = "filter-" | append: filter.param_name | handleize -%}
+    {%- assign is_open = true -%}
+
+    <div
+      class="filter-group"
+      data-filter-group="{{ filter.param_name | handleize }}"
+    >
+      <button
+        class="filter-group__toggle"
+        type="button"
+        aria-expanded="{{ is_open }}"
+        aria-controls="{{ filter_id }}"
+      >
+        {{- filter.label -}}
+        {%- if filter.active_values.size > 0 -%}
+          <span class="filter-group__count" aria-label="{{ filter.active_values.size }} active">
+            {{- filter.active_values.size -}}
+          </span>
+        {%- endif -%}
+        <svg class="filter-group__chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+          <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <div
+        class="filter-group__body"
+        id="{{ filter_id }}"
+        {%- unless is_open %} hidden{%- endunless %}
+      >
+
+        {%- case filter.type -%}
+
+          {%- when 'boolean', 'list' -%}
+            {%- for filter_value in filter.values -%}
+              <label class="filter-option{% if filter_value.count == 0 and filter_value.active == false %} filter-option--disabled{% endif %}">
+                <input
+                  class="filter-option__checkbox"
+                  type="checkbox"
+                  name="{{ filter_value.param_name }}"
+                  value="{{ filter_value.value }}"
+                  {% if filter_value.active %}checked{% endif %}
+                  {% if filter_value.count == 0 and filter_value.active == false %}disabled{% endif %}
+                  data-filter-url-add="{{ filter_value.url_to_add }}"
+                  data-filter-url-remove="{{ filter_value.url_to_remove }}"
+                >
+                <span class="filter-option__label">
+                  {{- filter_value.label -}}
+                  <span class="filter-option__count">({{ filter_value.count }})</span>
+                </span>
+              </label>
+            {%- endfor -%}
+
+          {%- when 'price_range' -%}
+            {%- assign min_price = filter.min_value.value | default: 0 -%}
+            {%- assign max_price = filter.max_value.value | default: filter.range_max -%}
+
+            <div class="filter-price">
+              <div class="filter-price__inputs">
+                <div class="filter-price__field">
+                  <label class="filter-price__label" for="filter-price-min">Min</label>
+                  <div class="filter-price__input-wrap">
+                    <span class="filter-price__symbol">{{ cart.currency.symbol }}</span>
+                    <input
+                      id="filter-price-min"
+                      class="filter-price__input"
+                      type="number"
+                      name="{{ filter.min_value.param_name }}"
+                      min="0"
+                      max="{{ filter.range_max | money_without_currency | remove: ',' }}"
+                      placeholder="0"
+                      value="{{ min_price | money_without_currency | remove: ',' }}"
+                      data-filter-type="price-min"
+                    >
+                  </div>
+                </div>
+                <span class="filter-price__sep">—</span>
+                <div class="filter-price__field">
+                  <label class="filter-price__label" for="filter-price-max">Max</label>
+                  <div class="filter-price__input-wrap">
+                    <span class="filter-price__symbol">{{ cart.currency.symbol }}</span>
+                    <input
+                      id="filter-price-max"
+                      class="filter-price__input"
+                      type="number"
+                      name="{{ filter.max_value.param_name }}"
+                      min="0"
+                      max="{{ filter.range_max | money_without_currency | remove: ',' }}"
+                      placeholder="{{ filter.range_max | money_without_currency | remove: ',' }}"
+                      value="{{ max_price | money_without_currency | remove: ',' }}"
+                      data-filter-type="price-max"
+                    >
+                  </div>
+                </div>
+              </div>
+              <button class="filter-price__apply" type="button" data-filter-price-apply>
+                Apply
+              </button>
+            </div>
+
+        {%- endcase -%}
+
+      </div>
+    </div>
+  {%- endfor -%}
+
+</aside>

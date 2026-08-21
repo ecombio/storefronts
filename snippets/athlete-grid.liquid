@@ -1,0 +1,116 @@
+{%- comment -%}
+  snippets/athlete-grid.liquid
+
+  Renders an optional heading, a responsive card grid (via
+  athlete-card.liquid), and a "Load more" button that reveals extra
+  cards client-side. Self-contained: pulls in its own CSS/JS plus
+  the card component's CSS.
+
+  Accepts:
+    articles              - required. List of Article objects to
+                             render. Sort/dedupe/cap it upstream —
+                             this snippet only handles the initial
+                             per_page / load_more reveal split.
+    per_page               - optional integer. Cards visible
+                             initially. Default: 9.
+    load_more_increment    - optional integer. Cards revealed per
+                             click. Default: 6.
+    heading                 - optional string. Heading above the
+                             grid. Omit to skip it entirely.
+    empty_state_text       - optional string. Shown when `articles`
+                             is empty. Default: "No articles
+                             published yet."
+    avatar                  - optional image object. When given, this
+                             single image is used as the avatar badge
+                             on every card (e.g. "all these articles
+                             are about this one athlete").
+    avatar_alt              - optional string. Alt text paired with
+                             `avatar`.
+    avatar_lookup           - optional list of Article objects (e.g.
+                             blogs.athletes.articles), used INSTEAD of
+                             `avatar` to resolve a different avatar
+                             per card by matching each article's
+                             `author` field against the lookup
+                             article's title (or its
+                             athlete_match_name metafield). Use this
+                             for a mixed-athlete listing.
+{%- endcomment -%}
+
+{{ 'athlete-card.css' | asset_url | stylesheet_tag }}
+{{ 'athlete-grid.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign per_page = per_page | default: 9
+  assign load_more_increment = load_more_increment | default: 6
+  assign empty_state_text = empty_state_text | default: 'No articles published yet.'
+-%}
+
+<div class="athlete-grid-wrapper" data-athlete-grid-wrapper>
+  {%- if heading != blank -%}
+    <h2 class="athlete-grid__heading">{{ heading }}</h2>
+  {%- endif -%}
+
+  {%- if articles.size > 0 -%}
+    <div class="athlete-grid" data-athlete-grid>
+      {%- for a in articles -%}
+        {%- liquid
+          assign card_avatar = blank
+          assign card_avatar_alt = blank
+
+          if avatar
+            assign card_avatar = avatar
+            assign card_avatar_alt = avatar_alt | default: heading
+          elsif avatar_lookup
+            for candidate in avatar_lookup
+              assign candidate_key = candidate.metafields.custom.athlete_match_name | default: candidate.title
+              if candidate_key == a.author
+                assign card_avatar = candidate.image
+                assign card_avatar_alt = candidate.title
+                break
+              endif
+            endfor
+          endif
+        -%}
+        <div
+          class="athlete-grid__item"
+          data-athlete-grid-card
+          {%- if forloop.index > per_page %} hidden{% endif -%}
+        >
+          {%- render 'athlete-card', article: a, avatar: card_avatar, avatar_alt: card_avatar_alt, loading: forloop.index -%}
+        </div>
+      {%- endfor -%}
+    </div>
+
+    {%- if articles.size > per_page -%}
+      <button
+        type="button"
+        class="athlete-grid__load-more"
+        data-athlete-grid-load-more
+        data-increment="{{ load_more_increment }}"
+      >
+        Load more
+      </button>
+    {%- endif -%}
+  {%- else -%}
+    <p class="athlete-grid__empty">{{ empty_state_text }}</p>
+  {%- endif -%}
+</div>
+
+<script src="{{ 'athlete-grid.js' | asset_url }}" defer="defer"></script>
+{% comment %}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: |-
+    {%- render 'athlete-card',
+                article: a,
+                avatar: card_avatar,
+                avatar_alt: card_avatar_alt,
+                loading: forloop.index <= 4
+              -%}
+  to: "{%- render 'athlete-card', article: a, avatar: card_avatar, avatar_alt: card_avatar_alt,
+    loading: forloop.index -%}"
+  position: 3393..3508
+{% endcomment %}

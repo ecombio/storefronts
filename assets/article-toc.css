@@ -1,0 +1,185 @@
+/* ─────────────────────────────────────────
+   article-toc.css
+───────────────────────────────────────── */
+
+/* ── Shell ── */
+.ma-toc {
+  font-size: 0.85rem;
+}
+
+/* ── Desktop header (visible ≥ 681px, not a button) ── */
+.ma-toc__header {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #999;
+  margin-bottom: 0.75rem;
+  padding: 0;
+}
+
+/* ── Mobile toggle button (hidden on desktop) ── */
+.ma-toc__toggle {
+  display: none;
+}
+
+/* ── List ── */
+.ma-toc__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.ma-toc__loading {
+  color: #bbb;
+  font-size: 0.82rem;
+}
+
+/* ── Items ── */
+.ma-toc__item {
+  display: block;
+}
+
+.ma-toc__item--h3 {
+  padding-left: 0.85rem;
+}
+
+.ma-toc__link {
+  display: block;
+  padding: 0.28rem 0.5rem 0.28rem 0.5rem;
+  color: #666;
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  border-radius: 0 3px 3px 0;
+  line-height: 1.4;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
+}
+
+.ma-toc__item--h3 .ma-toc__link {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.ma-toc__link:hover {
+  color: #111;
+  background: #f5f5f5;
+  border-left-color: #d5d5d5;
+}
+
+/* Active state — driven by .is-active class set in JS */
+.ma-toc__link.is-active {
+  color: #111;
+  font-weight: 600;
+  border-left-color: #111;
+  background: #f7f7f7;
+}
+
+.ma-toc__item--h3 .ma-toc__link.is-active {
+  font-weight: 500;
+}
+
+/* ── Sticky on desktop ── */
+@media (min-width: 681px) {
+  .ma-toc {
+    position: sticky;
+    top: 5.5rem; /* clear sticky header + player */
+    max-height: calc(100vh - 7rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    /* Subtle scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: #e0e0e0 transparent;
+  }
+
+  .ma-toc::-webkit-scrollbar        { width: 4px; }
+  .ma-toc::-webkit-scrollbar-thumb  { background: #e0e0e0; border-radius: 2px; }
+  .ma-toc::-webkit-scrollbar-track  { background: transparent; }
+
+  .ma-toc__toggle { display: none; }
+  .ma-toc__header { display: block; }
+  .ma-toc__list   { display: flex; } /* always visible */
+}
+
+/* ── Mobile accordion ── */
+@media (max-width: 680px) {
+  .ma-toc {
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Hide desktop header on mobile */
+  .ma-toc__header {
+    display: none;
+  }
+
+  /* Toggle button */
+  .ma-toc__toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: #fff;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #222;
+    text-align: left;
+  }
+
+  .ma-toc__toggle:focus-visible {
+    outline: 2px solid #111;
+    outline-offset: -2px;
+  }
+
+  .ma-toc__toggle-chevron {
+    flex-shrink: 0;
+    color: #aaa;
+    transition: transform 0.2s ease;
+  }
+
+  /* Rotate chevron when expanded */
+  .ma-toc__toggle[aria-expanded="true"] .ma-toc__toggle-chevron {
+    transform: rotate(180deg);
+  }
+
+  /* Collapsed by default */
+  .ma-toc__list {
+    display: none;
+    padding: 0.5rem 0 0.75rem;
+    border-top: 1px solid #e5e5e5;
+  }
+
+  /* Expanded state — toggled by JS adding .is-open to .ma-toc */
+  .ma-toc.is-open .ma-toc__list {
+    display: flex;
+  }
+
+  .ma-toc__link {
+    padding: 0.35rem 1rem;
+    border-left: none;
+    border-radius: 0;
+  }
+
+  .ma-toc__item--h3 .ma-toc__link {
+    padding-left: 1.75rem;
+  }
+
+  .ma-toc__link:hover {
+    background: #f5f5f5;
+  }
+
+  .ma-toc__link.is-active {
+    color: #111;
+    font-weight: 600;
+    background: #f5f5f5;
+    border-left: none;
+  }
+}

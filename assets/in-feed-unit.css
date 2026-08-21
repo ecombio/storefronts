@@ -1,0 +1,67 @@
+/* assets/in-feed-unit.css
+   Styles for snippets/in-feed-unit.liquid
+
+   Rendered as a direct child of .product-feed__grid, between product
+   rows, but is a single grid item, not a product card — span: full row.
+*/
+
+.product-feed__grid > .in-feed-unit {
+  grid-column: 1 / -1;
+}
+
+.in-feed-unit {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 1.5rem;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--color-background-secondary, #f5f5f5);
+}
+
+.in-feed-unit__image-wrap {
+  height: 100%;
+  min-height: 200px;
+  overflow: hidden;
+}
+
+.in-feed-unit__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.in-feed-unit__content {
+  padding: 1.5rem 2rem;
+}
+
+.in-feed-unit__heading {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+
+.in-feed-unit__text {
+  font-size: 0.9375rem;
+  color: var(--color-foreground-muted, #555);
+  margin-bottom: 1rem;
+}
+
+.in-feed-unit__button {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.625rem 1.25rem;
+  background: var(--color-foreground, #111);
+  color: var(--color-background, #fff);
+  border-radius: 999px;
+  text-decoration: none;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+@media (max-width: 749px) {
+  .in-feed-unit {
+    grid-template-columns: 1fr;
+  }
+}

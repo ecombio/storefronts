@@ -1,0 +1,270 @@
+{%- comment -%} snippets/search-filter.liquid {%- endcomment -%}
+
+{{ 'search-filter.css' | asset_url | stylesheet_tag }}
+
+<aside
+  class="search-filter"
+  id="search-filter"
+  aria-label="Product filters"
+  {%- unless show_filters %} hidden{%- endunless %}
+>
+
+  <div class="search-filter__header">
+    <span class="search-filter__heading">Filters</span>
+    <button class="search-filter__close-btn" type="button" aria-label="Close filters" data-filter-close>&times;</button>
+  </div>
+
+  {%- if active_type == 'product' -%}
+    <form method="get" action="{{ routes.search_url }}" id="SearchFilterForm">
+      <input type="hidden" name="q" value="{{ search_terms }}">
+      <input type="hidden" name="type" value="product">
+
+      {%- for filter in search.filters -%}
+        {%- assign group_body_id = 'SearchFilterGroupBody-' | append: forloop.index -%}
+        <div class="search-filter__group" data-filter-group>
+          <button
+            type="button"
+            class="search-filter__group-toggle"
+            aria-expanded="true"
+            aria-controls="{{ group_body_id }}"
+            data-group-toggle
+          >
+            <span class="search-filter__group-label">
+              {{ filter.label }}
+              {%- if filter.active_values.size > 0 -%}
+                <span class="search-filter__group-badge">{{ filter.active_values.size }}</span>
+              {%- endif -%}
+            </span>
+            <svg class="search-filter__group-chevron" width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true">
+              <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <div class="search-filter__group-body" id="{{ group_body_id }}" data-group-body>
+            {%- case filter.type -%}
+              {%- when 'list' -%}
+                {%- for value in filter.values -%}
+                  <label class="search-filter__option
+                    {%- if value.active %} search-filter__option--active{%- endif %}
+                    {%- if value.count == 0 and value.active == false %} search-filter__option--disabled{%- endif %}">
+                    <input
+                      type="checkbox"
+                      class="search-filter__option-checkbox"
+                      name="{{ value.param_name }}"
+                      value="{{ value.value }}"
+                      {%- if value.active %} checked{%- endif %}
+                      {%- if value.count == 0 and value.active == false %} disabled{%- endif %}
+                    >
+                    {%- if value.swatch -%}
+                      <span
+                        class="search-filter__swatch{% if value.swatch.image %} search-filter__swatch--image{% endif %}"
+                        {%- if value.swatch.image -%}
+                          style="background-image: url({{ value.swatch.image | image_url: width: 50 }})"
+                        {%- elsif value.swatch.color -%}
+                          style="background-color: {{ value.swatch.color }}"
+                        {%- endif -%}
+                        aria-hidden="true"
+                      ></span>
+                    {%- endif -%}
+                    <span>{{ value.label }} <span class="search-filter__option-count">({{ value.count }})</span></span>
+                  </label>
+                {%- endfor -%}
+
+              {%- when 'price_range' -%}
+                {%- assign range_max_cents = filter.range_max -%}
+                {%- assign range_max_num = range_max_cents | divided_by: 100.0 -%}
+                {%- assign range_max_dollars = range_max_cents | divided_by: 100 -%}
+                {%- assign range_max_cents_part = range_max_cents | modulo: 100 | prepend: '00' | slice: -2, 2 -%}
+                {%- assign range_max_decimal = range_max_dollars | append: '.' | append: range_max_cents_part -%}
+
+                {%- assign min_val_decimal = blank -%}
+                {%- if filter.min_value.value -%}
+                  {%- assign min_dollars = filter.min_value.value | divided_by: 100 -%}
+                  {%- assign min_cents_part = filter.min_value.value | modulo: 100 | prepend: '00' | slice: -2, 2 -%}
+                  {%- assign min_val_decimal = min_dollars | append: '.' | append: min_cents_part -%}
+                {%- endif -%}
+
+                {%- assign max_val_decimal = blank -%}
+                {%- if filter.max_value.value -%}
+                  {%- assign max_dollars = filter.max_value.value | divided_by: 100 -%}
+                  {%- assign max_cents_part = filter.max_value.value | modulo: 100 | prepend: '00' | slice: -2, 2 -%}
+                  {%- assign max_val_decimal = max_dollars | append: '.' | append: max_cents_part -%}
+                {%- endif -%}
+
+                <div class="search-filter__price-wrap" data-price-filter>
+                  <div class="search-filter__price-fields">
+                    <div class="search-filter__price-field">
+                      <label class="search-filter__price-label" for="SearchFilterPriceMin-{{ forloop.index }}">Min</label>
+                      <div class="search-filter__price-input-wrap">
+                        <span class="search-filter__price-symbol">$</span>
+                        <input
+                          type="number"
+                          class="search-filter__price-input"
+                          id="SearchFilterPriceMin-{{ forloop.index }}"
+                          name="{{ filter.min_value.param_name }}"
+                          value="{{ min_val_decimal }}"
+                          min="0"
+                          max="{{ range_max_decimal }}"
+                          step="0.01"
+                          placeholder="0"
+                          data-price-input="min"
+                        >
+                      </div>
+                    </div>
+
+                    <span class="search-filter__price-sep">&ndash;</span>
+
+                    <div class="search-filter__price-field">
+                      <label class="search-filter__price-label" for="SearchFilterPriceMax-{{ forloop.index }}">Max</label>
+                      <div class="search-filter__price-input-wrap">
+                        <span class="search-filter__price-symbol">$</span>
+                        <input
+                          type="number"
+                          class="search-filter__price-input"
+                          id="SearchFilterPriceMax-{{ forloop.index }}"
+                          name="{{ filter.max_value.param_name }}"
+                          value="{{ max_val_decimal }}"
+                          min="0"
+                          max="{{ range_max_decimal }}"
+                          step="0.01"
+                          placeholder="{{ range_max_decimal }}"
+                          data-price-input="max"
+                        >
+                      </div>
+                    </div>
+                  </div>
+
+                  {%- comment -%}
+                    Real histogram: bucket actual product prices from the
+                    current search results, same approach as collection-filter.
+                    search.results can include non-product objects (articles,
+                    pages) depending on result_type, so each result is checked
+                    for object_type == 'product' before its price is counted.
+                  {%- endcomment -%}
+                  {%- assign bar_count = 16 -%}
+                  {%- assign bin_width = range_max_num | divided_by: bar_count -%}
+                  {%- if bin_width <= 0 -%}
+                    {%- assign bin_width = 1 -%}
+                  {%- endif -%}
+
+                  {%- assign max_bucket_count = 0 -%}
+                  {%- assign bucket_counts_str = '' -%}
+                  {%- for bucket in (1..bar_count) -%}
+                    {%- assign bucket_lower = bucket | minus: 1 | times: bin_width -%}
+                    {%- assign bucket_upper = bucket | times: bin_width -%}
+                    {%- assign bucket_count = 0 -%}
+                    {%- for result in search.results limit: 50 -%}
+                      {%- if result.object_type == 'product' -%}
+                        {%- assign p_price = result.price_min | divided_by: 100.0 -%}
+                        {%- if bucket == bar_count and p_price >= bucket_lower -%}
+                          {%- assign bucket_count = bucket_count | plus: 1 -%}
+                        {%- elsif p_price >= bucket_lower and p_price < bucket_upper -%}
+                          {%- assign bucket_count = bucket_count | plus: 1 -%}
+                        {%- endif -%}
+                      {%- endif -%}
+                    {%- endfor -%}
+                    {%- assign bucket_counts_str = bucket_counts_str | append: bucket_count | append: ',' -%}
+                    {%- if bucket_count > max_bucket_count -%}
+                      {%- assign max_bucket_count = bucket_count -%}
+                    {%- endif -%}
+                  {%- endfor -%}
+                  {%- assign bucket_counts = bucket_counts_str | split: ',' -%}
+
+                  <div class="search-filter__histogram" aria-hidden="true">
+                    {%- for bucket_count in bucket_counts -%}
+                      {%- assign bar_height = 6 -%}
+                      {%- if max_bucket_count > 0 -%}
+                        {%- assign bar_height = bucket_count | times: 100 | divided_by: max_bucket_count | at_least: 6 -%}
+                      {%- endif -%}
+                      <span class="search-filter__histogram-bar" style="height: {{ bar_height }}%"></span>
+                    {%- endfor -%}
+                  </div>
+
+                  <div class="search-filter__range-slider" data-range-slider>
+                    <div class="search-filter__range-track"></div>
+                    <div class="search-filter__range-track-active" data-range-active></div>
+                    <input
+                      type="range"
+                      class="search-filter__range-input search-filter__range-input--min"
+                      min="0"
+                      max="{{ range_max_decimal }}"
+                      step="0.01"
+                      value="{{ min_val_decimal | default: 0 }}"
+                      data-range-thumb="min"
+                      aria-label="Minimum price"
+                    >
+                    <input
+                      type="range"
+                      class="search-filter__range-input search-filter__range-input--max"
+                      min="0"
+                      max="{{ range_max_decimal }}"
+                      step="0.01"
+                      value="{{ max_val_decimal | default: range_max_decimal }}"
+                      data-range-thumb="max"
+                      aria-label="Maximum price"
+                    >
+                  </div>
+
+                  {%- comment -%}
+                    Real money formatting via the `money` filter (respects the
+                    shop's currency symbol/format) instead of a hardcoded "$".
+                  {%- endcomment -%}
+                  {%- assign quarter_cents = filter.range_max | divided_by: 4.0 -%}
+                  {%- assign b1_cents = quarter_cents | round -%}
+                  {%- assign b2_cents = quarter_cents | times: 2 | round -%}
+                  {%- assign b3_cents = quarter_cents | times: 3 | round -%}
+                  {%- assign b1_dollars = b1_cents | divided_by: 100 -%}
+                  {%- assign b1_cents_part = b1_cents | modulo: 100 | prepend: '00' | slice: -2, 2 -%}
+                  {%- assign b1 = b1_dollars | append: '.' | append: b1_cents_part -%}
+                  {%- assign b2_dollars = b2_cents | divided_by: 100 -%}
+                  {%- assign b2_cents_part = b2_cents | modulo: 100 | prepend: '00' | slice: -2, 2 -%}
+                  {%- assign b2 = b2_dollars | append: '.' | append: b2_cents_part -%}
+                  {%- assign b3_dollars = b3_cents | divided_by: 100 -%}
+                  {%- assign b3_cents_part = b3_cents | modulo: 100 | prepend: '00' | slice: -2, 2 -%}
+                  {%- assign b3 = b3_dollars | append: '.' | append: b3_cents_part -%}
+                  <div class="search-filter__price-brackets" role="radiogroup" aria-label="Price brackets">
+                    <label class="search-filter__price-option">
+                      <input type="radio" name="price_bracket" data-price-bracket data-min="0" data-max="{{ b1 }}">
+                      Less than {{ b1_cents | money }}
+                    </label>
+                    <label class="search-filter__price-option">
+                      <input type="radio" name="price_bracket" data-price-bracket data-min="{{ b1 }}" data-max="{{ b2 }}">
+                      {{ b1_cents | money }} to {{ b2_cents | money }}
+                    </label>
+                    <label class="search-filter__price-option">
+                      <input type="radio" name="price_bracket" data-price-bracket data-min="{{ b2 }}" data-max="{{ b3 }}">
+                      {{ b2_cents | money }} to {{ b3_cents | money }}
+                    </label>
+                    <label class="search-filter__price-option">
+                      <input type="radio" name="price_bracket" data-price-bracket data-min="{{ b3 }}" data-max="{{ range_max_decimal }}">
+                      {{ b3_cents | money }} to {{ filter.range_max | money }}
+                    </label>
+                    <label class="search-filter__price-option">
+                      <input type="radio" name="price_bracket" data-price-bracket data-min="{{ range_max_decimal }}" data-max="">
+                      More than {{ filter.range_max | money }}
+                    </label>
+                  </div>
+                </div>
+            {%- endcase -%}
+          </div>
+        </div>
+      {%- else -%}
+        <p class="search-filter__empty">No filters are configured for this search.</p>
+      {%- endfor -%}
+
+      <button type="submit" class="search-filter__submit">Apply</button>
+    </form>
+  {%- else -%}
+    <div class="search-filter__placeholder">
+      <svg class="search-filter__placeholder-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 4h16v2.586a1 1 0 0 1-.293.707l-5.414 5.414a1 1 0 0 0-.293.707V19l-4 2v-7.586a1 1 0 0 0-.293-.707L4.293 7.293A1 1 0 0 1 4 6.586V4Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+      </svg>
+      <p class="search-filter__placeholder-title">No filters for articles</p>
+      <p class="search-filter__placeholder-text">Filters only apply to product results. Switch tabs to narrow products down by price, type, and more.</p>
+      <a href="{{ routes.search_url }}?q={{ search_terms | url_param_escape }}&type=product" class="search-filter__placeholder-btn">Switch to Products</a>
+    </div>
+  {%- endif -%}
+
+</aside>
+
+<script src="{{ 'search-filter.js' | asset_url }}" defer></script>

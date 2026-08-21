@@ -1,0 +1,215 @@
+.blog-menu {
+  background: var(--blog-menu-bg, #ffffff);
+  color: var(--blog-menu-text, var(--color-black));
+  border-bottom: 1px solid var(--blog-menu-border, #e5e5e5);
+  width: 100%;
+  z-index: 20;
+}
+
+.blog-menu.blog-menu--sticky {
+  position: relative;
+}
+
+.blog-menu.blog-menu--sticky.is-stuck {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: var(--header-group-height, 68px);
+  z-index: 20;
+  transition: top var(--transition-slow);
+}
+
+:root.header-group-hidden .blog-menu.blog-menu--sticky.is-stuck {
+  top: 0;
+}
+
+.blog-menu__spacer {
+  display: none;
+}
+
+.blog-menu__spacer.is-active {
+  display: block;
+}
+
+.blog-menu__inner {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  width: 100%;
+  padding-block: 0.75rem;
+  padding-inline: var(--section-padding, 24px);
+  box-sizing: border-box;
+}
+
+.blog-menu--default-width .blog-menu__inner {
+  max-width: 1200px;
+  margin-inline: auto;
+  justify-self: center;
+}
+
+.blog-menu--full-width .blog-menu__inner {
+  max-width: 100%;
+  margin-inline: 0;
+  justify-self: stretch;
+}
+
+.blog-menu--custom-width .blog-menu__inner {
+  max-width: var(--custom-width, 80rem);
+  margin-inline: auto;
+  justify-self: center;
+}
+
+.blog-menu__heading {
+  font-family: var(--font-primary--family);
+  font-weight: 600;
+  font-size: 1rem;
+  white-space: nowrap;
+  margin-right: 0.5rem;
+}
+
+.blog-menu__scroll {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.blog-menu__list {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex-wrap: nowrap;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overflow-anchor: none;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+.blog-menu__list::-webkit-scrollbar {
+  display: none;
+}
+
+.blog-menu--align-center .blog-menu__list {
+  justify-content: center;
+}
+
+.blog-menu--align-right .blog-menu__list {
+  justify-content: flex-end;
+}
+
+.blog-menu__edge-fade {
+  display: block;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 56px;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.blog-menu__edge-fade--left {
+  left: 0;
+  background: linear-gradient(
+    to right,
+    var(--blog-menu-bg, #ffffff) 0%,
+    color-mix(in srgb, var(--blog-menu-bg, #ffffff) 85%, transparent) 30%,
+    color-mix(in srgb, var(--blog-menu-bg, #ffffff) 40%, transparent) 65%,
+    transparent 100%
+  );
+}
+.blog-menu__edge-fade--right {
+  right: 0;
+  background: linear-gradient(
+    to left,
+    var(--blog-menu-bg, #ffffff) 0%,
+    color-mix(in srgb, var(--blog-menu-bg, #ffffff) 85%, transparent) 30%,
+    color-mix(in srgb, var(--blog-menu-bg, #ffffff) 40%, transparent) 65%,
+    transparent 100%
+  );
+}
+
+.blog-menu__scroll.has-scroll-left .blog-menu__edge-fade--left,
+.blog-menu__scroll.has-scroll-right .blog-menu__edge-fade--right {
+  opacity: 1;
+}
+
+.blog-menu__toggle {
+  display: none;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  background: none;
+  border: 1px solid var(--blog-menu-border, #e5e5e5);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.75rem;
+  font-family: var(--font-primary--family);
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: var(--blog-menu-text, var(--color-black));
+  transition: border-color var(--transition-fast);
+}
+
+.blog-menu__toggle:hover {
+  border-color: var(--blog-menu-accent, var(--color-blue));
+}
+
+.blog-menu__toggle-icon {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.blog-menu__toggle-icon span {
+  width: 16px;
+  height: 2px;
+  background: currentColor;
+  display: block;
+}
+
+@media screen and (max-width: 749px) {
+  .blog-menu__toggle {
+    display: inline-flex;
+  }
+
+  .blog-menu__scroll {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+
+  .blog-menu__edge-fade {
+    display: none;
+  }
+
+  .blog-menu__list {
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 0;
+    overflow-x: visible;
+    border-top: 1px solid var(--blog-menu-border, #e5e5e5);
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+  }
+
+  .blog-menu__list.is-open {
+    display: flex;
+  }
+
+  .blog-menu__inner {
+    flex-wrap: wrap;
+  }
+}
+.blog-menu {
+  background: var(--blog-menu-bg, #ffffff);
+  color: var(--blog-menu-text, var(--color-black));
+  border-bottom: 1px solid var(--blog-menu-border, #e5e5e5);
+  width: 100%;
+  z-index: 20;
+  position: relative;
+}

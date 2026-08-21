@@ -1,0 +1,109 @@
+/* ── Accordion Section ───────────────────────────────────────── */
+.ecombio-section-accordion {
+  font-family: inherit;
+}
+
+.ecombio-accordion__header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.ecombio-accordion__heading {
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 0.5rem;
+}
+
+.ecombio-accordion__subheading {
+  color: #6b7280;
+  margin: 0;
+}
+
+/* List */
+.ecombio-accordion__list {
+  border-top: 1px solid #e5e7eb;
+}
+
+/* Item */
+.ecombio-accordion__item {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.ecombio-accordion__item[open] .ecombio-accordion__summary {
+  color: var(--acc-accent, #111827);
+}
+
+/* Summary row */
+.ecombio-accordion__summary {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 0;
+  cursor: pointer;
+  list-style: none;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: #111827;
+  transition: color 0.15s ease;
+}
+
+.ecombio-accordion__summary:hover {
+  color: #374151;
+}
+
+.ecombio-accordion__summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Icon */
+.ecombio-accordion__icon {
+  display: flex;
+  flex-shrink: 0;
+  color: inherit;
+}
+
+/* Title — pushes chevron to the right */
+.ecombio-accordion__title {
+  flex: 1;
+}
+
+/* Chevron */
+.ecombio-accordion__chevron {
+  flex-shrink: 0;
+  color: #9ca3af;
+  transition: transform 0.25s ease;
+}
+
+.ecombio-accordion__item[open] .ecombio-accordion__chevron {
+  transform: rotate(180deg);
+  color: var(--acc-accent, #111827);
+}
+
+/* Body */
+.ecombio-accordion__body {
+  padding-bottom: 1.25rem;
+  color: #374151;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+}
+
+.ecombio-accordion__body p { margin: 0 0 0.75em; }
+.ecombio-accordion__body p:last-child { margin-bottom: 0; }
+.ecombio-accordion__body a { color: var(--acc-accent, #111827); text-underline-offset: 3px; }
+
+/* Smooth open animation */
+.ecombio-accordion__item[open] .ecombio-accordion__body {
+  animation: acc-expand 0.2s ease;
+}
+
+@keyframes acc-expand {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ecombio-accordion__item[open] .ecombio-accordion__body {
+    animation: none;
+  }
+}

@@ -1,0 +1,353 @@
+{% comment %}
+  DO NOT DELETE: c_label/c_link/c_image handling below.
+  Schema only exposes a Collection picker now, so these always resolve
+  blank and the code already falls back to the collection's own
+  title/url/image. Re-add the label/link/image_picker settings to the
+  schema later and this block will pick them back up automatically.
+
+  As a theme block, this block's settings/markup are defined here
+  directly rather than passed in via a snippet param.
+{% endcomment %}
+{%- liquid
+  assign panel_id = 'ShowcasePanel-' | append: block.id
+
+  assign panel_width_type = block.settings.panel_width
+  if panel_width_type == blank
+    assign panel_width_class = 'showcase__panel-inner--default-width'
+  elsif panel_width_type == 'full-width'
+    assign panel_width_class = 'showcase__panel-inner--full-width'
+  else
+    assign panel_width_class = 'showcase__panel-inner--custom-width'
+  endif
+
+  assign tips = ''
+  assign has_tips = false
+  if block.settings.show_sidebar
+    for i in (1..3)
+      case i
+        when 1
+          assign heading = block.settings.tip_1_heading
+        when 2
+          assign heading = block.settings.tip_2_heading
+        when 3
+          assign heading = block.settings.tip_3_heading
+      endcase
+      if heading != blank
+        assign has_tips = true
+      endif
+    endfor
+  endif
+
+  assign has_categories = false
+  for i in (1..8)
+    case i
+      when 1
+        assign c_label = block.settings.cat_1_label
+        assign c_link = block.settings.cat_1_link
+        assign c_image = block.settings.cat_1_image
+        assign c_collection = block.settings.cat_1_collection
+      when 2
+        assign c_label = block.settings.cat_2_label
+        assign c_link = block.settings.cat_2_link
+        assign c_image = block.settings.cat_2_image
+        assign c_collection = block.settings.cat_2_collection
+      when 3
+        assign c_label = block.settings.cat_3_label
+        assign c_link = block.settings.cat_3_link
+        assign c_image = block.settings.cat_3_image
+        assign c_collection = block.settings.cat_3_collection
+      when 4
+        assign c_label = block.settings.cat_4_label
+        assign c_link = block.settings.cat_4_link
+        assign c_image = block.settings.cat_4_image
+        assign c_collection = block.settings.cat_4_collection
+      when 5
+        assign c_label = block.settings.cat_5_label
+        assign c_link = block.settings.cat_5_link
+        assign c_image = block.settings.cat_5_image
+        assign c_collection = block.settings.cat_5_collection
+      when 6
+        assign c_label = block.settings.cat_6_label
+        assign c_link = block.settings.cat_6_link
+        assign c_image = block.settings.cat_6_image
+        assign c_collection = block.settings.cat_6_collection
+      when 7
+        assign c_label = block.settings.cat_7_label
+        assign c_link = block.settings.cat_7_link
+        assign c_image = block.settings.cat_7_image
+        assign c_collection = block.settings.cat_7_collection
+      when 8
+        assign c_label = block.settings.cat_8_label
+        assign c_link = block.settings.cat_8_link
+        assign c_image = block.settings.cat_8_image
+        assign c_collection = block.settings.cat_8_collection
+    endcase
+    if c_label != blank or c_link != blank or c_image != blank or c_collection != blank
+      assign has_categories = true
+    endif
+  endfor
+
+  assign has_panel = false
+  if has_tips or has_categories
+    assign has_panel = true
+  endif
+
+  assign nav_matched_collection = blank
+  if block.settings.link contains '/collections/'
+    assign nav_collection_handle = block.settings.link | split: '/collections/' | last | split: '/' | first | split: '?' | first
+    assign nav_matched_collection = collections[nav_collection_handle]
+  endif
+
+  assign nav_label = block.settings.label
+  if nav_label == blank and nav_matched_collection != blank
+    assign nav_label = nav_matched_collection.title
+  endif
+
+  if nav_label == blank
+    assign nav_label = 'Showcase'
+  endif
+
+  assign see_all_url = block.settings.see_all_link
+  if see_all_url == blank and nav_matched_collection != blank
+    assign see_all_url = nav_matched_collection.url
+  endif
+
+  assign see_all_text = block.settings.see_all_label
+  if see_all_text == blank
+    assign see_all_text = 'See all'
+  endif
+-%}
+
+<li class="menu-bar__item{% if has_panel %} menu-bar__item--showcase{% endif %}" {% if has_panel %}data-showcase{% endif %} {{ block.shopify_attributes }}>
+  <a
+    href="{{ block.settings.link | default: '#' }}"
+    class="menu-bar__link{% if has_panel %} menu-bar__link--showcase{% endif %}"
+    {%- if has_panel %}
+    aria-haspopup="true"
+    aria-expanded="false"
+    aria-controls="{{ panel_id }}"
+    data-showcase-trigger
+    {% endif -%}
+  >
+    {%- if block.settings.icon != blank -%}
+      <span class="menu-bar__icon">{%- render 'menu-icon', icon: block.settings.icon -%}</span>
+    {%- endif -%}
+    {{ nav_label }}
+    {%- if has_panel -%}
+      <svg class="icon-caret-down" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+        <path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    {%- endif -%}
+  </a>
+
+  {%- if has_panel -%}
+    <div class="showcase__panel" id="{{ panel_id }}" data-showcase-panel>
+      <div
+        class="showcase__panel-inner {{ panel_width_class }}"
+        style="
+          --panel-padding: {{ block.settings.panel_padding | default: 24 }}px;
+          {%- if panel_width_type == 'custom-width' %}
+            --panel-custom-width: {{ block.settings.panel_custom_width | default: 80 }}rem;
+          {%- endif %}
+        "
+      >
+
+        {%- if has_tips -%}
+          <div class="showcase__sidebar">
+            <p class="showcase__sidebar-heading">{{ block.settings.sidebar_heading | default: 'Good to know' }}</p>
+            <ul class="showcase__tips">
+              {%- for i in (1..3) -%}
+                {%- case i -%}
+                  {%- when 1 -%}
+                    {%- assign t_icon = block.settings.tip_1_icon -%}
+                    {%- assign t_heading = block.settings.tip_1_heading -%}
+                    {%- assign t_body = block.settings.tip_1_body -%}
+                  {%- when 2 -%}
+                    {%- assign t_icon = block.settings.tip_2_icon -%}
+                    {%- assign t_heading = block.settings.tip_2_heading -%}
+                    {%- assign t_body = block.settings.tip_2_body -%}
+                  {%- when 3 -%}
+                    {%- assign t_icon = block.settings.tip_3_icon -%}
+                    {%- assign t_heading = block.settings.tip_3_heading -%}
+                    {%- assign t_body = block.settings.tip_3_body -%}
+                {%- endcase -%}
+                {%- if t_heading != blank -%}
+                  <li class="showcase__tip">
+                    {%- if t_icon != blank -%}
+                      <span class="showcase__tip-icon">{%- render 'menu-icon', icon: t_icon -%}</span>
+                    {%- endif -%}
+                    <span class="showcase__tip-text">
+                      <strong>{{ t_heading }}</strong>
+                      {%- if t_body != blank %} {{ t_body }}{% endif -%}
+                    </span>
+                  </li>
+                {%- endif -%}
+              {%- endfor -%}
+            </ul>
+          </div>
+        {%- endif -%}
+
+        {%- if has_categories -%}
+          <div class="showcase__main">
+            <div class="showcase__main-header">
+              <p class="showcase__main-heading">Categories</p>
+              {%- if see_all_url != blank -%}
+                <a href="{{ see_all_url }}" class="showcase__see-all">{{ see_all_text }}</a>
+              {%- endif -%}
+            </div>
+
+            <div class="showcase__grid">
+              {%- for i in (1..8) -%}
+                {%- case i -%}
+                  {%- when 1 -%}
+                    {%- assign c_label = block.settings.cat_1_label -%}
+                    {%- assign c_link = block.settings.cat_1_link -%}
+                    {%- assign c_image = block.settings.cat_1_image -%}
+                    {%- assign c_collection = block.settings.cat_1_collection -%}
+                  {%- when 2 -%}
+                    {%- assign c_label = block.settings.cat_2_label -%}
+                    {%- assign c_link = block.settings.cat_2_link -%}
+                    {%- assign c_image = block.settings.cat_2_image -%}
+                    {%- assign c_collection = block.settings.cat_2_collection -%}
+                  {%- when 3 -%}
+                    {%- assign c_label = block.settings.cat_3_label -%}
+                    {%- assign c_link = block.settings.cat_3_link -%}
+                    {%- assign c_image = block.settings.cat_3_image -%}
+                    {%- assign c_collection = block.settings.cat_3_collection -%}
+                  {%- when 4 -%}
+                    {%- assign c_label = block.settings.cat_4_label -%}
+                    {%- assign c_link = block.settings.cat_4_link -%}
+                    {%- assign c_image = block.settings.cat_4_image -%}
+                    {%- assign c_collection = block.settings.cat_4_collection -%}
+                  {%- when 5 -%}
+                    {%- assign c_label = block.settings.cat_5_label -%}
+                    {%- assign c_link = block.settings.cat_5_link -%}
+                    {%- assign c_image = block.settings.cat_5_image -%}
+                    {%- assign c_collection = block.settings.cat_5_collection -%}
+                  {%- when 6 -%}
+                    {%- assign c_label = block.settings.cat_6_label -%}
+                    {%- assign c_link = block.settings.cat_6_link -%}
+                    {%- assign c_image = block.settings.cat_6_image -%}
+                    {%- assign c_collection = block.settings.cat_6_collection -%}
+                  {%- when 7 -%}
+                    {%- assign c_label = block.settings.cat_7_label -%}
+                    {%- assign c_link = block.settings.cat_7_link -%}
+                    {%- assign c_image = block.settings.cat_7_image -%}
+                    {%- assign c_collection = block.settings.cat_7_collection -%}
+                  {%- when 8 -%}
+                    {%- assign c_label = block.settings.cat_8_label -%}
+                    {%- assign c_link = block.settings.cat_8_link -%}
+                    {%- assign c_image = block.settings.cat_8_image -%}
+                    {%- assign c_collection = block.settings.cat_8_collection -%}
+                {%- endcase -%}
+
+                {%- if c_label != blank or c_link != blank or c_image != blank or c_collection != blank -%}
+                  {%- liquid
+                    assign c_effective_collection = c_collection
+                    if c_effective_collection == blank and c_link contains '/collections/'
+                      assign c_collection_handle = c_link | split: '/collections/' | last | split: '/' | first | split: '?' | first
+                      assign c_effective_collection = collections[c_collection_handle]
+                    endif
+                    assign card_href = c_link | default: c_effective_collection.url | default: '#'
+                    assign card_label = c_label | default: c_effective_collection.title
+                  -%}
+                  <a href="{{ card_href }}" class="showcase__card">
+                    <span class="showcase__card-image">
+                      {%- if c_image != blank -%}
+                        <img src="{{ c_image | image_url: width: 300 }}" alt="{{ card_label | escape }}" width="150" height="150" loading="lazy">
+                      {%- elsif c_effective_collection != blank and c_effective_collection.featured_image != blank -%}
+                        <img src="{{ c_effective_collection.featured_image | image_url: width: 300 }}" alt="{{ card_label | escape }}" width="150" height="150" loading="lazy">
+                      {%- else -%}
+                        {%- assign placeholder_index = i | modulo: 6 | plus: 1 -%}
+                        {{ 'collection-' | append: placeholder_index | placeholder_svg_tag: 'showcase__card-placeholder' }}
+                      {%- endif -%}
+                    </span>
+                    <span class="showcase__card-label">{{ card_label }}</span>
+                  </a>
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
+          </div>
+        {%- endif -%}
+
+      </div>
+    </div>
+  {%- endif -%}
+</li>
+
+{% schema %}
+{
+  "name": "Showcase",
+  "settings": [
+    { "type": "header", "content": "Nav bar" },
+    { "type": "text", "id": "label", "label": "Label", "info": "Optional. Falls back to the linked collection's title, then to \"Showcase\"." },
+    { "type": "url", "id": "link", "label": "URL", "info": "Optional. Falls back to '#' if blank." },
+    { "type": "text", "id": "icon", "label": "Icon name", "info": "Optional. Uses snippets/menu-icon.liquid" },
+
+    { "type": "header", "content": "Panel layout" },
+    {
+      "type": "select",
+      "id": "panel_width",
+      "label": "Panel width",
+      "info": "Default aligns the dropdown panel with the header's own content width, so it doesn't stretch further than the header above it.",
+      "options": [
+        { "value": "", "label": "Default (aligns with header)" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "panel_custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ block.settings.panel_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "panel_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+
+    { "type": "header", "content": "Sidebar (optional)" },
+    { "type": "checkbox", "id": "show_sidebar", "label": "Show sidebar", "default": true },
+    { "type": "text", "id": "sidebar_heading", "label": "Sidebar heading", "default": "Good to know" },
+
+    { "type": "text", "id": "tip_1_icon", "label": "Tip 1 icon name" },
+    { "type": "text", "id": "tip_1_heading", "label": "Tip 1 heading", "default": "Trade-in" },
+    { "type": "text", "id": "tip_1_body", "label": "Tip 1 body", "default": "Get up to $700 for your old device" },
+
+    { "type": "text", "id": "tip_2_icon", "label": "Tip 2 icon name" },
+    { "type": "text", "id": "tip_2_heading", "label": "Tip 2 heading" },
+    { "type": "text", "id": "tip_2_body", "label": "Tip 2 body" },
+
+    { "type": "text", "id": "tip_3_icon", "label": "Tip 3 icon name" },
+    { "type": "text", "id": "tip_3_heading", "label": "Tip 3 heading" },
+    { "type": "text", "id": "tip_3_body", "label": "Tip 3 body" },
+
+    { "type": "header", "content": "Categories" },
+
+    { "type": "paragraph", "content": "\"See all\" automatically uses the collection linked in the URL field above. Each category below uses its selected collection's title, link, and featured image automatically." },
+
+    { "type": "collection", "id": "cat_1_collection", "label": "Category 1 collection" },
+    { "type": "collection", "id": "cat_2_collection", "label": "Category 2 collection" },
+    { "type": "collection", "id": "cat_3_collection", "label": "Category 3 collection" },
+    { "type": "collection", "id": "cat_4_collection", "label": "Category 4 collection" },
+    { "type": "collection", "id": "cat_5_collection", "label": "Category 5 collection" },
+    { "type": "collection", "id": "cat_6_collection", "label": "Category 6 collection" },
+    { "type": "collection", "id": "cat_7_collection", "label": "Category 7 collection" },
+    { "type": "collection", "id": "cat_8_collection", "label": "Category 8 collection" }
+  ],
+  "presets": [{ "name": "Showcase" }]
+}
+{% endschema %}

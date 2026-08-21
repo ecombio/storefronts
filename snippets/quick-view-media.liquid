@@ -1,0 +1,67 @@
+{%- comment -%}
+  snippets/quick-view-media.liquid
+  Left column (desktop) / top section (mobile) of the Quick View modal.
+
+  Renders:
+    • Main featured image  [data-quick-view-main-img]
+    • Thumbnail strip      [data-quick-view-thumb]  — hidden when ≤ 1 image, capped at 8
+
+  Parameters (passed via render tag from sections/quick-view.liquid):
+    product   {Object}  required — Shopify product object
+    featured  {Object}  required — product.featured_image (may be blank)
+    images    {Array}   required — product.images
+
+  JS hooks:
+    [data-quick-view-main-img]  — src/alt swapped by thumb clicks and variant changes
+    [data-quick-view-thumb]     — thumbnail buttons; carries data-src + data-alt
+{%- endcomment -%}
+
+<div class="quick-view__media">
+
+  {%- comment -%}── Main image ──{%- endcomment -%}
+  <div class="quick-view__media-main">
+    {%- if featured != blank -%}
+      <img
+        id="quick-view-main-img-{{ product.id }}"
+        class="quick-view__main-img"
+        data-quick-view-main-img
+        src="{{ featured | image_url: width: 800 }}"
+        alt="{{ featured.alt | default: product.title | escape }}"
+        width="800"
+        height="800"
+        loading="eager"
+      >
+    {%- else -%}
+      <div class="quick-view__main-img quick-view__main-img--placeholder" aria-hidden="true">
+        {{ 'product-1' | placeholder_svg_tag: 'quick-view__placeholder-svg' }}
+      </div>
+    {%- endif -%}
+  </div>
+
+  {%- comment -%}── Thumbnail strip — only when multiple images exist ──{%- endcomment -%}
+  {%- if images.size > 1 -%}
+    <div class="quick-view__media-thumbs" role="list" aria-label="Product images">
+      {%- for img in images limit: 8 -%}
+        <button
+          type="button"
+          class="quick-view__thumb{% if forloop.first %} is-active{% endif %}"
+          role="listitem"
+          data-quick-view-thumb
+          data-src="{{ img | image_url: width: 800 }}"
+          data-alt="{{ img.alt | default: product.title | escape }}"
+          aria-label="View image {{ forloop.index }} of {{ images.size | at_most: 8 }}"
+          aria-pressed="{{ forloop.first }}"
+        >
+          <img
+            src="{{ img | image_url: width: 120 }}"
+            alt=""
+            width="60"
+            height="60"
+            loading="lazy"
+          >
+        </button>
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+
+</div>{%- comment -%} /.quick-view__media {%- endcomment -%}

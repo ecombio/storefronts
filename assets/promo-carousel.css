@@ -1,0 +1,214 @@
+.promo-carousel {
+  grid-column: 1 / -1;
+  --pc-gap: 1.2rem;
+  --pc-fade-width: 28px;
+}
+
+.promo-carousel__header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-bottom: 1rem;
+}
+
+.promo-carousel__heading {
+  font-size: 1.25rem;
+  margin: 0;
+}
+
+.promo-carousel__subheading {
+  font-size: 0.9rem;
+  color: #6b6b6b;
+  margin: 0;
+}
+
+.promo-carousel__wrapper {
+  display: flex;
+  align-items: stretch;
+  gap: var(--pc-gap);
+  container-type: inline-size;
+}
+
+.promo-carousel__promo-pinned {
+  flex: 0 0 auto;
+  /* Only takes effect when the merchant hasn't set a custom width —
+     a --ic-width/--ic-width-mobile set inline by image-card.liquid
+     on the .image-card element itself always overrides this. */
+  --ic-width: calc((100cqw - (var(--pc-cards-desktop, 3) - 1) * var(--pc-gap)) / var(--pc-cards-desktop, 3));
+}
+
+@media screen and (max-width: 599px) {
+  .promo-carousel__promo-pinned {
+    --ic-width-mobile: calc((100cqw - (var(--pc-cards-mobile, 2) - 1) * var(--pc-gap)) / var(--pc-cards-mobile, 2));
+  }
+}
+
+.promo-carousel__scroll-region {
+  position: relative;
+  flex: 1 1 0%;
+  min-width: 0;
+  margin: -22px -16px -16px;
+  container-type: inline-size;
+}
+
+.promo-carousel__track {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - (var(--pc-track-cards-desktop, 3) - 1) * var(--pc-gap)) / var(--pc-track-cards-desktop, 3));
+  gap: var(--pc-gap);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 22px 16px 16px;
+  box-sizing: border-box;
+  scroll-padding-inline: 16px;
+}
+
+.promo-carousel__track::-webkit-scrollbar {
+  display: none;
+}
+
+.promo-carousel__track > * {
+  scroll-snap-align: start;
+}
+
+@media screen and (max-width: 599px) {
+  .promo-carousel__track {
+    grid-auto-columns: calc((100% - (var(--pc-track-cards-mobile, 2) - 1) * var(--pc-gap)) / var(--pc-track-cards-mobile, 2));
+    padding: 20px 16px 16px;
+  }
+
+  .promo-carousel .promo-carousel__arrow,
+  .promo-carousel .promo-carousel__dots {
+    display: none;
+  }
+}
+
+.promo-carousel.has-overflow-start .promo-carousel__track {
+  -webkit-mask-image: linear-gradient(to right, transparent, black var(--pc-fade-width));
+  mask-image: linear-gradient(to right, transparent, black var(--pc-fade-width));
+}
+
+.promo-carousel.has-overflow-end .promo-carousel__track {
+  -webkit-mask-image: linear-gradient(to left, transparent, black var(--pc-fade-width));
+  mask-image: linear-gradient(to left, transparent, black var(--pc-fade-width));
+}
+
+.promo-carousel.has-overflow-start.has-overflow-end .promo-carousel__track {
+  -webkit-mask-image: linear-gradient(to right, transparent, black var(--pc-fade-width), black calc(100% - var(--pc-fade-width)), transparent);
+  mask-image: linear-gradient(to right, transparent, black var(--pc-fade-width), black calc(100% - var(--pc-fade-width)), transparent);
+}
+
+@media screen and (max-width: 599px) {
+  .promo-carousel {
+    --pc-fade-width: 20px;
+  }
+}
+
+.promo-carousel__arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%) scale(1);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--color-blue, currentColor);
+  background: var(--color-white, #fff);
+  color: var(--color-blue, inherit);
+  cursor: pointer;
+  opacity: 1;
+  transition: opacity var(--transition-slow, 0.35s ease),
+    transform var(--transition-base, 0.2s ease),
+    background var(--transition-fast, 0.15s ease),
+    color var(--transition-fast, 0.15s ease);
+}
+
+.promo-carousel__arrow--prev {
+  left: 12px;
+}
+
+.promo-carousel__arrow--next {
+  right: 12px;
+}
+
+@media (min-width: 1024px) {
+  .promo-carousel__arrow--prev {
+    left: 24px;
+  }
+
+  .promo-carousel__arrow--next {
+    right: 24px;
+  }
+}
+
+.promo-carousel__arrow:hover:not(:disabled) {
+  background: var(--color-blue, currentColor);
+  color: var(--color-white, #fff);
+  transform: translateY(-50%) scale(1.08);
+}
+
+.promo-carousel__arrow:disabled {
+  opacity: 0.6;
+  cursor: default;
+  border-color: var(--color-atc-soldout-text, currentColor);
+  color: var(--color-atc-soldout-text, currentColor);
+  background: var(--color-atc-soldout-bg, transparent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  [data-arrow-visibility="hover"] .promo-carousel__arrow {
+    opacity: 0;
+    transform: translateY(-50%) scale(0.85);
+    pointer-events: none;
+  }
+
+  [data-arrow-visibility="hover"] .promo-carousel__scroll-region:hover .promo-carousel__arrow,
+  [data-arrow-visibility="hover"] .promo-carousel__arrow:focus-visible {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+    pointer-events: auto;
+  }
+
+  [data-arrow-visibility="hover"] .promo-carousel__scroll-region:hover .promo-carousel__arrow:hover:not(:disabled) {
+    transform: translateY(-50%) scale(1.08);
+  }
+
+  [data-arrow-visibility="hover"] .promo-carousel__scroll-region:hover .promo-carousel__arrow:disabled,
+  [data-arrow-visibility="hover"] .promo-carousel__arrow:disabled:focus-visible {
+    opacity: 0.6;
+    transform: translateY(-50%) scale(1);
+  }
+}
+
+.promo-carousel__dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.promo-carousel__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  background: var(--color-blue, currentColor);
+  opacity: 0.3;
+  cursor: pointer;
+  transition: opacity var(--transition-fast, 0.15s ease),
+    transform var(--transition-fast, 0.15s ease),
+    background var(--transition-fast, 0.15s ease);
+}
+
+.promo-carousel__dot[aria-current="true"] {
+  background: var(--color-red, currentColor);
+  opacity: 1;
+  transform: scale(1.2);
+}

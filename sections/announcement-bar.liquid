@@ -1,0 +1,529 @@
+{%- comment -%}
+  sections/announcement-bar.liquid
+
+  CHANGED — removed the "Stick to top of viewport" setting (ann_enable_sticky)
+  and its inline position:fixed block. Sticky positioning for this section
+  is now handled at the header-group level (assets/header-group.css / .js):
+  this bar just carries data-header-stack-member unconditionally and
+  header-group.js computes its position/offset alongside any other section
+  in config/header-group.json. Keeping an independent sticky mechanism here
+  would fight with the group-level one, so it's been removed entirely
+  rather than left as a second, conflicting way to achieve the same thing.
+
+  Dismiss (ann_enable_close) is unrelated to sticky and unchanged — the
+  bar's own JS still sets display:none on close, which naturally collapses
+  its offsetHeight to 0 and drops it out of header-group.js's stack-height
+  calculation automatically.
+{%- endcomment -%}
+
+{%- liquid
+  assign ann_active_count = 0
+  if section.settings.ann_enable
+    for i in (1..5)
+      assign ann_type_key = 'ann_' | append: i | append: '_type'
+      assign ann_slide_type = section.settings[ann_type_key]
+      if ann_slide_type == 'announcement' or ann_slide_type == 'countdown'
+        assign ann_active_count = ann_active_count | plus: 1
+      endif
+    endfor
+  endif
+
+  assign ann_width_class = 'announcement-bar--full-width'
+  if section.settings.ann_section_width == 'boxed'
+    assign ann_width_class = 'announcement-bar--boxed'
+  elsif section.settings.ann_section_width == 'custom-width'
+    assign ann_width_class = 'announcement-bar--custom-width'
+  endif
+-%}
+
+{%- if section.settings.ann_enable and ann_active_count > 0 -%}
+  {{ 'announcement-bar.css' | asset_url | stylesheet_tag }}
+
+  <div
+    class="announcement-bar {{ ann_width_class }}{% if section.settings.ann_enable_close %} announcement-bar--dismissible{% endif %}"
+    role="region"
+    aria-label="Announcements"
+    data-announcement-bar
+    data-header-stack-member
+    data-autorotate="{{ section.settings.ann_autorotate }}"
+    data-interval="{{ section.settings.ann_autorotate_speed | times: 1000 }}"
+    data-dismissible="{{ section.settings.ann_enable_close }}"
+    style="
+      --section-padding: {{ section.settings.ann_section_padding }}px;
+      {%- if section.settings.ann_section_width == 'custom-width' %}
+        --custom-width: {{ section.settings.ann_custom_width }}rem;
+      {%- endif %}
+    "
+  >
+    <div class="announcement-bar__track" data-track>
+      {%- assign ann_first_rendered = true -%}
+      {%- for i in (1..5) -%}
+        {%- assign ann_type_key = 'ann_' | append: i | append: '_type' -%}
+        {%- assign ann_slide_type = section.settings[ann_type_key] -%}
+
+        {%- if ann_slide_type == 'announcement' -%}
+          {%- assign ann_text_key = 'ann_' | append: i | append: '_text' -%}
+          {%- assign ann_link_key = 'ann_' | append: i | append: '_link' -%}
+          <div
+            class="announcement-bar__slide{% if ann_first_rendered %} is-active{% endif %}"
+            role="status"
+            aria-live="polite"
+          >
+            {%- if section.settings[ann_link_key] != blank -%}
+              <a href="{{ section.settings[ann_link_key] }}" class="announcement-bar__message announcement-bar__message--link">
+                {{ section.settings[ann_text_key] }}
+              </a>
+            {%- else -%}
+              <p class="announcement-bar__message">{{ section.settings[ann_text_key] }}</p>
+            {%- endif -%}
+          </div>
+          {%- assign ann_first_rendered = false -%}
+
+        {%- elsif ann_slide_type == 'countdown' -%}
+          {%- assign ann_text_key = 'ann_' | append: i | append: '_text' -%}
+          {%- assign ann_ctype_key = 'ann_' | append: i | append: '_countdown_type' -%}
+          {%- assign ann_end_key = 'ann_' | append: i | append: '_end_date' -%}
+          {%- assign ann_ever_key = 'ann_' | append: i | append: '_evergreen_minutes' -%}
+          {%- assign ann_btnlabel_key = 'ann_' | append: i | append: '_button_label' -%}
+          {%- assign ann_btnlink_key = 'ann_' | append: i | append: '_button_link' -%}
+          <div
+            class="announcement-bar__slide announcement-bar__slide--countdown{% if ann_first_rendered %} is-active{% endif %}"
+          >
+            {%- if section.settings[ann_text_key] != blank -%}
+              <span class="announcement-bar__countdown-label">{{ section.settings[ann_text_key] }}</span>
+            {%- endif -%}
+            <span
+              class="announcement-bar__countdown"
+              data-countdown
+              data-type="{{ section.settings[ann_ctype_key] }}"
+              data-end="{{ section.settings[ann_end_key] }}"
+              data-duration="{{ section.settings[ann_ever_key] }}"
+            >
+              <span class="countdown__unit"><span data-days>0</span><em>d</em></span>
+              <span class="countdown__sep">:</span>
+              <span class="countdown__unit"><span data-hours>0</span><em>h</em></span>
+              <span class="countdown__sep">:</span>
+              <span class="countdown__unit"><span data-minutes>0</span><em>m</em></span>
+              <span class="countdown__sep">:</span>
+              <span class="countdown__unit"><span data-seconds>0</span><em>s</em></span>
+            </span>
+            {%- if section.settings[ann_btnlabel_key] != blank -%}
+              <a href="{{ section.settings[ann_btnlink_key] }}" class="announcement-bar__btn">
+                {{ section.settings[ann_btnlabel_key] }}
+              </a>
+            {%- endif -%}
+          </div>
+          {%- assign ann_first_rendered = false -%}
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+
+    {%- if ann_active_count > 1 -%}
+      <button class="announcement-bar__arrow announcement-bar__arrow--prev" aria-label="Previous announcement">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="16" height="16" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+      <button class="announcement-bar__arrow announcement-bar__arrow--next" aria-label="Next announcement">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="16" height="16" aria-hidden="true">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+    {%- endif -%}
+
+    {%- if section.settings.ann_enable_close -%}
+      <button class="announcement-bar__close" aria-label="Close announcement bar" data-close>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="14" height="14" aria-hidden="true">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    {%- endif -%}
+  </div>
+
+  <script src="{{ 'announcement-bar.js' | asset_url }}" defer></script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Announcement bar",
+  "tag": "div",
+  "class": "announcement-bar-section",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "ann_enable",
+      "label": "Enable announcement bar",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "ann_section_width",
+      "label": "Announcement bar width",
+      "options": [
+        { "value": "", "label": "Full width" },
+        { "value": "boxed", "label": "Boxed (matches header width)" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "ann_custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.ann_section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "ann_section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "checkbox",
+      "id": "ann_autorotate",
+      "label": "Auto-rotate slides",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "ann_autorotate_speed",
+      "label": "Rotation interval (seconds)",
+      "min": 3,
+      "max": 15,
+      "step": 1,
+      "default": 5
+    },
+    {
+      "type": "checkbox",
+      "id": "ann_enable_close",
+      "label": "Allow customers to close the bar",
+      "info": "Adds an X button. Once closed, it stays hidden for the rest of the browsing session (resets on a new session/tab).",
+      "default": false
+    },
+
+    { "type": "header", "content": "Slide 1" },
+    {
+      "type": "select",
+      "id": "ann_1_type",
+      "label": "Slide 1 type",
+      "options": [
+        { "value": "", "label": "None (disabled)" },
+        { "value": "announcement", "label": "Announcement" },
+        { "value": "countdown", "label": "Countdown timer" }
+      ],
+      "default": "announcement"
+    },
+    {
+      "type": "text",
+      "id": "ann_1_text",
+      "label": "Text",
+      "default": "✌️ Free Express Shipping on orders $500!",
+      "visible_if": "{{ section.settings.ann_1_type != '' }}"
+    },
+    {
+      "type": "url",
+      "id": "ann_1_link",
+      "label": "Link (announcement only)",
+      "visible_if": "{{ section.settings.ann_1_type == 'announcement' }}"
+    },
+    {
+      "type": "select",
+      "id": "ann_1_countdown_type",
+      "label": "Countdown type",
+      "options": [
+        { "value": "fixed", "label": "Fixed date" },
+        { "value": "evergreen", "label": "Evergreen (repeating)" }
+      ],
+      "default": "evergreen",
+      "visible_if": "{{ section.settings.ann_1_type == 'countdown' }}"
+    },
+    {
+      "type": "text",
+      "id": "ann_1_end_date",
+      "label": "End date (fixed) — format: YYYY/MM/DD HH:MM",
+      "placeholder": "2025/12/31 23:59",
+      "visible_if": "{{ section.settings.ann_1_type == 'countdown' }}"
+    },
+    {
+      "type": "number",
+      "id": "ann_1_evergreen_minutes",
+      "label": "Evergreen duration (minutes)",
+      "default": 720,
+      "visible_if": "{{ section.settings.ann_1_type == 'countdown' }}"
+    },
+    {
+      "type": "text",
+      "id": "ann_1_button_label",
+      "label": "Button label",
+      "visible_if": "{{ section.settings.ann_1_type == 'countdown' }}"
+    },
+    {
+      "type": "url",
+      "id": "ann_1_button_link",
+      "label": "Button link",
+      "visible_if": "{{ section.settings.ann_1_type == 'countdown' }}"
+    },
+
+    { "type": "header", "content": "Slide 2" },
+    {
+      "type": "select",
+      "id": "ann_2_type",
+      "label": "Slide 2 type",
+      "options": [
+        { "value": "", "label": "None (disabled)" },
+        { "value": "announcement", "label": "Announcement" },
+        { "value": "countdown", "label": "Countdown timer" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "text",
+      "id": "ann_2_text",
+      "label": "Text",
+      "visible_if": "{{ section.settings.ann_2_type != '' }}"
+    },
+    {
+      "type": "url",
+      "id": "ann_2_link",
+      "label": "Link (announcement only)",
+      "visible_if": "{{ section.settings.ann_2_type == 'announcement' }}"
+    },
+    {
+      "type": "select",
+      "id": "ann_2_countdown_type",
+      "label": "Countdown type",
+      "options": [
+        { "value": "fixed", "label": "Fixed date" },
+        { "value": "evergreen", "label": "Evergreen (repeating)" }
+      ],
+      "default": "evergreen",
+      "visible_if": "{{ section.settings.ann_2_type == 'countdown' }}"
+    },
+    {
+      "type": "text",
+      "id": "ann_2_end_date",
+      "label": "End date (fixed) — format: YYYY/MM/DD HH:MM",
+      "placeholder": "2025/12/31 23:59",
+      "visible_if": "{{ section.settings.ann_2_type == 'countdown' }}"
+    },
+    {
+      "type": "number",
+      "id": "ann_2_evergreen_minutes",
+      "label": "Evergreen duration (minutes)",
+      "default": 720,
+      "visible_if": "{{ section.settings.ann_2_type == 'countdown' }}"
+    },
+    {
+      "type": "text",
+      "id": "ann_2_button_label",
+      "label": "Button label",
+      "visible_if": "{{ section.settings.ann_2_type == 'countdown' }}"
+    },
+    {
+      "type": "url",
+      "id": "ann_2_button_link",
+      "label": "Button link",
+      "visible_if": "{{ section.settings.ann_2_type == 'countdown' }}"
+    },
+
+    { "type": "header", "content": "Slide 3" },
+    {
+      "type": "select",
+      "id": "ann_3_type",
+      "label": "Slide 3 type",
+      "options": [
+        { "value": "", "label": "None (disabled)" },
+        { "value": "announcement", "label": "Announcement" },
+        { "value": "countdown", "label": "Countdown timer" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "text",
+      "id": "ann_3_text",
+      "label": "Text",
+      "visible_if": "{{ section.settings.ann_3_type != '' }}"
+    },
+    {
+      "type": "url",
+      "id": "ann_3_link",
+      "label": "Link (announcement only)",
+      "visible_if": "{{ section.settings.ann_3_type == 'announcement' }}"
+    },
+    {
+      "type": "select",
+      "id": "ann_3_countdown_type",
+      "label": "Countdown type",
+      "options": [
+        { "value": "fixed", "label": "Fixed date" },
+        { "value": "evergreen", "label": "Evergreen (repeating)" }
+      ],
+      "default": "evergreen",
+      "visible_if": "{{ section.settings.ann_3_type == 'countdown' }}"
+    },
+    {
+      "type": "text",
+      "id": "ann_3_end_date",
+      "label": "End date (fixed) — format: YYYY/MM/DD HH:MM",
+      "placeholder": "2025/12/31 23:59",
+      "visible_if": "{{ section.settings.ann_3_type == 'countdown' }}"
+    },
+    {
+      "type": "number",
+      "id": "ann_3_evergreen_minutes",
+      "label": "Evergreen duration (minutes)",
+      "default": 720,
+      "visible_if": "{{ section.settings.ann_3_type == 'countdown' }}"
+    },
+    {
+      "type": "text",
+      "id": "ann_3_button_label",
+      "label": "Button label",
+      "visible_if": "{{ section.settings.ann_3_type == 'countdown' }}"
+    },
+    {
+      "type": "url",
+      "id": "ann_3_button_link",
+      "label": "Button link",
+      "visible_if": "{{ section.settings.ann_3_type == 'countdown' }}"
+    },
+
+    { "type": "header", "content": "Slide 4" },
+    {
+      "type": "select",
+      "id": "ann_4_type",
+      "label": "Slide 4 type",
+      "options": [
+        { "value": "", "label": "None (disabled)" },
+        { "value": "announcement", "label": "Announcement" },
+        { "value": "countdown", "label": "Countdown timer" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "text",
+      "id": "ann_4_text",
+      "label": "Text",
+      "visible_if": "{{ section.settings.ann_4_type != '' }}"
+    },
+    {
+      "type": "url",
+      "id": "ann_4_link",
+      "label": "Link (announcement only)",
+      "visible_if": "{{ section.settings.ann_4_type == 'announcement' }}"
+    },
+    {
+      "type": "select",
+      "id": "ann_4_countdown_type",
+      "label": "Countdown type",
+      "options": [
+        { "value": "fixed", "label": "Fixed date" },
+        { "value": "evergreen", "label": "Evergreen (repeating)" }
+      ],
+      "default": "evergreen",
+      "visible_if": "{{ section.settings.ann_4_type == 'countdown' }}"
+    },
+    {
+      "type": "text",
+      "id": "ann_4_end_date",
+      "label": "End date (fixed) — format: YYYY/MM/DD HH:MM",
+      "placeholder": "2025/12/31 23:59",
+      "visible_if": "{{ section.settings.ann_4_type == 'countdown' }}"
+    },
+    {
+      "type": "number",
+      "id": "ann_4_evergreen_minutes",
+      "label": "Evergreen duration (minutes)",
+      "default": 720,
+      "visible_if": "{{ section.settings.ann_4_type == 'countdown' }}"
+    },
+    {
+      "type": "text",
+      "id": "ann_4_button_label",
+      "label": "Button label",
+      "visible_if": "{{ section.settings.ann_4_type == 'countdown' }}"
+    },
+    {
+      "type": "url",
+      "id": "ann_4_button_link",
+      "label": "Button link",
+      "visible_if": "{{ section.settings.ann_4_type == 'countdown' }}"
+    },
+
+    { "type": "header", "content": "Slide 5" },
+    {
+      "type": "select",
+      "id": "ann_5_type",
+      "label": "Slide 5 type",
+      "options": [
+        { "value": "", "label": "None (disabled)" },
+        { "value": "announcement", "label": "Announcement" },
+        { "value": "countdown", "label": "Countdown timer" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "text",
+      "id": "ann_5_text",
+      "label": "Text",
+      "visible_if": "{{ section.settings.ann_5_type != '' }}"
+    },
+    {
+      "type": "url",
+      "id": "ann_5_link",
+      "label": "Link (announcement only)",
+      "visible_if": "{{ section.settings.ann_5_type == 'announcement' }}"
+    },
+    {
+      "type": "select",
+      "id": "ann_5_countdown_type",
+      "label": "Countdown type",
+      "options": [
+        { "value": "fixed", "label": "Fixed date" },
+        { "value": "evergreen", "label": "Evergreen (repeating)" }
+      ],
+      "default": "evergreen",
+      "visible_if": "{{ section.settings.ann_5_type == 'countdown' }}"
+    },
+    {
+      "type": "text",
+      "id": "ann_5_end_date",
+      "label": "End date (fixed) — format: YYYY/MM/DD HH:MM",
+      "placeholder": "2025/12/31 23:59",
+      "visible_if": "{{ section.settings.ann_5_type == 'countdown' }}"
+    },
+    {
+      "type": "number",
+      "id": "ann_5_evergreen_minutes",
+      "label": "Evergreen duration (minutes)",
+      "default": 720,
+      "visible_if": "{{ section.settings.ann_5_type == 'countdown' }}"
+    },
+    {
+      "type": "text",
+      "id": "ann_5_button_label",
+      "label": "Button label",
+      "visible_if": "{{ section.settings.ann_5_type == 'countdown' }}"
+    },
+    {
+      "type": "url",
+      "id": "ann_5_button_link",
+      "label": "Button link",
+      "visible_if": "{{ section.settings.ann_5_type == 'countdown' }}"
+    }
+  ]
+}
+{% endschema %}

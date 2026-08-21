@@ -1,0 +1,32 @@
+/* assets/product-results.css
+   Owned by snippets/product-results.liquid.
+   Card-level styling lives in product-card.css — this file only owns
+   the grid container that arranges those cards. Breakpoints mirror
+   main-collection.css's grid (1 col <=480px, 2 col <768px, 3 col
+   <1024px) so this stays visually consistent with the rest of the
+   site, per the note in product-card.liquid's IMAGE SIZES FIX.
+*/
+
+.search-results-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--columns, 4), 1fr);
+  gap: 1.5rem 1rem;
+}
+
+@media (max-width: 1024px) {
+  .search-results-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .search-results-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .search-results-grid {
+    grid-template-columns: 1fr;
+  }
+}

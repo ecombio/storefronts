@@ -1,0 +1,74 @@
+:root {
+  --ecpb-padding-x:           24px;
+  --ecpb-padding-y:           16px;
+  --ecpb-text-color:          #1a1a1a;
+  --ecpb-text-color-complete: #1f7a3d;
+  --ecpb-text-size:           0.8125rem;
+
+  --ecpb-track-bg:            #ececea;
+  --ecpb-track-height:        6px;
+  --ecpb-track-radius:        999px;
+
+  --ecpb-fill-bg:             #1a1a1a;
+  --ecpb-fill-bg-complete:    #1f7a3d;
+
+  --ecpb-duration:            420ms;
+  --ecpb-easing:              cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ecombio-progress-bar {
+  display:        flex;
+  flex-direction: column;
+  gap:            12px;
+  /* CHANGED: padding now lives on the container (was only on .message),
+     so the track lines up with the text instead of running edge-to-edge,
+     and the whole block gets space above/below instead of sitting flush
+     against the header divider and the item list. */
+  padding:        var(--ecpb-padding-y) var(--ecpb-padding-x);
+}
+
+.ecombio-progress-bar__message {
+  margin:      0;
+  padding:     0;
+  font-size:   var(--ecpb-text-size);
+  line-height: 1.3;
+  color:       var(--ecpb-text-color);
+}
+
+.ecombio-progress-bar.is-complete .ecombio-progress-bar__message {
+  color:       var(--ecpb-text-color-complete);
+  font-weight: 500;
+}
+
+.ecombio-progress-bar__amount {
+  font-weight: 600;
+}
+
+.ecombio-progress-bar__track {
+  position:      relative;
+  width:         100%;
+  height:        var(--ecpb-track-height);
+  background:    var(--ecpb-track-bg);
+  border-radius: var(--ecpb-track-radius);
+  overflow:      hidden;
+}
+
+.ecombio-progress-bar__fill {
+  position:      absolute;
+  inset:         0 auto 0 0;
+  width:         0%;
+  background:    var(--ecpb-fill-bg);
+  border-radius: var(--ecpb-track-radius);
+  transition:    width var(--ecpb-duration) var(--ecpb-easing),
+                 background 200ms ease;
+}
+
+.ecombio-progress-bar.is-complete .ecombio-progress-bar__fill {
+  background: var(--ecpb-fill-bg-complete);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ecombio-progress-bar__fill {
+    transition: none;
+  }
+}

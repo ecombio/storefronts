@@ -1,0 +1,112 @@
+/* assets/collection-products.css */
+
+/* ============================================
+   COLLECTION PRODUCTS LAYOUT
+   ============================================ */
+
+.collection-products {
+  container-type: inline-size;
+}
+
+.collection-products__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.collection-products__title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.collection-products__count {
+  font-size: 0.95rem;
+  color: #666;
+}
+
+/* Main two-column layout */
+.collection-products__layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* Sidebar (filters) */
+.collection-products__sidebar {
+  position: sticky;
+  top: 2rem;
+}
+
+/* Main content area */
+.collection-products__main {
+  min-width: 0; /* prevents grid blowout */
+}
+
+/* ============================================
+   PRODUCT GRID + PROMO BLOCKS
+   ============================================ */
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-columns, 4), 1fr);
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.product-grid__item {
+  min-width: 0;
+}
+
+/* Promo blocks (full-width interrupters) */
+.promo-blocks {
+  grid-column: 1 / -1;
+  margin: 1.5rem 0;
+  padding: 1.5rem 0;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+}
+
+.promo-blocks + .product-grid {
+  margin-top: 1.5rem;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@container (max-width: 900px) {
+  .collection-products__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .collection-products__sidebar {
+    position: static;
+    margin-bottom: 1.5rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .collection-products__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+/* Optional: tighter spacing on very small screens */
+@media (max-width: 480px) {
+  .product-grid {
+    gap: 0.75rem;
+  }
+}

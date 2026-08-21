@@ -1,0 +1,32 @@
+{% comment %}
+  ECOMBIO Header — Logo
+  File: snippets/ecombio-header-logo.liquid
+
+  Parameters:
+    - logo       {image}   — image object from section.settings.logo
+    - logo_width {integer} — px width from section.settings.logo_width
+
+  SVG note: Shopify's image CDN cannot resize SVGs, so the width param on
+  image_url is ignored for SVG uploads. Width is enforced via inline style
+  instead, which overrides both the SVG's intrinsic viewBox dimensions and
+  any CSS max-width rules. height is left as auto to preserve aspect ratio.
+{% endcomment %}
+
+<div class="ecombio-header__logo">
+  <a href="{{ routes.root_url }}" class="ecombio-header__logo-link">
+    {%- if logo != blank -%}
+      {%- assign logo_src = logo | image_url: width: 600 -%}
+      <img
+        src="{{ logo_src }}"
+        alt="{{ shop.name }}"
+        width="{{ logo_width }}"
+        height=""
+        class="ecombio-header__logo-img"
+        style="width: {{ logo_width }}px; height: auto;"
+        loading="eager"
+      >
+    {%- else -%}
+      <span class="ecombio-header__logo-text">{{ shop.name }}</span>
+    {%- endif -%}
+  </a>
+</div>

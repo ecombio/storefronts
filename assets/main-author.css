@@ -1,0 +1,143 @@
+/**
+ * main-author.css
+ * Styling for sections/main-author.liquid
+ */
+
+.author-section {
+  padding-block: 2.5rem 4rem;
+}
+
+/* ---- Section layout (width + side padding) ----
+   Local to this section only — deliberately does NOT read from the
+   global --page-margin / --page-width variables, so changing this
+   section's width/padding settings never affects other sections. */
+
+.author-section__default-width {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: var(--section-padding);
+}
+
+.author-section__full-width {
+  width: 100%;
+  padding-inline: var(--section-padding);
+}
+
+.author-section__custom-width {
+  max-width: var(--custom-width);
+  margin-inline: auto;
+  padding-inline: var(--section-padding);
+}
+
+/* ---- Header / bio ---- */
+
+.author-section__header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding-bottom: 2.5rem;
+  margin-bottom: 2.5rem;
+  border-bottom: 1px solid var(--color-border, #e5e5e5);
+}
+
+.author-section__avatar-wrapper {
+  flex-shrink: 0;
+}
+
+.author-section__avatar,
+.author-section__avatar--placeholder {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: var(--color-bg-secondary, #f3f4f6);
+}
+
+.author-section__intro {
+  min-width: 0;
+}
+
+.author-section__name {
+  font-size: var(--font-size-xl, 1.75rem);
+  font-weight: 700;
+  margin: 0 0 0.25rem 0;
+}
+
+.author-section__role {
+  font-size: var(--font-size-sm, 0.9375rem);
+  color: var(--color-text-muted, #6b7280);
+  margin: 0 0 0.75rem 0;
+}
+
+.author-section__bio {
+  font-size: var(--font-size-sm, 0.9375rem);
+  line-height: 1.6;
+  color: var(--color-text, #111);
+}
+
+.author-section__bio p:last-child {
+  margin-bottom: 0;
+}
+
+/* ---- Articles ---- */
+
+.author-section__articles-heading {
+  font-size: var(--font-size-lg, 1.375rem);
+  font-weight: 600;
+  margin: 0 0 1.5rem 0;
+}
+
+.author-section__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.author-section__grid-item[hidden] {
+  display: none;
+}
+
+.author-section__load-more {
+  display: block;
+  margin: 2.5rem auto 0;
+  padding: 0.75rem 2rem;
+  font-size: var(--font-size-sm, 0.9375rem);
+  font-weight: 500;
+  color: var(--color-text, #111);
+  background: transparent;
+  border: 1px solid var(--color-border, #d1d5db);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.author-section__load-more:hover,
+.author-section__load-more:focus-visible {
+  background-color: var(--color-bg-secondary, #f3f4f6);
+  border-color: var(--color-text-muted, #9ca3af);
+}
+
+.author-section__empty {
+  color: var(--color-text-muted, #6b7280);
+  font-size: var(--font-size-sm, 0.9375rem);
+}
+
+.author-section__empty--config {
+  padding: 2rem;
+  text-align: center;
+  border: 1px dashed var(--color-border, #d1d5db);
+  border-radius: 8px;
+}
+
+/* ---- Small screens ---- */
+
+@media screen and (max-width: 640px) {
+  .author-section__header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .author-section__grid {
+    grid-template-columns: 1fr;
+  }
+}

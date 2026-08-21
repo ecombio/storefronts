@@ -1,0 +1,25 @@
+{% comment %}
+  snippets/block-rich-text.liquid
+  ------------------------------------------------------------
+  Renders one `rich_text_block` metaobject entry from an
+  article's custom.content_blocks list.
+
+  Usage:
+    {% render 'block-rich-text', block: block %}
+
+  Expected fields on the metaobject:
+    heading  — single line text, optional
+    content  — rich text
+{% endcomment %}
+
+{%- liquid
+  assign heading = block.fields.heading.value
+  assign content = block.fields.content.value
+-%}
+
+<div class="content-block content-block--rich-text">
+  {%- if heading != blank -%}
+    <h2>{{ heading }}</h2>
+  {%- endif -%}
+  {{ content }}
+</div>

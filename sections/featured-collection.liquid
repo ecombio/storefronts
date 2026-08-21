@@ -1,0 +1,637 @@
+{{ 'featured-collection.css' | asset_url | stylesheet_tag }}
+{{ 'product-card.css' | asset_url | stylesheet_tag }}
+{%- if section.settings.enable_promo_card -%}
+  {{ 'image-card.css' | asset_url | stylesheet_tag }}
+{%- endif -%}
+
+{%- if section.settings.collection != blank -%}
+  {%- liquid
+    assign width_type = section.settings.section_width
+    if width_type == blank
+      assign width_class = 'featured-collection__default-width'
+    else
+      assign width_class = 'featured-collection__' | append: width_type
+    endif
+
+    assign is_row = false
+    if section.settings.layout_style == 'row'
+      assign is_row = true
+    endif
+
+    assign show_promo = false
+    if section.settings.enable_promo_card and section.settings.promo_image != blank
+      assign show_promo = true
+    endif
+
+    assign promo_width = blank
+    if section.settings.promo_custom_width
+      assign promo_width = section.settings.promo_width_px | append: 'px'
+    endif
+
+    assign promo_width_mobile = blank
+    if section.settings.promo_custom_width_mobile
+      assign promo_width_mobile = section.settings.promo_width_px_mobile | append: 'px'
+    endif
+
+    assign mobile_layout = section.settings.mobile_layout_style | default: 'grid'
+
+    assign promo_in_track = false
+    if show_promo and is_row == false
+      assign promo_in_track = true
+    endif
+
+    assign arrow_visibility = section.settings.arrow_visibility | default: 'hover'
+
+    assign show_atc_button = section.settings.show_atc_button
+    assign show_compare_checkbox = section.settings.show_compare_checkbox
+    assign show_wishlist_button = section.settings.show_wishlist_button
+    assign show_quickview_button = section.settings.show_quickview_button
+    assign show_sale_badge = section.settings.show_sale_badge
+    assign show_vendor_label = section.settings.show_vendor_label
+    assign show_reviews_badge = section.settings.show_reviews_badge
+    assign show_savings_row = section.settings.show_savings_row
+    assign show_eta_badge = section.settings.show_eta_badge
+  -%}
+
+  <div
+    class="featured-collection {{ width_class }}"
+    {% if is_row %}data-featured-collection data-layout="row"{% endif %}
+    data-mobile-layout="{{ mobile_layout }}"
+    {% if promo_in_track %}data-promo-in-track="true"{% endif %}
+    {% if is_row %}data-arrow-visibility="{{ arrow_visibility }}"{% endif %}
+    style="
+      --section-padding: {{ section.settings.section_padding }}px;
+      --padding-top: {{ section.settings.padding_top }}px;
+      --padding-bottom: {{ section.settings.padding_bottom }}px;
+      {%- if width_type == 'custom-width' %}
+        --custom-width: {{ section.settings.custom_width }}rem;
+      {%- endif %}
+    "
+  >
+    <div class="featured-collection__header">
+      <h2 class="featured-collection__heading">{{ section.settings.heading | default: section.settings.collection.title }}</h2>
+      {%- if section.settings.show_view_all and section.settings.collection.url != blank -%}
+        <a href="{{ section.settings.collection.url }}" class="featured-collection__view-all">
+          {{ section.settings.view_all_text | default: 'View all' }}
+        </a>
+      {%- endif -%}
+    </div>
+
+    {%- if is_row -%}
+      <div class="featured-collection__wrapper" data-featured-collection-wrapper>
+        {%- if show_promo -%}
+          <div class="featured-collection__promo-pinned">
+            {%- render 'image-card',
+              image: section.settings.promo_image,
+              mobile_image: section.settings.promo_mobile_image,
+              link: section.settings.promo_link,
+              heading: section.settings.promo_heading,
+              subheading: section.settings.promo_subheading,
+              price_text: section.settings.promo_price_text,
+              price_truncate: section.settings.promo_price_truncate,
+              button_label: section.settings.promo_button_label,
+              content_position: section.settings.promo_content_position,
+              image_scale: section.settings.promo_image_scale,
+              text_color: section.settings.promo_text_color,
+              heading_size: section.settings.promo_heading_size,
+              subheading_size: section.settings.promo_subheading_size,
+              price_size: section.settings.promo_price_size,
+              button_size: section.settings.promo_button_size,
+              height_mobile: section.settings.promo_height_mobile,
+              height_desktop: section.settings.promo_height_desktop,
+              width: promo_width,
+              width_mobile: promo_width_mobile,
+              loading: 'eager'
+            -%}
+          </div>
+        {%- endif -%}
+
+        <div class="featured-collection__scroll-region">
+          {%- if section.settings.show_arrows -%}
+            <button
+              type="button"
+              class="featured-collection__arrow featured-collection__arrow--prev"
+              aria-label="Previous products"
+              data-fc-prev
+            >
+              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+                <path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          {%- endif -%}
+
+          <div
+            class="featured-collection__grid featured-collection__grid--row"
+            data-fc-track
+            tabindex="0"
+            role="region"
+            aria-label="{{ section.settings.heading | default: section.settings.collection.title }}"
+          >
+            {%- if mobile_layout == 'row_two_rows' -%}
+              <div class="featured-collection__row-half" data-fc-row="1">
+                {%- for product in section.settings.collection.products limit: section.settings.limit -%}
+                  {%- assign is_even_index = forloop.index0 | modulo: 2 -%}
+                  {%- if is_even_index == 0 -%}
+                    {%- render 'product-card', product: product, show_atc: show_atc_button, show_compare: show_compare_checkbox, show_wishlist: show_wishlist_button, show_quickview: show_quickview_button, show_sale_badge: show_sale_badge, show_vendor: show_vendor_label, show_reviews: show_reviews_badge, show_savings_row: show_savings_row, show_eta: show_eta_badge -%}
+                  {%- endif -%}
+                {%- endfor -%}
+              </div>
+              <div class="featured-collection__row-half" data-fc-row="2">
+                {%- for product in section.settings.collection.products limit: section.settings.limit -%}
+                  {%- assign is_even_index = forloop.index0 | modulo: 2 -%}
+                  {%- if is_even_index == 1 -%}
+                    {%- render 'product-card', product: product, show_atc: show_atc_button, show_compare: show_compare_checkbox, show_wishlist: show_wishlist_button, show_quickview: show_quickview_button, show_sale_badge: show_sale_badge, show_vendor: show_vendor_label, show_reviews: show_reviews_badge, show_savings_row: show_savings_row, show_eta: show_eta_badge -%}
+                  {%- endif -%}
+                {%- endfor -%}
+              </div>
+            {%- else -%}
+              {%- for product in section.settings.collection.products limit: section.settings.limit -%}
+                {%- render 'product-card', product: product, show_atc: show_atc_button, show_compare: show_compare_checkbox, show_wishlist: show_wishlist_button, show_quickview: show_quickview_button, show_sale_badge: show_sale_badge, show_vendor: show_vendor_label, show_reviews: show_reviews_badge, show_savings_row: show_savings_row, show_eta: show_eta_badge -%}
+              {%- endfor -%}
+            {%- endif -%}
+          </div>
+
+          {%- if section.settings.show_arrows -%}
+            <button
+              type="button"
+              class="featured-collection__arrow featured-collection__arrow--next"
+              aria-label="Next products"
+              data-fc-next
+            >
+              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+                <path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          {%- endif -%}
+        </div>
+      </div>
+
+      {%- if section.settings.show_dots -%}
+        <div class="featured-collection__dots" data-fc-dots role="tablist" aria-label="Product page navigation"></div>
+      {%- endif -%}
+    {%- else -%}
+      <div class="featured-collection__grid">
+        {%- if show_promo -%}
+          <div class="featured-collection__promo-cell">
+            {%- render 'image-card',
+              image: section.settings.promo_image,
+              mobile_image: section.settings.promo_mobile_image,
+              link: section.settings.promo_link,
+              heading: section.settings.promo_heading,
+              subheading: section.settings.promo_subheading,
+              price_text: section.settings.promo_price_text,
+              price_truncate: section.settings.promo_price_truncate,
+              button_label: section.settings.promo_button_label,
+              content_position: section.settings.promo_content_position,
+              image_scale: section.settings.promo_image_scale,
+              text_color: section.settings.promo_text_color,
+              heading_size: section.settings.promo_heading_size,
+              subheading_size: section.settings.promo_subheading_size,
+              price_size: section.settings.promo_price_size,
+              button_size: section.settings.promo_button_size,
+              height_mobile: section.settings.promo_height_mobile,
+              height_desktop: section.settings.promo_height_desktop,
+              width: promo_width,
+              width_mobile: promo_width_mobile,
+              loading: 'eager'
+            -%}
+          </div>
+        {%- endif -%}
+
+        {%- if mobile_layout == 'row_two_rows' -%}
+          <div class="featured-collection__row-half" data-fc-row="1">
+            {%- for product in section.settings.collection.products limit: section.settings.limit -%}
+              {%- assign is_even_index = forloop.index0 | modulo: 2 -%}
+              {%- if is_even_index == 0 -%}
+                {%- render 'product-card', product: product, show_atc: show_atc_button, show_compare: show_compare_checkbox, show_wishlist: show_wishlist_button, show_quickview: show_quickview_button, show_sale_badge: show_sale_badge, show_vendor: show_vendor_label, show_reviews: show_reviews_badge, show_savings_row: show_savings_row, show_eta: show_eta_badge -%}
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+          <div class="featured-collection__row-half" data-fc-row="2">
+            {%- for product in section.settings.collection.products limit: section.settings.limit -%}
+              {%- assign is_even_index = forloop.index0 | modulo: 2 -%}
+              {%- if is_even_index == 1 -%}
+                {%- render 'product-card', product: product, show_atc: show_atc_button, show_compare: show_compare_checkbox, show_wishlist: show_wishlist_button, show_quickview: show_quickview_button, show_sale_badge: show_sale_badge, show_vendor: show_vendor_label, show_reviews: show_reviews_badge, show_savings_row: show_savings_row, show_eta: show_eta_badge -%}
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+        {%- else -%}
+          {%- for product in section.settings.collection.products limit: section.settings.limit -%}
+            {%- render 'product-card', product: product, show_atc: show_atc_button, show_compare: show_compare_checkbox, show_wishlist: show_wishlist_button, show_quickview: show_quickview_button, show_sale_badge: show_sale_badge, show_vendor: show_vendor_label, show_reviews: show_reviews_badge, show_savings_row: show_savings_row, show_eta: show_eta_badge -%}
+          {%- endfor -%}
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+  </div>
+{%- endif -%}
+
+{{ 'featured-collection.js' | asset_url | script_tag }}
+
+{% schema %}
+{
+  "name": "Featured Collection",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading (optional)"
+    },
+    {
+      "type": "range",
+      "id": "limit",
+      "label": "Products to show",
+      "min": 4,
+      "max": 12,
+      "default": 8
+    },
+    { "type": "header", "content": "View all link" },
+    {
+      "type": "checkbox",
+      "id": "show_view_all",
+      "label": "Show \"View all\" link",
+      "default": true,
+      "info": "Links to the collection page. Hidden automatically if the collection has no page of its own."
+    },
+    {
+      "type": "text",
+      "id": "view_all_text",
+      "label": "Link text",
+      "default": "View all"
+    },
+    { "type": "header", "content": "Product card" },
+    {
+      "type": "checkbox",
+      "id": "show_atc_button",
+      "label": "Show \"Add to cart\" button",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_compare_checkbox",
+      "label": "Show \"Compare\" checkbox",
+      "default": true,
+      "info": "Lets shoppers select products to compare side by side."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_wishlist_button",
+      "label": "Show wishlist button",
+      "default": true,
+      "info": "The heart icon in the top-right corner of the product image."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_quickview_button",
+      "label": "Show \"Quick view\" button",
+      "default": true,
+      "info": "Appears on hover over the product image."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sale_badge",
+      "label": "Show sale badge",
+      "default": true,
+      "info": "The \"Save X%\" ribbon on the product image, shown when an item has a compare-at price."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor_label",
+      "label": "Show vendor",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_reviews_badge",
+      "label": "Show review stars",
+      "default": true,
+      "info": "Judge.me review widget."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_savings_row",
+      "label": "Show savings row",
+      "default": true,
+      "info": "The \"Save $X / Comp. Value\" line shown under the price when an item has a compare-at price."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_eta_badge",
+      "label": "Show estimated delivery",
+      "default": true,
+      "info": "Only appears for products with delivery-estimate text set."
+    },
+    { "type": "header", "content": "Grid" },
+    {
+      "type": "select",
+      "id": "layout_style",
+      "label": "Layout",
+      "options": [
+        { "value": "grid", "label": "Grid" },
+        { "value": "row", "label": "Scrollable row" }
+      ],
+      "default": "grid",
+      "info": "Grid wraps products onto multiple lines. Scrollable row keeps them on one line the person can scroll through horizontally. This controls desktop/tablet only — see \"Mobile layout\" below for phone widths."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show navigation arrows",
+      "default": true,
+      "visible_if": "{{ section.settings.layout_style == 'row' }}"
+    },
+    {
+      "type": "select",
+      "id": "arrow_visibility",
+      "label": "Arrow visibility",
+      "options": [
+        { "value": "hover", "label": "On hover" },
+        { "value": "always", "label": "Always" }
+      ],
+      "default": "hover",
+      "info": "On hover: arrows fade in only when hovering the product row (desktop pointer devices only — always shown on touch). Always: arrows stay visible at all times.",
+      "visible_if": "{{ section.settings.layout_style == 'row' and section.settings.show_arrows }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Show dots",
+      "default": true,
+      "visible_if": "{{ section.settings.layout_style == 'row' }}"
+    },
+    { "type": "header", "content": "Mobile layout" },
+    {
+      "type": "select",
+      "id": "mobile_layout_style",
+      "label": "Mobile layout",
+      "options": [
+        { "value": "grid", "label": "Grid (2 columns)" },
+        { "value": "row", "label": "Scrollable row" },
+        { "value": "row_two_rows", "label": "Scrollable row (2 rows)" }
+      ],
+      "default": "grid",
+      "info": "Controls the products area on mobile only, independent of the Layout setting above. Grid wraps products two per row and caps at 8. Both row options scroll horizontally through everything \"Products to show\" allows; the 2-row option stacks two products per scroll-page instead of one."
+    },
+    { "type": "header", "content": "Promo card" },
+    {
+      "type": "checkbox",
+      "id": "enable_promo_card",
+      "label": "Show promo card",
+      "default": false,
+      "info": "Adds one extra image card as the first item in the grid, before the products. Doesn't count against \"Products to show\"."
+    },
+    {
+      "type": "image_picker",
+      "id": "promo_image",
+      "label": "Image",
+      "visible_if": "{{ section.settings.enable_promo_card }}"
+    },
+    {
+      "type": "image_picker",
+      "id": "promo_mobile_image",
+      "label": "Mobile image (optional)",
+      "info": "Falls back to the image above on small screens if not set.",
+      "visible_if": "{{ section.settings.enable_promo_card }}"
+    },
+    {
+      "type": "url",
+      "id": "promo_link",
+      "label": "Link",
+      "visible_if": "{{ section.settings.enable_promo_card }}"
+    },
+    {
+      "type": "text",
+      "id": "promo_heading",
+      "label": "Heading",
+      "visible_if": "{{ section.settings.enable_promo_card }}"
+    },
+    {
+      "type": "text",
+      "id": "promo_subheading",
+      "label": "Subheading",
+      "visible_if": "{{ section.settings.enable_promo_card }}"
+    },
+    {
+      "type": "text",
+      "id": "promo_price_text",
+      "label": "Price text",
+      "visible_if": "{{ section.settings.enable_promo_card }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "promo_price_truncate",
+      "label": "Truncate price text",
+      "default": false,
+      "visible_if": "{{ section.settings.enable_promo_card }}"
+    },
+    {
+      "type": "text",
+      "id": "promo_button_label",
+      "label": "Button label",
+      "visible_if": "{{ section.settings.enable_promo_card }}"
+    },
+    {
+      "type": "select",
+      "id": "promo_content_position",
+      "label": "Content position",
+      "options": [
+        { "value": "top-left", "label": "Top left" },
+        { "value": "top-center", "label": "Top center" },
+        { "value": "top-right", "label": "Top right" },
+        { "value": "center", "label": "Center" },
+        { "value": "bottom-left", "label": "Bottom left" },
+        { "value": "bottom-center", "label": "Bottom center" },
+        { "value": "bottom-right", "label": "Bottom right" }
+      ],
+      "default": "center",
+      "visible_if": "{{ section.settings.enable_promo_card }}"
+    },
+    {
+      "type": "range",
+      "id": "promo_image_scale",
+      "label": "Image zoom",
+      "min": 100,
+      "max": 130,
+      "step": 5,
+      "unit": "%",
+      "default": 100,
+      "visible_if": "{{ section.settings.enable_promo_card }}"
+    },
+    {
+      "type": "color",
+      "id": "promo_text_color",
+      "label": "Text color",
+      "default": "#ffffff",
+      "visible_if": "{{ section.settings.enable_promo_card }}"
+    },
+    { "type": "header", "content": "Promo card text sizing" },
+    {
+      "type": "range",
+      "id": "promo_heading_size",
+      "label": "Heading size",
+      "min": 16,
+      "max": 64,
+      "step": 2,
+      "unit": "px",
+      "default": 32,
+      "visible_if": "{{ section.settings.enable_promo_card }}"
+    },
+    {
+      "type": "range",
+      "id": "promo_subheading_size",
+      "label": "Subheading size",
+      "min": 10,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 16,
+      "visible_if": "{{ section.settings.enable_promo_card }}"
+    },
+    {
+      "type": "range",
+      "id": "promo_price_size",
+      "label": "Price text size",
+      "min": 10,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 14,
+      "visible_if": "{{ section.settings.enable_promo_card }}"
+    },
+    {
+      "type": "range",
+      "id": "promo_button_size",
+      "label": "Button label size",
+      "min": 10,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 14,
+      "visible_if": "{{ section.settings.enable_promo_card }}"
+    },
+    { "type": "header", "content": "Promo card sizing" },
+    {
+      "type": "checkbox",
+      "id": "promo_custom_width",
+      "label": "Use a custom width",
+      "default": false,
+      "info": "Off: card fills its grid cell, same as before. On: set an exact pixel width below — this can be larger than the cell, letting the card grow beyond the space the grid would normally give it.",
+      "visible_if": "{{ section.settings.enable_promo_card }}"
+    },
+    {
+      "type": "range",
+      "id": "promo_width_px",
+      "label": "Card width",
+      "min": 200,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "default": 400,
+      "visible_if": "{{ section.settings.enable_promo_card and section.settings.promo_custom_width }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "promo_custom_width_mobile",
+      "label": "Use a custom width (mobile)",
+      "default": false,
+      "info": "Independent of the desktop width above. Off: card fills the mobile banner width, same as before. On: set an exact pixel width below.",
+      "visible_if": "{{ section.settings.enable_promo_card }}"
+    },
+    {
+      "type": "range",
+      "id": "promo_width_px_mobile",
+      "label": "Card width (mobile)",
+      "min": 120,
+      "max": 300,
+      "step": 10,
+      "unit": "px",
+      "default": 160,
+      "info": "Mobile cards sit two-per-row, so this is scaled for a landscape card rather than the wider desktop range.",
+      "visible_if": "{{ section.settings.enable_promo_card and section.settings.promo_custom_width_mobile }}"
+    },
+    {
+      "type": "range",
+      "id": "promo_height_mobile",
+      "label": "Image height (mobile)",
+      "min": 200,
+      "max": 600,
+      "step": 10,
+      "unit": "px",
+      "default": 320,
+      "visible_if": "{{ section.settings.enable_promo_card }}"
+    },
+    {
+      "type": "range",
+      "id": "promo_height_desktop",
+      "label": "Image height (desktop)",
+      "min": 300,
+      "max": 800,
+      "step": 10,
+      "unit": "px",
+      "default": 500,
+      "visible_if": "{{ section.settings.enable_promo_card }}"
+    },
+    { "type": "header", "content": "Section layout" },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    { "name": "Featured Collection" }
+  ]
+}
+{% endschema %}

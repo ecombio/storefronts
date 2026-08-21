@@ -1,0 +1,161 @@
+{%- comment -%}
+  snippets/videos.liquid
+  Renders the video carousel from a product's metaobject-backed metafield
+  (custom.product_videos — list of "Product video" metaobject entries),
+  instead of raw HTML pasted into the description field.
+
+  Usage:
+    {% render 'videos', product: product %}
+{%- endcomment -%}
+
+{%- liquid
+  assign video_entries = product.metafields.custom.product_videos.value
+  assign placeholder_names = 'lifestyle-1,lifestyle-2,product-1,product-2,product-3,product-4' | split: ','
+-%}
+
+{%- if video_entries != blank -%}
+
+  <link rel="stylesheet" href="{{ 'videos.css' | asset_url }}" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="{{ 'videos.css' | asset_url }}"></noscript>
+  <script src="{{ 'videos.js' | asset_url }}" defer></script>
+
+  <div class="product-videos" data-product-videos>
+
+    <div class="product-videos__header">
+      <h2 class="product-videos__heading">Watch &amp; shop</h2>
+    </div>
+
+    <div class="product-videos__carousel" data-video-carousel>
+
+      <button type="button" class="product-videos__arrow product-videos__arrow--prev" data-video-prev aria-label="Previous videos">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+          <path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <div class="product-videos__track" data-video-track role="list">
+        {%- for entry in video_entries -%}
+          {%- liquid
+            assign item_index = forloop.index0
+            assign placeholder_name = placeholder_names[item_index]
+            if placeholder_name == blank
+              assign placeholder_name = 'lifestyle-1'
+            endif
+
+            assign entry_video = entry.video.value
+            assign entry_video_url = entry.video_url.value
+            assign entry_thumbnail = entry.thumbnail.value
+            assign entry_caption = entry.caption.value
+
+            assign has_native_video = false
+            assign has_external_video = false
+            if entry_video != blank and entry_video.media_type == 'video'
+              assign has_native_video = true
+            elsif entry_video_url != blank
+              assign has_external_video = true
+            endif
+
+            assign has_thumbnail = false
+            if entry_thumbnail != blank
+              assign has_thumbnail = true
+            endif
+
+            assign provider = ''
+            assign video_id = ''
+            if has_external_video
+              if entry_video_url contains 'youtu'
+                assign provider = 'youtube'
+                if entry_video_url contains 'v='
+                  assign video_id = entry_video_url | split: 'v=' | last | split: '&' | first
+                else
+                  assign video_id = entry_video_url | split: '/' | last | split: '?' | first
+                endif
+              elsif entry_video_url contains 'vimeo'
+                assign provider = 'vimeo'
+                assign video_id = entry_video_url | split: '/' | last | split: '?' | first
+              endif
+            endif
+          -%}
+          <div class="product-videos__item" data-video-item role="listitem">
+            <div class="product-video" data-product-video>
+              <div class="product-video__frame">
+
+                <button
+                  type="button"
+                  class="product-video__play-trigger"
+                  data-video-play-trigger
+                  aria-label="Play video{% if entry_caption != blank %}: {{ entry_caption | escape }}{% endif %}"
+                  {% unless has_native_video or has_external_video %}disabled{% endunless %}
+                >
+                  {%- if has_thumbnail -%}
+                    {{
+                      entry_thumbnail
+                      | image_url: width: 800
+                      | image_tag:
+                        loading: 'lazy',
+                        class: 'product-video__thumbnail',
+                        sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 80vw',
+                        widths: '400,600,800,1000'
+                    }}
+                  {%- elsif has_native_video and entry_video.preview_image -%}
+                    {{
+                      entry_video.preview_image
+                      | image_url: width: 800
+                      | image_tag:
+                        loading: 'lazy',
+                        class: 'product-video__thumbnail',
+                        sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 80vw',
+                        widths: '400,600,800,1000'
+                    }}
+                  {%- else -%}
+                    {{ placeholder_name | placeholder_svg_tag: 'product-video__thumbnail product-video__thumbnail--placeholder' }}
+                  {%- endif -%}
+
+                  <span class="product-video__play-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="26" height="26" focusable="false">
+                      <path d="M8 5v14l11-7z" fill="currentColor"/>
+                    </svg>
+                  </span>
+                </button>
+
+                <div class="product-video__media" data-video-media hidden>
+                  {%- if has_native_video -%}
+                    <div data-video-type="native">
+                      {{
+                        entry_video
+                        | video_tag:
+                          controls: true,
+                          preload: 'none',
+                          class: 'product-video__video-el',
+                          image_size: '1100x'
+                      }}
+                    </div>
+                  {%- elsif has_external_video and provider != '' -%}
+                    <div
+                      data-video-type="external"
+                      data-provider="{{ provider }}"
+                      data-video-id="{{ video_id }}"
+                    ></div>
+                  {%- endif -%}
+                </div>
+
+              </div>
+
+              {%- if entry_caption != blank -%}
+                <p class="product-video__caption">{{ entry_caption }}</p>
+              {%- endif -%}
+            </div>
+          </div>
+        {%- endfor -%}
+      </div>
+
+      <button type="button" class="product-videos__arrow product-videos__arrow--next" data-video-next aria-label="Next videos">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+          <path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+    </div>
+  </div>
+
+{%- endif -%}

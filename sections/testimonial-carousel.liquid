@@ -1,0 +1,416 @@
+{%- comment -%}
+  sections/testimonial-carousel.liquid
+  ============================================
+  Testimonial/review carousel. Same shell pattern as
+  sections/video-section.liquid (heading, track, arrows) but each slot
+  is a review card: photo or video preview, star rating, quote,
+  reviewer, and the product being reviewed.
+
+  Video testimonials do NOT open their own player. They reuse the
+  shared lightbox from snippets/video-modal.liquid (already used by
+  sections/video-section.liquid) — clicking a video card's play
+  control dispatches the same 'video-card:play' CustomEvent that
+  video-modal.js listens for. This file renders its own copy of the
+  modal snippet so the section works standalone; video-modal.js
+  removes duplicate [data-video-modal] elements if a Video Section is
+  also on the page, so there's no conflict either way.
+
+  Files involved:
+    - assets/testimonial-carousel.css / .js → shell + card + preview-video logic (this file's assets)
+    - snippets/video-modal.liquid + assets/video-modal.css / .js → shared lightbox, reused from the video section
+{%- endcomment -%}
+<link rel="stylesheet" href="{{ 'testimonial-carousel.css' | asset_url }}" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="{{ 'video-modal.css' | asset_url }}" media="print" onload="this.media='all'">
+<noscript>
+  <link rel="stylesheet" href="{{ 'testimonial-carousel.css' | asset_url }}">
+  <link rel="stylesheet" href="{{ 'video-modal.css' | asset_url }}">
+</noscript>
+<script src="{{ 'testimonial-carousel.js' | asset_url }}" defer></script>
+<script src="{{ 'video-modal.js' | asset_url }}" defer></script>
+
+<div
+  {% render 'section-width', section: section, extra_class: 'testimonial-carousel' %}
+  id="TestimonialCarousel-{{ section.id }}"
+  data-testimonial-carousel
+>
+
+  {%- if section.settings.custom_css != blank -%}
+    <style>
+      #TestimonialCarousel-{{ section.id }} {
+        {{ section.settings.custom_css }}
+      }
+    </style>
+  {%- endif -%}
+
+  {%- if section.settings.heading != blank -%}
+    <div class="testimonial-carousel__header">
+      <h2 class="testimonial-carousel__heading">{{ section.settings.heading }}</h2>
+    </div>
+  {%- endif -%}
+
+  {%- if section.blocks.size > 0 -%}
+    <div class="testimonial-carousel__carousel" data-testimonial-track-wrap>
+
+      <button
+        type="button"
+        class="testimonial-carousel__arrow testimonial-carousel__arrow--prev"
+        data-testimonial-prev
+        aria-label="Previous testimonials"
+        aria-controls="TestimonialTrack-{{ section.id }}"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+          <path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <div
+        class="testimonial-carousel__track"
+        id="TestimonialTrack-{{ section.id }}"
+        data-testimonial-track
+        role="list"
+      >
+        {%- for block in section.blocks -%}
+          {%- liquid
+            assign rating = block.settings.rating | default: 5
+            assign has_native_video = false
+            assign has_external_video = false
+            if block.settings.video != blank
+              assign has_native_video = true
+            elsif block.settings.video_url != blank
+              assign has_external_video = true
+            endif
+          -%}
+          <div
+            class="testimonial-card"
+            id="TestimonialItem-{{ block.id }}"
+            data-testimonial-item
+            role="listitem"
+            {{ block.shopify_attributes }}
+          >
+
+            <div class="testimonial-card__media">
+              {%- if has_native_video -%}
+                {{
+                  block.settings.video
+                  | video_tag:
+                    autoplay: true,
+                    loop: true,
+                    muted: true,
+                    controls: false,
+                    playsinline: true,
+                    image_size: '600x',
+                    class: 'testimonial-card__preview-video',
+                    data-testimonial-preview-video: ''
+                }}
+
+                {%- assign mp4_source = block.settings.video.sources | where: 'format', 'mp4' | last -%}
+                <button
+                  type="button"
+                  class="testimonial-card__mute"
+                  data-testimonial-mute
+                  aria-label="Unmute video"
+                  aria-pressed="false"
+                >
+                  <svg class="testimonial-card__mute-icon testimonial-card__mute-icon--muted" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                    <path d="M11 5 6 9H3v6h3l5 4V5Z" fill="currentColor"/>
+                    <path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                  <svg class="testimonial-card__mute-icon testimonial-card__mute-icon--unmuted" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                    <path d="M11 5 6 9H3v6h3l5 4V5Z" fill="currentColor"/>
+                    <path d="M15.5 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </button>
+
+                <button
+                  type="button"
+                  class="testimonial-card__play-trigger"
+                  data-testimonial-play-trigger
+                  data-video-type="native"
+                  data-video-src="{{ mp4_source.url }}"
+                  data-video-caption="{{ block.settings.quote | strip_html | escape }}"
+                  aria-label="Play video review{% if block.settings.reviewer_name != blank %} from {{ block.settings.reviewer_name }}{% endif %}"
+                >
+                  <span class="testimonial-card__play-icon">
+                    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+                      <path d="M6 4l14 8-14 8V4z" fill="currentColor"/>
+                    </svg>
+                  </span>
+                </button>
+
+              {%- elsif has_external_video -%}
+                {%- if block.settings.photo != blank -%}
+                  <img
+                    class="testimonial-card__photo"
+                    src="{{ block.settings.photo | image_url: width: 600 }}"
+                    srcset="{{ block.settings.photo | image_url: width: 400 }} 400w, {{ block.settings.photo | image_url: width: 600 }} 600w, {{ block.settings.photo | image_url: width: 800 }} 800w"
+                    sizes="(min-width: 48rem) 25vw, 45vw"
+                    width="{{ block.settings.photo.width }}"
+                    height="{{ block.settings.photo.height }}"
+                    alt="{{ block.settings.photo.alt | default: block.settings.reviewer_name | escape }}"
+                    loading="lazy"
+                  >
+                {%- else -%}
+                  <div class="testimonial-card__photo testimonial-card__photo--placeholder">
+                    {{- 'lifestyle-1' | placeholder_svg_tag: 'testimonial-card__placeholder-svg' -}}
+                  </div>
+                {%- endif -%}
+
+                <button
+                  type="button"
+                  class="testimonial-card__play-trigger"
+                  data-testimonial-play-trigger
+                  data-video-type="external"
+                  data-provider="{{ block.settings.video_url.type }}"
+                  data-video-id="{{ block.settings.video_url.id }}"
+                  data-video-caption="{{ block.settings.quote | strip_html | escape }}"
+                  aria-label="Play video review{% if block.settings.reviewer_name != blank %} from {{ block.settings.reviewer_name }}{% endif %}"
+                >
+                  <span class="testimonial-card__play-icon">
+                    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+                      <path d="M6 4l14 8-14 8V4z" fill="currentColor"/>
+                    </svg>
+                  </span>
+                </button>
+
+              {%- elsif block.settings.photo != blank -%}
+                <img
+                  class="testimonial-card__photo"
+                  src="{{ block.settings.photo | image_url: width: 600 }}"
+                  srcset="{{ block.settings.photo | image_url: width: 400 }} 400w, {{ block.settings.photo | image_url: width: 600 }} 600w, {{ block.settings.photo | image_url: width: 800 }} 800w"
+                  sizes="(min-width: 48rem) 25vw, 45vw"
+                  width="{{ block.settings.photo.width }}"
+                  height="{{ block.settings.photo.height }}"
+                  alt="{{ block.settings.photo.alt | default: block.settings.reviewer_name | escape }}"
+                  loading="lazy"
+                >
+              {%- else -%}
+                <div class="testimonial-card__photo testimonial-card__photo--placeholder">
+                  {{- 'lifestyle-1' | placeholder_svg_tag: 'testimonial-card__placeholder-svg' -}}
+                </div>
+              {%- endif -%}
+            </div>
+
+            {%- if block.settings.product_name != blank -%}
+              <div class="testimonial-card__product">
+                <span class="testimonial-card__product-name">{{ block.settings.product_name }}</span>
+                {%- if block.settings.product_price != blank -%}
+                  <span class="testimonial-card__price">
+                    <span class="testimonial-card__price-current">{{ block.settings.product_price }}</span>
+                    {%- if block.settings.product_compare_price != blank -%}
+                      <span class="testimonial-card__price-compare">{{ block.settings.product_compare_price }}</span>
+                    {%- endif -%}
+                  </span>
+                {%- endif -%}
+              </div>
+            {%- endif -%}
+
+            {%- if section.settings.show_rating -%}
+              <div class="testimonial-card__rating" role="img" aria-label="Rated {{ rating }} out of 5 stars">
+                {%- for i in (1..5) -%}
+                  <svg class="testimonial-card__star{% if i <= rating %} testimonial-card__star--filled{% endif %}" viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" focusable="false">
+                    <path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.8l-5.2 2.9 1-5.9L1.5 7.7l5.9-.8L10 1.5z" fill="currentColor"/>
+                  </svg>
+                {%- endfor -%}
+              </div>
+            {%- endif -%}
+
+            {%- if block.settings.quote != blank -%}
+              <p class="testimonial-card__quote">{{ block.settings.quote }}</p>
+            {%- endif -%}
+
+            {%- if block.settings.reviewer_name != blank -%}
+              <div class="testimonial-card__reviewer">
+                <span class="testimonial-card__reviewer-name">{{ block.settings.reviewer_name }}</span>
+                {%- if block.settings.reviewer_title != blank -%}
+                  <span class="testimonial-card__reviewer-title">
+                    <svg viewBox="0 0 20 20" width="12" height="12" aria-hidden="true" focusable="false">
+                      <circle cx="10" cy="10" r="10" fill="currentColor"/>
+                      <path d="M6 10.2l2.4 2.4L14 7" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    {{ block.settings.reviewer_title }}
+                  </span>
+                {%- endif -%}
+              </div>
+            {%- endif -%}
+
+          </div>
+        {%- endfor -%}
+      </div>
+
+      <button
+        type="button"
+        class="testimonial-carousel__arrow testimonial-carousel__arrow--next"
+        data-testimonial-next
+        aria-label="Next testimonials"
+        aria-controls="TestimonialTrack-{{ section.id }}"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+          <path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+    </div>
+  {%- endif -%}
+
+</div>
+
+{%- render 'video-modal' -%}
+
+{% schema %}
+{
+  "name": "Testimonial Carousel",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Loved by our customers"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating",
+      "label": "Show star rating",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "header",
+      "content": "Custom CSS"
+    },
+    {
+      "type": "liquid",
+      "id": "custom_css",
+      "label": "Custom CSS",
+      "info": "CSS properties only (e.g. gap: 2rem;) — scoped to this section instance, no selector needed."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "testimonial",
+      "name": "Testimonial",
+      "settings": [
+        {
+          "type": "header",
+          "content": "Media"
+        },
+        {
+          "type": "image_picker",
+          "id": "photo",
+          "label": "Photo",
+          "info": "Used as the card image, and as the poster for the video below if one is added."
+        },
+        {
+          "type": "video",
+          "id": "video",
+          "label": "Video (optional)",
+          "info": "Plays muted on loop as a preview. Takes priority over an external video link."
+        },
+        {
+          "type": "video_url",
+          "id": "video_url",
+          "label": "External video link (optional)",
+          "accept": ["youtube", "vimeo"],
+          "info": "Used only if no video file is uploaded above."
+        },
+        {
+          "type": "header",
+          "content": "Review"
+        },
+        {
+          "type": "range",
+          "id": "rating",
+          "label": "Rating",
+          "min": 1,
+          "max": 5,
+          "step": 1,
+          "default": 5
+        },
+        {
+          "type": "textarea",
+          "id": "quote",
+          "label": "Quote",
+          "default": "This is such a great product, I use it every day!"
+        },
+        {
+          "type": "text",
+          "id": "reviewer_name",
+          "label": "Reviewer name",
+          "default": "Jane D."
+        },
+        {
+          "type": "text",
+          "id": "reviewer_title",
+          "label": "Reviewer label",
+          "default": "Verified purchaser"
+        },
+        {
+          "type": "header",
+          "content": "Product"
+        },
+        {
+          "type": "text",
+          "id": "product_name",
+          "label": "Product name"
+        },
+        {
+          "type": "text",
+          "id": "product_price",
+          "label": "Price"
+        },
+        {
+          "type": "text",
+          "id": "product_compare_price",
+          "label": "Original price (optional)",
+          "info": "Shown crossed out next to the price above."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Testimonial Carousel",
+      "blocks": [
+        { "type": "testimonial" },
+        { "type": "testimonial" },
+        { "type": "testimonial" },
+        { "type": "testimonial" }
+      ]
+    }
+  ]
+}
+{% endschema %}

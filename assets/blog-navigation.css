@@ -1,0 +1,78 @@
+/* blog-navigation.css
+   Sticky blog/article nav bar that sits under the fixed
+   #header-group-wrapper. Paired with sections/blog-navigation.liquid */
+
+.blog-nav {
+  position: sticky;
+  top: var(--header-group-height, 0px);
+  transition: top 0.3s ease;
+  z-index: 3; /* stays below header's 2147483647, above page content */
+
+  width: 100%;
+  background: var(--color-background, #fff);
+  border-bottom: 1px solid var(--color-border, rgba(0, 0, 0, 0.08));
+}
+
+/* Collapses the offset to 0 the instant header-group.js hides
+   the header, so there's no dead gap at the top of the viewport
+   while scrolling down. Mirrors the header's own 0.3s transition
+   so the two stay in lockstep. */
+:root.header-group-hidden .blog-nav {
+  top: 0;
+}
+
+.blog-nav__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  max-width: var(--page-width, 1200px);
+  margin: 0 auto;
+  padding: 0.85rem 1.5rem;
+  list-style: none;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.blog-nav__list::-webkit-scrollbar {
+  display: none;
+}
+
+.blog-nav__link {
+  display: inline-block;
+  white-space: nowrap;
+  font-size: 0.9rem;
+  text-decoration: none;
+  color: var(--color-text, #1a1a1a);
+  opacity: 0.7;
+  padding-bottom: 0.25rem;
+  border-bottom: 2px solid transparent;
+  transition: opacity 0.15s ease, border-color 0.15s ease;
+}
+
+.blog-nav__link:hover,
+.blog-nav__link:focus-visible {
+  opacity: 1;
+}
+
+.blog-nav__link--active {
+  opacity: 1;
+  border-bottom-color: currentColor;
+  font-weight: 600;
+}
+
+@media (max-width: 749px) {
+  .blog-nav__list {
+    gap: 1rem;
+    padding: 0.65rem 1rem;
+  }
+  .blog-nav__link {
+    font-size: 0.85rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blog-nav {
+    transition: none;
+  }
+}

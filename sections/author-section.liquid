@@ -1,0 +1,280 @@
+{{ 'author-section.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign name_words = section.settings.author_name | split: ' '
+  assign initials = ''
+  if name_words.size > 0
+    assign first_letter = name_words.first | slice: 0, 1
+    assign last_letter = name_words.last | slice: 0, 1
+    assign initials = first_letter | append: last_letter | upcase
+  endif
+-%}
+
+<div
+  class="author-section author-section--{{ section.settings.layout }}"
+  data-author-section
+  data-animate="{{ section.settings.enable_animation }}"
+  style="
+    --as-accent: {{ section.settings.accent_color }};
+    --as-card-bg: {{ section.settings.card_background }};
+    --as-border: {{ section.settings.border_color }};
+    --as-radius: {{ section.settings.corner_radius }}px;
+    --as-pt: {{ section.settings.padding_top }}px;
+    --as-pb: {{ section.settings.padding_bottom }}px;
+  "
+>
+  <div class="author-section__card{% if section.settings.enable_shadow %} author-section__card--shadow{% endif %}">
+
+    {%- if section.settings.eyebrow != blank or section.settings.author_name != blank -%}
+      <h3 class="author-section__title">
+        {%- if section.settings.eyebrow != blank -%}
+          <span class="author-section__eyebrow">{{ section.settings.eyebrow }}</span>
+        {%- endif -%}
+        {%- if section.settings.eyebrow != blank and section.settings.author_name != blank -%}
+          <span class="author-section__title-sep">:</span>
+        {%- endif -%}
+        {%- if section.settings.author_name != blank -%}
+          <span class="author-section__name">{{ section.settings.author_name }}</span>
+        {%- endif -%}
+      </h3>
+    {%- endif -%}
+
+    <div class="author-section__body">
+      <div class="author-section__media">
+        {%- if section.settings.author_image != blank -%}
+          <img
+            class="author-section__photo"
+            src="{{ section.settings.author_image | image_url: width: 300 }}"
+            width="96"
+            height="96"
+            loading="lazy"
+            alt="{{ section.settings.author_image.alt | default: section.settings.author_name | escape }}"
+          >
+        {%- else -%}
+          <div class="author-section__photo author-section__photo--placeholder">
+            <span>{{ initials | default: 'AA' }}</span>
+          </div>
+        {%- endif -%}
+      </div>
+
+      <div class="author-section__content">
+        {%- if section.settings.author_role != blank -%}
+          <p class="author-section__role">{{ section.settings.author_role }}</p>
+        {%- endif -%}
+
+        {%- if section.settings.bio != blank -%}
+          <div
+            class="author-section__bio{% if section.settings.enable_bio_truncate %} author-section__bio--clamped{% endif %}"
+            style="--as-bio-lines: {{ section.settings.bio_lines }};"
+            data-author-bio
+          >
+            <div class="author-section__bio-inner">
+              {{ section.settings.bio }}
+            </div>
+          </div>
+          {%- if section.settings.enable_bio_truncate -%}
+            <button type="button" class="author-section__bio-toggle" data-author-bio-toggle hidden>
+              <span data-label-more>Read more</span>
+              <span data-label-less hidden>Read less</span>
+            </button>
+          {%- endif -%}
+        {%- endif -%}
+
+        {%- if section.blocks.size > 0 -%}
+          <ul class="author-section__social" role="list">
+            {%- for block in section.blocks -%}
+              {%- if block.type == 'social' and block.settings.url != blank -%}
+                <li class="author-section__social-item" {{ block.shopify_attributes }}>
+                  <a
+                    href="{{ block.settings.url }}"
+                    class="author-section__social-link"
+                    {% if block.settings.platform != 'email' %}target="_blank" rel="noopener"{% endif %}
+                  >
+                    {{ block.settings.label | default: block.settings.platform | capitalize }}
+                  </a>
+                </li>
+              {%- endif -%}
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</div>
+
+{{ 'author-section.js' | asset_url | script_tag }}
+
+{% schema %}
+{
+  "name": "Author section",
+  "tag": "section",
+  "class": "shopify-section--author",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Label",
+      "default": "The Author"
+    },
+    {
+      "type": "text",
+      "id": "author_name",
+      "label": "Author name",
+      "default": "Max Crunch"
+    },
+    {
+      "type": "text",
+      "id": "author_role",
+      "label": "Author role or title"
+    },
+    {
+      "type": "image_picker",
+      "id": "author_image",
+      "label": "Author photo"
+    },
+    {
+      "type": "richtext",
+      "id": "bio",
+      "label": "Biography",
+      "default": "<p>Max Crunch is a New York-based snack enthusiast and food scientist. He co-founded the artisanal snack company \"Munchly\".</p>"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_bio_truncate",
+      "label": "Truncate long biographies",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "bio_lines",
+      "label": "Visible lines before truncating",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Photo position",
+      "options": [
+        { "value": "image-left", "label": "Left" },
+        { "value": "image-right", "label": "Right" }
+      ],
+      "default": "image-left"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_animation",
+      "label": "Fade in on scroll",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Card style"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Heading accent",
+      "default": "#155DFC"
+    },
+    {
+      "type": "color",
+      "id": "card_background",
+      "label": "Card background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Card border",
+      "default": "#E5E5E5"
+    },
+    {
+      "type": "range",
+      "id": "corner_radius",
+      "label": "Corner radius",
+      "min": 0,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_shadow",
+      "label": "Drop shadow",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Section spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    }
+  ],
+  "blocks": [
+    {
+      "type": "social",
+      "name": "Social link",
+      "settings": [
+        {
+          "type": "select",
+          "id": "platform",
+          "label": "Platform",
+          "options": [
+            { "value": "twitter", "label": "X / Twitter" },
+            { "value": "instagram", "label": "Instagram" },
+            { "value": "linkedin", "label": "LinkedIn" },
+            { "value": "facebook", "label": "Facebook" },
+            { "value": "youtube", "label": "YouTube" },
+            { "value": "tiktok", "label": "TikTok" },
+            { "value": "email", "label": "Email" },
+            { "value": "website", "label": "Website" }
+          ],
+          "default": "website"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "Link"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Custom label (optional)"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 6,
+  "presets": [
+    {
+      "name": "Author section"
+    }
+  ]
+}
+{% endschema %}

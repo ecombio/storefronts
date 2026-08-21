@@ -1,0 +1,140 @@
+/* ==========================================================================
+   ACCORDION COMPONENT
+   assets/accordion.css
+
+   Loaded once, sitewide, at the section level in main-article.liquid:
+     {{ 'accordion.css' | asset_url | stylesheet_tag }}
+
+   Do NOT re-import this per article — it's already available on every
+   article page. Just drop the markup below into the article's HTML editor.
+
+   ------------------------------------------------------------------------
+   HOW TO REUSE THIS FOR A NEW BLOG POST (e.g. an FAQ section)
+   ------------------------------------------------------------------------
+   No CSS or JS changes needed. Paste this shape into the article body,
+   swap in your own questions/answers, and repeat the <details> block for
+   as many items as you need:
+
+     <div class="accordion">
+       <details class="accordion__item" id="faq-your-slug-here">
+         <summary class="accordion__summary">
+           Your question here?
+           <span class="accordion__icon"></span>
+         </summary>
+         <div class="accordion__content">
+           <p>Your answer here. Links, bold text, etc. are all fine.</p>
+         </div>
+       </details>
+
+       <!-- repeat the <details> block above, once per question -->
+     </div>
+
+   Notes:
+   - Uses native <details>/<summary> — open/close works with zero JS.
+     accordion.js (also loaded sitewide) may add extra behavior on top
+     (e.g. closing other items when one opens) but isn't required for
+     the basic expand/collapse to work.
+   - The plus/minus icon is pure CSS (see .accordion__icon below) — do
+     NOT put an <svg> inside it, just leave the <span> empty.
+   - Class names are fixed: accordion / accordion__item / accordion__summary
+     / accordion__icon / accordion__content. Don't rename them per article.
+   - Give each <details> a unique id (e.g. id="faq-waterproof") so the
+     item can be deep-linked to directly (yoursite.com/page#faq-waterproof).
+     This matters for SEO/AI citation — search engines and LLM tools often
+     link to a specific answer rather than the whole page. The :target
+     rules below make sure that when someone lands on the link, the
+     answer is actually visible, not just scrolled-to while still
+     collapsed. (No flash/highlight animation — just a silent force-open.)
+   ========================================================================== */
+
+.accordion {
+  --accordion-border: #e5e5e5;
+  --accordion-text: #1a1a1a;
+  --accordion-text-hover: #4a4a4a;
+
+  margin: 2rem 0;
+  border-top: 1px solid var(--accordion-border);
+}
+
+.accordion__item {
+  padding: 0;
+  border-bottom: 1px solid var(--accordion-border);
+  scroll-margin-top: 6rem; /* offset for sticky headers when jumping to an anchor */
+}
+
+/* Force the item open when it's the target of a deep link (e.g. #faq-waterproof),
+   even if the visitor arrives with the accordion collapsed. Browsers don't add
+   the `open` attribute automatically just because a fragment link points at a
+   <details> element, so we do it via CSS. */
+.accordion__item:target .accordion__content {
+  display: block !important;
+}
+
+.accordion__item:target .accordion__icon::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+  opacity: 0;
+}
+
+.accordion__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  cursor: pointer;
+  padding: 1.1rem 0.25rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--accordion-text);
+  list-style: none; /* removes default marker in most browsers */
+}
+
+/* Hide default marker (Chrome/Safari/Edge) */
+.accordion__summary::-webkit-details-marker {
+  display: none;
+}
+
+.accordion__summary:hover {
+  color: var(--accordion-text-hover);
+}
+
+/* Plus/minus icon, built with pure CSS (two bars via ::before/::after).
+   The vertical bar rotates away and fades out on [open], leaving a minus. */
+.accordion__icon {
+  flex-shrink: 0;
+  position: relative;
+  width: 1rem;
+  height: 1rem;
+}
+
+.accordion__icon::before,
+.accordion__icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background: currentColor;
+  transform: translate(-50%, -50%);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.accordion__icon::before {
+  width: 1rem;
+  height: 2px;
+}
+
+.accordion__icon::after {
+  width: 2px;
+  height: 1rem;
+}
+
+.accordion__item[open] .accordion__icon::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+  opacity: 0;
+}
+
+.accordion__content {
+  padding: 0 0.25rem 1.25rem;
+  color: var(--accordion-text-hover);
+  font-size: 0.95rem;
+  line-height: 1.65;
+}

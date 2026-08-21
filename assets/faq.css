@@ -1,0 +1,268 @@
+/* ==========================================================================
+   FAQ section
+   Scoped under .faq so it can't leak into or be overridden by theme styles.
+   Colors/sizing are driven by CSS custom properties set inline per-instance
+   from the section schema, so multiple FAQ sections on one page can each
+   have their own palette.
+   ========================================================================== */
+
+.faq {
+  background: var(--faq-bg, #ffffff);
+  color: var(--faq-text, #1a1a1a);
+}
+
+.faq__container {
+  max-width: var(--faq-max-width, 860px);
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Header
+   ========================================================================== */
+
+.faq__header {
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.faq--split .faq__header {
+  text-align: left;
+}
+
+.faq__eyebrow {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--faq-accent, #1a1a1a);
+}
+
+.faq__heading {
+  margin: 0 0 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.faq__heading--small {
+  font-size: 22px;
+}
+
+.faq__heading--medium {
+  font-size: 32px;
+}
+
+.faq__heading--large {
+  font-size: 44px;
+}
+
+.faq__subheading {
+  margin: 0 auto;
+  max-width: 46em;
+  font-size: 16px;
+  line-height: 1.6;
+  opacity: 0.75;
+}
+
+.faq--split .faq__subheading {
+  margin: 0;
+}
+
+.faq__subheading p {
+  margin: 0;
+}
+
+/* Split layout: heading beside the list on wider screens
+   ========================================================================== */
+
+@media (min-width: 750px) {
+  .faq--split .faq__container {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    gap: 64px;
+    align-items: start;
+  }
+
+  .faq--split .faq__header {
+    margin-bottom: 0;
+    position: sticky;
+    top: 32px;
+  }
+}
+
+/* List / accordion items
+   ========================================================================== */
+
+.faq__list {
+  border-top: 1px solid var(--faq-border, #e5e5e5);
+}
+
+.faq__item {
+  border-bottom: 1px solid var(--faq-border, #e5e5e5);
+}
+
+.faq__item > .faq__summary {
+  list-style: none;
+}
+
+.faq__item > .faq__summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 4px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.faq__summary:hover .faq__question {
+  opacity: 0.7;
+}
+
+.faq__summary:focus-visible {
+  outline: 2px solid var(--faq-accent, #1a1a1a);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+.faq__question {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.4;
+  transition: opacity 0.15s ease;
+}
+
+.faq__icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  color: var(--faq-accent, #1a1a1a);
+}
+
+.faq__icon svg {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.3s ease;
+}
+
+.faq__item[open] > .faq__summary .faq__icon svg {
+  transform: rotate(-180deg);
+}
+
+/* Answer reveal animation
+   ========================================================================== */
+
+.faq__answer {
+  padding: 0 4px 20px;
+  font-size: 15px;
+  line-height: 1.65;
+  opacity: 0.85;
+}
+
+.faq__answer p {
+  margin: 0 0 0.85em;
+}
+
+.faq__answer p:last-child {
+  margin-bottom: 0;
+}
+
+.faq__answer a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Animate open/close when the browser supports it; degrades gracefully
+   to an instant toggle in browsers without @starting-style support. */
+@media (prefers-reduced-motion: no-preference) {
+  .faq__item[open] > .faq__answer {
+    animation: faq-reveal 0.25s ease;
+  }
+}
+
+@keyframes faq-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 0.85;
+    transform: translateY(0);
+  }
+}
+
+.faq__empty {
+  padding: 32px 4px;
+  text-align: center;
+  opacity: 0.6;
+  font-size: 14px;
+}
+
+/* Bottom CTA
+   ========================================================================== */
+
+.faq__cta {
+  margin-top: 48px;
+  padding-top: 32px;
+  border-top: 1px solid var(--faq-border, #e5e5e5);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.faq--split .faq__cta {
+  grid-column: 1 / -1;
+}
+
+.faq__cta-text {
+  margin: 0;
+  font-size: 15px;
+  opacity: 0.75;
+}
+
+.faq__cta-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 11px 22px;
+  border-radius: 999px;
+  background: var(--faq-accent, #1a1a1a);
+  color: var(--faq-bg, #ffffff);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+
+.faq__cta-button:hover {
+  opacity: 0.85;
+}
+
+.faq__cta-button--disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* Small screens
+   ========================================================================== */
+
+@media (max-width: 480px) {
+  .faq__heading--large {
+    font-size: 32px;
+  }
+
+  .faq__heading--medium {
+    font-size: 26px;
+  }
+}

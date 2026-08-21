@@ -1,0 +1,11 @@
+{{ 'after-items.css' | asset_url | stylesheet_tag }}
+
+{% assign after_page = collection.metafields.custom.after_item_lists.value %}
+
+{% if after_page != blank %}
+  <div class="after-items rte">
+    {{ after_page.content }}
+  </div>
+{% endif %}
+
+<script src="{{ 'after-items.js' | asset_url }}" defer></script>

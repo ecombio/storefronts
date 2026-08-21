@@ -1,0 +1,234 @@
+{%- liquid
+  assign width_type = section.settings.section_width
+  if width_type == blank
+    assign width_class = 'newsletter__default-width'
+  elsif width_type == 'full-width'
+    assign width_class = 'newsletter__full-width'
+  else
+    assign width_class = 'newsletter__custom-width'
+  endif
+
+  assign bg_type = section.settings.background_type | default: 'color'
+  assign has_image = false
+  if bg_type == 'image' and section.settings.background_image != blank
+    assign has_image = true
+  endif
+-%}
+
+{{ 'newsletter.css' | asset_url | stylesheet_tag }}
+
+<div
+  class="newsletter color-{{ section.settings.color_scheme }} {{ width_class }}{% if has_image %} newsletter--has-image{% endif %}"
+  style="
+    --section-padding: {{ section.settings.section_padding }}px;
+    {%- if width_type == 'custom-width' %}
+      --custom-width: {{ section.settings.custom_width }}rem;
+    {%- endif %}
+    {%- if has_image %}
+      --nl-bg-image: url('{{ section.settings.background_image | image_url: width: 1920 }}');
+      --nl-overlay-opacity: {{ section.settings.background_overlay_opacity | default: 30 | divided_by: 100.0 }};
+    {%- endif %}
+  "
+  id="Newsletter-{{ section.id }}"
+  data-section-id="{{ section.id }}"
+  data-section-type="newsletter"
+>
+  <div class="section newsletter__inner" style="padding-block: var(--section-spacing);">
+
+    <div class="newsletter__text">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="newsletter__heading">{{ section.settings.heading }}</h2>
+      {%- endif -%}
+
+      {%- if section.settings.subheading != blank -%}
+        <div class="newsletter__subheading">{{ section.settings.subheading }}</div>
+      {%- endif -%}
+    </div>
+
+    <div class="newsletter__form-wrap">
+      {%- capture newsletter_form_id -%}NewsletterForm-{{ section.id }}{%- endcapture -%}
+      {%- form 'customer', id: newsletter_form_id, class: 'newsletter-form' -%}
+
+        <div class="newsletter__message-region" data-newsletter-message-region>
+          {%- if form.posted_successfully? -%}
+            <p class="newsletter__message newsletter__message--success" role="status" tabindex="-1" data-newsletter-success>
+              {{ section.settings.success_message | default: 'Thanks for signing up!' }}
+            </p>
+          {%- elsif form.errors -%}
+            <p class="newsletter__message newsletter__message--error" role="alert" tabindex="-1" data-newsletter-error>
+              {{ form.errors.messages['form'] | default: form.errors.messages['email'] | default: 'Please enter a valid email address.' }}
+            </p>
+          {%- endif -%}
+        </div>
+
+        <input type="hidden" name="contact[tags]" value="newsletter">
+
+        <div class="newsletter__honeypot" aria-hidden="true">
+          <label for="NewsletterCompany-{{ section.id }}">Company</label>
+          <input
+            type="text"
+            id="NewsletterCompany-{{ section.id }}"
+            name="contact[company]"
+            tabindex="-1"
+            autocomplete="off"
+            data-newsletter-honeypot
+          >
+        </div>
+
+        <div class="newsletter__fields">
+          <div class="newsletter__field">
+            <label class="visually-hidden" for="NewsletterEmail-{{ section.id }}">
+              {{ section.settings.email_label | default: 'Email address' }}
+            </label>
+            <input
+              type="email"
+              id="NewsletterEmail-{{ section.id }}"
+              name="contact[email]"
+              class="newsletter__input"
+              value="{{ form.email }}"
+              aria-required="true"
+              aria-invalid="{% if form.errors contains 'email' %}true{% else %}false{% endif %}"
+              autocomplete="email"
+              placeholder="{{ section.settings.email_label | default: 'Email address' }}"
+              required
+              data-newsletter-input
+            >
+          </div>
+          <button
+            type="submit"
+            class="newsletter__submit"
+            name="commit"
+            data-newsletter-submit
+          >
+            <span class="newsletter__spinner" aria-hidden="true"></span>
+            <span data-newsletter-submit-label>{{ section.settings.button_label | default: 'Sign up' }}</span>
+          </button>
+        </div>
+      {%- endform -%}
+    </div>
+  </div>
+</div>
+
+{{ 'newsletter.js' | asset_url | script_tag }}
+
+{% schema %}
+{
+  "name": "Newsletter",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Subscribe to our newsletter"
+    },
+    {
+      "type": "richtext",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "<p>Be the first to hear about new products, restocks, and offers.</p>"
+    },
+    {
+      "type": "text",
+      "id": "email_label",
+      "label": "Email field label",
+      "default": "Email address"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Sign up"
+    },
+    {
+      "type": "text",
+      "id": "success_message",
+      "label": "Success message",
+      "default": "Thanks for signing up!"
+    },
+    {
+      "type": "header",
+      "content": "Background"
+    },
+    {
+      "type": "select",
+      "id": "background_type",
+      "label": "Background type",
+      "options": [
+        { "value": "color", "label": "Color" },
+        { "value": "image", "label": "Image" }
+      ],
+      "default": "color",
+      "info": "Color uses the color scheme below. Image overrides it with a photo and forces light text."
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background image",
+      "visible_if": "{{ section.settings.background_type == 'image' }}"
+    },
+    {
+      "type": "range",
+      "id": "background_overlay_opacity",
+      "label": "Overlay opacity",
+      "min": 0,
+      "max": 90,
+      "step": 5,
+      "unit": "%",
+      "default": 30,
+      "info": "Darkens the image so the heading and form stay readable.",
+      "visible_if": "{{ section.settings.background_type == 'image' }}"
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 28
+    }
+  ],
+  "presets": [
+    {
+      "name": "Newsletter"
+    }
+  ]
+}
+{% endschema %}

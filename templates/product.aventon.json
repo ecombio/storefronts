@@ -1,0 +1,47 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-product",
+      "custom_css": [],
+      "settings": {
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 28
+      }
+    },
+    "product_information_3j36ph": {
+      "type": "product-information",
+      "name": "Product information",
+      "settings": {
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 28
+      }
+    },
+    "product_reviews_fEiGRj": {
+      "type": "product-reviews",
+      "name": "Product reviews",
+      "settings": {
+        "heading": "",
+        "collapsible": false,
+        "section_width": "custom-width",
+        "custom_width": 100,
+        "section_padding": 24
+      }
+    }
+  },
+  "order": [
+    "main",
+    "product_information_3j36ph",
+    "product_reviews_fEiGRj"
+  ]
+}

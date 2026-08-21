@@ -1,0 +1,244 @@
+{{ 'footer-newsletter.css' | asset_url | stylesheet_tag }}
+
+<section
+  class="footer-newsletter color-{{ section.settings.color_scheme }}"
+  style="--fn-padding-top: {{ section.settings.padding_top }}px; --fn-padding-bottom: {{ section.settings.padding_bottom }}px;"
+  data-section-id="{{ section.id }}"
+  data-section-type="footer-newsletter"
+>
+  <div class="footer-newsletter__inner footer-width">
+    <div class="footer-newsletter__content footer-newsletter__content--{{ section.settings.layout }}">
+
+      <div class="footer-newsletter__text">
+        {% if section.settings.heading != blank %}
+          <h2 class="footer-newsletter__heading">{{ section.settings.heading }}</h2>
+        {% endif %}
+
+        {% if section.settings.subheading != blank %}
+          <div class="footer-newsletter__subheading">{{ section.settings.subheading }}</div>
+        {% endif %}
+      </div>
+
+      <div class="footer-newsletter__form-wrap">
+
+        <div class="footer-newsletter__message-region" aria-live="polite" aria-atomic="true">
+          {% if form.posted_successfully? %}
+            <div class="footer-newsletter__message footer-newsletter__message--success" role="status" id="FooterNewsletterSuccess-{{ section.id }}" tabindex="-1" data-fn-success>
+              {{ section.settings.success_message | default: 'Thanks for subscribing!' }}
+            </div>
+          {% endif %}
+
+          {% if form.errors %}
+            <div class="footer-newsletter__message footer-newsletter__message--error" role="alert" id="FooterNewsletterError-{{ section.id }}" tabindex="-1" data-fn-error>
+              {{ form.errors.translated_fields.email | capitalize }} {{ form.errors.messages.email }}
+            </div>
+          {% endif %}
+        </div>
+
+        {% unless form.posted_successfully? %}
+          {% form 'customer', id: 'FooterNewsletterForm', class: 'footer-newsletter-form' %}
+            <input type="hidden" name="contact[tags]" value="newsletter">
+
+            <div class="footer-newsletter__honeypot" aria-hidden="true">
+              <label for="FooterNewsletterHp-{{ section.id }}">Leave this field blank</label>
+              <input
+                type="text"
+                id="FooterNewsletterHp-{{ section.id }}"
+                name="contact[fn_hp_{{ section.id }}]"
+                tabindex="-1"
+                autocomplete="off"
+                data-fn-honeypot
+              >
+            </div>
+
+            <div class="footer-newsletter__fields">
+              <div class="footer-newsletter__field">
+                <label class="visually-hidden" for="NewsletterEmail-{{ section.id }}">
+                  {{ section.settings.placeholder | default: 'Email address' }}
+                </label>
+                <input
+                  type="email"
+                  id="NewsletterEmail-{{ section.id }}"
+                  name="contact[email]"
+                  class="footer-newsletter__input"
+                  value="{{ form.email }}"
+                  placeholder="{{ section.settings.placeholder | default: 'Email address' }}"
+                  autocomplete="email"
+                  autocorrect="off"
+                  autocapitalize="off"
+                  aria-describedby="FooterNewsletterInlineError-{{ section.id }}"
+                  required
+                  data-fn-email-input
+                >
+              </div>
+
+              <button
+                type="submit"
+                class="footer-newsletter__submit button"
+                name="commit"
+                data-fn-submit
+              >
+                <span class="footer-newsletter__spinner" data-fn-spinner aria-hidden="true"></span>
+                <span data-fn-submit-text>{{ section.settings.button_label | default: 'Subscribe' }}</span>
+              </button>
+            </div>
+
+            {% if section.settings.enable_consent %}
+              <label class="footer-newsletter__consent">
+                <input
+                  type="checkbox"
+                  data-fn-consent
+                  {% if section.settings.consent_required %}required{% endif %}
+                >
+                <span>{{ section.settings.consent_label | default: 'I agree to receive marketing emails.' }}</span>
+              </label>
+            {% endif %}
+
+            <div
+              class="footer-newsletter__inline-error"
+              id="FooterNewsletterInlineError-{{ section.id }}"
+              data-fn-inline-error
+              hidden
+            >
+              {{ section.settings.invalid_email_message | default: 'Please enter a valid email address.' }}
+            </div>
+
+            {% if section.settings.trust_text != blank %}
+              <p class="footer-newsletter__trust">{{ section.settings.trust_text }}</p>
+            {% endif %}
+          {% endform %}
+        {% endunless %}
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<script src="{{ 'footer-newsletter.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Footer Newsletter",
+  "class": "shopify-section--footer-newsletter",
+  "settings": [
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "options": [
+        { "value": "stacked", "label": "Stacked" },
+        { "value": "side-by-side", "label": "Side by side" }
+      ],
+      "default": "side-by-side"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Stay in the loop with hot drops"
+    },
+    {
+      "type": "richtext",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "<p>Be the first to know about new arrivals, exclusive deals, and tech news that matters.</p>"
+    },
+    {
+      "type": "text",
+      "id": "placeholder",
+      "label": "Input placeholder text",
+      "default": "name@email.com"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Sign up"
+    },
+    {
+      "type": "text",
+      "id": "success_message",
+      "label": "Success message",
+      "default": "Thanks for subscribing!"
+    },
+    {
+      "type": "text",
+      "id": "invalid_email_message",
+      "label": "Invalid email message",
+      "default": "Please enter a valid email address."
+    },
+    {
+      "type": "text",
+      "id": "trust_text",
+      "label": "Trust text",
+      "info": "Small note shown below the field. Leave blank to hide.",
+      "default": "We respect your inbox. Unsubscribe anytime."
+    },
+    {
+      "type": "header",
+      "content": "Consent checkbox"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_consent",
+      "label": "Show consent checkbox",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "consent_required",
+      "label": "Require consent before subscribing",
+      "default": true,
+      "info": "Only applies when the consent checkbox above is shown."
+    },
+    {
+      "type": "text",
+      "id": "consent_label",
+      "label": "Consent label",
+      "default": "I agree to receive marketing emails."
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "options": [
+        { "value": "scheme-1", "label": "Scheme 1" },
+        { "value": "scheme-2", "label": "Scheme 2" },
+        { "value": "scheme-3", "label": "Scheme 3" },
+        { "value": "scheme-4", "label": "Scheme 4" },
+        { "value": "scheme-5", "label": "Scheme 5" }
+      ],
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 40
+    }
+  ],
+  "presets": [
+    {
+      "name": "Footer Newsletter"
+    }
+  ]
+}
+{% endschema %}

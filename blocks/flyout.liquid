@@ -1,0 +1,174 @@
+{% comment %}
+  ECOMBIO Header — Flyout Menu Block
+  File: blocks/flyout.liquid
+
+  Trigger link + slide-out panel for the "flyout" block type in
+  sections/header-menu.liquid (called there via {%- render block -%}).
+
+  Panel open/close behavior is handled by the assets already loaded in
+  the section: flyout-panel.js, flyout-menu.js, flyout.js.
+{% endcomment %}
+
+{%- liquid
+  assign flyout_menu = linklists[block.settings.menu]
+  assign trigger_url = block.settings.link | default: flyout_menu.links.first.url | default: '#'
+  assign panel_id = 'flyout-panel-' | append: block.id
+-%}
+
+<li class="menu-bar__item menu-bar__item--has-flyout" {{ block.shopify_attributes }}>
+  <button type="button"
+          class="menu-bar__link menu-bar__link--caret menu-bar__link--flyout-trigger"
+          aria-haspopup="true"
+          aria-expanded="false"
+          aria-controls="{{ panel_id }}"
+          data-flyout-trigger>
+    {%- if block.settings.icon != blank -%}
+      <span class="menu-bar__icon">{%- render 'menu-icon', icon: block.settings.icon -%}</span>
+    {%- endif -%}
+    {{ block.settings.label | default: flyout_menu.title | default: 'More' }}
+    <svg class="icon-caret-down" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path d="M16.25 7.5L10 13.75L3.75 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+
+  {%- if flyout_menu != blank and flyout_menu.links.size > 0 -%}
+    <div class="flyout-panel"
+         id="{{ panel_id }}"
+         role="region"
+         data-flyout-panel
+         data-side="{{ block.settings.side | default: 'right' }}"
+         hidden>
+      <div class="flyout-panel__header">
+        <span class="flyout-panel__title">{{ block.settings.label | default: flyout_menu.title }}</span>
+        <button type="button" class="flyout-panel__close" aria-label="Close menu" data-flyout-close>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="flyout-panel__body">
+        <ul class="flyout-panel__nav" role="list">
+          {%- if trigger_url != '#' -%}
+            <li>
+              <a href="{{ trigger_url }}" class="flyout-panel__link flyout-panel__link--all">
+                {{ block.settings.all_label | default: 'View all' }}
+              </a>
+            </li>
+          {%- endif -%}
+          {%- for link in flyout_menu.links -%}
+            <li class="flyout-panel__item{% if link.links.size > 0 %} flyout-panel__item--has-child{% endif %}">
+              <a href="{{ link.url }}" class="flyout-panel__link" {% if link.current %}aria-current="page"{% endif %}>
+                {{ link.title }}
+              </a>
+              {%- if link.links.size > 0 -%}
+                <ul class="flyout-panel__sub" role="list">
+                  {%- for child in link.links -%}
+                    <li>
+                      <a href="{{ child.url }}" class="flyout-panel__link flyout-panel__link--sub" {% if child.current %}aria-current="page"{% endif %}>
+                        {{ child.title }}
+                      </a>
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              {%- endif -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+
+        {%- if block.settings.promo_image != blank -%}
+          <div class="flyout-panel__promo">
+            {{ block.settings.promo_image | image_url: width: 600 | image_tag: loading: 'lazy', alt: block.settings.promo_heading }}
+            {%- if block.settings.promo_heading != blank -%}
+              <p class="flyout-panel__promo-heading">{{ block.settings.promo_heading }}</p>
+            {%- endif -%}
+            {%- if block.settings.promo_cta_link != blank -%}
+              <a href="{{ block.settings.promo_cta_link }}" class="flyout-panel__promo-cta">
+                {{ block.settings.promo_cta_label | default: 'Shop now' }}
+              </a>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  {%- endif -%}
+</li>
+
+{% schema %}
+{
+  "name": "Flyout menu",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Nav bar"
+    },
+    {
+      "type": "text",
+      "id": "label",
+      "label": "Label",
+      "default": "More"
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "URL",
+      "info": "Optional. Falls back to first menu link."
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Menu"
+    },
+    {
+      "type": "text",
+      "id": "icon",
+      "label": "Icon name"
+    },
+    {
+      "type": "header",
+      "content": "Panel"
+    },
+    {
+      "type": "select",
+      "id": "side",
+      "label": "Slide-in side",
+      "default": "right",
+      "options": [
+        { "value": "right", "label": "Right" },
+        { "value": "left",  "label": "Left" }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "all_label",
+      "label": "\"View all\" link label",
+      "default": "View all"
+    },
+    {
+      "type": "header",
+      "content": "Promo"
+    },
+    {
+      "type": "image_picker",
+      "id": "promo_image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "promo_heading",
+      "label": "Heading"
+    },
+    {
+      "type": "text",
+      "id": "promo_cta_label",
+      "label": "Button label"
+    },
+    {
+      "type": "url",
+      "id": "promo_cta_link",
+      "label": "Button URL"
+    }
+  ]
+}
+{% endschema %}

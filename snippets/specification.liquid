@@ -1,0 +1,18 @@
+{%- comment -%}
+  snippets/specification.liquid
+
+  Renders one Page-reference field from the Technical Specification
+  metaobject. Called once per tab (Specifications, Size & Fit,
+  Geometry, FAQs) from sections/product-information.liquid, e.g.:
+
+    {% render 'specification', field: tech_spec.specifications %}
+
+  `field` is the metaobject field itself (not `.value`) so this
+  snippet can blank-check and read `.value.content` in one place.
+{%- endcomment -%}
+
+{%- if field.value != blank -%}
+  <div class="tech-spec-panel rte">
+    {{ field.value.content }}
+  </div>
+{%- endif -%}

@@ -1,0 +1,100 @@
+{%- comment -%}
+  snippets/product-feed.liquid
+  Renders the product grid with in-feed blocks (sub-collections,
+  promo banners, promo carousels) and pagination.
+
+  Filter sidebar has been extracted to snippets/collection-filter.liquid
+  and is rendered by collection.liquid in the left column.
+
+  Expects section.settings:
+    products_per_page  {Number}
+    columns            {Number}
+
+  In-feed block types (from section.blocks):
+    promo_banner
+    promo_carousel  (collections are set directly on the block)
+    sub_collection
+{%- endcomment -%}
+
+{{ 'product-feed.css' | asset_url | stylesheet_tag }}
+{{ 'product-card.css' | asset_url | stylesheet_tag }}
+{{ 'sub-collection.css' | asset_url | stylesheet_tag }}
+{{ 'promo-banner.css' | asset_url | stylesheet_tag }}
+{{ 'promo-carousel.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign banner_blocks   = section.blocks | where: 'type', 'promo_banner'
+  assign carousel_blocks = section.blocks | where: 'type', 'promo_carousel'
+-%}
+
+{%- paginate collection.products by section.settings.products_per_page -%}
+
+  <div class="product-feed" style="--columns: {{ section.settings.columns | default: 4 }};">
+
+{%- render 'sub-collection', collection: collection -%}
+
+    <div class="product-feed__grid">
+
+      {%- for product in collection.products -%}
+
+        {%- comment -%} In-feed banners at this position {%- endcomment -%}
+        {%- for banner in banner_blocks -%}
+          {%- assign banner_position = banner.settings.position | default: 0 -%}
+          {%- if banner_position > 0 and banner_position == forloop.parentloop.index -%}
+            {%- render 'promo-banner', block: banner -%}
+          {%- endif -%}
+        {%- endfor -%}
+
+        {%- comment -%} In-feed carousels at this position {%- endcomment -%}
+        {%- for carousel in carousel_blocks -%}
+          {%- assign carousel_position = carousel.settings.position | default: 0 -%}
+          {%- if carousel_position > 0 and carousel_position == forloop.parentloop.index -%}
+            {%- render 'promo-carousel', block: carousel -%}
+          {%- endif -%}
+        {%- endfor -%}
+
+        {%- render 'product-card', product: product -%}
+
+      {%- else -%}
+        <p class="collection-empty">No products found.</p>
+      {%- endfor -%}
+
+      {%- comment -%} Blocks positioned beyond product count render after last card {%- endcomment -%}
+      {%- assign product_count = collection.products.size -%}
+
+      {%- for banner in banner_blocks -%}
+        {%- assign banner_position = banner.settings.position | default: 0 -%}
+        {%- if banner_position > product_count and banner_position > 0 -%}
+          {%- render 'promo-banner', block: banner -%}
+        {%- endif -%}
+      {%- endfor -%}
+
+      {%- for carousel in carousel_blocks -%}
+        {%- assign carousel_position = carousel.settings.position | default: 0 -%}
+        {%- if carousel_position > product_count and carousel_position > 0 -%}
+          {%- render 'promo-carousel', block: carousel -%}
+        {%- endif -%}
+      {%- endfor -%}
+
+    </div>
+  </div>
+
+  {%- if paginate.pages > 1 -%}
+    <nav class="pagination" aria-label="{{ 'general.pagination.label' | t }}">
+      {%- if paginate.previous -%}
+        <a href="{{ paginate.previous.url }}&tab=products" class="pagination__link">&larr; {{ 'general.pagination.previous' | t }}</a>
+      {%- endif -%}
+      {%- for part in paginate.parts -%}
+        {%- if part.is_link -%}
+          <a href="{{ part.url }}&tab=products" class="pagination__link">{{ part.title }}</a>
+        {%- else -%}
+          <span class="pagination__link pagination__link--current" aria-current="page">{{ part.title }}</span>
+        {%- endif -%}
+      {%- endfor -%}
+      {%- if paginate.next -%}
+        <a href="{{ paginate.next.url }}&tab=products" class="pagination__link">{{ 'general.pagination.next' | t }} &rarr;</a>
+      {%- endif -%}
+    </nav>
+  {%- endif -%}
+
+{%- endpaginate -%}

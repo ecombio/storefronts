@@ -1,0 +1,36 @@
+{% comment %}
+  Snippet: article-toc.liquid
+  Usage:   {% render 'article-toc' %}
+  Place inside the left sidebar in your article template.
+
+  - Auto-generates from H2 + H3 headings found in .article-content
+  - Desktop: sticky sidebar list
+  - Mobile: collapsed accordion with toggle
+  - Active link driven by IntersectionObserver (article-toc.js, deferred)
+  - Heading IDs are slugified by JS if not already present
+{% endcomment %}
+
+<nav
+  class="ma-toc"
+  id="ma-toc"
+  aria-label="Table of contents"
+>
+  <button
+    class="ma-toc__toggle"
+    id="ma-toc-toggle"
+    type="button"
+    aria-expanded="false"
+    aria-controls="ma-toc-list"
+  >
+    <span class="ma-toc__toggle-label">On this page</span>
+    <svg class="ma-toc__toggle-chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true" width="16" height="16">
+      <polyline points="6 9 12 15 18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+
+  <div class="ma-toc__header" aria-hidden="true">On this page</div>
+
+  <ol class="ma-toc__list" id="ma-toc-list" role="list">
+    <li class="ma-toc__loading">Loading…</li>
+  </ol>
+</nav>

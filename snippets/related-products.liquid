@@ -1,0 +1,110 @@
+{% comment %}
+  Snippet: related-products
+  Renders a related products carousel reusing product-carousel infrastructure.
+  Usage:
+    {%- render 'related-products',
+      collection:   collection,
+      heading:      'You May Also Like',
+      limit:        12,
+      cards_desk:   4,
+      cards_mob:    2,
+      show_arrows:  true,
+      arrow_position: 'bottom'
+    -%}
+  NOTE: product-carousel.js and product-carousel.css must already be loaded
+  on the page (they are on collection pages via the promo-carousel block).
+  If not, uncomment the asset lines below.
+{% endcomment %}
+
+{%- liquid
+  assign rp_collection    = collection
+  assign rp_heading       = heading       | default: 'You May Also Like'
+  assign rp_limit         = limit         | default: 12
+  assign rp_cards_desk    = cards_desk    | default: 4
+  assign rp_cards_mob     = cards_mob     | default: 2
+  assign rp_show_arrows   = show_arrows   | default: true
+  assign rp_arrow_pos     = arrow_position | default: 'bottom'
+  assign rp_uid           = 'related-products'
+
+  assign show_bottom_arrows = false
+  assign show_side_arrows   = false
+  if rp_show_arrows and rp_arrow_pos == 'side'
+    assign show_side_arrows = true
+  elsif rp_show_arrows
+    assign show_bottom_arrows = true
+  endif
+-%}
+
+{{- 'product-carousel.css' | asset_url | stylesheet_tag -}}
+
+{%- if rp_collection != blank and rp_collection.products_count > 0 -%}
+  <section
+    class="product-carousel related-products{% if show_side_arrows %} product-carousel--side-arrows{% endif %}"
+    id="related-products"
+    data-section-id="{{ rp_uid }}"
+    data-cards-desktop="{{ rp_cards_desk }}"
+    data-cards-mobile="{{ rp_cards_mob }}"
+    data-autoplay="false"
+    data-autoplay-interval="4000"
+    data-arrow-style="{{ rp_arrow_pos }}"
+  >
+
+    {%- if rp_heading != blank -%}
+      <div class="product-carousel__header">
+        <div class="product-carousel__heading-group">
+          <h2 class="product-carousel__heading">{{ rp_heading | escape }}</h2>
+        </div>
+      </div>
+    {%- endif -%}
+
+    <div class="product-carousel__layout">
+      <div class="product-carousel__carousel-col">
+        <div class="product-carousel__panel" role="tabpanel" data-carousel-panel="{{ rp_uid }}">
+          <div class="product-carousel__stage{% if show_side_arrows %} product-carousel__stage--side-arrows{% endif %}">
+
+            {%- if show_side_arrows -%}
+              <button class="product-carousel__arrow product-carousel__arrow--side product-carousel__arrow--side-prev" type="button" aria-label="Previous" data-carousel-prev disabled>
+                <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M11 14L6 9L11 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            {%- endif -%}
+
+            <div class="product-carousel__track-wrapper" data-carousel-wrapper>
+              <ul class="product-carousel__track" data-carousel-track role="list" aria-label="{{ rp_heading | escape }}">
+                {%- for product in rp_collection.products limit: rp_limit -%}
+                  <li class="product-carousel__slide" data-carousel-slide>
+                    {%- render 'product-card', product: product -%}
+                  </li>
+                {%- endfor -%}
+              </ul>
+            </div>
+
+            {%- if show_side_arrows -%}
+              <button class="product-carousel__arrow product-carousel__arrow--side product-carousel__arrow--side-next" type="button" aria-label="Next" data-carousel-next>
+                <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M7 4L12 9L7 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            {%- endif -%}
+
+          </div>
+
+          {%- if show_bottom_arrows -%}
+            <div class="product-carousel__nav">
+              <div class="product-carousel__dots" data-carousel-dots></div>
+              <div class="product-carousel__arrows">
+                <button class="product-carousel__arrow product-carousel__arrow--prev" type="button" aria-label="Previous" data-carousel-prev>
+                  <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M11 14L6 9L11 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button class="product-carousel__arrow product-carousel__arrow--next" type="button" aria-label="Next" data-carousel-next>
+                  <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M7 4L12 9L7 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+              </div>
+            </div>
+          {%- endif -%}
+
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <script src="{{ 'product-carousel.js' | asset_url }}" defer></script>
+{%- endif -%}

@@ -1,0 +1,237 @@
+{{ 'product-grid.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'product-grid.js' | asset_url }}" defer="defer"></script>
+
+{%- comment -%}
+  sections/product-grid.liquid
+  Fixed 2x2 grid (max 4 products) of simple, icon-forward product
+  tiles (name, price, CTA button) — distinct from
+  sections/product-gallery's photo-forward .product-card layout.
+  Each block picks one product; if a block has no product assigned,
+  or the product has no image, a placeholder icon is shown instead
+  so the grid never breaks in the editor.
+
+  SELF-CONTAINED / SECTION-LEVEL ASSETS: product-grid.css and
+  product-grid.js are loaded above, by this file only — same pattern
+  main-article.liquid and single-product.liquid use for their own
+  assets. Nothing in this section reads from product-card.css/js,
+  product-row.css, or product-gallery.css/js.
+{%- endcomment -%}
+
+{%- liquid
+  assign width_type = section.settings.section_width
+  if width_type == blank
+    assign width_class = 'product-grid__default-width'
+  else
+    assign width_class = 'product-grid__' | append: width_type
+  endif
+
+  assign layout_class = ''
+  if section.settings.layout_style == 'intro'
+    assign layout_class = 'product-grid--intro'
+  endif
+
+  assign placeholder_names = 'product-1,product-2,product-3,product-4,product-5,product-6' | split: ','
+-%}
+
+<div
+  class="{{ width_class }}"
+  style="
+    --section-padding: {{ section.settings.section_padding }}px;
+    {%- if width_type == 'custom-width' %}
+      --custom-width: {{ section.settings.custom_width }}rem;
+    {%- endif %}
+  "
+>
+<div class="product-grid {{ layout_class }}">
+
+  {%- if section.settings.heading != blank or section.settings.description != blank -%}
+    <div class="product-grid__header">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="product-grid__heading">{{ section.settings.heading }}</h2>
+      {%- endif -%}
+
+      {%- if section.settings.layout_style == 'intro' and section.settings.description != blank -%}
+        <p class="product-grid__description">{{ section.settings.description }}</p>
+      {%- endif -%}
+
+      {%- if section.settings.layout_style != 'intro' and section.settings.view_all_link != blank -%}
+        <a href="{{ section.settings.view_all_link }}" class="product-grid__view-all">
+          {{ section.settings.view_all_label | default: 'View all' }}
+        </a>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+
+  {%- if section.blocks.size == 0 -%}
+    <p class="product-grid__empty">Add products to this section to see them here.</p>
+  {%- else -%}
+    <ul class="product-grid__grid" role="list">
+      {%- for block in section.blocks limit: 4 -%}
+        {%- assign product = block.settings.product -%}
+        {%- assign placeholder_index = forloop.index0 | modulo: 6 -%}
+        {%- assign placeholder_name = placeholder_names[placeholder_index] -%}
+
+        <li class="product-grid__item" {{ block.shopify_attributes }}>
+          <a
+            href="{{ product.url | default: '#' }}"
+            class="product-grid__card"
+            {% if product == blank %}aria-disabled="true" tabindex="-1"{% endif %}
+          >
+            <span class="product-grid__media">
+              {%- if product != blank and product.featured_image -%}
+                {{
+                  product.featured_image
+                  | image_url: width: 400
+                  | image_tag: loading: 'lazy', class: 'product-grid__img', alt: product.featured_image.alt | default: product.title
+                }}
+              {%- else -%}
+                {{ placeholder_name | placeholder_svg_tag: 'product-grid__placeholder-svg' }}
+              {%- endif -%}
+            </span>
+
+            <span class="product-grid__name">
+              {{- product.title | default: 'Product Name' -}}
+            </span>
+
+            <span class="product-grid__price">
+              {%- if product != blank -%}
+                {%- if product.compare_at_price > product.price -%}
+                  <s>{{ product.compare_at_price | money }}</s>
+                  <span class="product-grid__price--sale">{{ product.price | money }}</span>
+                {%- else -%}
+                  {{ product.price | money }}
+                {%- endif -%}
+              {%- else -%}
+                {{ 2599 | money }}
+              {%- endif -%}
+            </span>
+
+            <span class="product-grid__cta">
+              {{ section.settings.cta_label | default: 'See product' }}
+            </span>
+          </a>
+        </li>
+      {%- endfor -%}
+    </ul>
+  {%- endif -%}
+
+</div>
+</div>
+
+{% schema %}
+{
+  "name": "Product grid",
+  "tag": "section",
+  "class": "shopify-section--product-grid",
+  "max_blocks": 4,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "header",
+      "content": "Header"
+    },
+    {
+      "type": "select",
+      "id": "layout_style",
+      "label": "Header style",
+      "options": [
+        { "value": "split", "label": "Heading + view all (side by side)" },
+        { "value": "intro", "label": "Centered heading + description" }
+      ],
+      "default": "split"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Shop the edit"
+    },
+    {
+      "type": "textarea",
+      "id": "description",
+      "label": "Description",
+      "info": "Only shown when Header style is set to \"Centered heading + description\"."
+    },
+    {
+      "type": "text",
+      "id": "view_all_label",
+      "label": "\"View all\" label",
+      "default": "View all"
+    },
+    {
+      "type": "url",
+      "id": "view_all_link",
+      "label": "\"View all\" link"
+    },
+    {
+      "type": "header",
+      "content": "Card"
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "Button label",
+      "default": "See product"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "product",
+      "name": "Product",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Grid",
+      "blocks": [
+        { "type": "product" },
+        { "type": "product" },
+        { "type": "product" },
+        { "type": "product" }
+      ]
+    }
+  ]
+}
+{% endschema %}

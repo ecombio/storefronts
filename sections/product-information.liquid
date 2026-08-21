@@ -1,0 +1,292 @@
+{%- comment -%}
+  sections/product-information.liquid
+
+  Rendered as one continuous vertical page. A sticky jump-link bar scrolls
+  down to each section.
+
+  UPDATE: Sections are no longer collapsible at all. No <details>, no
+  toggle, no +/- icon — just plain static blocks that are always fully
+  visible. Jump links still scroll to a section's anchor; there's simply
+  nothing left to expand/collapse.
+
+  The FAQs section's own inner Q&A list (rendered via the 'specification'
+  snippet) is a separate, intentionally-collapsible accordion — that's
+  the one legitimate use of the shared .accordion component per
+  accordion.css's doc comment, and is untouched by this change.
+{%- endcomment -%}
+
+<link rel="stylesheet" href="{{ 'product-information.css' | asset_url }}" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="{{ 'product-information.css' | asset_url }}"></noscript>
+<script src="{{ 'product-information.js' | asset_url }}" defer></script>
+{{ 'accordion.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'accordion.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign has_description = false
+  if product.description != blank
+    assign has_description = true
+  endif
+
+  assign tech_spec = product.metafields.custom.technical_specification.value
+
+  assign has_specifications = false
+  assign has_size_fit = false
+  assign has_geometry = false
+  assign has_faqs = false
+  if tech_spec.specifications.value != blank
+    assign has_specifications = true
+  endif
+  if tech_spec.size_fit.value != blank
+    assign has_size_fit = true
+  endif
+  if tech_spec.geometry.value != blank
+    assign has_geometry = true
+  endif
+  if tech_spec.faqs.value != blank
+    assign has_faqs = true
+  endif
+
+  assign shipping_page = pages['shipping-policy']
+  assign refund_page   = pages['refund-policy']
+  assign warranty_page = pages['warranty']
+
+  assign has_shipping = false
+  assign has_refund   = false
+  assign has_warranty = false
+  if shipping_page.content != blank
+    assign has_shipping = true
+  endif
+  if refund_page.content != blank
+    assign has_refund = true
+  endif
+  if warranty_page.content != blank
+    assign has_warranty = true
+  endif
+
+  assign policy = product.metafields.custom.product_policy.value
+
+  assign has_custom_shipping = false
+  assign has_custom_refund   = false
+  assign has_custom_warranty = false
+  if policy.shipping_policy.value != blank
+    assign has_custom_shipping = true
+  endif
+  if policy.returns_refunds.value != blank
+    assign has_custom_refund = true
+  endif
+  if policy.warranty_policy.value != blank
+    assign has_custom_warranty = true
+  endif
+
+  assign show_shipping = false
+  assign show_refund   = false
+  assign show_warranty = false
+  if has_custom_shipping or has_shipping or shop.shipping_policy.body != blank
+    assign show_shipping = true
+  endif
+  if has_custom_refund or has_refund or shop.refund_policy.body != blank
+    assign show_refund = true
+  endif
+  if has_custom_warranty or has_warranty
+    assign show_warranty = true
+  endif
+-%}
+
+<div
+  {% render 'section-width', section: section, extra_class: 'product-information' %}
+  id="ProductInformation-{{ section.id }}"
+  data-product-information
+>
+
+  {%- comment -%} Sticky jump links {%- endcomment -%}
+  <nav class="product-information__jumplinks" data-jumplinks aria-label="Jump to product information">
+    <ul>
+      {%- if has_description -%}
+        <li><a href="#description-{{ section.id }}" data-jumplink="description-{{ section.id }}">Description</a></li>
+      {%- endif -%}
+      {%- if has_specifications -%}
+        <li><a href="#specifications-{{ section.id }}" data-jumplink="specifications-{{ section.id }}">Specifications</a></li>
+      {%- endif -%}
+      {%- if has_size_fit -%}
+        <li><a href="#size_fit-{{ section.id }}" data-jumplink="size_fit-{{ section.id }}">Size &amp; Fit</a></li>
+      {%- endif -%}
+      {%- if has_geometry -%}
+        <li><a href="#geometry-{{ section.id }}" data-jumplink="geometry-{{ section.id }}">Geometry</a></li>
+      {%- endif -%}
+      {%- if has_faqs -%}
+        <li><a href="#faqs-{{ section.id }}" data-jumplink="faqs-{{ section.id }}">FAQs</a></li>
+      {%- endif -%}
+      {%- if show_shipping -%}
+        <li><a href="#shipping-{{ section.id }}" data-jumplink="shipping-{{ section.id }}">Shipping Policy</a></li>
+      {%- endif -%}
+      {%- if show_refund -%}
+        <li><a href="#refund-{{ section.id }}" data-jumplink="refund-{{ section.id }}">Refund &amp; Return Policy</a></li>
+      {%- endif -%}
+      {%- if show_warranty -%}
+        <li><a href="#warranty-{{ section.id }}" data-jumplink="warranty-{{ section.id }}">Warranty</a></li>
+      {%- endif -%}
+    </ul>
+  </nav>
+
+  {%- comment -%} Sections — plain static blocks, always fully visible, no toggle {%- endcomment -%}
+  <div class="product-information__sections" data-sections>
+
+    {%- if has_description -%}
+      <div class="product-information__item product-information__section" id="description-{{ section.id }}" data-section="description-{{ section.id }}">
+        <div class="product-information__summary">
+          <h2 class="product-information__heading">Description</h2>
+        </div>
+        <div class="product-information__content">
+          {% render 'description', product: product %}
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- if has_specifications -%}
+      <div class="product-information__item product-information__section" id="specifications-{{ section.id }}" data-section="specifications-{{ section.id }}">
+        <div class="product-information__summary">
+          <h2 class="product-information__heading">Specifications</h2>
+        </div>
+        <div class="product-information__content">
+          {% render 'specification', field: tech_spec.specifications %}
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- if has_size_fit -%}
+      <div class="product-information__item product-information__section" id="size_fit-{{ section.id }}" data-section="size_fit-{{ section.id }}">
+        <div class="product-information__summary">
+          <h2 class="product-information__heading">Size &amp; Fit</h2>
+        </div>
+        <div class="product-information__content">
+          {% render 'specification', field: tech_spec.size_fit %}
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- if has_geometry -%}
+      <div class="product-information__item product-information__section" id="geometry-{{ section.id }}" data-section="geometry-{{ section.id }}">
+        <div class="product-information__summary">
+          <h2 class="product-information__heading">Geometry</h2>
+        </div>
+        <div class="product-information__content">
+          {% render 'specification', field: tech_spec.geometry %}
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- if has_faqs -%}
+      <div class="product-information__item product-information__section" id="faqs-{{ section.id }}" data-section="faqs-{{ section.id }}">
+        <div class="product-information__summary">
+          <h2 class="product-information__heading">FAQs</h2>
+        </div>
+        <div class="product-information__content">
+          {%- comment -%} The 'specification' snippet renders each Q&A as its own .accordion / .accordion__item — that nested FAQ accordion is intentionally still collapsible. {%- endcomment -%}
+          {% render 'specification', field: tech_spec.faqs %}
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- if show_shipping -%}
+      <div class="product-information__item product-information__section" id="shipping-{{ section.id }}" data-section="shipping-{{ section.id }}">
+        <div class="product-information__summary">
+          <h2 class="product-information__heading">Shipping Policy</h2>
+        </div>
+        <div class="product-information__content">
+          {%- if has_custom_shipping -%}
+            {{ policy.shipping_policy | metafield_tag }}
+          {%- elsif has_shipping -%}
+            {{ shipping_page.content }}
+          {%- else -%}
+            {{ shop.shipping_policy.body }}
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- if show_refund -%}
+      <div class="product-information__item product-information__section" id="refund-{{ section.id }}" data-section="refund-{{ section.id }}">
+        <div class="product-information__summary">
+          <h2 class="product-information__heading">Refund &amp; Return Policy</h2>
+        </div>
+        <div class="product-information__content">
+          {%- if has_custom_refund -%}
+            {{ policy.returns_refunds | metafield_tag }}
+          {%- elsif has_refund -%}
+            {{ refund_page.content }}
+          {%- else -%}
+            {{ shop.refund_policy.body }}
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- if show_warranty -%}
+      <div class="product-information__item product-information__section" id="warranty-{{ section.id }}" data-section="warranty-{{ section.id }}">
+        <div class="product-information__summary">
+          <h2 class="product-information__heading">Warranty</h2>
+        </div>
+        <div class="product-information__content">
+          {%- if has_custom_warranty -%}
+            {{ policy.warranty_policy | metafield_tag }}
+          {%- elsif has_warranty -%}
+            {{ warranty_page.content }}
+          {%- else -%}
+            <p>Please contact us for warranty information.</p>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+
+  </div>
+
+</div>
+
+{% schema %}
+{
+  "name": "Product information",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 28
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product information"
+    }
+  ]
+}
+{% endschema %}

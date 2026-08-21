@@ -1,0 +1,57 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "discover",
+      "blocks": {
+        "creative_banner_hHDTJd": {
+          "type": "creative_banner",
+          "settings": {
+            "row": 1,
+            "image": "shopify://shop_images/3b77f5a569f4882675c2734835841f43.png",
+            "heading": "Discover our latest stories"
+          }
+        },
+        "promo_carousel_inM9kK": {
+          "type": "promo_carousel",
+          "settings": {
+            "row": 1,
+            "source_collection": "electric-scooters"
+          }
+        },
+        "promo_product_dC7q4H": {
+          "type": "promo_product",
+          "settings": {
+            "row": 2,
+            "product": "okai-phone-holder"
+          }
+        }
+      },
+      "block_order": [
+        "creative_banner_hHDTJd",
+        "promo_carousel_inM9kK",
+        "promo_product_dC7q4H"
+      ],
+      "settings": {
+        "tab_content_label": "Online Shopping",
+        "tab_product_label": "Online Streaming",
+        "collection": "electric-bikes",
+        "columns": 4,
+        "products_per_page": 16,
+        "blog": "articles",
+        "articles_per_page": 16
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

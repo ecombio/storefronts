@@ -1,0 +1,120 @@
+.page-section {
+  font-family: var(--font-primary--family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif);
+}
+
+.page-section__heading {
+  font-size: clamp(1.75rem, 1.3rem + 1.8vw, 2.75rem);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  font-weight: 600;
+  margin: 0 0 1.25em;
+}
+
+/* page.content is raw rich-text HTML from the page editor — style it defensively */
+.page-section__content {
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.page-section__content > *:first-child {
+  margin-top: 0;
+}
+
+.page-section__content > *:last-child {
+  margin-bottom: 0;
+}
+
+.page-section__content p {
+  margin: 0 0 1.25em;
+}
+
+.page-section__content h2,
+.page-section__content h3,
+.page-section__content h4 {
+  line-height: 1.25;
+  font-weight: 600;
+  margin: 1.75em 0 0.75em;
+}
+
+.page-section__content h2 {
+  font-size: 1.4rem;
+}
+
+.page-section__content h3 {
+  font-size: 1.15rem;
+}
+
+.page-section__content h4 {
+  font-size: 1rem;
+}
+
+.page-section__content a {
+  color: var(--color-blue, currentColor);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.page-section__content ul,
+.page-section__content ol {
+  margin: 0 0 1.25em;
+  padding-left: 1.4em;
+}
+
+.page-section__content li + li {
+  margin-top: 0.4em;
+}
+
+.page-section__content blockquote {
+  margin: 1.5em 0;
+  padding-left: 1.1em;
+  border-left: 3px solid rgba(17, 17, 17, 0.15);
+  opacity: 0.85;
+  font-style: italic;
+}
+
+.page-section__content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin: 0.5em 0;
+}
+
+.page-section__content hr {
+  border: none;
+  border-top: 1px solid rgba(17, 17, 17, 0.1);
+  margin: 2em 0;
+}
+
+/* Tables are a common overflow problem in freeform page content;
+   .page-section__table-wrap is added by page.js so wide tables scroll
+   instead of breaking layout on narrow viewports. */
+.page-section__table-wrap {
+  overflow-x: auto;
+  margin: 0 0 1.25em;
+  -webkit-overflow-scrolling: touch;
+}
+
+.page-section__content table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 28rem;
+  font-size: 0.9rem;
+}
+
+.page-section__content th,
+.page-section__content td {
+  text-align: left;
+  padding: 0.6em 0.9em;
+  border: 1px solid rgba(17, 17, 17, 0.1);
+}
+
+.page-section__content th {
+  font-weight: 600;
+  background: rgba(17, 17, 17, 0.03);
+}
+
+@media (max-width: 749px) {
+  .page-section__heading {
+    font-size: 1.5rem;
+  }
+}

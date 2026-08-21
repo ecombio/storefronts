@@ -1,0 +1,145 @@
+/* ============================================
+   assets/image-grid.css
+   Stylesheet for sections/image-grid.liquid
+
+   This file is loaded once via asset_url + stylesheet_tag rather
+   than inlined per-section with {% style %}. Because it's a static
+   asset, it can't read section.id or setting values directly —
+   per-instance values (background color, gap, columns per
+   breakpoint) are passed in as CSS custom properties set inline on
+   each section's wrapper div in the .liquid file. That keeps this
+   file identical for every instance of the section on a page, so
+   the browser only has to download/parse/cache it once.
+
+   SECTION LAYOUT:
+   Background and width constraint are deliberately split across two
+   elements so the background always paints edge-to-edge:
+     - .image-grid-wrap (outer) — full-bleed background color,
+       vertical padding only. No max-width, ever.
+     - .image-grid-inner (inner) — gets the
+       __default-width / __full-width / __custom-width class and the
+       --section-padding side padding. Only this element is
+       constrained/centered; the color behind it is untouched.
+   Both --section-padding and --custom-width are local to this
+   section, never read from the global --page-margin / --page-width
+   (see sections/example-width-section.liquid for the rationale).
+
+   BORDER:
+   The top/bottom hairline below reuses --hdr-border, the shared
+   #e5e5e5 divider color defined at :root in assets/main-header.css
+   (used there for .main-header, .header, and .ecombio-header's own
+   border-bottom / --hdr-border rules). Referencing that variable
+   instead of hardcoding a second #e5e5e5 keeps this section's border
+   tied to the same brand source of truth — if that token ever
+   changes, this section picks it up automatically. The literal value
+   stays only as a fallback for templates where main-header.css
+   hasn't loaded.
+   ============================================ */
+
+.image-grid-wrap {
+  padding-block: 32px;
+  /*background-color: var(--image-grid-bg, #F5F6F7);*/
+  /*border-block: 1px solid var(--hdr-border, #e5e5e5);*/
+}
+
+.image-grid-inner {
+  padding-inline: var(--section-padding, 28px);
+}
+
+.image-grid-inner.image-grid__default-width {
+  max-width: var(--page-width, 1200px);
+  margin-inline: auto;
+}
+
+.image-grid-inner.image-grid__full-width {
+  max-width: none;
+}
+
+.image-grid-inner.image-grid__custom-width {
+  max-width: var(--custom-width, 80rem);
+  margin-inline: auto;
+}
+
+.image-grid-heading {
+  font-size: clamp(1.25rem, 2vw, 1.75rem);
+  font-weight: 600;
+  margin: 0 0 20px;
+}
+
+.image-grid-cards {
+  display: grid;
+  grid-template-columns: repeat(var(--image-grid-cols-mobile, 2), 1fr);
+  gap: var(--image-grid-gap, 16px);
+}
+
+@media screen and (min-width: 750px) {
+  .image-grid-cards {
+    grid-template-columns: repeat(var(--image-grid-cols-tablet, 3), 1fr);
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .image-grid-cards {
+    grid-template-columns: repeat(var(--image-grid-cols-desktop, 4), 1fr);
+  }
+}
+
+.image-grid-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  text-decoration: none;
+  color: #1a1a1a;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 24px 16px 20px;
+  aspect-ratio: 1 / 1;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  /* Border */
+border-bottom: 1px solid #e5e5e5;
+
+/* Box shadow (sticky + scrolled) */
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.image-grid-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.image-grid-card__media {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+.image-grid-card__img {
+  max-width: 90%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.image-grid-card__placeholder {
+  width: 60%;
+  opacity: 0.5;
+}
+
+.image-grid-card__label {
+  margin: 12px 0 0;
+  font-size: clamp(0.875rem, 1.2vw, 1rem);
+  font-weight: 600;
+  text-align: center;
+}
+
+@media screen and (max-width: 480px) {
+  .image-grid-card {
+    padding: 16px 12px 14px;
+    border-radius: 10px;
+  }
+}

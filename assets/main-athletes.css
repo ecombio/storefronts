@@ -1,0 +1,113 @@
+.athletes-section {
+  padding-block: 2.5rem 4rem;
+}
+
+.athletes-section__default-width {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: var(--section-padding);
+}
+
+.athletes-section__full-width {
+  width: 100%;
+  padding-inline: var(--section-padding);
+}
+
+.athletes-section__custom-width {
+  max-width: var(--custom-width);
+  margin-inline: auto;
+  padding-inline: var(--section-padding);
+}
+
+.athletes-section__header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding-bottom: 2.5rem;
+  margin-bottom: 2.5rem;
+  border-bottom: 1px solid var(--color-border, #e5e5e5);
+}
+
+.athletes-section__photo-wrapper {
+  flex-shrink: 0;
+}
+
+.athletes-section__photo,
+.athletes-section__photo--placeholder {
+  width: 160px;
+  height: 160px;
+  border-radius: 12px;
+  object-fit: cover;
+  background-color: var(--color-bg-secondary, #f3f4f6);
+}
+
+.athletes-section__intro {
+  min-width: 0;
+}
+
+.athletes-section__name {
+  font-size: var(--font-size-xl, 1.75rem);
+  font-weight: 700;
+  margin: 0 0 0.75rem 0;
+}
+
+.athletes-section__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0 0 1rem 0;
+  padding: 0;
+}
+
+.athletes-section__stat {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  background-color: var(--color-bg-secondary, #f3f4f6);
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  font-size: var(--font-size-xs, 0.8125rem);
+}
+
+.athletes-section__stat-label {
+  color: var(--color-text-muted, #6b7280);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.athletes-section__stat-value {
+  color: var(--color-text, #111);
+  font-weight: 600;
+}
+
+.athletes-section__bio {
+  font-size: var(--font-size-sm, 0.9375rem);
+  line-height: 1.6;
+  color: var(--color-text, #111);
+}
+
+.athletes-section__bio p:last-child {
+  margin-bottom: 0;
+}
+
+.athletes-section__empty--config {
+  padding: 2rem;
+  text-align: center;
+  border: 1px dashed var(--color-border, #d1d5db);
+  border-radius: 8px;
+  color: var(--color-text-muted, #6b7280);
+  font-size: var(--font-size-sm, 0.9375rem);
+}
+
+@media screen and (max-width: 640px) {
+  .athletes-section__header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .athletes-section__stats {
+    justify-content: center;
+  }
+}

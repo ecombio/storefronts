@@ -1,0 +1,215 @@
+{{ 'blog-articles.css' | asset_url | stylesheet_tag }}
+{{ 'article-card.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign target_blog = blogs['articles']
+  assign custom_tags_list = section.settings.posts_custom_tags | split: ','
+
+  assign section_width = section.settings.posts_section_width
+  case section_width
+    when 'full-width'
+      assign width_class = 'full-width'
+    when 'custom-width'
+      assign width_class = 'custom-width'
+    else
+      assign width_class = 'default-width'
+  endcase
+-%}
+
+<div
+  class="{{ width_class }}"
+  style="
+    --section-padding: {{ section.settings.posts_section_padding }}px;
+    {%- if section.settings.posts_section_width == 'custom-width' %}
+      --custom-width: {{ section.settings.posts_custom_width }}rem;
+    {%- endif %}
+  "
+>
+  <div class="blog-posts-section section-{{ section.id }}" style="padding-block: var(--section-spacing);">
+
+    {% if section.settings.posts_heading != blank %}
+      <div class="blog-posts__header">
+        <h2 class="blog-posts__title">{{ section.settings.posts_heading }}</h2>
+      </div>
+    {% endif %}
+
+    {% if custom_tags_list.size > 0 %}
+      <div class="blog-posts__tags">
+        <a href="{{ target_blog.url }}" class="blog-posts__tag-pill {% if target_blog.current_tags.size == 0 %}is-active{% endif %}">
+          All
+        </a>
+        {% for tag in custom_tags_list %}
+          {%- assign tag = tag | strip -%}
+          {%- assign tag_slug = tag | handle -%}
+          <a href="{{ target_blog.url }}/tagged/{{ tag_slug }}"
+             class="blog-posts__tag-pill {% if target_blog.current_tags contains tag_slug %}is-active{% endif %}">
+            {{ tag }}
+          </a>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% paginate target_blog.articles by section.settings.posts_limit %}
+      {% if target_blog.articles.size > 0 %}
+        <div class="blog-posts__grid" style="--blog-posts-columns: {{ section.settings.posts_columns }};">
+          {%- assign visible_index = 0 -%}
+          {% for article in target_blog.articles %}
+            {%- liquid
+              assign show_article = false
+              if custom_tags_list.size == 0
+                assign show_article = true
+              else
+                for tag in custom_tags_list
+                  assign trimmed_tag = tag | strip | handle
+                  if article.tags contains trimmed_tag
+                    assign show_article = true
+                  endif
+                endfor
+              endif
+            -%}
+
+            {% if show_article %}
+              {%- assign visible_index = visible_index | plus: 1 -%}
+              {% assign loading = 'lazy' %}
+              {% if visible_index <= section.settings.posts_columns %}
+                {% assign loading = 'eager' %}
+              {% endif %}
+
+              {% render 'article-card', article: article, loading: loading %}
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        {% if custom_tags_list.size > 0 and visible_index == 0 %}
+          <p class="blog-posts__empty">No articles match the selected tags on this page.</p>
+        {% endif %}
+
+        {% if paginate.pages > 1 %}
+          <nav class="blog-posts__pagination" role="navigation" aria-label="Pagination">
+            {% if paginate.previous %}
+              <a href="{{ paginate.previous.url }}" class="blog-posts__page-link blog-posts__page-link--prev">
+                ← Previous
+              </a>
+            {% endif %}
+
+            <ul class="blog-posts__page-list">
+              {% for part in paginate.parts %}
+                <li>
+                  {% if part.is_link %}
+                    <a href="{{ part.url }}" class="blog-posts__page-link">{{ part.title }}</a>
+                  {% else %}
+                    {% if part.title == paginate.current_page %}
+                      <span class="blog-posts__page-link is-active" aria-current="page">{{ part.title }}</span>
+                    {% else %}
+                      <span class="blog-posts__page-link blog-posts__page-link--gap">{{ part.title }}</span>
+                    {% endif %}
+                  {% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+
+            {% if paginate.next %}
+              <a href="{{ paginate.next.url }}" class="blog-posts__page-link blog-posts__page-link--next">
+                Next →
+              </a>
+            {% endif %}
+          </nav>
+        {% endif %}
+      {% else %}
+        <p class="blog-posts__empty">No articles to show yet.</p>
+      {% endif %}
+    {% endpaginate %}
+
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Blog articles",
+  "tag": "section",
+  "class": "section-custom-articles",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Blog posts"
+    },
+    {
+      "type": "text",
+      "id": "posts_heading",
+      "label": "Heading",
+      "default": "Latest Articles"
+    },
+    {
+      "type": "text",
+      "id": "posts_custom_tags",
+      "label": "Tags (comma-separated)",
+      "info": "Type tags however you'd like them displayed (e.g. \"Electric Scooters\"). The /tagged/ URL and article matching auto-use the hyphenated, lowercased form behind the scenes — no need to type hyphens yourself.",
+      "default": "Electric Scooters, Batteries, Accessories"
+    },
+    {
+      "type": "range",
+      "id": "posts_limit",
+      "min": 3,
+      "max": 24,
+      "step": 1,
+      "default": 12,
+      "label": "Articles per page"
+    },
+    {
+      "type": "range",
+      "id": "posts_columns",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 3,
+      "label": "Columns (desktop)"
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "paragraph",
+      "content": "If you're placing a Blog menu section directly above this one, set matching width values on both so they stay visually aligned."
+    },
+    {
+      "type": "select",
+      "id": "posts_section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "full-width", "label": "Full width" },
+        { "value": "custom-width", "label": "Custom width" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "posts_custom_width",
+      "label": "Custom width",
+      "min": 40,
+      "max": 120,
+      "step": 5,
+      "unit": "rem",
+      "default": 80,
+      "visible_if": "{{ section.settings.posts_section_width == 'custom-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "posts_section_padding",
+      "label": "Side padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 28
+    }
+  ],
+  "presets": [
+    {
+      "name": "Blog articles",
+      "category": "Blog"
+    }
+  ]
+}
+{% endschema %}

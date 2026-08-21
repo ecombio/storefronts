@@ -1,0 +1,289 @@
+/* ─────────────────────────────────────────
+   article-summarizer.css
+   Premium card design — clean, editorial,
+   intentionally integrated into article flow.
+───────────────────────────────────────── */
+
+/* ── Card wrapper ── */
+.ma-summarizer {
+  margin: 3rem 0 2rem;
+  font-family: inherit;
+}
+
+.ma-summarizer__inner {
+  background: #f9f9f8;
+  border: 1px solid #e8e6e1;
+  border-radius: 12px;
+  padding: 1.75rem 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle accent line on the left edge */
+.ma-summarizer__inner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, #c9a96e 0%, #a87d3e 100%);
+  border-radius: 12px 0 0 12px;
+}
+
+/* ── Header ── */
+.ma-summarizer__header {
+  margin-bottom: 1.25rem;
+}
+
+.ma-summarizer__eyebrow {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #a87d3e;
+  margin-bottom: 0.4rem;
+}
+
+.ma-summarizer__heading {
+  margin: 0 0 0.3rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.ma-summarizer__subtext {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #888;
+  line-height: 1.5;
+}
+
+/* ── Button row ── */
+.ma-summarizer__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+/* ── Individual button ── */
+.ma-summarizer__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.6rem 0.9rem 0.6rem 0.75rem;
+  border: 1px solid #e0ddd8;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.1s ease;
+  white-space: nowrap;
+  flex: 1 1 auto;
+  min-width: 160px;
+}
+
+.ma-summarizer__btn:hover {
+  background: #fff;
+  border-color: #c0b99f;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  transform: translateY(-1px);
+}
+
+.ma-summarizer__btn:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: none;
+}
+
+.ma-summarizer__btn:focus-visible {
+  outline: 2px solid #a87d3e;
+  outline-offset: 2px;
+}
+
+/* ── Button icon ── */
+.ma-summarizer__btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+}
+
+.ma-summarizer__btn-icon img {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+/* Per-AI badge tints */
+.ma-summarizer__btn--claude .ma-summarizer__btn-icon      { background: #f0ebe3; }
+.ma-summarizer__btn--claude:hover .ma-summarizer__btn-icon { background: #e8ddd0; }
+
+.ma-summarizer__btn--chatgpt .ma-summarizer__btn-icon      { background: #edf4f0; }
+.ma-summarizer__btn--chatgpt:hover .ma-summarizer__btn-icon { background: #daeee6; }
+
+.ma-summarizer__btn--gemini .ma-summarizer__btn-icon      { background: #eef1fb; }
+.ma-summarizer__btn--gemini:hover .ma-summarizer__btn-icon { background: #dde4f7; }
+
+.ma-summarizer__btn--grok .ma-summarizer__btn-icon      { background: #1a1a1a; }
+.ma-summarizer__btn--grok:hover .ma-summarizer__btn-icon { background: #2e2e2e; }
+
+.ma-summarizer__btn--perplexity .ma-summarizer__btn-icon      { background: #e5f7f8; }
+.ma-summarizer__btn--perplexity:hover .ma-summarizer__btn-icon { background: #cdf0f3; }
+
+.ma-summarizer__btn--mistral .ma-summarizer__btn-icon      { background: #fff2e8; }
+.ma-summarizer__btn--mistral:hover .ma-summarizer__btn-icon { background: #ffe4cc; }
+
+.ma-summarizer__btn--deepseek .ma-summarizer__btn-icon      { background: #eaedff; }
+.ma-summarizer__btn--deepseek:hover .ma-summarizer__btn-icon { background: #d4daff; }
+.ma-summarizer__btn-label {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ma-summarizer__btn-name {
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  line-height: 1.2;
+}
+
+.ma-summarizer__btn-hint {
+  font-size: 0.7rem;
+  color: #aaa;
+  line-height: 1.2;
+}
+
+/* ── Arrow ── */
+.ma-summarizer__btn-arrow {
+  display: flex;
+  align-items: center;
+  color: #ccc;
+  transition: color 0.15s ease, transform 0.15s ease;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.ma-summarizer__btn-arrow svg {
+  width: 14px;
+  height: 14px;
+}
+
+.ma-summarizer__btn:hover .ma-summarizer__btn-arrow {
+  color: #999;
+  transform: translateX(2px);
+}
+
+/* ── Footer fallback hint ── */
+.ma-summarizer__footer {
+  margin: 0.85rem 0 0;
+  font-size: 0.75rem;
+  color: #b0aba2;
+  line-height: 1.5;
+}
+
+/* ── Toast ── */
+.ma-summarizer-toast {
+  position: fixed;
+  bottom: 1.75rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(6px);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: #1a1a1a;
+  color: #fff;
+  font-size: 0.82rem;
+  font-family: inherit;
+  padding: 0.55rem 1rem 0.55rem 0.75rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.22);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 9999;
+  max-width: calc(100vw - 2rem);
+}
+
+.ma-summarizer-toast.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.ma-summarizer-toast.is-error {
+  background: #2d1a1a;
+}
+
+.ma-summarizer-toast__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  flex-shrink: 0;
+}
+
+.ma-summarizer-toast__icon svg {
+  width: 10px;
+  height: 10px;
+}
+
+.ma-summarizer-toast.is-error .ma-summarizer-toast__icon {
+  background: rgba(255, 80, 80, 0.2);
+  color: #ff8080;
+}
+
+.ma-summarizer-toast__text {
+  line-height: 1.35;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .ma-summarizer__inner {
+    padding: 1.4rem 1.25rem;
+  }
+
+  .ma-summarizer__buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .ma-summarizer__btn {
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+
+  .ma-summarizer-toast {
+    white-space: normal;
+    text-align: center;
+    bottom: 1rem;
+    padding: 0.6rem 1rem;
+  }
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .ma-summarizer__btn,
+  .ma-summarizer__btn-icon,
+  .ma-summarizer__btn-arrow,
+  .ma-summarizer-toast {
+    transition: none;
+  }
+}

@@ -1,0 +1,129 @@
+{%- comment -%}
+  snippets/collection-filter.liquid
+  Self-contained filter sidebar. Owns its own markup, styles, and JS.
+  Rendered into the left column of the collection two-column shell.
+
+  Expects section.settings:
+    show_sort   {Boolean}
+    show_filters {Boolean}
+
+  Communicates outward via events:
+    No direct DOM coupling to product-feed or collection.liquid.
+    collection-filter.js dispatches no custom events currently —
+    filter changes trigger a full page navigation via form submit
+    or sort select change, both handled within collection-filter.js.
+
+  JS hook attributes:
+    [data-filter-toggle]  — toolbar buttons (outside this snippet)
+                            target id="collection-filter"
+    [data-sort]           — sort <select>
+    FilterForm            — filter <form>
+{%- endcomment -%}
+
+{{ 'collection-filter.css' | asset_url | stylesheet_tag }}
+
+{%- if section.settings.show_filters -%}
+  <aside
+    class="collection-filter"
+    id="collection-filter"
+    aria-label="Product filters"
+  >
+
+    {%- comment -%} Close button injected by collection-filter.js on mobile {%- endcomment -%}
+
+    {%- if section.settings.show_sort -%}
+      <div class="collection-filter__sort">
+        <label for="SortBy">Sort</label>
+        <select id="SortBy" data-sort>
+          {%- for option in collection.sort_options -%}
+            <option
+              value="{{ option.value }}"
+              {%- if option.value == collection.sort_by %} selected{%- endif %}
+            >{{ option.name }}</option>
+          {%- endfor -%}
+        </select>
+      </div>
+    {%- endif -%}
+
+    <form method="get" action="{{ collection.url }}" id="FilterForm">
+
+      {%- for filter in collection.filters -%}
+        <details
+          class="collection-filter__group"
+          {%- if filter.active_values.size > 0 %} open{%- endif %}
+        >
+          <summary class="collection-filter__group-label">
+            {{ filter.label }}
+            {%- if filter.active_values.size > 0 -%}
+              <span class="collection-filter__group-badge">{{ filter.active_values.size }}</span>
+            {%- endif -%}
+          </summary>
+
+          <div class="collection-filter__group-body">
+            {%- case filter.type -%}
+              {%- when 'list' -%}
+                {%- for value in filter.values -%}
+                  <label class="collection-filter__option
+                    {%- if value.active %} collection-filter__option--active{%- endif %}
+                    {%- if value.count == 0 and value.active == false %} collection-filter__option--disabled{%- endif %}">
+                    <input
+                      type="checkbox"
+                      name="{{ value.param_name }}"
+                      value="{{ value.value }}"
+                      {%- if value.active %} checked{%- endif %}
+                      {%- if value.count == 0 and value.active == false %} disabled{%- endif %}
+                    >
+                    {{ value.label }} <span>({{ value.count }})</span>
+                  </label>
+                {%- endfor -%}
+
+              {%- when 'price_range' -%}
+                <div class="collection-filter__price">
+                  <input
+                    type="number"
+                    name="{{ filter.min_value.param_name }}"
+                    value="{{ filter.min_value.value | divided_by: 100.0 }}"
+                    min="0"
+                    max="{{ filter.range_max | divided_by: 100.0 }}"
+                    placeholder="0"
+                  >
+                  <span>–</span>
+                  <input
+                    type="number"
+                    name="{{ filter.max_value.param_name }}"
+                    value="{{ filter.max_value.value | divided_by: 100.0 }}"
+                    min="0"
+                    max="{{ filter.range_max | divided_by: 100.0 }}"
+                    placeholder="{{ filter.range_max | divided_by: 100.0 }}"
+                  >
+                </div>
+            {%- endcase -%}
+          </div>
+        </details>
+      {%- endfor -%}
+
+      {%- comment -%} Active filter pills {%- endcomment -%}
+      {%- assign active_count = 0 -%}
+      {%- for filter in collection.filters -%}
+        {%- assign active_count = active_count | plus: filter.active_values.size -%}
+      {%- endfor -%}
+
+      {%- if active_count > 0 -%}
+        <div class="collection-filter__active">
+          {%- for filter in collection.filters -%}
+            {%- for value in filter.active_values -%}
+              <a href="{{ value.url_to_remove }}" class="collection-filter__pill">
+                {{ value.label }} &times;
+              </a>
+            {%- endfor -%}
+          {%- endfor -%}
+          <a href="{{ collection.url }}" class="collection-filter__pill collection-filter__pill--clear">Clear all</a>
+        </div>
+      {%- endif -%}
+
+      <button type="submit" class="collection-filter__submit">Apply</button>
+
+    </form>
+
+  </aside>
+{%- endif -%}

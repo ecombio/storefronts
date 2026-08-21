@@ -1,0 +1,49 @@
+/* =============================================================================
+  header-cart.css.
+============================================================================= */
+
+.ecombio-header__cart {
+  display: flex;
+  align-items: center;
+  background: transparent;
+  border: none;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.ecombio-header__cart:hover {
+  background: var(--hdr-search-bg);
+}
+
+.ecombio-header__cart-wrap {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.ecombio-header__cart-badge {
+  position: absolute;
+  top: -7px;
+  right: -9px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  background: var(--hdr-accent);
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 18px;
+  border-radius: 9999px;
+  text-align: center;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+/* FIX: this modifier is applied by header-cart.liquid whenever
+   cart.item_count is 0, but no rule for it previously existed —
+   the badge was rendering "0" at all times. */
+.ecombio-header__cart-badge--hidden {
+  opacity: 0;
+}

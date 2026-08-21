@@ -1,0 +1,98 @@
+.blog-menu__item {
+  position: relative;
+}
+
+.blog-menu__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.6rem 0.85rem;
+  color: var(--blog-menu-text, var(--color-black));
+  text-decoration: none;
+  font-family: var(--font-primary--family);
+  font-size: 0.9rem;
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+  white-space: nowrap;
+}
+
+.blog-menu__link:hover,
+.blog-menu__link--parent[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--blog-menu-accent, var(--color-blue)) 10%, transparent);
+  color: var(--blog-menu-accent, var(--color-blue));
+}
+
+.blog-menu__link--active {
+  color: var(--blog-menu-accent, var(--color-blue));
+  font-weight: 600;
+}
+
+.blog-menu__caret {
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform var(--transition-fast);
+  margin-top: -2px;
+}
+
+.blog-menu__link--parent[aria-expanded="true"] .blog-menu__caret {
+  transform: rotate(-135deg);
+  margin-top: 2px;
+}
+
+.blog-menu__dropdown {
+  position: fixed;
+  top: 0;
+  left: 0;
+  min-width: 200px;
+  background: var(--blog-menu-bg, #ffffff);
+  border: 1px solid var(--blog-menu-border, #e5e5e5);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  list-style: none;
+  margin: 0;
+  padding: 0.35rem;
+  display: none;
+  z-index: 9999;
+}
+
+.blog-menu__item--list.is-open .blog-menu__dropdown {
+  display: block;
+}
+
+.blog-menu__dropdown-link {
+  display: block;
+  padding: 0.5rem 0.65rem;
+  color: var(--blog-menu-text, var(--color-black));
+  text-decoration: none;
+  font-family: var(--font-primary--family);
+  font-size: 0.875rem;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  transition: background-color var(--transition-fast);
+}
+
+.blog-menu__dropdown-link:hover {
+  background: color-mix(in srgb, var(--blog-menu-accent, var(--color-blue)) 10%, transparent);
+}
+
+.blog-menu__dropdown-link--active {
+  color: var(--blog-menu-accent, var(--color-blue));
+  font-weight: 600;
+}
+
+@media screen and (max-width: 749px) {
+  .blog-menu__dropdown {
+    position: static;
+    box-shadow: none;
+    border: none;
+    margin: 0;
+    padding-left: 0.75rem;
+  }
+}

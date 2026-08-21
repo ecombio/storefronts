@@ -1,0 +1,58 @@
+{%- comment -%}
+  snippets/utility-bar.liquid
+{%- endcomment -%}
+
+{%- if settings.enable_bar -%}
+  {{ 'utility-bar.css' | asset_url | stylesheet_tag }}
+
+  {%- liquid
+    assign bar_style = settings.bar_style | default: 'hyper'
+    assign show_curr  = settings.show_currency
+    assign show_loc   = settings.show_locale
+
+    assign utility_width_type = settings.section_width
+    if utility_width_type == blank
+      assign utility_width_class = 'utility-bar__default-width'
+    elsif utility_width_type == 'full-width'
+      assign utility_width_class = 'utility-bar__full-width'
+    else
+      assign utility_width_class = 'utility-bar__custom-width'
+    endif
+  -%}
+
+  <div class="utility-bar utility-bar--{{ bar_style }} {{ utility_width_class }}"
+       role="navigation"
+       aria-label="Utility bar"
+       id="utility-bar"
+       style="
+         --section-padding: {{ settings.section_padding }}px;
+         {%- if utility_width_type == 'custom-width' %}
+           --custom-width: {{ settings.custom_width }}rem;
+         {%- endif %}
+       ">
+
+    <div class="utility-bar__inner">
+
+      <div class="utility-bar__col utility-bar__col--left">
+        {%- render 'utility-links', settings: settings, count: 3 -%}
+      </div>
+
+      <div class="utility-bar__col utility-bar__col--right">
+        <div class="utility-bar__switchers">
+          {%- if show_curr -%}
+            {%- render 'currency-selector', form_id: 'utility-bar-currency-form' -%}
+          {%- endif -%}
+
+          {%- if show_loc -%}
+            {%- render 'locale-selector', form_id: 'utility-bar-locale-form' -%}
+          {%- endif -%}
+
+          {%- render 'region-picker' -%}
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="{{ 'utility-bar.js' | asset_url }}" defer></script>
+{%- endif -%}

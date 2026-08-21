@@ -1,0 +1,127 @@
+{%- comment -%}
+  sections/quick-view.liquid
+  ==========================
+  Modal shell. Renders once in theme.liquid; reused for every product open.
+
+  Policy copy (Shipping / Returns & Refunds / Warranty) comes from a single
+  metaobject reference on the product: custom.policies → Product Policy
+  metaobject (definition handle: product_policy). Each policy field on that
+  metaobject is a rich_text field, which auto-renders to HTML when output
+  directly — no need for the metafield_tag filter.
+
+  Passed as explicit parameters into the render tag below because metaobject
+  field values resolved here are local variables, and render-tag scope only
+  sees globals + explicitly passed params.
+{%- endcomment -%}
+
+{%- liquid
+  assign product       = product | default: section.settings.preview_product
+  assign featured      = product.featured_image
+  assign images        = product.images
+  assign variants      = product.variants
+  assign options       = product.options_with_values
+  assign first_variant = product.first_available_variant | default: product.variants.first
+  assign eta_text      = product.metafields.custom.eta_text
+
+  assign has_single_var = false
+  if product.has_only_default_variant
+    assign has_single_var = true
+  endif
+
+  assign on_sale  = false
+  assign save_pct = 0
+  if first_variant.compare_at_price > first_variant.price
+    assign on_sale  = true
+    assign save_pct = first_variant.compare_at_price | minus: first_variant.price | times: 100 | divided_by: first_variant.compare_at_price
+  endif
+
+assign policy_set = product.metafields.custom.policies.value
+
+# Rich text fields on Metaobjects return JSON by default.
+# Use | metafield_tag to render them as proper HTML.
+assign shipping_policy_body = policy_set.shipping_policy | metafield_tag | default: ''
+assign refund_policy_body   = policy_set.returns_refunds | metafield_tag | default: ''
+assign warranty_policy_body = policy_set.warranty_policy | metafield_tag | default: ''
+-%}
+
+<div
+  id="quick-view-modal"
+  class="quick-view-modal"
+  role="dialog"
+  aria-modal="true"
+  aria-label="{{ 'products.quick_view.title' | t | default: 'Quick view' }}"
+  aria-hidden="true"
+>
+  <div class="quick-view-modal__backdrop" data-quick-view-close></div>
+
+  <div class="quick-view-modal__panel">
+    <button
+      type="button"
+      class="quick-view-modal__close"
+      aria-label="{{ 'accessibility.close' | t | default: 'Close' }}"
+      data-quick-view-close
+    >
+      <svg class="quick-view-modal__close-icon" aria-hidden="true" focusable="false"
+           viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+
+    <div class="quick-view-modal__body">
+      {%- if product != blank -%}
+        <div
+          class="quick-view"
+          data-product-id="{{ product.id }}"
+          data-product-handle="{{ product.handle }}"
+        >
+          {%- comment -%}── Row 1: media + detail (two-column grid) ──{%- endcomment -%}
+          {%- render 'quick-view-media',
+            product:  product,
+            featured: featured,
+            images:   images
+          -%}
+          {%- render 'quick-view-detail',
+            product:        product,
+            variants:       variants,
+            first_variant:  first_variant,
+            options:        options,
+            has_single_var: has_single_var,
+            on_sale:        on_sale,
+            save_pct:       save_pct,
+            eta_text:       eta_text
+          -%}
+
+          {%- comment -%}── Row 2: full-width description / policy tabs ──{%- endcomment -%}
+          {%- render 'quick-view-description',
+            product:         product,
+            shipping_policy: shipping_policy_body,
+            refund_policy:   refund_policy_body,
+            warranty_policy: warranty_policy_body
+          -%}
+
+          {%- comment -%}── Row 3: Recommendations ──{%- endcomment -%}
+        {%- render 'quick-view-recommendation',
+          product: product
+        -%}
+        
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Quick View",
+  "settings": [
+    {
+      "type": "product",
+      "id": "preview_product",
+      "label": "Preview product",
+      "info": "Only used in the theme editor to preview the modal. Not shown on storefront."
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,143 @@
+/* ==========================================================================
+   PRODUCT INFORMATION
+   assets/product-information.css
+
+   Pairs with sections/product-information.liquid and product-information.js.
+   Sections render as one continuous vertical page of plain, always-visible
+   static blocks.
+
+   UPDATE: Sections are no longer collapsible. Removed: cursor pointer on
+   the header, the +/- icon and all its rotation/fade rules, and the
+   :target force-open rule (nothing to force open anymore — everything is
+   always visible).
+   ========================================================================== */
+
+.product-information,
+.product-information * {
+  box-sizing: border-box;
+}
+
+.product-information {
+  --pi-border: #e5e5e5;
+  --pi-text: #1a1a1a;
+
+  padding-block: 28px;
+}
+
+/* ---------------------------------------------------------------------
+   Section list
+   --------------------------------------------------------------------- */
+
+.product-information__sections {
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--pi-border);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.product-information__item {
+  padding: 0;
+  border-bottom: 1px solid var(--pi-border);
+}
+
+/* Sections need extra scroll offset to clear the sticky jump-link bar
+   in addition to the sticky header. */
+.product-information__section {
+  scroll-margin-top: calc(var(--header-group-height, 68px) + 3.25rem);
+}
+
+.product-information__summary {
+  padding: 1.1rem 0.25rem;
+}
+
+.product-information__heading {
+  margin: 0;
+  color: var(--pi-text);
+}
+
+.product-information__content {
+  padding: 0 0.25rem 1.25rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #374151;
+}
+
+/* ---------------------------------------------------------------------
+   Sticky jump-link bar
+   --------------------------------------------------------------------- */
+
+.product-information__jumplinks {
+  display: flex;
+  gap: 1.1rem;
+  border-bottom: 1px solid #E5E7EB;
+  overflow-x: auto;
+  scrollbar-width: none;
+  position: sticky;
+  top: var(--header-group-height, 68px);
+  z-index: 50;
+  background: #fff;
+  transition: top 0.3s ease;
+}
+
+.product-information__jumplinks ul {
+  display: flex;
+  gap: inherit;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.product-information__jumplinks::-webkit-scrollbar {
+  display: none;
+}
+
+:root.header-group-hidden .product-information__jumplinks {
+  top: 0;
+}
+
+.product-information__jumplinks a,
+.product-information__jumplinks a:visited {
+  display: inline-block;
+  flex-shrink: 0;
+  padding: 0.85rem 0.1rem;
+  border-bottom: 2px solid transparent;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6B7280;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.product-information__jumplinks a:hover {
+  color: #111827;
+}
+
+.product-information__jumplinks a.is-active,
+.product-information__jumplinks a.is-active:visited {
+  color: #111827;
+  border-bottom-color: #111827;
+}
+
+.product-information__jumplinks a:focus-visible {
+  outline: 2px solid #4F46E5;
+  outline-offset: 2px;
+}
+
+@media (min-width: 40rem) {
+  .product-information__jumplinks {
+    gap: 1.5rem;
+  }
+
+  .product-information__jumplinks a {
+    font-size: 0.95rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-information__jumplinks a,
+  .product-information__jumplinks {
+    transition: none;
+  }
+}

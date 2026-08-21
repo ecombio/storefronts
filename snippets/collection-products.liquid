@@ -1,0 +1,107 @@
+{% comment %}
+  snippets/collection-products.liquid
+  [1.2.1] Product grid adapter.
+
+  Owns:
+    - Row-by-row iteration of collection.products
+    - After each row: checks blocks for any whose block.settings.row
+      matches that row number, and calls sponsored-ads once per match
+    - Empty state
+    - Pagination controls
+
+  Parameters:
+    collection  {Object}  required
+    blocks      {Array}   required
+    paginate    {Object}  required
+    columns     {Number}  optional — default 4
+
+  CSS: collection-products.css, product-card.css, sponsored-ads.css
+  JS:  sponsored-ads.js (carousel only)
+{% endcomment %}
+{{ 'collection-products.css' | asset_url | stylesheet_tag }}
+{{ 'product-card.css' | asset_url | stylesheet_tag }}
+{{ 'sponsored-ad.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign columns = columns | default: 4
+-%}
+
+<div
+  class="collection-products"
+  style="--collection-products-columns: {{ columns }};"
+  data-collection-products
+>
+
+  {%- if collection.products != blank -%}
+
+    {%- assign row_index = 0 -%}
+    <div class="collection-products__grid">
+
+      {%- for product in collection.products -%}
+
+        {%- render 'product-card', product: product -%}
+
+        {%- assign position_mod = forloop.index | modulo: columns -%}
+        {%- if position_mod == 0 and forloop.last == false -%}
+          {%- assign row_index = row_index | plus: 1 -%}
+          </div>
+          {%- for row_block in blocks -%}
+            {%- if row_block.settings.row == row_index -%}
+              {%- render 'sponsored-ad', block: row_block, collection: collection -%}
+            {%- endif -%}
+          {%- endfor -%}
+          <div class="collection-products__grid">
+        {%- elsif forloop.last -%}
+          {%- assign row_index = row_index | plus: 1 -%}
+        {%- endif -%}
+
+      {%- endfor -%}
+
+    </div>
+
+    {%- for row_block in blocks -%}
+      {%- if row_block.settings.row == row_index -%}
+        {%- render 'sponsored-ad', block: row_block, collection: collection -%}
+      {%- endif -%}
+    {%- endfor -%}
+
+  {%- else -%}
+
+    <p class="collection-products__empty">
+      {{ 'collections.general.no_matches' | t }}
+    </p>
+
+  {%- endif -%}
+
+  {%- if paginate.pages > 1 -%}
+    <nav
+      class="collection-products__pagination"
+      aria-label="{{ 'general.pagination.label' | t }}"
+    >
+      {%- if paginate.previous -%}
+        <a href="{{ paginate.previous.url }}" class="collection-products__page-link">
+          &larr; {{ 'general.pagination.previous' | t }}
+        </a>
+      {%- endif -%}
+
+      {%- for part in paginate.parts -%}
+        {%- if part.is_link -%}
+          <a href="{{ part.url }}" class="collection-products__page-link">
+            {{ part.title }}
+          </a>
+        {%- else -%}
+          <span class="collection-products__page-link collection-products__page-link--current" aria-current="page">
+            {{ part.title }}
+          </span>
+        {%- endif -%}
+      {%- endfor -%}
+
+      {%- if paginate.next -%}
+        <a href="{{ paginate.next.url }}" class="collection-products__page-link">
+          {{ 'general.pagination.next' | t }} &rarr;
+        </a>
+      {%- endif -%}
+    </nav>
+  {%- endif -%}
+
+</div>

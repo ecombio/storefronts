@@ -1,0 +1,261 @@
+{{ 'faq.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign heading_size = section.settings.heading_size
+  assign layout = section.settings.layout
+  assign one_at_a_time = section.settings.one_at_a_time
+-%}
+
+<section
+  class="faq faq--{{ layout }}"
+  id="faq-{{ section.id }}"
+  data-faq
+  data-one-at-a-time="{{ one_at_a_time }}"
+  style="
+    --faq-bg: {{ section.settings.background_color }};
+    --faq-text: {{ section.settings.text_color }};
+    --faq-border: {{ section.settings.border_color }};
+    --faq-accent: {{ section.settings.accent_color }};
+    --faq-max-width: {{ section.settings.container_width }}px;
+    padding-top: {{ section.settings.padding_top }}px;
+    padding-bottom: {{ section.settings.padding_bottom }}px;
+  "
+>
+  <div class="faq__container">
+    {%- if section.settings.heading != blank or section.settings.subheading != blank -%}
+      <div class="faq__header">
+        {%- if section.settings.eyebrow != blank -%}
+          <p class="faq__eyebrow">{{ section.settings.eyebrow }}</p>
+        {%- endif -%}
+        {%- if section.settings.heading != blank -%}
+          <h2 class="faq__heading faq__heading--{{ heading_size }}">{{ section.settings.heading }}</h2>
+        {%- endif -%}
+        {%- if section.settings.subheading != blank -%}
+          <div class="faq__subheading">{{ section.settings.subheading }}</div>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <div class="faq__list">
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'question' -%}
+          <details
+            class="faq__item"
+            {% if forloop.first and section.settings.open_first %}open{% endif %}
+            {{ block.shopify_attributes }}
+          >
+            <summary class="faq__summary" aria-expanded="{% if forloop.first and section.settings.open_first %}true{% else %}false{% endif %}">
+              <span class="faq__question">{{ block.settings.question }}</span>
+              <span class="faq__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M19 9l-7 7-7-7" />
+                </svg>
+              </span>
+            </summary>
+            <div class="faq__answer">
+              {{ block.settings.answer }}
+            </div>
+          </details>
+        {%- endif -%}
+      {%- else -%}
+        <div class="faq__empty">
+          {{ 'Add a question block to get started.' }}
+        </div>
+      {%- endfor -%}
+    </div>
+
+    {%- if section.settings.cta_label != blank -%}
+      <div class="faq__cta">
+        <p class="faq__cta-text">{{ section.settings.cta_text }}</p>
+        {%- if section.settings.cta_url != blank -%}
+          <a href="{{ section.settings.cta_url }}" class="faq__cta-button">{{ section.settings.cta_label }}</a>
+        {%- else -%}
+          <span class="faq__cta-button faq__cta-button--disabled">{{ section.settings.cta_label }}</span>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+<script src="{{ 'faq.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "FAQ",
+  "tag": "section",
+  "class": "shopify-section--faq",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Header"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow text",
+      "default": "Support"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Frequently asked questions"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Heading size",
+      "options": [
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "richtext",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "<p>Can't find the answer you're looking for? Reach out to our support team.</p>"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "options": [
+        { "value": "stacked", "label": "Stacked (heading above list)" },
+        { "value": "split", "label": "Split (heading beside list)" }
+      ],
+      "default": "stacked"
+    },
+    {
+      "type": "range",
+      "id": "container_width",
+      "label": "Content width",
+      "min": 640,
+      "max": 1200,
+      "step": 20,
+      "unit": "px",
+      "default": 860
+    },
+    {
+      "type": "checkbox",
+      "id": "open_first",
+      "label": "Open first question by default",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "one_at_a_time",
+      "label": "Only allow one question open at a time",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#1a1a1a"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Divider",
+      "default": "#e5e5e5"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent",
+      "default": "#1a1a1a"
+    },
+    {
+      "type": "header",
+      "content": "Bottom call to action"
+    },
+    {
+      "type": "text",
+      "id": "cta_text",
+      "label": "Text",
+      "default": "Still have questions?"
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "Button label"
+    },
+    {
+      "type": "url",
+      "id": "cta_url",
+      "label": "Button link"
+    },
+    {
+      "type": "header",
+      "content": "Section spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    }
+  ],
+  "blocks": [
+    {
+      "type": "question",
+      "name": "Question",
+      "settings": [
+        {
+          "type": "text",
+          "id": "question",
+          "label": "Question",
+          "default": "What is your return policy?"
+        },
+        {
+          "type": "richtext",
+          "id": "answer",
+          "label": "Answer",
+          "default": "<p>Share the details customers need to know here.</p>"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "FAQ",
+      "blocks": [
+        { "type": "question" },
+        { "type": "question" },
+        { "type": "question" }
+      ]
+    }
+  ]
+}
+{% endschema %}

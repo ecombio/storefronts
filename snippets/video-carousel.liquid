@@ -1,0 +1,212 @@
+{% comment %}
+  Renders a horizontally scrolling, scroll-snap video carousel.
+  Usage:
+    {% render 'video-carousel', reviews: product.metafields.custom.expert_reviews.value, carousel_id: 'expert-reviews' %}
+
+  Expects `reviews` to be a list of `expert_review` metaobjects with fields:
+    reviewer_name, reviewer_avatar, title, video_url, thumbnail, view_count
+{% endcomment %}
+
+{%- assign carousel_id = carousel_id | default: 'video-carousel' -%}
+
+<div class="video-carousel" id="{{ carousel_id }}" data-video-carousel>
+  <div class="video-carousel__track" data-carousel-track>
+    {%- for review in reviews -%}
+      <button
+        class="video-carousel__card"
+        type="button"
+        data-video-trigger
+        data-video-url="{{ review.video_url }}"
+        aria-label="Play video: {{ review.title | escape }}"
+      >
+        <span class="video-carousel__thumb-wrap">
+          {%- if review.thumbnail != blank -%}
+            {{ review.thumbnail | image_url: width: 400 | image_tag: loading: 'lazy', alt: review.title }}
+          {%- endif -%}
+          <span class="video-carousel__play-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20">
+              <circle cx="12" cy="12" r="11" fill="rgba(0,0,0,0.55)"/>
+              <path d="M9.5 7.5v9l7-4.5-7-4.5z" fill="#fff"/>
+            </svg>
+          </span>
+        </span>
+        <span class="video-carousel__title">{{ review.title }}</span>
+        {%- if review.view_count != blank -%}
+          <span class="video-carousel__views">{{ review.view_count }}</span>
+        {%- endif -%}
+        <span class="video-carousel__author">
+          {%- if review.reviewer_avatar != blank -%}
+            {{ review.reviewer_avatar | image_url: width: 40 | image_tag: loading: 'lazy', alt: review.reviewer_name, class: 'video-carousel__avatar' }}
+          {%- endif -%}
+          {{ review.reviewer_name }}
+        </span>
+      </button>
+    {%- endfor -%}
+  </div>
+
+  <button class="video-carousel__nav video-carousel__nav--prev" type="button" data-carousel-prev aria-label="Previous">
+    <svg viewBox="0 0 24 24" width="18" height="18"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <button class="video-carousel__nav video-carousel__nav--next" type="button" data-carousel-next aria-label="Next">
+    <svg viewBox="0 0 24 24" width="18" height="18"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+</div>
+
+<div class="video-carousel__modal" data-video-modal hidden>
+  <div class="video-carousel__modal-backdrop" data-video-modal-close></div>
+  <div class="video-carousel__modal-content">
+    <button class="video-carousel__modal-close" type="button" data-video-modal-close aria-label="Close">&times;</button>
+    <div class="video-carousel__modal-embed" data-video-modal-embed></div>
+  </div>
+</div>
+
+<style>
+  .video-carousel { position: relative; }
+  .video-carousel__track {
+    display: flex;
+    gap: 1.25rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    padding-bottom: 0.5rem;
+    -webkit-overflow-scrolling: touch;
+  }
+  .video-carousel__track::-webkit-scrollbar { height: 6px; }
+  .video-carousel__track::-webkit-scrollbar-thumb { background: #d0d0d0; border-radius: 3px; }
+
+  .video-carousel__card {
+    scroll-snap-align: start;
+    flex: 0 0 260px;
+    text-align: left;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+  }
+  .video-carousel__thumb-wrap {
+    position: relative;
+    display: block;
+    aspect-ratio: 16 / 10;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #eee;
+  }
+  .video-carousel__thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .video-carousel__play-icon {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .video-carousel__title {
+    display: block;
+    margin-top: 0.6rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    line-height: 1.3;
+  }
+  .video-carousel__views {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 0.8rem;
+    color: #767676;
+  }
+  .video-carousel__author {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: #444;
+  }
+  .video-carousel__avatar { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; }
+
+  .video-carousel__nav {
+    position: absolute;
+    top: 40%;
+    transform: translateY(-50%);
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: none;
+    background: #1a1a1a;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .video-carousel__nav--prev { left: -10px; }
+  .video-carousel__nav--next { right: -10px; }
+
+  .video-carousel__modal {
+    position: fixed; inset: 0; z-index: 999;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .video-carousel__modal[hidden] { display: none; }
+  .video-carousel__modal-backdrop {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.75);
+  }
+  .video-carousel__modal-content {
+    position: relative; z-index: 1;
+    width: min(90vw, 900px);
+  }
+  .video-carousel__modal-embed { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; }
+  .video-carousel__modal-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .video-carousel__modal-close {
+    position: absolute; top: -2.2rem; right: 0;
+    background: none; border: none; color: #fff;
+    font-size: 1.8rem; line-height: 1; cursor: pointer;
+  }
+</style>
+
+<script>
+  (function () {
+    var root = document.getElementById('{{ carousel_id }}');
+    if (!root) return;
+    var track = root.querySelector('[data-carousel-track]');
+    var prevBtn = root.querySelector('[data-carousel-prev]');
+    var nextBtn = root.querySelector('[data-carousel-next]');
+    var modal = root.parentElement.querySelector('[data-video-modal]');
+    var embed = modal.querySelector('[data-video-modal-embed]');
+
+    function scrollByCard(dir) {
+      var card = track.querySelector('[data-video-trigger]');
+      var amount = card ? card.getBoundingClientRect().width + 20 : 280;
+      track.scrollBy({ left: dir * amount, behavior: 'smooth' });
+    }
+    prevBtn.addEventListener('click', function () { scrollByCard(-1); });
+    nextBtn.addEventListener('click', function () { scrollByCard(1); });
+
+    function toEmbedUrl(url) {
+      if (!url) return '';
+      var yt = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([\w-]+)/);
+      if (yt) return 'https://www.youtube.com/embed/' + yt[1] + '?autoplay=1';
+      var vimeo = url.match(/vimeo\.com\/(\d+)/);
+      if (vimeo) return 'https://player.vimeo.com/video/' + vimeo[1] + '?autoplay=1';
+      return url;
+    }
+
+    function openModal(url) {
+      embed.innerHTML = '<iframe src="' + toEmbedUrl(url) + '" allow="autoplay; fullscreen" allowfullscreen></iframe>';
+      modal.hidden = false;
+    }
+    function closeModal() {
+      modal.hidden = true;
+      embed.innerHTML = '';
+    }
+
+    root.querySelectorAll('[data-video-trigger]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        openModal(btn.getAttribute('data-video-url'));
+      });
+    });
+    modal.querySelectorAll('[data-video-modal-close]').forEach(function (el) {
+      el.addEventListener('click', closeModal);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeModal();
+    });
+  })();
+</script>

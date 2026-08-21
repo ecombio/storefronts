@@ -1,0 +1,95 @@
+/* ============================================
+   after-items
+   Renders rich text page content pulled from
+   collection.metafields.custom.after_item_lists
+
+   Container mirrors the header's width recipe exactly:
+   .main-header__inner / .utility-bar__inner / .menu-bar / .footer-width
+   / .collection-header all use max-width: 1184px + margin: 0 auto +
+   padding: 0 24px, dropping to 0 12px under 639px. Keep in sync.
+   ============================================ */
+
+.after-items {
+  max-width: 1184px;
+  margin: 0 auto;
+  padding: 5rem 30px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+@media (max-width: 639px) {
+  .after-items {
+    padding: 2rem 12px;
+  }
+}
+
+/* ── Typography (mirrors .rte defaults) ── */
+.after-items h1,
+.after-items h2,
+.after-items h3,
+.after-items h4,
+.after-items h5,
+.after-items h6 {
+  margin: 0 0 0.75rem;
+  line-height: 1.3;
+}
+
+.after-items p {
+  margin: 0 0 1rem;
+  line-height: 1.7;
+}
+
+.after-items a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.after-items a:hover {
+  opacity: 0.7;
+}
+
+.after-items ul,
+.after-items ol {
+  margin: 0 0 1rem 1.5rem;
+  padding: 0;
+}
+
+.after-items li {
+  margin-bottom: 0.4rem;
+  line-height: 1.6;
+}
+
+.after-items img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 6px;
+}
+
+.after-items table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+.after-items th,
+.after-items td {
+  padding: 0.6rem 0.9rem;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  text-align: left;
+}
+
+.after-items th {
+  font-weight: 600;
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* ── Spacing fix: last child never has trailing margin ── */
+.after-items > *:last-child {
+  margin-bottom: 0;
+}
+.after-items h1[id],
+.after-items h2[id],
+.after-items h3[id],
+.after-items h4[id] {
+  scroll-margin-top: 280px !important;
+}
