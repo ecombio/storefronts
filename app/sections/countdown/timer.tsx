@@ -1,0 +1,138 @@
+import { createSchema, type HydrogenComponentProps } from "@weaverse/hydrogen";
+import type { CSSProperties } from "react";
+import { useEffect, useState } from "react";
+import { ScrollReveal } from "~/components/scroll-reveal";
+
+const ONE_SEC = 1000;
+const ONE_MIN = ONE_SEC * 60;
+const ONE_HOUR = ONE_MIN * 60;
+const ONE_DAY = ONE_HOUR * 24;
+
+function calculateRemainingTime(endTime: number) {
+  const now = Date.now();
+  const diff = endTime - now;
+  if (!Number.isFinite(diff) || diff <= 0) {
+    return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+  }
+  return {
+    days: Math.floor(diff / ONE_DAY),
+    hours: Math.floor((diff % ONE_DAY) / ONE_HOUR),
+    minutes: Math.floor((diff % ONE_HOUR) / ONE_MIN),
+    seconds: Math.floor((diff % ONE_MIN) / ONE_SEC),
+  };
+}
+
+interface CountDownTimerData {
+  textColor: string;
+  endTime?: number;
+}
+
+function CountdownTimer(props: CountDownTimerData & HydrogenComponentProps) {
+  const { textColor, endTime: configuredEndTime, ...rest } = props;
+  // The schema cannot carry a "tomorrow" default: a time-based default value is
+  // recomputed on every module load, which makes the generated component
+  // manifest non-deterministic and its drift check unusable. An unconfigured
+  // timer instead falls back to one day from mount, held stable for the
+  // component's lifetime.
+  const [fallbackEndTime] = useState(() => Date.now() + ONE_DAY);
+  const endTime = Number.isFinite(configuredEndTime)
+    ? (configuredEndTime as number)
+    : fallbackEndTime;
+  const [remainingTime, setRemainingTime] = useState(
+    calculateRemainingTime(endTime),
+  );
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      const updatedTimeRemaining = calculateRemainingTime(endTime);
+      setRemainingTime(updatedTimeRemaining);
+      if (
+        updatedTimeRemaining.days <= 0 &&
+        updatedTimeRemaining.hours <= 0 &&
+        updatedTimeRemaining.minutes <= 0 &&
+        updatedTimeRemaining.seconds <= 0
+      ) {
+        clearInterval(intervalId);
+      }
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [endTime]);
+
+  return (
+    <ScrollReveal
+      {...rest}
+      className="countdown--timer flex py-3 text-(--timer-color) sm:py-0"
+      style={
+        {
+          "--timer-color": textColor,
+        } as CSSProperties
+      }
+    >
+      <div className="space-y-1">
+        <div className="flex items-center">
+          <h5 className="px-6 font-medium text-4xl leading-tight md:text-5xl">
+            {remainingTime?.days || 0}
+          </h5>
+          <div className="h-6 border-(--timer-color) border-r" />
+        </div>
+        <div className="text-center text-sm capitalize md:text-base">Days</div>
+      </div>
+      <div className="space-y-1">
+        <div className="flex items-center">
+          <h5 className="px-6 font-medium text-4xl leading-tight md:text-5xl">
+            {remainingTime?.hours || 0}
+          </h5>
+          <div className="h-6 border-(--timer-color) border-r" />
+        </div>
+        <div className="text-center text-sm capitalize md:text-base">hours</div>
+      </div>
+      <div className="space-y-1">
+        <div className="flex items-center">
+          <h5 className="px-6 font-medium text-4xl leading-tight md:text-5xl">
+            {remainingTime?.minutes || 0}
+          </h5>
+          <div className="h-6 border-(--timer-color) border-r" />
+        </div>
+        <div className="text-center text-sm capitalize md:text-base">
+          minutes
+        </div>
+      </div>
+      <div className="space-y-1">
+        <div className="flex items-center">
+          <h5 className="px-6 font-medium text-4xl leading-tight md:text-5xl">
+            {remainingTime?.seconds || 0}
+          </h5>
+        </div>
+        <div className="text-center text-sm capitalize md:text-base">
+          seconds
+        </div>
+      </div>
+    </ScrollReveal>
+  );
+}
+
+export default CountdownTimer;
+
+export const schema = createSchema({
+  type: "countdown--timer",
+  title: "Timer",
+  settings: [
+    {
+      group: "Timer",
+      inputs: [
+        {
+          type: "datepicker",
+          label: "End time",
+          name: "endTime",
+          helpText: "Defaults to one day from now until a date is chosen.",
+        },
+        {
+          type: "color",
+          name: "textColor",
+          label: "Text color",
+        },
+      ],
+    },
+  ],
+});

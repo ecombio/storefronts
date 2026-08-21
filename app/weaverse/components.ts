@@ -1,0 +1,188 @@
+import type { HydrogenComponent } from "@weaverse/hydrogen";
+import * as Heading from "~/components/heading";
+import * as Link from "~/components/link";
+import * as Paragraph from "~/components/paragraph";
+import * as Spacer from "~/components/spacer";
+import * as SubHeading from "~/components/subheading";
+import * as AllProducts from "~/sections/all-products";
+import * as AllProductsGrid from "~/sections/all-products/product-grid";
+import * as AllProductsToolbar from "~/sections/all-products/toolbar";
+import * as BlogPost from "~/sections/blog-post";
+import * as Blogs from "~/sections/blogs";
+import * as CollectionList from "~/sections/collection-list";
+import * as CollectionListItems from "~/sections/collection-list/collections-items";
+import * as ColumnsWithImages from "~/sections/columns-with-images";
+import * as ColumnWithImageItem from "~/sections/columns-with-images/column";
+import * as ColumnsWithImagesItems from "~/sections/columns-with-images/items";
+import * as ContactUs from "~/sections/contact-us";
+import * as MessageUsButton from "~/sections/contact-us/message-us-button";
+import * as Countdown from "~/sections/countdown";
+import * as CountDownTimer from "~/sections/countdown/timer";
+import * as FeaturedCollections from "~/sections/featured-collections";
+import * as FeaturedCollectionItems from "~/sections/featured-collections/collection-items";
+import * as FeaturedProducts from "~/sections/featured-products";
+import * as FeaturedProductItems from "~/sections/featured-products/product-items";
+import * as HeroImage from "~/sections/hero-image";
+import * as HeroVideo from "~/sections/hero-video";
+import * as Hotspots from "~/sections/hotspots";
+import * as HotspotsItem from "~/sections/hotspots/item";
+import * as ImageGallery from "~/sections/image-gallery";
+import * as ImageGalleryItem from "~/sections/image-gallery/image";
+import * as ImageGalleryItems from "~/sections/image-gallery/items";
+import * as ImageWithText from "~/sections/image-with-text";
+import * as ImageWithTextContent from "~/sections/image-with-text/content";
+import * as ImageWithTextImage from "~/sections/image-with-text/image";
+import * as JudgemeReview from "~/sections/judgeme-reviews";
+import * as JudgemeReviewList from "~/sections/judgeme-reviews/review-list";
+import * as JudgemeReviewSummary from "~/sections/judgeme-reviews/review-summary";
+import * as MainCollection from "~/sections/main-collection";
+import * as CollectionHeader from "~/sections/main-collection/collection-header";
+import * as CollectionContent from "~/sections/main-collection/content";
+import * as CollectionFilters from "~/sections/main-collection/filters";
+import * as ProductGrid from "~/sections/main-collection/product-grid";
+import * as CollectionToolbar from "~/sections/main-collection/toolbar";
+import * as MainProduct from "~/sections/main-product";
+import * as ProductBuyButtons from "~/sections/main-product/buy-buttons";
+import * as JudgemeStarsRating from "~/sections/main-product/judgeme-stars-rating";
+import * as ProductAvailability from "~/sections/main-product/product-availability";
+import * as ProductBadges from "~/sections/main-product/product-badges";
+import * as ProductBreadcrumb from "~/sections/main-product/product-breadcrumb";
+import * as ProductBundledVariants from "~/sections/main-product/product-bundled-variants";
+import * as ProductCollapsibleDetails from "~/sections/main-product/product-collapsible-details";
+import * as ProductEstimatedDelivery from "~/sections/main-product/product-estimated-delivery";
+import * as ProductHighlightItem from "~/sections/main-product/product-highlight-item";
+import * as ProductHighlights from "~/sections/main-product/product-highlights";
+import * as ProductInfoSection from "~/sections/main-product/product-info";
+import * as ProductMediaSection from "~/sections/main-product/product-media";
+import * as ProductPrices from "~/sections/main-product/product-prices";
+import * as ProductPromoText from "~/sections/main-product/product-promo-text";
+import * as ProductQuantitySelector from "~/sections/main-product/product-quantity-selector";
+import * as ProductSummary from "~/sections/main-product/product-summary";
+import * as ProductTitle from "~/sections/main-product/product-title";
+import * as ProductVariantSelector from "~/sections/main-product/product-variant-selector";
+import * as ProductVendor from "~/sections/main-product/product-vendor";
+import * as MapSection from "~/sections/map";
+import * as NewsLetter from "~/sections/newsletter";
+import * as NewsLetterForm from "~/sections/newsletter/newsletter-form";
+import * as OurTeam from "~/sections/our-team";
+import * as OurTeamMembers from "~/sections/our-team/team-members";
+import * as Page from "~/sections/page";
+import * as PromotionGrid from "~/sections/promotion-grid";
+import * as PromotionGridButtons from "~/sections/promotion-grid/buttons";
+import * as PromotionGridItem from "~/sections/promotion-grid/item";
+import * as RelatedArticles from "~/sections/related-articles";
+import * as RelatedProducts from "~/sections/related-products";
+import * as RelatedProductsItems from "~/sections/related-products/items";
+import * as SingleProduct from "~/sections/single-product";
+import * as SlideShow from "~/sections/slideshow";
+import * as SlideShowSlide from "~/sections/slideshow/slide";
+import * as Testimonial from "~/sections/testimonials";
+import * as TestimonialItem from "~/sections/testimonials/item";
+import * as TestimonialItems from "~/sections/testimonials/items";
+import * as VideoEmbed from "~/sections/video-embed";
+import * as VideoEmbedItem from "~/sections/video-embed/video";
+
+export const components: HydrogenComponent[] = [
+  SubHeading,
+  Heading,
+  Paragraph,
+  Link,
+  // AliReview,
+  // AliReviewList,
+  AllProducts,
+  AllProductsToolbar,
+  AllProductsGrid,
+  FeaturedCollections,
+  FeaturedCollectionItems,
+  BlogPost,
+  Blogs,
+  Page,
+  VideoEmbed,
+  VideoEmbedItem,
+  HeroImage,
+  ImageWithText,
+  ImageWithTextContent,
+  ImageWithTextImage,
+  ColumnsWithImages,
+  ColumnsWithImagesItems,
+  ColumnWithImageItem,
+  HeroVideo,
+  MapSection,
+  PromotionGrid,
+  PromotionGridItem,
+  PromotionGridButtons,
+  Hotspots,
+  HotspotsItem,
+  Countdown,
+  CountDownTimer,
+  NewsLetter,
+  NewsLetterForm,
+  ContactUs,
+  MessageUsButton,
+  FeaturedProducts,
+  FeaturedProductItems,
+  Testimonial,
+  TestimonialItems,
+  TestimonialItem,
+  ImageGallery,
+  ImageGalleryItems,
+  ImageGalleryItem,
+  MainProduct,
+  ProductMediaSection,
+  ProductInfoSection,
+  ProductBreadcrumb,
+  ProductAvailability,
+  ProductBadges,
+  ProductVendor,
+  ProductTitle,
+  ProductPrices,
+  ProductPromoText,
+  ProductSummary,
+  ProductBundledVariants,
+  ProductVariantSelector,
+  ProductQuantitySelector,
+  ProductBuyButtons,
+  ProductCollapsibleDetails,
+  ProductEstimatedDelivery,
+  ProductHighlights,
+  ProductHighlightItem,
+  RelatedProducts,
+  RelatedProductsItems,
+  RelatedArticles,
+  MainCollection,
+  CollectionHeader,
+  CollectionToolbar,
+  CollectionContent,
+  CollectionFilters,
+  ProductGrid,
+  CollectionList,
+  CollectionListItems,
+  SingleProduct,
+  JudgemeStarsRating,
+  JudgemeReview,
+  JudgemeReviewSummary,
+  JudgemeReviewList,
+  OurTeam,
+  OurTeamMembers,
+  SlideShow,
+  SlideShowSlide,
+  Spacer,
+];
+
+// Universal children: types that can be dropped into ANY container (a parent —
+// i.e. any component that declares `childTypes`), but never into last-level leaf
+// items (components with no `childTypes`). Add a `type` here to make it available
+// inside every current and future parent without editing each schema by hand.
+const UNIVERSAL_CHILD_TYPES = ["spacer"];
+for (let component of components) {
+  let { childTypes } = component.schema;
+  if (!Array.isArray(childTypes)) {
+    continue;
+  }
+  for (let type of UNIVERSAL_CHILD_TYPES) {
+    // Skip self so a universal child can't be nested inside itself.
+    if (component.schema.type !== type && !childTypes.includes(type)) {
+      childTypes.push(type);
+    }
+  }
+}

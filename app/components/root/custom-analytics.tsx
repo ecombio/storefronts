@@ -1,0 +1,124 @@
+import {
+  AnalyticsEvent,
+  type CartUpdatePayload,
+  type PageViewPayload,
+  type ProductViewPayload,
+  useAnalytics,
+  useNonce,
+} from "@shopify/hydrogen";
+import { useEffect } from "react";
+import { useRouteLoaderData } from "react-router";
+import type { RootLoader } from "~/root";
+
+export function CustomAnalytics() {
+  let { subscribe } = useAnalytics();
+  let nonce = useNonce();
+  let rootData = useRouteLoaderData<RootLoader>("root");
+  let id = rootData?.googleGtmID;
+
+  useEffect(() => {
+    // Queue immediately; GTM network loading is intentionally delayed below.
+    // This prevents early Hydrogen analytics events from being dropped.
+    window.dataLayer = window.dataLayer || [];
+  }, []);
+  useEffect(() => {
+    subscribe(AnalyticsEvent.PAGE_VIEWED, (data: PageViewPayload) => {
+      window.dataLayer?.push({
+        event: "page_viewed",
+        page_url: data.url,
+      });
+    });
+    subscribe(AnalyticsEvent.PRODUCT_VIEWED, (data: ProductViewPayload) => {
+      window.dataLayer?.push({
+        event: "product_viewed",
+        product_id: data.products?.[0]?.id,
+        product_name: data.products?.[0]?.title,
+        product_price: data.products?.[0]?.price,
+        product_url: data.products?.[0]?.url,
+      });
+    });
+    subscribe(AnalyticsEvent.COLLECTION_VIEWED, (data) => {
+      window.dataLayer?.push({
+        event: "collection_viewed",
+        collection_handle: data.collection?.handle,
+      });
+    });
+    subscribe(AnalyticsEvent.CART_UPDATED, (data: CartUpdatePayload) => {
+      window.dataLayer?.push({
+        event: "cart_updated",
+        cart_id: data.cart?.id,
+        cart_total: data.cart?.cost?.totalAmount?.amount,
+        cart_total_quantity: data.cart?.totalQuantity,
+      });
+    });
+    subscribe(AnalyticsEvent.PRODUCT_ADD_TO_CART, (_data) => {
+      window.dataLayer?.push({ event: "add_to_cart" });
+    });
+    subscribe(AnalyticsEvent.PRODUCT_REMOVED_FROM_CART, (_data) => {
+      window.dataLayer?.push({ event: "remove_from_cart" });
+    });
+    subscribe(AnalyticsEvent.SEARCH_VIEWED, (_data) => {
+      window.dataLayer?.push({ event: "search_viewed" });
+    });
+  }, [subscribe]);
+
+  useEffect(() => {
+    if (!id) {
+      return;
+    }
+
+    window.dataLayer = window.dataLayer || [];
+
+    let didLoad = false;
+    let fallbackTimer: number | undefined;
+    let cleanupEvents: (() => void) | undefined;
+
+    function loadGtm() {
+      if (didLoad) {
+        return;
+      }
+      didLoad = true;
+      cleanupEvents?.();
+      if (fallbackTimer) {
+        window.clearTimeout(fallbackTimer);
+      }
+
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ "gtm.start": Date.now(), event: "gtm.js" });
+      window.dataLayer.push(["js", new Date()]);
+      window.dataLayer.push(["config", id]);
+
+      const script = document.createElement("script");
+      script.async = true;
+      script.nonce = nonce;
+      script.src = `https://www.googletagmanager.com/gtm.js?id=${encodeURIComponent(id)}`;
+      document.head.appendChild(script);
+    }
+
+    const intentEvents = ["pointerdown", "keydown", "touchstart", "scroll"];
+    for (const event of intentEvents) {
+      window.addEventListener(event, loadGtm, {
+        once: true,
+        passive: true,
+      });
+    }
+    cleanupEvents = () => {
+      for (const event of intentEvents) {
+        window.removeEventListener(event, loadGtm);
+      }
+    };
+
+    // Long-tail fallback: keep analytics for no-interaction page views, but
+    // keep GTM out of the initial render/LCP window. User intent loads sooner.
+    fallbackTimer = window.setTimeout(loadGtm, 8000);
+
+    return () => {
+      cleanupEvents?.();
+      if (fallbackTimer) {
+        window.clearTimeout(fallbackTimer);
+      }
+    };
+  }, [id, nonce]);
+
+  return null;
+}

@@ -1,0 +1,289 @@
+import {
+  createSchema,
+  type HydrogenComponentProps,
+  type InspectorGroup,
+  useThemeSettings,
+} from "@weaverse/hydrogen";
+import { cva, type VariantProps } from "class-variance-authority";
+import type { HTMLAttributes } from "react";
+import {
+  Link as RemixLink,
+  type LinkProps as RemixLinkProps,
+  useRouteLoaderData,
+} from "react-router";
+import { ScrollReveal } from "~/components/scroll-reveal";
+import type { RootLoader } from "~/root";
+import type { ThemeSettings } from "~/types/weaverse";
+import { cn } from "~/utils/cn";
+
+export const variants = cva(["inline-flex rounded-md transition-colors"], {
+  variants: {
+    variant: {
+      primary: [
+        "border px-4 py-3 font-semibold",
+        "text-(--btn-primary-text)",
+        "bg-(--btn-primary-bg)",
+        "border-(--btn-primary-bg)",
+        "hover:bg-(--btn-primary-bg-hover)",
+        "hover:border-(--btn-primary-bg-hover)",
+      ],
+      secondary: [
+        "border px-4 py-3 font-semibold",
+        "text-(--btn-secondary-text)",
+        "bg-(--btn-secondary-bg)",
+        "border-(--btn-secondary-bg)",
+        "hover:bg-(--btn-secondary-bg-hover)",
+        "hover:border-(--btn-secondary-bg-hover)",
+      ],
+      outline: [
+        "border px-4 py-3 font-semibold",
+        "text-(--btn-outline-text)",
+        "bg-transparent",
+        "border-(--btn-outline-text)",
+        "hover:bg-(--btn-outline-bg-hover)",
+      ],
+      custom: [
+        "border px-4 py-3 font-semibold",
+        "text-(--btn-text)",
+        "bg-(--btn-bg)",
+        "border-(--btn-border)",
+        "hover:text-(--btn-text-hover)",
+        "hover:bg-(--btn-bg-hover)",
+        "hover:border-(--btn-border-hover)",
+      ],
+      underline: [
+        "relative bg-transparent pb-1 text-body",
+        "after:absolute after:bottom-0.5 after:left-0 after:h-px after:w-full after:bg-body",
+        "after:origin-right after:scale-x-100 after:transition-transform",
+        "hover:after:origin-left hover:after:animate-underline-toggle",
+      ],
+    },
+  },
+});
+
+export interface LinkStyles {
+  backgroundColor: string;
+  textColor: string;
+  borderColor: string;
+  backgroundColorHover: string;
+  textColorHover: string;
+  borderColorHover: string;
+}
+
+export interface LinkData
+  extends RemixLinkProps,
+    Partial<LinkStyles>,
+    VariantProps<typeof variants> {
+  text?: string;
+}
+
+export interface LinkProps
+  extends HTMLAttributes<HTMLAnchorElement>,
+    Partial<Omit<HydrogenComponentProps, "children">>,
+    LinkData {
+  animate?: boolean;
+}
+
+function checkExternal(to: LinkProps["to"]) {
+  if (typeof to === "string") {
+    // Check if it's a full URL with protocol
+    return /^https?:\/\//.test(to) || /^mailto:/.test(to) || /^tel:/.test(to);
+  }
+  if (typeof to === "object" && to.pathname) {
+    // For object syntax, only check if pathname looks like an external URL
+    return /^https?:\/\//.test(to.pathname);
+  }
+  return false;
+}
+
+function useHrefWithLocale(href: LinkProps["to"]) {
+  const rootData = useRouteLoaderData<RootLoader>("root");
+  const selectedLocale = rootData?.selectedLocale;
+
+  const isExternal = checkExternal(href);
+  if (isExternal) {
+    return href;
+  }
+
+  let toWithLocale = href;
+  if (
+    typeof toWithLocale === "string" &&
+    selectedLocale?.pathPrefix &&
+    !toWithLocale.toLowerCase().startsWith(selectedLocale.pathPrefix)
+  ) {
+    toWithLocale = `${selectedLocale.pathPrefix}${href}`;
+  }
+
+  return toWithLocale;
+}
+
+/**
+ * In our app, we've chosen to wrap Remix's `Link` component to add
+ * helper functionality. If the `to` value is a string (not object syntax),
+ * we prefix the locale to the path if there is one.
+ *
+ * You could implement the same behavior throughout your app using the
+ * Remix-native nested routes. However, your route and component structure
+ * changes the level of nesting required to get the locale into the route,
+ * which may not be ideal for shared components or layouts.
+ *
+ * Likewise, your internationalization strategy may not require a locale
+ * in the pathname and instead rely on a domain, cookie, or header.
+ *
+ * Ultimately, it is up to you to decide how to implement this behavior.
+ */
+export function Link(props: LinkProps) {
+  let {
+    to,
+    text,
+    variant,
+    className,
+    style,
+    textColor,
+    backgroundColor,
+    borderColor,
+    textColorHover,
+    backgroundColorHover,
+    borderColorHover,
+    children,
+    target,
+    animate = true,
+    ...rest
+  } = props;
+  const { enableViewTransition } = useThemeSettings<ThemeSettings>();
+  const href = useHrefWithLocale(to);
+
+  if (variant === "custom") {
+    style = {
+      ...style,
+      "--btn-text": textColor,
+      "--btn-bg": backgroundColor,
+      "--btn-border": borderColor,
+      "--btn-bg-hover": backgroundColorHover,
+      "--btn-text-hover": textColorHover,
+      "--btn-border-hover": borderColorHover,
+    } as React.CSSProperties;
+  }
+
+  if (!(children || text)) {
+    return null;
+  }
+
+  const isExternal = checkExternal(href);
+  const linkProps = {
+    viewTransition: enableViewTransition,
+    to: href,
+    style,
+    className: cn(variants({ variant }), className),
+    target: target !== undefined ? target : isExternal ? "_blank" : undefined,
+    ...rest,
+  };
+
+  if (animate) {
+    return (
+      <ScrollReveal as={RemixLink} {...linkProps}>
+        {children || text}
+      </ScrollReveal>
+    );
+  }
+
+  return <RemixLink {...linkProps}>{children || text}</RemixLink>;
+}
+
+export default Link;
+
+export const linkContentInputs: InspectorGroup["inputs"] = [
+  {
+    type: "text",
+    name: "text",
+    label: "Text content",
+    defaultValue: "Shop now",
+    placeholder: "Shop now",
+  },
+  {
+    type: "url",
+    name: "to",
+    label: "Link to",
+    defaultValue: "/products",
+    placeholder: "/products",
+  },
+  {
+    type: "select",
+    name: "variant",
+    label: "Variant",
+    configs: {
+      options: [
+        { label: "Primary", value: "primary" },
+        { label: "Secondary", value: "secondary" },
+        { label: "Outline", value: "outline-solid" },
+        { label: "Underline", value: "underline" },
+        { label: "Custom styles", value: "custom" },
+      ],
+    },
+    defaultValue: "primary",
+  },
+];
+export const linkStylesInputs: InspectorGroup["inputs"] = [
+  {
+    type: "color",
+    label: "Background color",
+    name: "backgroundColor",
+    defaultValue: "#000",
+    condition: (data: LinkData) => data.variant === "custom",
+  },
+  {
+    type: "color",
+    label: "Text color",
+    name: "textColor",
+    defaultValue: "#fff",
+    condition: (data: LinkData) => data.variant === "custom",
+  },
+  {
+    type: "color",
+    label: "Border color",
+    name: "borderColor",
+    defaultValue: "#00000000",
+    condition: (data: LinkData) => data.variant === "custom",
+  },
+  {
+    type: "color",
+    label: "Background color (hover)",
+    name: "backgroundColorHover",
+    defaultValue: "#00000000",
+    condition: (data: LinkData) => data.variant === "custom",
+  },
+  {
+    type: "color",
+    label: "Text color (hover)",
+    name: "textColorHover",
+    defaultValue: "#000",
+    condition: (data: LinkData) => data.variant === "custom",
+  },
+  {
+    type: "color",
+    label: "Border color (hover)",
+    name: "borderColorHover",
+    defaultValue: "#000",
+    condition: (data: LinkData) => data.variant === "custom",
+  },
+];
+
+export const linkInputs: InspectorGroup["inputs"] = [
+  ...linkContentInputs,
+  {
+    type: "heading",
+    label: "Button custom styles",
+  },
+  ...linkStylesInputs,
+];
+
+export const schema = createSchema({
+  type: "button",
+  title: "Button",
+  settings: [
+    {
+      group: "Button",
+      inputs: linkInputs,
+    },
+  ],
+});
