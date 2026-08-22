@@ -16,13 +16,16 @@ import {AnnouncementBar} from './AnnouncementBar';
 export {AnnouncementBar} from './AnnouncementBar';
 import {UtilityBar} from './UtilityBar';
 export {UtilityBar} from './UtilityBar';
-import {LOGO_SRC, TRENDING_SEARCH_TERMS} from './Header.constants';
+import {LOGO_SRC, TRENDING_SEARCH_TERMS, type CollectionImage} from './Header.constants';
 
 export interface HeaderProps {
   header: HeaderQuery;
   cart: Promise<CartApiQueryFragment | null>;
   isLoggedIn: Promise<boolean>;
   publicStoreDomain: string;
+  // Keyed by collection resourceId (gid). See the wiring note above
+  // MENU_COLLECTION_IMAGES_QUERY in Header.constants.ts.
+  collectionImages?: Record<string, CollectionImage>;
 }
 
 export type Viewport = 'desktop' | 'mobile';
@@ -32,6 +35,7 @@ export function Header({
   isLoggedIn,
   cart,
   publicStoreDomain,
+  collectionImages,
 }: HeaderProps) {
   const {shop, menu} = header;
   // Anchors the search dropdown so it renders directly beneath this bar
@@ -59,6 +63,7 @@ export function Header({
         viewport="desktop"
         primaryDomainUrl={header.shop.primaryDomain.url}
         publicStoreDomain={publicStoreDomain}
+        collectionImages={collectionImages}
       />
     </header>
   );

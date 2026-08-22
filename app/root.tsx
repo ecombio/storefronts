@@ -12,7 +12,8 @@ import {
 } from 'react-router';
 import type {Route} from './+types/root';
 import favicon from '~/assets/favicon.svg';
-import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
+import {HEADER_QUERY} from '~/lib/fragments';
+import {FOOTER_QUERY} from '~/components/Footer';
 import resetStyles from '~/styles/reset.css?url';
 import appStyles from '~/styles/app.css?url';
 import tailwindCss from './styles/tailwind.css?url';
@@ -122,12 +123,17 @@ async function loadCriticalData({context}: Route.LoaderArgs) {
 function loadDeferredData({context}: Route.LoaderArgs) {
   const {storefront, customerAccount, cart} = context;
 
-  // defer the footer query (below the fold)
+  // Defer the footer query (below the fold). Resolves to `{ menu, policiesMenu }` —
+  // `menu` carries the footer's column links (handle: footer), and `policiesMenu`
+  // carries the flat legal-links row at the bottom (handle: policies), fully
+  // editable from Admin > Content > Menus > Store Policy. <Footer> destructures
+  // both directly off the resolved value.
   const footer = storefront
     .query(FOOTER_QUERY, {
       cache: storefront.CacheLong(),
       variables: {
         footerMenuHandle: 'footer', // Adjust to your footer menu handle
+        policiesMenuHandle: 'policies', // Store Policy menu — Admin > Content > Menus
       },
     })
     .catch((error: Error) => {

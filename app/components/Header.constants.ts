@@ -115,9 +115,61 @@ export const TRENDING_SEARCH_TERMS = [
 // so moving diagonally from the link down into the panel doesn't close it.
 export const MEGA_MENU_CLOSE_DELAY = 150;
 
-// Real collection images from the live site, keyed by menu item title.
-// Swap this for `image { url altText }` on the header GraphQL query once
-// that's wired up server-side — this is a stopgap so visuals match today.
+// ─────────────────────────────────────────────────────────────────────────
+// Submenu images — real collection images, fetched by resourceId
+// ─────────────────────────────────────────────────────────────────────────
+// Menu items already carry a `resourceId` (see the `PAGE` entry in
+// FALLBACK_HEADER_MENU below) whenever the Shopify Admin menu editor links
+// them directly to a resource — a Collection, in the "Electric Bikes"
+// submenu's case. Query those collections' real images by id in the root
+// loader (alongside the header menu query) and pass the result down as the
+// `collectionImages` prop threaded through Header -> HeaderMenu. That's now
+// the primary image source for the showcase panel's category cards.
+//
+// Example root loader wiring:
+//
+//   const collectionIds = menu.items
+//     .flatMap((item) => item.items ?? [])
+//     .map((item) => item.resourceId)
+//     .filter((id): id is string => Boolean(id) && id.includes('/Collection/'));
+//
+//   const collectionImages = collectionIds.length
+//     ? await context.storefront
+//         .query(MENU_COLLECTION_IMAGES_QUERY, {variables: {ids: collectionIds}})
+//         .then((data) =>
+//           Object.fromEntries(
+//             data.nodes
+//               .filter((n): n is {id: string; image: CollectionImage | null} => n != null && 'image' in n)
+//               .filter((n) => n.image)
+//               .map((n) => [n.id, n.image as CollectionImage]),
+//           ),
+//         )
+//     : {};
+//
+// Then: <Header ... collectionImages={collectionImages} />
+export const MENU_COLLECTION_IMAGES_QUERY = `#graphql
+  query MenuCollectionImages($ids: [ID!]!, $country: CountryCode, $language: LanguageCode)
+    @inContext(country: $country, language: $language) {
+    nodes(ids: $ids) {
+      ... on Collection {
+        id
+        image {
+          url
+          altText
+        }
+      }
+    }
+  }
+` as const;
+
+export interface CollectionImage {
+  url: string;
+  altText: string | null;
+}
+
+// Static fallback, keyed by menu item title — used only when a submenu
+// item doesn't resolve to a live collection image (a custom link, a page,
+// or a collection with no image set in the Admin).
 export const SUBMENU_IMAGES: Record<string, string> = {
   'Electric Cargo Bikes':
     '//ecombio.com/cdn/shop/collections/fiido-t3-two-people-riding_1.webp?v=1784397522&width=300',
@@ -139,11 +191,30 @@ export const SUBMENU_IMAGES: Record<string, string> = {
     '//ecombio.com/cdn/shop/collections/Youth_E-Scooters.png?v=1780540329&width=300',
 };
 
-// "Good to know" sidebar tips shown in a mega menu panel, keyed by the
-// top-level menu item title.
-export const MEGA_MENU_TIPS: Record<string, string[]> = {
-  'Electric Scooters': ['Trade-in: Get up to $700 for your old device'],
+// "Good to know" sidebar tips shown in a showcase panel, keyed by the
+// top-level menu item title. Mirrors sections/showcase-block.liquid's
+// tip_1..tip_3 (icon/heading/body) settings.
+export interface ShowcaseTip {
+  icon?: string; // 'truck' | 'shield' | 'gift' | 'clock' | 'return' | 'tag' | ...
+  heading: string;
+  body?: string;
+}
+
+export const SHOWCASE_TIPS: Record<string, ShowcaseTip[]> = {
+  'Electric Scooters': [
+    {
+      icon: 'tag',
+      heading: 'Trade-in',
+      body: 'Get up to $700 for your old device',
+    },
+  ],
 };
+
+// Optional "See all" link override per top-level item, keyed by title.
+// Falls back to the item's own resolved url + a generic "See all" label
+// when not set here, mirroring showcase-block.liquid's see_all_link /
+// see_all_label settings.
+export const SHOWCASE_SEE_ALL: Record<string, {label?: string; link?: string}> = {};
 
 export const FALLBACK_HEADER_MENU = {
   id: 'gid://shopify/Menu/199655587896',
