@@ -1,175 +1,140 @@
-import {Link, useLoaderData} from 'react-router';
-import type {Route} from './+types/blogs.$blogHandle._index';
-import {Image, getPaginationVariables} from '@shopify/hydrogen';
-import type {ArticleItemFragment} from 'storefrontapi.generated';
-import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
-import {redirectIfHandleIsLocalized} from '~/lib/redirect';
+import {Link} from 'react-router';
+import blogCategoryStyles from '~/styles/blog-category.css?url';
 
-export const meta: Route.MetaFunction = ({data}) => {
-  return [{title: `Hydrogen | ${data?.blog.title ?? ''} blog`}];
-};
-
-export async function loader(args: Route.LoaderArgs) {
-  // Start fetching non-critical data without blocking time to first byte
-  const deferredData = loadDeferredData(args);
-
-  // Await the critical data required to render initial state of the page
-  const criticalData = await loadCriticalData(args);
-
-  return {...deferredData, ...criticalData};
+export function links() {
+  return [{rel: 'stylesheet', href: blogCategoryStyles}];
 }
 
-/**
- * Load data necessary for rendering content above the fold. This is the critical data
- * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
- */
-async function loadCriticalData({context, request, params}: Route.LoaderArgs) {
-  const paginationVariables = getPaginationVariables(request, {
-    pageBy: 4,
-  });
-
-  if (!params.blogHandle) {
-    throw new Response(`blog not found`, {status: 404});
-  }
-
-  const [{blog}] = await Promise.all([
-    context.storefront.query(BLOGS_QUERY, {
-      variables: {
-        blogHandle: params.blogHandle,
-        ...paginationVariables,
-      },
-    }),
-    // Add other queries here, so that they are loaded in parallel
-  ]);
-
-  if (!blog?.articles) {
-    throw new Response('Not found', {status: 404});
-  }
-
-  redirectIfHandleIsLocalized(request, {handle: params.blogHandle, data: blog});
-
-  return {blog};
+export function meta() {
+  return [{title: 'Hydrogen | Category'}];
 }
 
-/**
- * Load data for rendering content below the fold. This data is deferred and will be
- * fetched after the initial page load. If it's unavailable, the page should still 200.
- * Make sure to not throw any errors here, as it will cause the page to 500.
- */
-function loadDeferredData({context}: Route.LoaderArgs) {
-  return {};
-}
+// STATIC PLACEHOLDER DATA — replace with real Shopify article data later.
+// Each post is shaped close to what the Storefront API's Article object
+// returns, so swapping this out for a real loader() later is a drop-in.
+const PLACEHOLDER_POSTS = [
+  {
+    handle: 'best-electric-bikes-guide',
+    title: 'Top Electric Bikes for Every Rider',
+    excerpt:
+      'From commuter to cargo to trail, here is how to actually pick the right e-bike for how you ride.',
+    image: 'https://placehold.co/1200x700/1a1a1a/ffffff?text=Featured+Post',
+    tag: 'Buying Guides',
+    publishedAt: '2026-05-19',
+  },
+  {
+    handle: 'ecombio',
+    title: 'The Ecombio Story',
+    excerpt: 'Why we started, what we stand for, and where we are headed.',
+    image: 'https://placehold.co/800x600/e5e5e5/1a1a1a?text=Post+2',
+    tag: 'Brand',
+    publishedAt: '2026-08-22',
+  },
+  {
+    handle: 'placeholder-post-3',
+    title: 'Placeholder Post Title Three',
+    excerpt: 'Short placeholder excerpt text for the third card in the grid.',
+    image: 'https://placehold.co/800x600/e5e5e5/1a1a1a?text=Post+3',
+    tag: 'Guides',
+    publishedAt: '2026-08-01',
+  },
+  {
+    handle: 'placeholder-post-4',
+    title: 'Placeholder Post Title Four',
+    excerpt: 'Short placeholder excerpt text for the fourth card in the grid.',
+    image: 'https://placehold.co/800x600/e5e5e5/1a1a1a?text=Post+4',
+    tag: 'Guides',
+    publishedAt: '2026-07-15',
+  },
+  {
+    handle: 'placeholder-post-5',
+    title: 'Placeholder Post Title Five',
+    excerpt: 'Short placeholder excerpt text for the fifth card in the grid.',
+    image: 'https://placehold.co/800x600/e5e5e5/1a1a1a?text=Post+5',
+    tag: 'Tips',
+    publishedAt: '2026-06-30',
+  },
+  {
+    handle: 'placeholder-post-6',
+    title: 'Placeholder Post Title Six',
+    excerpt: 'Short placeholder excerpt text for the sixth card in the grid.',
+    image: 'https://placehold.co/800x600/e5e5e5/1a1a1a?text=Post+6',
+    tag: 'Tips',
+    publishedAt: '2026-06-10',
+  },
+];
 
-export default function Blog() {
-  const {blog} = useLoaderData<typeof loader>();
-  const {articles} = blog;
+const CATEGORY_TITLE = 'Category';
+const CATEGORY_TAGS = ['All', 'Buying Guides', 'Brand', 'Guides', 'Tips'];
+
+export default function BlogCategory() {
+  const [featured, ...rest] = PLACEHOLDER_POSTS;
 
   return (
-    <div className="blog">
-      <h1>{blog.title}</h1>
-      <div className="blog-grid">
-        <PaginatedResourceSection<ArticleItemFragment> connection={articles}>
-          {({node: article, index}) => (
-            <ArticleItem
-              article={article}
-              key={article.id}
-              loading={index < 2 ? 'eager' : 'lazy'}
-            />
-          )}
-        </PaginatedResourceSection>
+    <div className="blog-category">
+      {/* Hero */}
+      <section className="blog-category__hero">
+        <h1>{CATEGORY_TITLE}</h1>
+        <p>Guides, stories, and updates — placeholder subtitle text.</p>
+      </section>
+
+      {/* Category pills (static for now, non-functional) */}
+      <nav className="blog-category__tags" aria-label="Filter by tag">
+        {CATEGORY_TAGS.map((tag) => (
+          <span key={tag} className="blog-category__tag">
+            {tag}
+          </span>
+        ))}
+      </nav>
+
+      {/* Featured post */}
+      <Link
+        to={`/blogs/category/${featured.handle}`}
+        className="featured-post"
+      >
+        <div className="featured-post__image">
+          <img src={featured.image} alt={featured.title} />
+        </div>
+        <div className="featured-post__body">
+          <span className="post-tag">{featured.tag}</span>
+          <h2>{featured.title}</h2>
+          <p>{featured.excerpt}</p>
+          <time dateTime={featured.publishedAt}>
+            {formatDate(featured.publishedAt)}
+          </time>
+        </div>
+      </Link>
+
+      {/* Grid */}
+      <div className="blog-category__grid">
+        {rest.map((post) => (
+          <Link
+            key={post.handle}
+            to={`/blogs/category/${post.handle}`}
+            className="post-card"
+          >
+            <div className="post-card__image">
+              <img src={post.image} alt={post.title} />
+            </div>
+            <div className="post-card__body">
+              <span className="post-tag">{post.tag}</span>
+              <h3>{post.title}</h3>
+              <p>{post.excerpt}</p>
+              <time dateTime={post.publishedAt}>
+                {formatDate(post.publishedAt)}
+              </time>
+            </div>
+          </Link>
+        ))}
       </div>
     </div>
   );
 }
 
-function ArticleItem({
-  article,
-  loading,
-}: {
-  article: ArticleItemFragment;
-  loading?: HTMLImageElement['loading'];
-}) {
-  const publishedAt = new Intl.DateTimeFormat('en-US', {
+function formatDate(dateString: string) {
+  return new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
-  }).format(new Date(article.publishedAt!));
-  return (
-    <div className="blog-article" key={article.id}>
-      <Link to={`/blogs/${article.blog.handle}/${article.handle}`}>
-        {article.image && (
-          <div className="blog-article-image">
-            <Image
-              alt={article.image.altText || article.title}
-              aspectRatio="3/2"
-              data={article.image}
-              loading={loading}
-              sizes="(min-width: 768px) 50vw, 100vw"
-            />
-          </div>
-        )}
-        <h3>{article.title}</h3>
-        <small>{publishedAt}</small>
-      </Link>
-    </div>
-  );
+  }).format(new Date(dateString));
 }
-
-// NOTE: https://shopify.dev/docs/api/storefront/latest/objects/blog
-const BLOGS_QUERY = `#graphql
-  query Blog(
-    $language: LanguageCode
-    $blogHandle: String!
-    $first: Int
-    $last: Int
-    $startCursor: String
-    $endCursor: String
-  ) @inContext(language: $language) {
-    blog(handle: $blogHandle) {
-      title
-      handle
-      seo {
-        title
-        description
-      }
-      articles(
-        first: $first,
-        last: $last,
-        before: $startCursor,
-        after: $endCursor
-      ) {
-        nodes {
-          ...ArticleItem
-        }
-        pageInfo {
-          hasPreviousPage
-          hasNextPage
-          hasNextPage
-          endCursor
-          startCursor
-        }
-
-      }
-    }
-  }
-  fragment ArticleItem on Article {
-    author: authorV2 {
-      name
-    }
-    contentHtml
-    handle
-    id
-    image {
-      id
-      altText
-      url
-      width
-      height
-    }
-    publishedAt
-    title
-    blog {
-      handle
-    }
-  }
-` as const;

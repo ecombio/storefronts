@@ -19,6 +19,37 @@ export default async function handleRequest(
       checkoutDomain: context.env.PUBLIC_CHECKOUT_DOMAIN,
       storeDomain: context.env.PUBLIC_STORE_DOMAIN,
     },
+    scriptSrc: [
+      "'self'",
+      'https://cdn.shopify.com',
+      'https://cdn-widgetsrepository.yotpo.com',
+    ],
+    // The Yotpo widget script loads via scriptSrc above, but it then
+    // makes its own fetch() calls for ratings/reviews data and beacon
+    // analytics, plus loads fonts/styles from a separate Yotpo domain.
+    // Those are governed by these directives, not scriptSrc.
+    connectSrc: [
+      "'self'",
+      'https://api-cdn.yotpo.com',
+      'https://api.yotpo.com',
+      'https://staticw2.yotpo.com',
+    ],
+    styleSrc: [
+      "'self'",
+      "'unsafe-inline'",
+      'https://cdn-widgetsrepository.yotpo.com',
+      'https://staticw2.yotpo.com',
+    ],
+    fontSrc: [
+      "'self'",
+      'https://staticw2.yotpo.com',
+    ],
+    imgSrc: [
+      "'self'",
+      'https://cdn.shopify.com',
+      'https://staticw2.yotpo.com',
+      'https://api-cdn.yotpo.com',
+    ],
   });
 
   const body = await renderToReadableStream(

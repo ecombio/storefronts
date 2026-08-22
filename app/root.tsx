@@ -1,4 +1,4 @@
-import {Analytics, getShopAnalytics, useNonce} from '@shopify/hydrogen';
+import {Analytics, Script, getShopAnalytics, useNonce} from '@shopify/hydrogen';
 import {
   Outlet,
   useRouteError,
@@ -161,6 +161,11 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={appStyles}></link>
         <Meta />
         <Links />
+        <Script
+          src="https://cdn-widgetsrepository.yotpo.com/v1/loader/GVq3qDsSZ94vLoElcTQgzekz90KJDVehGX1oASx7"
+          async
+          nonce={nonce}
+        />
       </head>
       <body>
         {children}

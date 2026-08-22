@@ -1,8 +1,8 @@
 import {Suspense, useEffect, useRef, useState} from 'react';
-import type {RefObject} from 'react';
-import {createPortal} from 'react-dom';
-import {Await, NavLink, useAsyncValue} from 'react-router';
+import {Await, Link, NavLink, useAsyncValue} from 'react-router';
 import {
+  Image,
+  Money,
   type CartViewPayload,
   useAnalytics,
   useOptimisticCart,
@@ -10,6 +10,9 @@ import {
 import {User, Search, Mic, ShoppingBag, X} from 'lucide-react';
 import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
 import {useAside} from '~/components/Aside';
+import {SearchFormPredictive} from '~/components/SearchFormPredictive';
+import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
+import {urlWithTrackingParams} from '~/lib/search';
 import {HeaderMenu} from './HeaderMenu';
 export {HeaderMenu} from './HeaderMenu';
 import {AnnouncementBar} from './AnnouncementBar';
@@ -38,22 +41,23 @@ export function Header({
   collectionImages,
 }: HeaderProps) {
   const {shop, menu} = header;
-  // Anchors the search dropdown so it renders directly beneath this bar
-  // (logo + search + account/cart), matching the live site's
-  // .header-search__panel, which docks under .main-header__bar rather
-  // than under the lower menu-bar row.
-  const searchBarRowRef = useRef<HTMLDivElement>(null);
   return (
     <header className="w-full bg-white font-sans">
       <AnnouncementBar />
       <UtilityBar />
-      <div ref={searchBarRowRef} className="border-b border-gray-100">
+      {/* `relative` here (not on any inner element) is what makes
+          SearchBar's dropdown panel — `absolute inset-x-0 top-full`,
+          nested deep inside SearchBar — resolve against this full-width
+          row as its containing block, so the panel spans the whole page
+          width and always sits exactly one row below the header,
+          regardless of what's happening elsewhere in the layout. */}
+      <div className="relative border-b border-gray-100">
         <div className="mx-auto flex max-w-[1400px] items-center gap-6 px-4 py-4">
           <NavLink prefetch="intent" to="/" end className="shrink-0" aria-label={`${shop.name} — home`}>
             <img src={LOGO_SRC} alt={shop.name} width={140} height={28} />
           </NavLink>
 
-          <SearchBar anchorRef={searchBarRowRef} />
+          <SearchBar />
 
           <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} />
         </div>
@@ -215,27 +219,16 @@ function TypewriterStyles() {
   );
 }
 
-function SearchBar({anchorRef}: {anchorRef: RefObject<HTMLDivElement>}) {
+function SearchBar() {
   const typedChars = useTypewriter(TRENDING_SEARCH_TERMS);
 
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const [panelTop, setPanelTop] = useState(0);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => setMounted(true), []);
-
-  function updatePosition() {
-    const anchor = anchorRef.current;
-    if (!anchor) return;
-    setPanelTop(anchor.getBoundingClientRect().bottom);
-  }
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   function openPanel() {
-    updatePosition();
     setOpen(true);
   }
 
@@ -243,22 +236,10 @@ function SearchBar({anchorRef}: {anchorRef: RefObject<HTMLDivElement>}) {
     setOpen(false);
   }
 
-  // Matches header-section.js's _bindReposition exactly: resize
-  // repositions the panel against the anchor, but scroll CLOSES it rather
-  // than tracking the anchor. Our header isn't pinned/sticky (yet), so
-  // repositioning against a moving anchor mid-scroll is what let the
-  // panel drift away from the header and appear stuck mid-page — closing
-  // on scroll is what keeps it locked to the header instead.
   useEffect(() => {
     if (!open) return;
     inputRef.current?.focus();
 
-    function onScroll() {
-      closePanel();
-    }
-    function onResize() {
-      updatePosition();
-    }
     function onClickOutside(e: MouseEvent) {
       const target = e.target as Node;
       if (
@@ -276,13 +257,9 @@ function SearchBar({anchorRef}: {anchorRef: RefObject<HTMLDivElement>}) {
       }
     }
 
-    window.addEventListener('scroll', onScroll, {passive: true});
-    window.addEventListener('resize', onResize, {passive: true});
     document.addEventListener('mousedown', onClickOutside);
     document.addEventListener('keydown', onKeyDown);
     return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onResize);
       document.removeEventListener('mousedown', onClickOutside);
       document.removeEventListener('keydown', onKeyDown);
     };
@@ -318,66 +295,249 @@ function SearchBar({anchorRef}: {anchorRef: RefObject<HTMLDivElement>}) {
         </span>
       </button>
 
-      {mounted &&
-        createPortal(
-          <>
-            {/* Backdrop — dims the page behind the panel, same as the
-                live site's .header-search__backdrop */}
-            <div
-              aria-hidden="true"
-              onClick={closePanel}
-              className={`fixed inset-0 z-[2147483000] bg-black/40 transition-opacity duration-200 ease-out ${
-                open ? 'opacity-100' : 'pointer-events-none opacity-0'
-              }`}
-            />
+      {/* Backdrop — dims the page behind the panel. Fixed positioning
+          escapes the header's normal flow on its own (no portal needed)
+          since nothing above it creates a containing block. */}
+      <div
+        aria-hidden="true"
+        onClick={closePanel}
+        className={`fixed inset-0 z-[900] bg-black/40 transition-opacity duration-200 ease-out ${
+          open ? 'opacity-100' : 'pointer-events-none opacity-0'
+        }`}
+      />
 
-            {/* Panel — anchored under the header bar, descending from the
-                top on open rather than sliding in from a side. Kept
-                mounted at all times (opacity/translate/pointer-events
-                toggle instead of unmounting) so the transition always
-                plays, matching RegionPicker's dropdown approach. */}
-            <div
-              ref={panelRef}
-              role="dialog"
-              aria-modal="true"
-              aria-label="Search"
-              style={{top: panelTop}}
-              className={`fixed inset-x-0 z-[2147483001] origin-top border-b border-gray-200 bg-white shadow-2xl transition-all duration-200 ease-out ${
-                open
-                  ? 'translate-y-0 opacity-100'
-                  : 'pointer-events-none -translate-y-4 opacity-0'
-              }`}
-            >
-              <div className="mx-auto max-w-[1400px] px-4 py-6">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  placeholder="Search for products"
-                  aria-label="Search"
-                  className="h-11 w-full max-w-2xl rounded-full border border-gray-300 px-4 text-sm outline-none focus:border-gray-900"
-                />
+      {/* Panel — CSS-anchored via `absolute top-full`, resolving against
+          the `relative` row in Header.tsx as its containing block
+          (nothing between here and there sets a position), instead of a
+          JS-measured `top` value. This means the panel is *always*
+          exactly one row below the search bar, no matter what the
+          countdown timer, images, or menu do to page layout — it can't
+          drift the way the old getBoundingClientRect + fixed-position
+          approach could. */}
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Search"
+        className={`absolute inset-x-0 top-full z-[901] origin-top border-b border-gray-200 bg-white shadow-2xl transition-all duration-200 ease-out ${
+          open
+            ? 'translate-y-0 opacity-100'
+            : 'pointer-events-none -translate-y-4 opacity-0'
+        }`}
+      >
+        <div className="mx-auto max-w-[1400px] px-4 py-6">
+                <SearchFormPredictive>
+                  {({fetchResults, goToSearch, inputRef: predictiveInputRef}) => {
+                    const runSearch = (value: string) => {
+                      if (inputRef.current) {
+                        inputRef.current.value = value;
+                      }
+                      fetchResults({
+                        target: {value},
+                      } as React.ChangeEvent<HTMLInputElement>);
+                    };
 
-                {/* Stub content — recent searches, live predictive
-                    results, and the product carousel from the live site
-                    still need real Storefront API wiring; this reuses
-                    TRENDING_SEARCH_TERMS just to fill the space for now. */}
-                <div className="mt-4">
-                  <p className="mb-2 text-[10.5px] font-semibold uppercase tracking-wide text-gray-500">
-                    Trending searches
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {TRENDING_SEARCH_TERMS.slice(0, 8).map((term) => (
-                      <span key={term} className="rounded-full bg-gray-100 px-3 py-1.5 text-sm text-gray-800">
-                        {term}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+                    return (
+                      <>
+                        <input
+                          ref={(node) => {
+                            // Feed the DOM node to both SearchFormPredictive's
+                            // ref (so its fetcher submissions work) and our
+                            // own local ref (used for focus-on-open, the
+                            // outside-click check, etc).
+                            predictiveInputRef.current = node;
+                            inputRef.current = node;
+                          }}
+                          type="search"
+                          name="q"
+                          autoComplete="off"
+                          placeholder="Search for products"
+                          aria-label="Search"
+                          onChange={fetchResults}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              goToSearch();
+                              closePanel();
+                            }
+                          }}
+                          className="h-11 w-full max-w-2xl rounded-full border border-gray-300 px-4 text-sm outline-none focus:border-gray-900"
+                        />
+
+                        <div className="mt-6">
+                          <SearchResultsPredictive>
+                            {({items, total, term, state}) => {
+                              const closeSearch = () => {
+                                if (inputRef.current) {
+                                  inputRef.current.value = '';
+                                  inputRef.current.blur();
+                                }
+                                closePanel();
+                              };
+
+                              // Pre-query state: just the suggestions rail,
+                              // like the reference sites' empty-state panel.
+                              if (!term.current) {
+                                return (
+                                  <div className="grid grid-cols-[220px_1fr] gap-10">
+                                    <SuggestionsRail
+                                      title="Trending searches"
+                                      terms={TRENDING_SEARCH_TERMS}
+                                      onSelect={runSearch}
+                                    />
+                                    <div />
+                                  </div>
+                                );
+                              }
+
+                              if (state === 'loading') {
+                                return (
+                                  <div className="grid grid-cols-[220px_1fr] gap-10">
+                                    <SuggestionsRail
+                                      title="Trending searches"
+                                      terms={TRENDING_SEARCH_TERMS}
+                                      onSelect={runSearch}
+                                    />
+                                    <p className="text-sm text-gray-500">
+                                      Searching…
+                                    </p>
+                                  </div>
+                                );
+                              }
+
+                              if (!total) {
+                                return (
+                                  <div className="grid grid-cols-[220px_1fr] gap-10">
+                                    <SuggestionsRail
+                                      title="Trending searches"
+                                      terms={TRENDING_SEARCH_TERMS}
+                                      onSelect={runSearch}
+                                    />
+                                    <SearchResultsPredictive.Empty term={term} />
+                                  </div>
+                                );
+                              }
+
+                              // Active-query state: query suggestions on the
+                              // left, product grid filling the right — same
+                              // shape as the Nike reference.
+                              return (
+                                <div className="grid grid-cols-[220px_1fr] gap-10">
+                                  <SuggestionsRail
+                                    title="Top suggestions"
+                                    terms={items.queries
+                                      .map((q) => q?.text)
+                                      .filter((t): t is string => Boolean(t))}
+                                    onSelect={runSearch}
+                                  />
+
+                                  <div>
+                                    <div className="grid grid-cols-5 gap-4">
+                                      {items.products.map((product) => {
+                                        const productUrl = urlWithTrackingParams({
+                                          baseUrl: `/products/${product.handle}`,
+                                          trackingParams:
+                                            product.trackingParameters,
+                                          term: term.current,
+                                        });
+                                        const price =
+                                          product?.selectedOrFirstAvailableVariant
+                                            ?.price;
+                                        const image =
+                                          product?.selectedOrFirstAvailableVariant
+                                            ?.image;
+
+                                        return (
+                                          <Link
+                                            key={product.id}
+                                            to={productUrl}
+                                            onClick={closeSearch}
+                                            className="group"
+                                          >
+                                            <div className="aspect-square w-full overflow-hidden rounded bg-gray-100">
+                                              {image && (
+                                                <Image
+                                                  data={image}
+                                                  alt={product.title}
+                                                  className="h-full w-full object-cover transition group-hover:scale-105"
+                                                  sizes="200px"
+                                                />
+                                              )}
+                                            </div>
+                                            <p className="mt-2 text-sm font-medium text-gray-900">
+                                              {product.title}
+                                            </p>
+                                            {price && (
+                                              <small className="text-sm text-gray-700">
+                                                <Money data={price} />
+                                              </small>
+                                            )}
+                                          </Link>
+                                        );
+                                      })}
+                                    </div>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        goToSearch();
+                                        closePanel();
+                                      }}
+                                      className="mt-6 text-sm font-medium text-gray-900 underline"
+                                    >
+                                      View all results for &ldquo;{term.current}&rdquo;
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            }}
+                          </SearchResultsPredictive>
+                        </div>
+                      </>
+                    );
+                  }}
+                </SearchFormPredictive>
               </div>
-            </div>
-          </>,
-          document.body,
-        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Left-hand suggestions rail used in both the pre-query (trending searches)
+ * and active-query (top suggestions) states of the search panel — mirrors
+ * the vertical text-link list in the Nike / Gymshark reference designs,
+ * rather than the wrapped pill list this used to render.
+ */
+function SuggestionsRail({
+  title,
+  terms,
+  onSelect,
+}: {
+  title: string;
+  terms: string[];
+  onSelect: (term: string) => void;
+}) {
+  if (!terms.length) return null;
+
+  return (
+    <div>
+      <p className="mb-3 text-[10.5px] font-semibold uppercase tracking-wide text-gray-500">
+        {title}
+      </p>
+      <ul className="space-y-2.5">
+        {terms.map((term) => (
+          <li key={term}>
+            <button
+              type="button"
+              onClick={() => onSelect(term)}
+              className="text-left text-sm text-gray-700 hover:text-gray-950 hover:underline"
+            >
+              {term}
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

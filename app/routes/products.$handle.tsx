@@ -11,7 +11,11 @@ import {
 import {ProductPrice} from '~/components/ProductPrice';
 import {ProductImage} from '~/components/ProductImage';
 import {ProductForm} from '~/components/ProductForm';
+import {ProductReviews} from '~/components/ProductReviews';
+import {StarRating} from '~/components/StarRating';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
+import {useYotpoRefresh} from '~/hooks/useYotpoRefresh';
+import {getYotpoReviewSummary} from '~/lib/yotpo.server';
 
 export const meta: Route.MetaFunction = ({data}) => {
   return [
@@ -59,8 +63,20 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   // The API handle might be localized, so redirect to the localized handle
   redirectIfHandleIsLocalized(request, {handle, data: product});
 
+  // Fetch the review summary server-side so the star rating renders with
+  // real numbers on first paint, instead of popping in once the
+  // client-side Yotpo widget mounts.
+  const reviewSummary = await getYotpoReviewSummary(
+    context.env,
+    product.id.split('/').pop() as string,
+  );
+
   return {
     product,
+    reviewSummary,
+    // NOTE: PUBLIC_STORE_DOMAIN is Hydrogen's standard skeleton env var.
+    // If your project renamed or doesn't expose this, swap the source here.
+    shopUrl: context.env.PUBLIC_STORE_DOMAIN,
   };
 }
 
@@ -77,7 +93,11 @@ function loadDeferredData({context, params}: Route.LoaderArgs) {
 }
 
 export default function Product() {
-  const {product} = useLoaderData<typeof loader>();
+  const {product, shopUrl, reviewSummary} = useLoaderData<typeof loader>();
+
+  // Re-trigger Yotpo's DOM scan after client-side navigations, since its
+  // loader script only scans once on full page load by default.
+  useYotpoRefresh();
 
   // Optimistically selects a variant with given available variant information
   const selectedVariant = useOptimisticVariant(
@@ -102,6 +122,7 @@ export default function Product() {
       <ProductImage image={selectedVariant?.image} />
       <div className="product-main">
         <h1>{title}</h1>
+        <StarRating key={`star-rating-${product.id}`} product={product} reviewSummary={reviewSummary} />
         <ProductPrice
           price={selectedVariant?.price}
           compareAtPrice={selectedVariant?.compareAtPrice}
@@ -119,6 +140,12 @@ export default function Product() {
         <br />
         <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
         <br />
+        <ProductReviews
+          key={`reviews-${product.id}`}
+          product={product}
+          selectedVariant={selectedVariant}
+          shopUrl={shopUrl}
+        />
       </div>
       <Analytics.ProductView
         data={{
