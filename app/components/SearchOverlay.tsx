@@ -1,4 +1,4 @@
-import {useEffect, useLayoutEffect, useRef, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {Link, useFetcher} from 'react-router';
 import {Image, Money} from '@shopify/hydrogen';
 import {urlWithTrackingParams, getEmptyPredictiveSearchResult} from '~/lib/search';
@@ -47,38 +47,6 @@ function useSearchQuery(active: boolean) {
   return {term, setTerm, result, state};
 }
 
-/**
- * Measures the bottom edge of the closest <header> ancestor of the
- * trigger so the backdrop and panel can start exactly below the full
- * header (announcement bar + utility bar + search row) instead of
- * `fixed inset-0`, which paints over the header itself.
- */
-function useHeaderBottom(
-  triggerRef: React.RefObject<HTMLElement>,
-  active: boolean,
-) {
-  const [bottom, setBottom] = useState(0);
-
-  useLayoutEffect(() => {
-    if (!active) return;
-    const headerEl = triggerRef.current?.closest('header');
-    if (!headerEl) return;
-
-    const measure = () => setBottom(headerEl.getBoundingClientRect().bottom);
-    measure();
-
-    const ro = new ResizeObserver(measure);
-    ro.observe(headerEl);
-    window.addEventListener('resize', measure);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener('resize', measure);
-    };
-  }, [active, triggerRef]);
-
-  return bottom;
-}
-
 export function SearchOverlay({
   open,
   onClose,
@@ -89,7 +57,6 @@ export function SearchOverlay({
   triggerRef: React.RefObject<HTMLButtonElement>;
 }) {
   const {term, setTerm, result, state} = useSearchQuery(open);
-  const headerBottom = useHeaderBottom(triggerRef, open);
 
   const panelRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -137,18 +104,25 @@ export function SearchOverlay({
   const items = result.items;
   const total = result.total;
 
-  // Backdrop and panel both start at the header's measured bottom edge,
-  // not the viewport top — this is what keeps the header (logo, sign
-  // in, cart) visible and undimmed while the overlay is open.
-  const topOffset = headerBottom || 0;
-
   return (
     <>
+      {/*
+        Nike-style full takeover: both the backdrop and the panel are
+        anchored to the true viewport top (top-0), not the header's
+        measured bottom edge. This means the overlay now visually
+        covers the ENTIRE page — including the header itself (logo,
+        nav, sign-in, cart) — the same way nike.com's search dims
+        literally everything except the search panel. The header no
+        longer pokes out above a panel that starts below it.
+
+        z-index is set above the header's own stacking context (the
+        header itself sits at a lower z-index than z-[900]/[901] below)
+        so the dimmed backdrop visually sits on top of it once open.
+      */}
       <div
         aria-hidden="true"
         onClick={onClose}
-        style={{top: topOffset}}
-        className={`fixed inset-x-0 bottom-0 z-[900] bg-black/40 transition-opacity duration-200 ease-out ${
+        className={`fixed inset-0 z-[900] bg-black/40 transition-opacity duration-200 ease-out ${
           open ? 'opacity-100' : 'pointer-events-none opacity-0'
         }`}
       />
@@ -158,8 +132,7 @@ export function SearchOverlay({
         role="dialog"
         aria-modal="true"
         aria-label="Search"
-        style={{top: topOffset}}
-        className={`fixed inset-x-0 z-[901] grid border-b border-gray-200 bg-white shadow-2xl transition-[grid-template-rows] duration-300 ease-out ${
+        className={`fixed inset-x-0 top-0 z-[901] grid max-h-screen overflow-y-auto border-b border-gray-200 bg-white shadow-2xl transition-[grid-template-rows] duration-300 ease-out ${
           open ? 'grid-rows-[1fr]' : 'pointer-events-none grid-rows-[0fr]'
         }`}
       >
