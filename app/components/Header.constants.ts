@@ -1,6 +1,26 @@
+import type {HeaderProps} from './Header';
+
 // Wordmark asset used by the live Liquid theme.
 export const LOGO_SRC =
   '//ecombio.com/cdn/shop/files/wordmark.svg?v=1781367807&width=140';
+
+// ─────────────────────────────────────────────────────────────────────────
+// Header menu item shape + URL resolution
+// Shared by HeaderMenu (top-level nav) and MenuDrawer (the mega-menu
+// panel), so it lives here rather than in either component file to avoid
+// a circular import between the two.
+// ─────────────────────────────────────────────────────────────────────────
+export type MenuItem = HeaderProps['header']['menu'] extends {items: (infer T)[]}
+  ? T
+  : never;
+
+export function resolveUrl(url: string, publicStoreDomain: string, primaryDomainUrl: string) {
+  return url.includes('myshopify.com') ||
+    url.includes(publicStoreDomain) ||
+    url.includes(primaryDomainUrl)
+    ? new URL(url).pathname
+    : url;
+}
 
 // ─────────────────────────────────────────────────────────────────────────
 // Announcement bar

@@ -14,6 +14,10 @@ import type {Route} from './+types/root';
 import favicon from '~/assets/favicon.svg';
 import {HEADER_QUERY} from '~/lib/fragments';
 import {FOOTER_QUERY} from '~/components/Footer';
+import {
+  MENU_COLLECTION_IMAGES_QUERY,
+  type CollectionImage,
+} from '~/components/Header.constants';
 import resetStyles from '~/styles/reset.css?url';
 import appStyles from '~/styles/app.css?url';
 import menuStyles from '~/styles/menu.css?url';
@@ -113,7 +117,43 @@ async function loadCriticalData({context}: Route.LoaderArgs) {
     // Add other queries here, so that they are loaded in parallel
   ]);
 
-  return {header};
+  // The header menu's second-level items (the cards shown in the mega-menu
+  // drawer) carry a `resourceId` whenever they're linked to a real Shopify
+  // resource in Admin (see MENU_FRAGMENT in ~/lib/fragments). When that
+  // resource is a Collection, fetch its real image here so MenuDrawer can
+  // use it instead of falling back to the static SUBMENU_IMAGES map or the
+  // generic placeholder icon.
+  const collectionImages = await loadMenuCollectionImages(storefront, header.menu);
+
+  return {header, collectionImages};
+}
+
+async function loadMenuCollectionImages(
+  storefront: Route.LoaderArgs['context']['storefront'],
+  menu: Awaited<ReturnType<typeof storefront.query<typeof HEADER_QUERY>>>['menu'],
+): Promise<Record<string, CollectionImage>> {
+  if (!menu) return {};
+
+  const collectionIds = menu.items
+    .flatMap((item) => item.items ?? [])
+    .map((item) => item.resourceId)
+    .filter((id): id is string => Boolean(id) && id.includes('/Collection/'));
+
+  if (!collectionIds.length) return {};
+
+  const data = await storefront.query(MENU_COLLECTION_IMAGES_QUERY, {
+    variables: {ids: collectionIds},
+  });
+
+  return Object.fromEntries(
+    data.nodes
+      .filter(
+        (n): n is {id: string; image: CollectionImage | null} =>
+          n != null && 'image' in n,
+      )
+      .filter((n) => n.image)
+      .map((n) => [n.id, n.image as CollectionImage]),
+  );
 }
 
 /**

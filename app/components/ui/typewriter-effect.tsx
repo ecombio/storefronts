@@ -2,12 +2,6 @@ import { cn } from "~/lib/utils";
 import { motion, stagger, useAnimate, useInView } from "motion/react";
 import { useEffect } from "react";
 
-// Color sweep used as characters type in: blue -> purple -> red. Exported
-// so other components (e.g. HeaderSearch's disappear/vanish phase) can
-// reuse the exact same values instead of duplicating the hex codes.
-export const TYPEWRITER_COLOR_SWEEP = ["#2563eb", "#9333ea", "#dc2626"];
-const TYPEWRITER_COLOR_TIMES = [0, 0.5, 1];
-
 export const TypewriterEffect = ({
   words,
   className,
@@ -32,48 +26,53 @@ export const TypewriterEffect = ({
   const isInView = useInView(scope);
   useEffect(() => {
     if (isInView) {
+      // Only display/opacity/width here — color is handled entirely by
+      // the .hs-tw-char CSS animation (see typewriter.css) so the sweep
+      // renders as a smooth CSS-driven transition instead of a second,
+      // separate JS-driven color animation stepping on this one.
       animate(
         "span",
         {
           display: "inline-block",
           opacity: 1,
           width: "fit-content",
-          // Sweep through blue -> purple -> red as each character types
-          // in, then settle on whatever color the word's own className
-          // (or default text-black/dark:text-white) specifies.
-          color: TYPEWRITER_COLOR_SWEEP,
         },
         {
           duration: 0.3,
           delay: stagger(0.1),
           ease: "easeInOut",
-          color: {
-            duration: 0.3,
-            times: TYPEWRITER_COLOR_TIMES,
-          },
         }
       );
     }
   }, [isInView]);
 
   const renderWords = () => {
+    // Running index across ALL characters (not reset per word) so each
+    // char's CSS animation-delay lines up with Motion's own stagger(0.1)
+    // timing above — same left-to-right cadence, just driven by CSS.
+    let globalCharIndex = -1;
+
     return (
       <motion.div ref={scope} className="inline">
         {wordsArray.map((word, idx) => {
           return (
             <div key={`word-${idx}`} className="inline-block">
-              {word.text.map((char, index) => (
-                <motion.span
-                  initial={{}}
-                  key={`char-${index}`}
-                  className={cn(
-                    `dark:text-white text-black opacity-0 hidden`,
-                    word.className
-                  )}
-                >
-                  {char}
-                </motion.span>
-              ))}
+              {word.text.map((char, index) => {
+                globalCharIndex += 1;
+                return (
+                  <motion.span
+                    initial={{}}
+                    key={`char-${index}`}
+                    className={cn(
+                      `dark:text-white text-black opacity-0 hidden hs-tw-char`,
+                      word.className
+                    )}
+                    style={{animationDelay: `${globalCharIndex * 0.1}s`}}
+                  >
+                    {char}
+                  </motion.span>
+                );
+              })}
               &nbsp;
             </div>
           );

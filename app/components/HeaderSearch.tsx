@@ -5,7 +5,8 @@ import {TRENDING_SEARCH_TERMS} from './Header.constants';
 import {SearchOverlay} from './SearchOverlay';
 // Imported directly here (not wired through root.tsx) so the stylesheet
 // travels with the component that actually uses it. Lives at
-// app/styles/typewriter.css. Defines .hs-tw-char--vanish + its keyframes.
+// app/styles/typewriter.css. Defines both .hs-tw-char (type-in sweep)
+// and .hs-tw-char--vanish (disappear sweep), plus their keyframes.
 import '~/styles/typewriter.css';
 
 // How long to hold on a fully-typed word before it vanishes into the
@@ -28,8 +29,8 @@ const VANISH_STAGGER_MS = 14;
  * Cycles the installed Aceternity TypewriterEffect through
  * TRENDING_SEARCH_TERMS, one term at a time. Two phases per cycle:
  *  - 'typed': TypewriterEffect types the current word in and holds it.
- *    (Its own type-in animation now includes a color sweep — see
- *    TYPEWRITER_COLOR_SWEEP in typewriter-effect.tsx.)
+ *    (Its characters get the .hs-tw-char CSS color sweep from
+ *    typewriter.css as they appear.)
  *  - 'vanishing': we take over rendering (TypewriterEffect has no exit
  *    animation of its own) and render the same word as individual
  *    characters, each carrying .hs-tw-char--vanish from typewriter.css,
