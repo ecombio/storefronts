@@ -1,27 +1,50 @@
-.hs-tw-char {
-  animation: hs-tw-appear 0.35s ease-in-out;
+/*
+ * app/styles/typewriter.css
+ *
+ * Owns color only for the header search's cycling typewriter placeholder
+ * (see HeaderSearch.tsx / CyclingTypewriter). Motion (in
+ * ~/components/ui/typewriter-effect.tsx) handles display/opacity/width
+ * as each character is revealed; CSS handles the color sweep so it
+ * doesn't fight a second JS-driven color animation on the same element.
+ *
+ * .hs-tw-char       — type-in sweep, applied by TypewriterEffect itself.
+ * .hs-tw-char--vanish — disappear sweep, applied by CyclingTypewriter
+ *                     when it takes over rendering to animate the
+ *                     outgoing word out before swapping to the next term.
+ *
+ * IMPORTANT: the 260ms duration on hs-tw-vanish must stay in sync with
+ * VANISH_MS in HeaderSearch.tsx — JS needs the number (to know when it's
+ * safe to swap words) and CSS needs the timing function, so there's no
+ * single source of truth between the two.
+ */
+
+@keyframes hs-tw-sweep {
+  from {
+    color: #d4d4d8;
+  }
+  to {
+    color: currentColor;
+  }
 }
 
-@keyframes hs-tw-appear {
-  0%   { color: #2563eb; }
-  50%  { color: #9333ea; }
-  100% { color: #dc2626; }
+.hs-tw-char {
+  animation: hs-tw-sweep 220ms ease-out forwards;
+}
+
+@keyframes hs-tw-vanish {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-2px);
+    filter: blur(2px);
+  }
 }
 
 .hs-tw-char--vanish {
   display: inline-block;
-  animation: hs-tw-vanish 260ms ease forwards;
-}
-
-@keyframes hs-tw-vanish {
-  0%   { color: #2563eb; opacity: 1;   transform: translateY(0); }
-  50%  { color: #9333ea; opacity: .65; }
-  100% { color: #dc2626; opacity: 0;   transform: translateY(2px); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hs-tw-char,
-  .hs-tw-char--vanish {
-    animation: none;
-  }
+  animation: hs-tw-vanish 260ms ease-in forwards;
 }
