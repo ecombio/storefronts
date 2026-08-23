@@ -1,0 +1,30 @@
+/*
+ * Typewriter vanish animation for the header search trigger's cycling
+ * keywords. Applied to each character as the current search term
+ * disappears before the next one types in.
+ *
+ * Imported directly by HeaderSearch.tsx (a plain side-effect import,
+ * e.g. `import './typewriter.css'`) rather than wired through a global
+ * <link> in root.tsx — scoping it to the component that actually uses
+ * it avoids the earlier situation where it lived far from its usage and
+ * silently lost to unrelated global stylesheet rules.
+ */
+
+.hs-tw-char--vanish {
+  display: inline-block;
+  animation: hs-tw-vanish 260ms ease forwards;
+}
+
+@keyframes hs-tw-vanish {
+  0%   { color: #2563eb; opacity: 1;   transform: translateY(0); }
+  50%  { color: #9333ea; opacity: .65; }
+  100% { color: #dc2626; opacity: 0;   transform: translateY(2px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hs-tw-char--vanish {
+    animation: none;
+    opacity: 0;
+    transform: none;
+  }
+}

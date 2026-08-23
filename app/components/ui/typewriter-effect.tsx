@@ -2,6 +2,12 @@ import { cn } from "~/lib/utils";
 import { motion, stagger, useAnimate, useInView } from "motion/react";
 import { useEffect } from "react";
 
+// Color sweep used as characters type in: blue -> purple -> red. Exported
+// so other components (e.g. HeaderSearch's disappear/vanish phase) can
+// reuse the exact same values instead of duplicating the hex codes.
+export const TYPEWRITER_COLOR_SWEEP = ["#2563eb", "#9333ea", "#dc2626"];
+const TYPEWRITER_COLOR_TIMES = [0, 0.5, 1];
+
 export const TypewriterEffect = ({
   words,
   className,
@@ -32,11 +38,19 @@ export const TypewriterEffect = ({
           display: "inline-block",
           opacity: 1,
           width: "fit-content",
+          // Sweep through blue -> purple -> red as each character types
+          // in, then settle on whatever color the word's own className
+          // (or default text-black/dark:text-white) specifies.
+          color: TYPEWRITER_COLOR_SWEEP,
         },
         {
           duration: 0.3,
           delay: stagger(0.1),
           ease: "easeInOut",
+          color: {
+            duration: 0.3,
+            times: TYPEWRITER_COLOR_TIMES,
+          },
         }
       );
     }
