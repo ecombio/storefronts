@@ -177,23 +177,23 @@ export function HeaderSearch() {
         type="button"
         aria-expanded={open}
         onClick={() => (open ? closePanel() : openPanel())}
-        className="flex w-full max-w-2xl items-center rounded-full border border-gray-300 pl-4 pr-1.5 text-left hover:border-gray-400"
+        className="flex h-11 w-full max-w-2xl items-center rounded-[14px] border-[1.5px] border-[#e5e3de] bg-white pl-3 pr-[3px] text-left transition-colors focus-within:border-[#2563eb] hover:border-[#d6d3cc]"
       >
         <span
-          className="h-10 flex-1 truncate text-sm leading-10 text-gray-500"
+          className="h-full flex-1 truncate text-[15px] leading-[44px] text-[#6b6860]"
           aria-hidden="true"
         >
           <CyclingTypewriter terms={TRENDING_SEARCH_TERMS} />
         </span>
         <span className="sr-only">Search for products</span>
-        <span className="mr-1 rounded-full p-1.5 text-gray-500">
-          <X size={16} />
+        <span className="mr-0.5 flex h-[30px] w-[30px] items-center justify-center rounded-full text-[#6b6860] transition-colors hover:bg-[#f0ede8] hover:text-[#1a1a1a]">
+          <X size={14} strokeWidth={2.5} />
         </span>
-        <span className="mr-1 rounded-full p-1.5 text-gray-500">
+        <span className="mr-0.5 flex h-[30px] w-[30px] items-center justify-center rounded-full text-[#6b6860] transition-colors hover:bg-[#f0ede8] hover:text-[#1a1a1a]">
           <Mic size={16} />
         </span>
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-950 text-white">
-          <Search size={16} />
+        <span className="flex h-[38px] w-11 items-center justify-center rounded-[10px] bg-[#1a1a1a] text-white">
+          <Search size={18} />
         </span>
       </button>
 
