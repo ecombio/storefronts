@@ -92,4 +92,4 @@ temp/
 *.cache
 *.pid
 *.seed
-*.tgz
+*.tgz.env
