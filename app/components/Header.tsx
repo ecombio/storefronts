@@ -5,10 +5,11 @@ import {
   useAnalytics,
   useOptimisticCart,
 } from '@shopify/hydrogen';
-import {User, ShoppingBag} from 'lucide-react';
 import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
 import {useAside} from '~/components/Aside';
 import {HeaderSearch} from '~/components/HeaderSearch';
+import {HeaderAccount} from '~/components/HeaderAccount';
+import {HeaderCart} from '~/components/HeaderCart';
 import {HeaderMenu} from './HeaderMenu';
 export {HeaderMenu} from './HeaderMenu';
 import {AnnouncementBar} from './AnnouncementBar';
@@ -48,37 +49,39 @@ export function Header({
     <header className="w-full bg-white font-sans">
       <AnnouncementBar />
       <UtilityBar />
-      {/* `relative` here (not on any inner element) is what makes
-          HeaderSearch's dropdown panel — `absolute inset-x-0 top-full`,
-          nested deep inside it — resolve against this full-width row as
-          its containing block, so the panel spans the whole page width
-          and always sits exactly one row below the header, regardless
-          of what's happening elsewhere in the layout.
-          `data-header-search-row` marks exactly this row (logo + search
-          + ctas). SearchPanel no longer measures this for its own
-          top offset (it's a full-viewport overlay now), but the marker
-          is left in place in case it's needed again later. */}
+      {/* Single-row layout: logo, nav links, search, and the account/
+          cart CTAs all sit in one flex row now — the nav links no
+          longer live in their own bordered row underneath.
+          `relative` here (not on any inner element) is still what
+          makes HeaderSearch's dropdown panel — `absolute inset-x-0
+          top-full`, nested deep inside it — resolve against this full-
+          width row as its containing block, so the panel spans the
+          whole page width and sits exactly one row below the header,
+          regardless of what else is in this row now.
+          `data-header-search-row` still marks this exact row (logo +
+          nav + search + ctas) for the same reason as before. */}
       <div
         data-header-search-row
         className="relative border-b border-gray-100"
       >
-        <div className="mx-auto flex max-w-[1400px] items-center gap-6 px-4 py-4">
+        <div className="mx-auto flex max-w-[1400px] items-center gap-6 px-4 py-3">
           <NavLink prefetch="intent" to="/" end className="shrink-0" aria-label={`${shop.name} — home`}>
             <img src={wordmarkSrc} alt={shop.name} width={140} height={28} />
           </NavLink>
+
+          <HeaderMenu
+            menu={menu}
+            viewport="desktop"
+            primaryDomainUrl={header.shop.primaryDomain.url}
+            publicStoreDomain={publicStoreDomain}
+            collectionImages={collectionImages}
+          />
 
           <HeaderSearch />
 
           <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} />
         </div>
       </div>
-      <HeaderMenu
-        menu={menu}
-        viewport="desktop"
-        primaryDomainUrl={header.shop.primaryDomain.url}
-        publicStoreDomain={publicStoreDomain}
-        collectionImages={collectionImages}
-      />
     </header>
   );
 }
@@ -90,18 +93,7 @@ function HeaderCtas({
   return (
     <nav className="flex shrink-0 items-center gap-6" role="navigation">
       <HeaderMenuMobileToggle />
-      <NavLink
-        prefetch="intent"
-        to="/account"
-        className="hidden items-center gap-1.5 text-sm font-medium text-gray-800 hover:text-gray-950 sm:flex"
-      >
-        <User size={18} />
-        <Suspense fallback="Sign in/ Register">
-          <Await resolve={isLoggedIn} errorElement="Sign in/ Register">
-            {(isLoggedIn) => (isLoggedIn ? 'Account' : 'Sign in/ Register')}
-          </Await>
-        </Suspense>
-      </NavLink>
+      <HeaderAccount isLoggedIn={isLoggedIn} />
       <CartToggle cart={cart} />
     </nav>
   );
@@ -125,8 +117,8 @@ function CartBadge({count}: {count: number}) {
   const {publish, shop, cart, prevCart} = useAnalytics();
 
   return (
-    <a
-      href="/cart"
+    <HeaderCart
+      count={count}
       onClick={(e) => {
         e.preventDefault();
         open('cart');
@@ -137,19 +129,7 @@ function CartBadge({count}: {count: number}) {
           url: window.location.href || '',
         } as CartViewPayload);
       }}
-      className="flex items-center gap-1.5 text-sm font-medium text-gray-800 hover:text-gray-950"
-    >
-      <span className="relative">
-        <ShoppingBag size={20} />
-        <span
-          aria-label={`Items in cart: ${count}`}
-          className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-gray-950 text-[10px] font-semibold text-white"
-        >
-          {count}
-        </span>
-      </span>
-      <span className="hidden sm:inline">Cart</span>
-    </a>
+    />
   );
 }
 
