@@ -13,6 +13,7 @@ import {
   SearchFormPredictive,
 } from '~/components/SearchFormPredictive';
 import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
+import type {AlgoliaConfig} from '~/lib/algolia';
 
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;
@@ -20,6 +21,7 @@ interface PageLayoutProps {
   header: HeaderQuery;
   isLoggedIn: Promise<boolean>;
   publicStoreDomain: string;
+  algolia: AlgoliaConfig;
   children?: React.ReactNode;
 }
 
@@ -30,6 +32,7 @@ export function PageLayout({
   header,
   isLoggedIn,
   publicStoreDomain,
+  algolia,
 }: PageLayoutProps) {
   return (
     <Aside.Provider>
@@ -42,6 +45,7 @@ export function PageLayout({
           cart={cart}
           isLoggedIn={isLoggedIn}
           publicStoreDomain={publicStoreDomain}
+          algolia={algolia}
         />
       )}
       <main>{children}</main>

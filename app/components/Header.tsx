@@ -26,6 +26,12 @@ export interface HeaderProps {
   // Keyed by collection resourceId (gid). See the wiring note above
   // MENU_COLLECTION_IMAGES_QUERY in Header.constants.ts.
   collectionImages?: Record<string, CollectionImage>;
+  // NOTE: `algolia` config used to be threaded through here down to
+  // HeaderSearch/SearchPanel. Predictive search now hits
+  // /api/predictive-search (Shopify Storefront API) internally, so it's
+  // no longer needed as a prop. If nothing else in the app still reads
+  // an `algolia` config object, it's safe to remove `~/lib/algolia.ts`
+  // and its callers (e.g. wherever this used to be built in root.tsx).
 }
 
 export type Viewport = 'desktop' | 'mobile';
@@ -47,8 +53,15 @@ export function Header({
           nested deep inside it — resolve against this full-width row as
           its containing block, so the panel spans the whole page width
           and always sits exactly one row below the header, regardless
-          of what's happening elsewhere in the layout. */}
-      <div className="relative border-b border-gray-100">
+          of what's happening elsewhere in the layout.
+          `data-header-search-row` marks exactly this row (logo + search
+          + ctas). SearchPanel no longer measures this for its own
+          top offset (it's a full-viewport overlay now), but the marker
+          is left in place in case it's needed again later. */}
+      <div
+        data-header-search-row
+        className="relative border-b border-gray-100"
+      >
         <div className="mx-auto flex max-w-[1400px] items-center gap-6 px-4 py-4">
           <NavLink prefetch="intent" to="/" end className="shrink-0" aria-label={`${shop.name} — home`}>
             <img src={wordmarkSrc} alt={shop.name} width={140} height={28} />

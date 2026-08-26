@@ -2,7 +2,7 @@ import {useEffect, useState, useRef} from 'react';
 import {Search, Mic, X} from 'lucide-react';
 import {TypewriterEffect} from '~/components/ui/typewriter-effect';
 import {TRENDING_SEARCH_TERMS} from './Header.constants';
-import {SearchOverlay} from './SearchOverlay';
+import {SearchPanel} from './SearchPanel';
 // Imported directly here (not wired through root.tsx) so the stylesheet
 // travels with the component that actually uses it. Lives at
 // app/styles/typewriter.css. Defines both .hs-tw-char (type-in sweep)
@@ -118,8 +118,12 @@ function CyclingTypewriter({terms}: {terms: string[]}) {
 /**
  * The search trigger button that lives in the header row. Owns only
  * open/closed state and the trigger's own ref — everything about the
- * overlay itself (backdrop, panel, results, trending list) lives in
- * SearchOverlay, which this renders and controls.
+ * panel itself (backdrop, content, results, popular searches) lives in
+ * SearchPanel, which this renders and controls.
+ *
+ * SearchPanel now fetches product suggestions itself via
+ * /api/predictive-search (Shopify's Storefront API), so no Algolia
+ * config needs to be threaded down through this component anymore.
  */
 export function HeaderSearch() {
   const [open, setOpen] = useState(false);
@@ -152,11 +156,7 @@ export function HeaderSearch() {
         </span>
       </button>
 
-      <SearchOverlay
-        open={open}
-        onClose={() => setOpen(false)}
-        triggerRef={triggerRef}
-      />
+      <SearchPanel open={open} onClose={() => setOpen(false)} triggerRef={triggerRef} />
     </div>
   );
 }
