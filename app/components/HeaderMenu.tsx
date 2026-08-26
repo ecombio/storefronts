@@ -4,7 +4,6 @@ import {useAside} from '~/components/Aside';
 import type {HeaderProps, Viewport} from './Header';
 import {FALLBACK_HEADER_MENU, MEGA_MENU_CLOSE_DELAY, resolveUrl} from './Header.constants';
 import {MenuDrawer} from './MenuDrawer';
-import {HeaderMenuOnSale} from './HeaderMenuOnSale';
 
 function navLinkClass({isActive, isPending}: {isActive: boolean; isPending: boolean}) {
   return [
@@ -130,7 +129,6 @@ export function HeaderMenu({
         onMouseLeave={scheduleClose}
         onMouseEnter={cancelClose}
       >
-        <HeaderMenuOnSale />
         {items.map((item) => {
           if (!item.url) return null;
           const url = resolveUrl(item.url, publicStoreDomain, primaryDomainUrl);
