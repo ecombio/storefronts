@@ -52,15 +52,18 @@ export async function getYotpoReviewSummary(
     }
 
     const data = await response.json();
-    const bottomline = data?.response?.bottomline;
+    // Actual response shape (verified against a real payload):
+    //   {"bottomline":{"totalReviews":5,"averageScore":4.8,...}}
+    // No "response" wrapper, and fields are camelCase.
+    const bottomline = data?.bottomline;
 
     if (!bottomline) {
       return null;
     }
 
     return {
-      averageScore: bottomline.average_score ?? 0,
-      totalReviews: bottomline.total_review ?? 0,
+      averageScore: Number(bottomline.averageScore ?? 0),
+      totalReviews: Number(bottomline.totalReviews ?? 0),
     };
   } catch (error) {
     // Never let a Yotpo outage/timeout break the product page.
@@ -78,4 +81,3 @@ export async function getYotpoReviewSummary(
  * of any code path reachable from the client bundle; only add it if
  * you build one of those write/private-data features.
  */
-
