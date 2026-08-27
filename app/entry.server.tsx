@@ -21,8 +21,10 @@ export default async function handleRequest(
     },
     scriptSrc: [
       "'self'",
+      "'strict-dynamic'",
       'https://cdn.shopify.com',
       'https://cdn-widgetsrepository.yotpo.com',
+      "'sha256-IT5WN+Mz4HQ26TqWL7rMQVzvTWYttkhDr6qOCX3eig='", // fallback for browsers without strict-dynamic support
     ],
     // The Yotpo widget script loads via scriptSrc above, but it then
     // makes its own fetch() calls for ratings/reviews data and beacon
@@ -39,13 +41,16 @@ export default async function handleRequest(
       "'unsafe-inline'",
       'https://cdn-widgetsrepository.yotpo.com',
       'https://staticw2.yotpo.com',
+      'https://fonts.googleapis.com',
     ],
     fontSrc: [
       "'self'",
       'https://staticw2.yotpo.com',
+      'https://fonts.gstatic.com',
     ],
     imgSrc: [
       "'self'",
+      'data:',
       'https://cdn.shopify.com',
       'https://staticw2.yotpo.com',
       'https://api-cdn.yotpo.com',
