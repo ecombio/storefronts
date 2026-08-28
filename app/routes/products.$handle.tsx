@@ -12,6 +12,7 @@ import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {useYotpoRefresh} from '~/hooks/useYotpoRefresh';
 import {getYotpoBottomline} from '~/lib/yotpo';
 import {StarRating} from '~/components/StarRating';
+import {ReviewsWidget} from '~/components/ReviewsWidget';
 import {ProductPrice} from '~/components/ProductPrice';
 import {ProductImage} from '~/components/ProductImage';
 import {ProductForm} from '~/components/ProductForm';
@@ -125,22 +126,15 @@ export default function Product() {
         </div>
       </div>
       <div>
-        {/* suppressHydrationWarning: Yotpo's async loader script (in root.tsx)
-            injects its own rendered markup into this div. Without this, React's
-            hydration/reconcile can detect a mismatch against our empty JSX and
-            wipe out what Yotpo rendered, since React expects this node to stay
-            empty on its own. */}
-        <div
-          className="yotpo-widget-instance"
-          data-yotpo-instance-id={YOTPO_REVIEWS_INSTANCE_ID}
-          data-yotpo-product-id={yotpoProductId}
-          data-yotpo-name={product.title}
-          data-yotpo-url={`https://${shopUrl}/products/${product.handle}`}
-          data-yotpo-image-url={selectedVariant?.image?.url}
-          data-yotpo-price={selectedVariant?.price?.amount}
-          data-yotpo-currency={selectedVariant?.price?.currencyCode}
-          data-yotpo-description={product.description}
-          suppressHydrationWarning
+        <ReviewsWidget
+          instanceId={YOTPO_REVIEWS_INSTANCE_ID}
+          productId={yotpoProductId}
+          productTitle={product.title}
+          productUrl={`https://${shopUrl}/products/${product.handle}`}
+          imageUrl={selectedVariant?.image?.url}
+          price={selectedVariant?.price?.amount}
+          currency={selectedVariant?.price?.currencyCode}
+          description={product.description}
         />
       </div>
       <Analytics.ProductView
