@@ -1,3 +1,19 @@
+# 1. Create destination and clone the headless branch
+mkdir "C:\Users\Admin\Shopify\Storefronts\Headless" -Force
+cd "C:\Users\Admin\Shopify\Storefronts\Headless"
+git clone --branch headless https://github.com/ecombio/storefronts.git .
+
+# 2. Link to the Ecombio storefront and pull env vars (opens browser login)
+npx shopify hydrogen link
+npx shopify hydrogen env pull
+
+# 3. Add the missing env var that caused last time's Analytics/hydration bug
+Add-Content -Path .env -Value "PUBLIC_CHECKOUT_DOMAIN=ecombio.myshopify.com"
+
+# 4. Install and run
+npm install
+npm run dev
+
 # Hydrogen template: Skeleton
 
 Hydrogen is Shopify’s stack for headless commerce. Hydrogen is designed to dovetail with [React Router](https://reactrouter.com/), the modern multi-strategy router for React. This template contains a **minimal setup** of components, queries and tooling to get started with Hydrogen.
