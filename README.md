@@ -1,3 +1,13 @@
+mkdir "C:\Users\Admin\Shopify\Storefronts\Headless" -Force
+cd "C:\Users\Admin\Shopify\Storefronts\Headless"
+git clone --branch headless https://github.com/ecombio/storefronts.git .
+npx shopify hydrogen link
+npx shopify hydrogen env pull
+Add-Content -Path .env -Value "PUBLIC_CHECKOUT_DOMAIN=ecombio.myshopify.com"
+npm install
+npm run dev
+
+
 # 1. Create destination and clone the headless branch
 mkdir "C:\Users\Admin\Shopify\Storefronts\Headless" -Force
 cd "C:\Users\Admin\Shopify\Storefronts\Headless"
