@@ -9,7 +9,7 @@ import type {LoaderFunctionArgs} from 'react-router';
 // - ARTICLE: blog posts for the Articles row
 // - PAGE: static pages (e.g. shipping policy) for the Suggestions rail
 const PREDICTIVE_SEARCH_QUERY = `#graphql
-  query predictiveSearch(
+  query PredictiveSearchInstant(
     $country: CountryCode
     $language: LanguageCode
     $limit: Int!

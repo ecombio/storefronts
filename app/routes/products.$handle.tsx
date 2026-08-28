@@ -1,21 +1,21 @@
-import {redirect, useLoaderData} from 'react-router';
+import {useLoaderData} from 'react-router';
 import type {Route} from './+types/products.$handle';
 import {
-  getSelectedProductOptions,
   Analytics,
+  getSelectedProductOptions,
   useOptimisticVariant,
   getProductOptions,
   getAdjacentAndFirstAvailableVariants,
   useSelectedOptionInUrlParam,
 } from '@shopify/hydrogen';
+import {redirectIfHandleIsLocalized} from '~/lib/redirect';
+import {useYotpoRefresh} from '~/hooks/useYotpoRefresh';
 import {ProductPrice} from '~/components/ProductPrice';
 import {ProductImage} from '~/components/ProductImage';
 import {ProductForm} from '~/components/ProductForm';
-import {ProductReviews} from '~/components/ProductReviews';
-import {StarRating} from '~/components/StarRating';
-import {redirectIfHandleIsLocalized} from '~/lib/redirect';
-import {useYotpoRefresh} from '~/hooks/useYotpoRefresh';
-import {getYotpoReviewSummary} from '~/lib/yotpo.server';
+
+const YOTPO_REVIEWS_INSTANCE_ID = '1332840';
+const YOTPO_STAR_RATING_INSTANCE_ID = '1332841';
 
 export const meta: Route.MetaFunction = ({data}) => {
   return [
@@ -28,19 +28,11 @@ export const meta: Route.MetaFunction = ({data}) => {
 };
 
 export async function loader(args: Route.LoaderArgs) {
-  // Start fetching non-critical data without blocking time to first byte
   const deferredData = loadDeferredData(args);
-
-  // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
-
   return {...deferredData, ...criticalData};
 }
 
-/**
- * Load data necessary for rendering content above the fold. This is the critical data
- * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
- */
 async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   const {handle} = params;
   const {storefront} = context;
@@ -53,98 +45,100 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
     storefront.query(PRODUCT_QUERY, {
       variables: {handle, selectedOptions: getSelectedProductOptions(request)},
     }),
-    // Add other queries here, so that they are loaded in parallel
   ]);
 
   if (!product?.id) {
     throw new Response(null, {status: 404});
   }
 
-  // The API handle might be localized, so redirect to the localized handle
   redirectIfHandleIsLocalized(request, {handle, data: product});
-
-  // Fetch the review summary server-side so the star rating renders with
-  // real numbers on first paint, instead of popping in once the
-  // client-side Yotpo widget mounts.
-  const reviewSummary = await getYotpoReviewSummary(
-    context.env,
-    product.id.split('/').pop() as string,
-  );
 
   return {
     product,
-    reviewSummary,
-    // NOTE: PUBLIC_STORE_DOMAIN is Hydrogen's standard skeleton env var.
-    // If your project renamed or doesn't expose this, swap the source here.
     shopUrl: context.env.PUBLIC_STORE_DOMAIN,
   };
 }
 
-/**
- * Load data for rendering content below the fold. This data is deferred and will be
- * fetched after the initial page load. If it's unavailable, the page should still 200.
- * Make sure to not throw any errors here, as it will cause the page to 500.
- */
 function loadDeferredData({context, params}: Route.LoaderArgs) {
-  // Put any API calls that is not critical to be available on first page render
-  // For example: product reviews, product recommendations, social feeds.
-
   return {};
 }
 
 export default function Product() {
-  const {product, shopUrl, reviewSummary} = useLoaderData<typeof loader>();
+  const {product, shopUrl} = useLoaderData<typeof loader>();
 
-  // Re-trigger Yotpo's DOM scan after client-side navigations, since its
-  // loader script only scans once on full page load by default.
   useYotpoRefresh();
 
-  // Optimistically selects a variant with given available variant information
   const selectedVariant = useOptimisticVariant(
     product.selectedOrFirstAvailableVariant,
     getAdjacentAndFirstAvailableVariants(product),
   );
 
-  // Sets the search param to the selected variant without navigation
-  // only when no search params are set in the url
   useSelectedOptionInUrlParam(selectedVariant.selectedOptions);
 
-  // Get the product options array
   const productOptions = getProductOptions({
     ...product,
     selectedOrFirstAvailableVariant: selectedVariant,
   });
 
   const {title, descriptionHtml} = product;
+  const yotpoProductId = product.id.split('/').pop();
 
   return (
-    <div className="product">
-      <ProductImage image={selectedVariant?.image} />
-      <div className="product-main">
-        <h1>{title}</h1>
-        <StarRating key={`star-rating-${product.id}`} product={product} reviewSummary={reviewSummary} />
-        <ProductPrice
-          price={selectedVariant?.price}
-          compareAtPrice={selectedVariant?.compareAtPrice}
-        />
-        <br />
-        <ProductForm
-          productOptions={productOptions}
-          selectedVariant={selectedVariant}
-        />
-        <br />
-        <br />
-        <p>
-          <strong>Description</strong>
-        </p>
-        <br />
-        <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
-        <br />
-        <ProductReviews
-          key={`reviews-${product.id}`}
-          product={product}
-          selectedVariant={selectedVariant}
-          shopUrl={shopUrl}
+    <div style={{display: "flex", flexDirection: "column", gap: "2rem"}}>
+      <div style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem", alignItems: "start"}}>
+        <div>
+          <ProductImage image={selectedVariant?.image} />
+        </div>
+        <div>
+          <h1>{title}</h1>
+          {/* suppressHydrationWarning: Yotpo's async loader script (in root.tsx)
+              injects its own rendered markup into this div. Without this, React's
+              hydration/reconcile can detect a mismatch against our empty JSX and
+              wipe out what Yotpo rendered, since React expects this node to stay
+              empty on its own. */}
+ <div
+  className="yotpo-widget-instance"
+  data-yotpo-instance-id={YOTPO_STAR_RATING_INSTANCE_ID}
+  data-yotpo-product-id={yotpoProductId}
+  data-yotpo-cart-product-id={yotpoProductId}
+  data-yotpo-section-id="product"
+  suppressHydrationWarning
+/>
+          <ProductPrice
+            price={selectedVariant?.price}
+            compareAtPrice={selectedVariant?.compareAtPrice}
+          />
+          <br />
+          <ProductForm
+            productOptions={productOptions}
+            selectedVariant={selectedVariant}
+          />
+          <br />
+          <br />
+          <p>
+            <strong>Description</strong>
+          </p>
+          <br />
+          <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
+        </div>
+      </div>
+      <div>
+        {/* suppressHydrationWarning: Yotpo's async loader script (in root.tsx)
+            injects its own rendered markup into this div. Without this, React's
+            hydration/reconcile can detect a mismatch against our empty JSX and
+            wipe out what Yotpo rendered, since React expects this node to stay
+            empty on its own. */}
+        <div
+          className="yotpo-widget-instance"
+          data-yotpo-instance-id={YOTPO_REVIEWS_INSTANCE_ID}
+          data-yotpo-product-id={yotpoProductId}
+          data-yotpo-name={product.title}
+          data-yotpo-url={`https://${shopUrl}/products/${product.handle}`}
+          data-yotpo-image-url={selectedVariant?.image?.url}
+          data-yotpo-price={selectedVariant?.price?.amount}
+          data-yotpo-currency={selectedVariant?.price?.currencyCode}
+          data-yotpo-description={product.description}
+          suppressHydrationWarning
         />
       </div>
       <Analytics.ProductView

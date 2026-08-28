@@ -24,20 +24,14 @@ declare global {
  */
 export function useYotpoRefresh() {
   const location = useLocation();
-
   useEffect(() => {
-    // Wait a tick so the widget containers are in the DOM before Yotpo scans.
     const id = window.requestAnimationFrame(() => {
       if (window.yotpo?.refreshWidgets) {
         window.yotpo.refreshWidgets();
       } else if (window.yotpoWidgetsContainer?.initWidgets) {
-        // Fallback for older Yotpo widgets loader versions
         window.yotpoWidgetsContainer.initWidgets();
       }
     });
-
     return () => window.cancelAnimationFrame(id);
-    // location.key changes on every navigation, including revisits to the
-    // same path, which is what we want to detect here.
   }, [location.key]);
 }

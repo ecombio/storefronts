@@ -1,4 +1,4 @@
-import {Analytics, Script, getShopAnalytics, useNonce} from '@shopify/hydrogen';
+import {Analytics, getShopAnalytics, useNonce} from '@shopify/hydrogen';
 import {
   Outlet,
   useRouteError,
@@ -85,6 +85,7 @@ export async function loader(args: Route.LoaderArgs) {
     ...deferredData,
     ...criticalData,
     publicStoreDomain: env.PUBLIC_STORE_DOMAIN,
+    yotpoAppKey: env.PUBLIC_YOTPO_APP_KEY,
     algolia: {
       appId: env.PUBLIC_ALGOLIA_APP_ID,
       searchKey: env.PUBLIC_ALGOLIA_SEARCH_KEY,
@@ -208,11 +209,6 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={menuStyles}></link>
         <Meta />
         <Links />
-        <Script
-          src="https://cdn-widgetsrepository.yotpo.com/v1/loader/GVq3qDsSZ94vLoElcTQgzekz90KJDVehGX1oASx7"
-          async
-          nonce={nonce}
-        />
       </head>
       <body>
         {children}
@@ -225,6 +221,7 @@ export function Layout({children}: {children?: React.ReactNode}) {
 
 export default function App() {
   const data = useRouteLoaderData<RootLoader>('root');
+  const nonce = useNonce();
 
   if (!data) {
     return <Outlet />;
@@ -239,6 +236,13 @@ export default function App() {
       <PageLayout {...data}>
         <Outlet />
       </PageLayout>
+      {data.yotpoAppKey && (
+        <script
+          nonce={nonce}
+          src={`https://cdn-widgetsrepository.yotpo.com/v1/loader/${data.yotpoAppKey}`}
+          async
+        />
+      )}
     </Analytics.Provider>
   );
 }
