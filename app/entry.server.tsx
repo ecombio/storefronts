@@ -46,6 +46,7 @@ export default async function handleRequest(
     fontSrc: [
       "'self'",
       'https://staticw2.yotpo.com',
+      'https://cdn-widgetsrepository.yotpo.com',
       'https://fonts.gstatic.com',
     ],
     imgSrc: [
@@ -53,6 +54,7 @@ export default async function handleRequest(
       'data:',
       'https://cdn.shopify.com',
       'https://staticw2.yotpo.com',
+      'https://cdn-widgetsrepository.yotpo.com',
       'https://api-cdn.yotpo.com',
     ],
   });

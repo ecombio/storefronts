@@ -10,12 +10,17 @@ import {
 } from '@shopify/hydrogen';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {useYotpoRefresh} from '~/hooks/useYotpoRefresh';
+import {getYotpoBottomline} from '~/lib/yotpo';
+import {StarRating} from '~/components/StarRating';
 import {ProductPrice} from '~/components/ProductPrice';
 import {ProductImage} from '~/components/ProductImage';
 import {ProductForm} from '~/components/ProductForm';
 
+// Reviews widget instance stays on Yotpo's client-side script (needs
+// useYotpoRefresh below to init/re-init on mount + route change).
+// Star Rating is custom-coded (see StarRating.tsx + lib/yotpo.ts) since
+// the client-side Star Rating widget never rendered reliably.
 const YOTPO_REVIEWS_INSTANCE_ID = '1332840';
-const YOTPO_STAR_RATING_INSTANCE_ID = '1332841';
 
 export const meta: Route.MetaFunction = ({data}) => {
   return [
@@ -53,9 +58,13 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
 
   redirectIfHandleIsLocalized(request, {handle, data: product});
 
+  const yotpoProductId = product.id.split('/').pop()!;
+  const bottomline = await getYotpoBottomline(yotpoProductId);
+
   return {
     product,
     shopUrl: context.env.PUBLIC_STORE_DOMAIN,
+    bottomline,
   };
 }
 
@@ -64,7 +73,7 @@ function loadDeferredData({context, params}: Route.LoaderArgs) {
 }
 
 export default function Product() {
-  const {product, shopUrl} = useLoaderData<typeof loader>();
+  const {product, shopUrl, bottomline} = useLoaderData<typeof loader>();
 
   useYotpoRefresh();
 
@@ -91,19 +100,12 @@ export default function Product() {
         </div>
         <div>
           <h1>{title}</h1>
-          {/* suppressHydrationWarning: Yotpo's async loader script (in root.tsx)
-              injects its own rendered markup into this div. Without this, React's
-              hydration/reconcile can detect a mismatch against our empty JSX and
-              wipe out what Yotpo rendered, since React expects this node to stay
-              empty on its own. */}
- <div
-  className="yotpo-widget-instance"
-  data-yotpo-instance-id={YOTPO_STAR_RATING_INSTANCE_ID}
-  data-yotpo-product-id={yotpoProductId}
-  data-yotpo-cart-product-id={yotpoProductId}
-  data-yotpo-section-id="product"
-  suppressHydrationWarning
-/>
+          {bottomline && (
+            <StarRating
+              averageScore={bottomline.averageScore}
+              totalReviews={bottomline.totalReviews}
+            />
+          )}
           <ProductPrice
             price={selectedVariant?.price}
             compareAtPrice={selectedVariant?.compareAtPrice}
