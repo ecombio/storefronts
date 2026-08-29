@@ -20,7 +20,7 @@ import {
 } from '~/config/Header.constants';
 import resetStyles from '~/assets/reset.css?url';
 import appStyles from '~/assets/app.css?url';
-import menuStyles from '~/assets/menu.css?url';
+import menuStyles from '~/assets/header-menu.css?url';
 import mainProductStyles from '~/assets/main-product.css?url';
 import productDescriptionStyles from '~/assets/product-description.css?url';
 import tailwindCss from '~/assets/tailwind.css?url';

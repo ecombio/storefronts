@@ -2,7 +2,14 @@ import {Link} from 'react-router';
 import {ShoppingBag} from 'lucide-react';
 
 /**
- * "Cart" nav entry — pulled out of the header shell. Icon-only for now.
+ * "Cart" nav entry — pulled out of the header shell.
+ *
+ * Now renders visible "Cart" text next to the icon (not just an
+ * aria-label on an icon-only link) — the badge count is dynamic
+ * already (comes from the real cart's totalQuantity, passed in as
+ * `count` by Header.tsx's CartBanner), this just makes sure there's
+ * actual on-screen text alongside it, same treatment as HeaderAccount.
+ *
  * Takes `count` and an optional `onClick` as props rather than owning
  * cart state or aside/analytics behavior itself: the parent header
  * (which already has useAside/useAnalytics in scope) decides whether
@@ -19,7 +26,7 @@ export function HeaderCart({
     <Link
       to="/cart"
       onClick={onClick}
-      className="group relative flex items-center text-sm font-medium text-gray-900 transition hover:text-gray-600"
+      className="group flex items-center gap-1.5 text-sm font-medium text-gray-900 transition hover:text-gray-600"
       aria-label={`Cart, ${count} item${count === 1 ? '' : 's'}`}
     >
       <span className="relative">
@@ -31,6 +38,7 @@ export function HeaderCart({
           {count}
         </span>
       </span>
+      <span aria-hidden="true">Cart</span>
     </Link>
   );
 }

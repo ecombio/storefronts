@@ -892,6 +892,13 @@ export type ProductFragment = Pick<
       Pick<StorefrontAPI.Image, 'id' | 'url' | 'altText' | 'width' | 'height'>
     >;
   };
+  collections: {
+    nodes: Array<
+      Pick<StorefrontAPI.Collection, 'handle' | 'title'> & {
+        products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+      }
+    >;
+  };
   options: Array<
     Pick<StorefrontAPI.ProductOption, 'name'> & {
       optionValues: Array<
@@ -1004,6 +1011,8 @@ export type ProductQueryVariables = StorefrontAPI.Exact<{
   selectedOptions:
     | Array<StorefrontAPI.SelectedOptionInput>
     | StorefrontAPI.SelectedOptionInput;
+  breadcrumbCollectionsFirst: StorefrontAPI.Scalars['Int']['input'];
+  breadcrumbCollectionProductsCap: StorefrontAPI.Scalars['Int']['input'];
 }>;
 
 export type ProductQuery = {
@@ -1025,6 +1034,13 @@ export type ProductQuery = {
             StorefrontAPI.Image,
             'id' | 'url' | 'altText' | 'width' | 'height'
           >
+        >;
+      };
+      collections: {
+        nodes: Array<
+          Pick<StorefrontAPI.Collection, 'handle' | 'title'> & {
+            products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+          }
         >;
       };
       options: Array<
@@ -1422,7 +1438,7 @@ interface GeneratedQueryTypes {
     return: PoliciesQuery;
     variables: PoliciesQueryVariables;
   };
-  '#graphql\n  query Product(\n    $country: CountryCode\n    $handle: String!\n    $language: LanguageCode\n    $selectedOptions: [SelectedOptionInput!]!\n  ) @inContext(country: $country, language: $language) {\n    product(handle: $handle) {\n      ...Product\n    }\n    shop {\n      shippingPolicy {\n        body\n      }\n      refundPolicy {\n        body\n      }\n    }\n    shippingPage: page(handle: "shipping-policy") {\n      body\n    }\n    refundPage: page(handle: "refund-policy") {\n      body\n    }\n    warrantyPage: page(handle: "warranty") {\n      body\n    }\n  }\n  #graphql\n  fragment Product on Product {\n    id\n    title\n    vendor\n    handle\n    descriptionHtml\n    description\n    encodedVariantExistence\n    encodedVariantAvailability\n    images(first: 12) {\n      nodes {\n        id\n        url\n        altText\n        width\n        height\n      }\n    }\n    options {\n      name\n      optionValues {\n        name\n        firstSelectableVariant {\n          ...ProductVariant\n        }\n        swatch {\n          color\n          image {\n            previewImage {\n              url\n            }\n          }\n        }\n      }\n    }\n    selectedOrFirstAvailableVariant(selectedOptions: $selectedOptions, ignoreUnknownOptions: true, caseInsensitiveMatch: true) {\n      ...ProductVariant\n    }\n    adjacentVariants (selectedOptions: $selectedOptions) {\n      ...ProductVariant\n    }\n    seo {\n      description\n      title\n    }\n    policyMetafield: metafield(namespace: "custom", key: "product_policy") {\n      reference {\n        ... on Metaobject {\n          shippingPolicyField: field(key: "shipping_policy") {\n            value\n            type\n          }\n          returnsRefundsField: field(key: "returns_refunds") {\n            value\n            type\n          }\n          warrantyPolicyField: field(key: "warranty_policy") {\n            value\n            type\n          }\n        }\n      }\n    }\n  }\n  #graphql\n  fragment ProductVariant on ProductVariant {\n    availableForSale\n    compareAtPrice {\n      amount\n      currencyCode\n    }\n    id\n    image {\n      __typename\n      id\n      url\n      altText\n      width\n      height\n    }\n    price {\n      amount\n      currencyCode\n    }\n    product {\n      title\n      handle\n    }\n    selectedOptions {\n      name\n      value\n    }\n    sku\n    title\n    unitPrice {\n      amount\n      currencyCode\n    }\n  }\n\n\n': {
+  '#graphql\n  query Product(\n    $country: CountryCode\n    $handle: String!\n    $language: LanguageCode\n    $selectedOptions: [SelectedOptionInput!]!\n    $breadcrumbCollectionsFirst: Int!\n    $breadcrumbCollectionProductsCap: Int!\n  ) @inContext(country: $country, language: $language) {\n    product(handle: $handle) {\n      ...Product\n    }\n    shop {\n      shippingPolicy {\n        body\n      }\n      refundPolicy {\n        body\n      }\n    }\n    shippingPage: page(handle: "shipping-policy") {\n      body\n    }\n    refundPage: page(handle: "refund-policy") {\n      body\n    }\n    warrantyPage: page(handle: "warranty") {\n      body\n    }\n  }\n  #graphql\n  fragment Product on Product {\n    id\n    title\n    vendor\n    handle\n    descriptionHtml\n    description\n    encodedVariantExistence\n    encodedVariantAvailability\n    images(first: 12) {\n      nodes {\n        id\n        url\n        altText\n        width\n        height\n      }\n    }\n    collections(first: $breadcrumbCollectionsFirst) {\n      nodes {\n        handle\n        title\n        products(first: $breadcrumbCollectionProductsCap) {\n          nodes {\n            id\n          }\n        }\n      }\n    }\n    options {\n      name\n      optionValues {\n        name\n        firstSelectableVariant {\n          ...ProductVariant\n        }\n        swatch {\n          color\n          image {\n            previewImage {\n              url\n            }\n          }\n        }\n      }\n    }\n    selectedOrFirstAvailableVariant(selectedOptions: $selectedOptions, ignoreUnknownOptions: true, caseInsensitiveMatch: true) {\n      ...ProductVariant\n    }\n    adjacentVariants (selectedOptions: $selectedOptions) {\n      ...ProductVariant\n    }\n    seo {\n      description\n      title\n    }\n    policyMetafield: metafield(namespace: "custom", key: "product_policy") {\n      reference {\n        ... on Metaobject {\n          shippingPolicyField: field(key: "shipping_policy") {\n            value\n            type\n          }\n          returnsRefundsField: field(key: "returns_refunds") {\n            value\n            type\n          }\n          warrantyPolicyField: field(key: "warranty_policy") {\n            value\n            type\n          }\n        }\n      }\n    }\n  }\n  #graphql\n  fragment ProductVariant on ProductVariant {\n    availableForSale\n    compareAtPrice {\n      amount\n      currencyCode\n    }\n    id\n    image {\n      __typename\n      id\n      url\n      altText\n      width\n      height\n    }\n    price {\n      amount\n      currencyCode\n    }\n    product {\n      title\n      handle\n    }\n    selectedOptions {\n      name\n      value\n    }\n    sku\n    title\n    unitPrice {\n      amount\n      currencyCode\n    }\n  }\n\n\n': {
     return: ProductQuery;
     variables: ProductQueryVariables;
   };

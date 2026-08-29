@@ -42,7 +42,7 @@
     "@graphql-codegen/cli": "5.0.2",
     "@react-router/dev": "7.16.0",
     "@react-router/fs-routes": "7.16.0",
-    "@shopify/cli": "3.93.2",
+    "@shopify/cli": "^4.7.0",
     "@shopify/hydrogen-codegen": "0.3.3",
     "@shopify/mini-oxygen": "4.2.2",
     "@shopify/oxygen-workers-types": "^4.1.6",
@@ -74,5 +74,10 @@
   },
   "browserslist": [
     "defaults"
-  ]
+  ],
+  "allowScripts": {
+    "esbuild@0.28.1": true,
+    "workerd@1.20250310.0": true,
+    "unrs-resolver@1.12.2": true
+  }
 }

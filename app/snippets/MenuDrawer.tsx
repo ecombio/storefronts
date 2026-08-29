@@ -91,6 +91,14 @@ function DrawerBackdrop({
 // Maps 1:1 to the showcase-block.liquid snippet: a "Good to know" sidebar
 // (tip_1..tip_3, each an icon/heading/body) plus a category grid with an
 // optional "See all" link. z-40 keeps it above DrawerBackdrop's z-30.
+//
+// max-h-[75vh] + overflow-y-auto: on short viewports the tips column plus
+// a full 5-column category grid can be taller than the space left below
+// the nav row, and this panel has no other height constraint (it's
+// `absolute`, sized purely by its content) — without a cap, that excess
+// just gets clipped by the browser's own edge with no way to reach it.
+// Capping height and scrolling internally keeps the rest of the page (and
+// the backdrop behind it) usable instead of pushing layout around.
 function DrawerPanel({
   item,
   tips,
@@ -113,7 +121,7 @@ function DrawerPanel({
   const seeAllLabel = seeAllConfig?.label ?? 'See all';
 
   return (
-    <div className="absolute inset-x-0 top-full z-40 border-t border-gray-100 bg-white shadow-sm">
+    <div className="absolute inset-x-0 top-full z-40 max-h-[75vh] overflow-y-auto border-t border-gray-100 bg-white shadow-sm">
       <div className="mx-auto flex max-w-[1400px] gap-10 px-4 py-8">
         {tips && tips.length > 0 && (
           <div className="w-56 shrink-0 rounded-xl bg-gray-50 p-5">

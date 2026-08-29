@@ -14,12 +14,24 @@ import {getYotpoBottomline} from '~/lib/yotpo';
 import {ReviewsWidget} from '~/sections/ReviewsWidget';
 import {ProductMedia} from '~/sections/ProductMedia';
 import {ProductDetail} from '~/sections/ProductDetail';
+import {Breadcrumbs} from '~/snippets/Breadcrumbs';
 
-// Reviews widget instance stays on Yotpo's client-side script (needs
-// useYotpoRefresh below to init/re-init on mount + route change).
-// Star Rating is custom-coded (see StarRating.tsx + lib/yotpo.ts) since
-// the client-side Star Rating widget never rendered reliably.
+// Reviews stay on Yotpo's client-side widget (see useYotpoRefresh);
+// Star Rating is custom-coded in StarRating.tsx / lib/yotpo.ts since
+// Yotpo's own Star Rating widget never rendered reliably.
 const YOTPO_REVIEWS_INSTANCE_ID = '1332840';
+
+// Collections fetched per product for breadcrumb parent/child
+// resolution. Must cover the vendor auto-collection plus every real
+// collection; bump if a product with more collections gets an
+// incomplete breadcrumb trail.
+const BREADCRUMB_COLLECTIONS_TO_FETCH = 20;
+
+// This API version has no `productsCount` field, so collection size
+// is approximated by capping product ids fetched per collection.
+// Two collections both over this cap will tie and lose ranking; raise
+// if breadcrumbs pick the wrong parent/child.
+const BREADCRUMB_COLLECTION_PRODUCTS_CAP = 50;
 
 export const meta: Route.MetaFunction = ({data}) => {
   return [
@@ -48,7 +60,12 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   const [{product, shop, shippingPage, refundPage, warrantyPage}] =
     await Promise.all([
       storefront.query(PRODUCT_QUERY, {
-        variables: {handle, selectedOptions: getSelectedProductOptions(request)},
+        variables: {
+          handle,
+          selectedOptions: getSelectedProductOptions(request),
+          breadcrumbCollectionsFirst: BREADCRUMB_COLLECTIONS_TO_FETCH,
+          breadcrumbCollectionProductsCap: BREADCRUMB_COLLECTION_PRODUCTS_CAP,
+        },
       }),
     ]);
 
@@ -62,11 +79,14 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   const bottomline = await getYotpoBottomline(yotpoProductId);
 
   const policyFields = product.policyMetafield?.reference;
+  const {parentCollection, childCollection} = getBreadcrumbCollections(product);
 
   return {
     product,
     shopUrl: context.env.PUBLIC_STORE_DOMAIN,
     bottomline,
+    parentCollection,
+    childCollection,
     shippingHtml:
       readSafeMetafieldHtml(policyFields?.shippingPolicyField) ??
       nullIfBlank(shippingPage?.body) ??
@@ -75,8 +95,7 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
       readSafeMetafieldHtml(policyFields?.returnsRefundsField) ??
       nullIfBlank(refundPage?.body) ??
       nullIfBlank(shop?.refundPolicy?.body),
-    // No shop-level equivalent for warranty — falls back to a static
-    // contact message, matching the Liquid reference.
+    // No shop-level equivalent for warranty — static fallback message.
     warrantyHtml:
       readSafeMetafieldHtml(policyFields?.warrantyPolicyField) ??
       nullIfBlank(warrantyPage?.body) ??
@@ -84,19 +103,76 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   };
 }
 
+// JS port of Liquid's `| handleize`: lowercase, collapse non-alphanumerics
+// to a single hyphen, trim edges. Doesn't transliterate accented/non-Latin
+// characters like Shopify's real handleize does.
+function handleize(value: string): string {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+type BreadcrumbCollectionCandidate = {
+  handle: string;
+  title: string;
+  products?: {nodes?: {id: string}[] | null} | null;
+};
+
+// Ported from breadcrumbs.liquid: excludes the product's vendor
+// auto-collection (by handleized vendor name), then picks the largest
+// remaining collection as "parent" and the smallest as "child". Both
+// optional. "Size" is the capped product-id count from the query
+// (see BREADCRUMB_COLLECTION_PRODUCTS_CAP above), not a true total.
+function getBreadcrumbCollections(product: {
+  vendor?: string | null;
+  collections?: {nodes?: BreadcrumbCollectionCandidate[] | null} | null;
+}): {
+  parentCollection: BreadcrumbCollectionCandidate | null;
+  childCollection: BreadcrumbCollectionCandidate | null;
+} {
+  const collections = product.collections?.nodes ?? [];
+  const vendorHandle = product.vendor ? handleize(product.vendor) : '';
+  const sizeOf = (col: BreadcrumbCollectionCandidate) =>
+    col.products?.nodes?.length ?? 0;
+
+  let parentCollection: BreadcrumbCollectionCandidate | null = null;
+  let largestCount = -1;
+
+  for (const col of collections) {
+    if (col.handle === vendorHandle) continue;
+    const count = sizeOf(col);
+    if (count > largestCount) {
+      parentCollection = col;
+      largestCount = count;
+    }
+  }
+
+  let childCollection: BreadcrumbCollectionCandidate | null = null;
+  let smallestCount = Infinity;
+
+  for (const col of collections) {
+    if (col.handle === vendorHandle) continue;
+    if (col.handle === parentCollection?.handle) continue;
+    const count = sizeOf(col);
+    if (count < smallestCount) {
+      childCollection = col;
+      smallestCount = count;
+    }
+  }
+
+  return {parentCollection, childCollection};
+}
+
 function nullIfBlank(value?: string | null): string | null {
   return value?.trim() ? value : null;
 }
 
-/**
- * Renders a metaobject field's value only when its type is something
- * we can safely drop straight into dangerouslySetInnerHTML —
- * multi_line_text_field (plain text, newline-separated) or an
- * html-type field. rich_text_field's `value` is Shopify's rich-text
- * JSON AST, not HTML — Liquid's `metafield_tag` filter converts that
- * automatically, but there's no equivalent here, so we deliberately
- * fall through to the next tier rather than render raw JSON.
- */
+// Renders a metaobject field as HTML only for types safe to drop into
+// dangerouslySetInnerHTML. rich_text_field's value is Shopify's rich-text
+// JSON AST, not HTML — no parser for that here, so it's skipped rather
+// than rendered raw.
 function readSafeMetafieldHtml(
   field?: {value: string; type: string} | null,
 ): string | null {
@@ -113,8 +189,6 @@ function readSafeMetafieldHtml(
     return field.value;
   }
 
-  // rich_text_field (or anything else unrecognized) — not safely
-  // renderable without a JSON-AST-to-HTML parser. Skip it.
   return null;
 }
 
@@ -123,8 +197,15 @@ function loadDeferredData({context, params}: Route.LoaderArgs) {
 }
 
 export default function Product() {
-  const {product, shopUrl, bottomline, shippingHtml, refundHtml} =
-    useLoaderData<typeof loader>();
+  const {
+    product,
+    shopUrl,
+    bottomline,
+    shippingHtml,
+    refundHtml,
+    parentCollection,
+    childCollection,
+  } = useLoaderData<typeof loader>();
 
   useYotpoRefresh();
 
@@ -145,6 +226,11 @@ export default function Product() {
 
   return (
     <div style={{display: 'flex', flexDirection: 'column', gap: '2rem'}}>
+      <Breadcrumbs
+        productTitle={title}
+        parentCollection={parentCollection}
+        childCollection={childCollection}
+      />
       <div
         style={{
           display: 'grid',
@@ -255,6 +341,17 @@ const PRODUCT_FRAGMENT = `#graphql
         height
       }
     }
+    collections(first: $breadcrumbCollectionsFirst) {
+      nodes {
+        handle
+        title
+        products(first: $breadcrumbCollectionProductsCap) {
+          nodes {
+            id
+          }
+        }
+      }
+    }
     options {
       name
       optionValues {
@@ -310,6 +407,8 @@ const PRODUCT_QUERY = `#graphql
     $handle: String!
     $language: LanguageCode
     $selectedOptions: [SelectedOptionInput!]!
+    $breadcrumbCollectionsFirst: Int!
+    $breadcrumbCollectionProductsCap: Int!
   ) @inContext(country: $country, language: $language) {
     product(handle: $handle) {
       ...Product

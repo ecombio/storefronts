@@ -5,54 +5,36 @@ type BreadcrumbCollection = {
   title: string;
 };
 
-/**
- * Ported from snippets/breadcrumbs.liquid.
- *
- * NOTE — simplified vs the Liquid version: the original picked a
- * "parent" (largest) and "child" (smallest) collection by
- * `collection.all_products_count`. The Storefront API doesn't expose
- * per-collection product counts on `product.collections` without an
- * extra query per collection, so this just takes the first two
- * collections in whatever order the API returns them (usually the
- * order they were added to the product). If you need count-based
- * ordering, query `collectionByHandle(handle) { productsCount }` for
- * each and sort client-side, or precompute in the loader.
- */
+// Parent/child are resolved by the caller (getBreadcrumbCollections in
+// products.$handle.tsx): largest non-vendor collection = parent,
+// smallest = child. This component just renders what it's given.
+
 export function Breadcrumbs({
   productTitle,
-  collections,
+  parentCollection,
+  childCollection,
 }: {
   productTitle: string;
-  collections?: BreadcrumbCollection[] | null;
+  parentCollection?: BreadcrumbCollection | null;
+  childCollection?: BreadcrumbCollection | null;
 }) {
-  const [parent, child] = collections ?? [];
+  const crumbs = [parentCollection, childCollection].filter(
+    (c): c is BreadcrumbCollection => Boolean(c),
+  );
 
   return (
     <nav className="breadcrumbs" aria-label="Breadcrumb">
       <div className="breadcrumbs-container">
         <Link to="/">Home</Link>
 
-        {parent && (
-          <>
-            <span className="breadcrumb-divider" aria-hidden="true">
-              <span className="divider-line" />
-            </span>
-            <Link to={`/collections/${parent.handle}`}>{parent.title}</Link>
-          </>
-        )}
+        {crumbs.map((crumb) => (
+          <span key={crumb.handle}>
+            <span className="breadcrumb-divider" aria-hidden="true">›</span>
+            <Link to={`/collections/${crumb.handle}`}>{crumb.title}</Link>
+          </span>
+        ))}
 
-        {child && (
-          <>
-            <span className="breadcrumb-divider" aria-hidden="true">
-              <span className="divider-line" />
-            </span>
-            <Link to={`/collections/${child.handle}`}>{child.title}</Link>
-          </>
-        )}
-
-        <span className="breadcrumb-divider" aria-hidden="true">
-          <span className="divider-line" />
-        </span>
+        <span className="breadcrumb-divider" aria-hidden="true">›</span>
         <span className="breadcrumb-current" aria-current="page">
           {productTitle}
         </span>

@@ -1,8 +1,7 @@
 import {useRef, useState} from 'react';
 import {useNavigate} from 'react-router';
-import {AiSearchBar} from '~/components/ai-search/AiSearchBar';
-import '~/components/ai-search/ai-search.css';
-import {TRENDING_SEARCH_TERMS} from '~/config/Header.constants';
+import {SearchBar} from '~/snippets/SearchBar';
+import '~/assets/search-bar.css';
 import {
   SearchPanel,
   readRecentSearches,
@@ -13,28 +12,32 @@ import {
 /**
  * The search trigger + results panel that live in the header row.
  *
- * AiSearchBar owns the visible input itself (typing, blinking cursor,
- * cycling placeholder). This component owns the `open`/`term` state
- * shared between AiSearchBar and SearchPanel, plus "commit a search"
- * (record as recent, navigate to /search) — SearchPanel no longer has
- * its own input or term state; it's fully driven from here.
+ * SearchBar owns the visible input itself (typing, blinking cursor) —
+ * same pill styling as AiSearchBar, but with a static "Search" label
+ * instead of the cycling/typewriter placeholder. AiSearchBar itself is
+ * left untouched/parked for now; swap this back to it later if the AI
+ * framing comes back into play.
  *
- * NOTE / known changes from the previous version of this file:
- *  - The old CyclingTypewriter (custom type-in/vanish animation) is
- *    gone — AiSearchBar has its own built-in cycling placeholder
- *    (a slot-machine-style vertical swap) from the Figma Make
- *    prototype, and the two aren't combined.
- *  - There's no mic button — AiSearchBar's design doesn't have a slot
- *    for one. If voice search matters, that needs to be added to
- *    AiSearchBar itself.
- *  - AiSearchBar is visually a tall (64px), fully rounded glassmorphic
- *    pill per the Figma prototype — quite different from the previous
- *    44px bordered pill here. It will likely look oversized in the
- *    current header row until it gets a sizing/style pass; not
- *    addressed in this wiring step.
+ * This component owns the `open`/`term` state shared between SearchBar
+ * and SearchPanel, plus "commit a search" (record as recent, navigate
+ * to /search) — SearchPanel has no input or term state of its own;
+ * it's fully driven from here.
+ *
+ * Width: this component's root is `w-full`, so it stretches to fill
+ * whatever space its parent gives it — in Header.tsx that's the
+ * `flex-1 justify-center` middle slot between the logo and the CTAs,
+ * so the bar automatically grows or shrinks as that slot's available
+ * width changes (e.g. if the logo or CTAs area changes size), instead
+ * of sitting at a fixed pixel width. `max-w-2xl` on SearchBar's own
+ * className is just a ceiling so it doesn't stretch edge-to-edge on
+ * very wide screens — remove it if you want zero cap.
+ *
+ * NOTE / carried over from the AiSearchBar wiring:
+ *  - There's no mic button — SearchBar's design doesn't have a slot
+ *    for one.
  *  - Clicking a suggestion/recent-search chip inside SearchPanel no
  *    longer refocuses the input (that input used to live inside
- *    SearchPanel; now it's AiSearchBar, outside it). Minor known gap.
+ *    SearchPanel; now it's SearchBar, outside it). Minor known gap.
  */
 export function HeaderSearch() {
   const [open, setOpen] = useState(false);
@@ -62,15 +65,14 @@ export function HeaderSearch() {
   }
 
   return (
-    <div className="search-trigger flex flex-1 items-center">
-      <AiSearchBar
+    <div className="search-trigger flex w-full items-center">
+      <SearchBar
         ref={containerRef}
-        className="max-w-2xl"
+        className="w-full max-w-2xl"
         value={term}
         onQueryChange={setTerm}
         onFocus={() => setOpen(true)}
         onSearch={commitSearch}
-        suggestions={TRENDING_SEARCH_TERMS}
       />
 
       <SearchPanel

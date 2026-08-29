@@ -12,6 +12,7 @@ import {
   ArrowUpLeft,
 } from 'lucide-react';
 import {TRENDING_SEARCH_TERMS} from '~/config/Header.constants';
+import {SearchBar} from '~/snippets/SearchBar';
 
 // Matches the shape returned by the /api/predictive-search route loader
 // (app/routes/api.predictive-search.tsx), which wraps Shopify's
@@ -166,6 +167,13 @@ export function SearchPanel({
     pages.length > 0;
 
   const panelRef = useRef<HTMLDivElement>(null);
+  // The panel's own copy of the search input. This is the visible bar
+  // while the panel is open — the header's SearchBar (in HeaderSearch)
+  // sits underneath the panel and is hidden once it slides over it, so
+  // this is what the user actually sees and types into. Both instances
+  // are fully controlled from HeaderSearch via the same `term` state,
+  // so they always stay in sync.
+  const panelInputRef = useRef<HTMLInputElement>(null);
 
   // Portaled to <body> below (same reasoning as MenuDrawer's
   // DrawerBackdrop) so this always renders above everything else on the
@@ -174,6 +182,12 @@ export function SearchPanel({
   // before portaling — same guard DrawerBackdrop uses.
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
+  // Focus the panel's own input whenever the panel opens, so the user
+  // can keep typing right where the (now-hidden) header pill left off.
+  useEffect(() => {
+    if (open) panelInputRef.current?.focus();
+  }, [open]);
 
   function closeSearch() {
     // Clearing `term` is enough — the derived values above all fall back
@@ -185,12 +199,9 @@ export function SearchPanel({
 
   function applySuggestion(value: string) {
     onTermChange(value);
-    // NOTE: this used to also refocus the panel's own <input>. That input
-    // is gone now — the real one lives inside AiSearchBar, outside this
-    // component — so clicking a suggestion updates the term/results but
-    // doesn't refocus the pill. Known follow-up if that focus behavior
-    // is wanted back; would need AiSearchBar to expose an imperative
-    // `.focus()` handle in addition to its current root-div ref.
+    // Refocus the panel's own input so the user can keep typing/editing
+    // right after picking a suggestion, instead of losing focus.
+    panelInputRef.current?.focus();
   }
 
   useEffect(() => {
@@ -268,10 +279,19 @@ export function SearchPanel({
       >
         <div className="overflow-hidden">
           <div className="mx-auto max-h-[80vh] max-w-[980px] overflow-y-auto px-6 py-7">
-            {/* AiSearchBar (outside this component, in HeaderSearch) is
-                now the only input — this row just keeps a way to
-                dismiss the panel without clearing focus from the pill. */}
-            <div className="flex items-center justify-end">
+            {/* The panel's own visible search bar + close button. This
+                is what the user sees/types into while the panel is
+                open — it's the same controlled `term`/`onTermChange`
+                that HeaderSearch passes to the header's own SearchBar,
+                so the two never drift out of sync. */}
+            <div className="flex items-center gap-3">
+              <SearchBar
+                inputRef={panelInputRef}
+                className="flex-1"
+                value={term}
+                onQueryChange={onTermChange}
+                onSearch={onNavigate}
+              />
               <button
                 type="button"
                 onClick={closeSearch}
