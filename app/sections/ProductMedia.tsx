@@ -8,14 +8,11 @@ type GalleryImage = {
 };
 
 /**
+ * Left-hand column of the PDP: product media/gallery.
  * Ported from snippets/product-media.liquid + assets/product-media.js.
- * Replaces <ProductImage /> in products.$handle.tsx.
- *
- * Requires `images(first: N) { nodes { id url altText } }` on the
- * product query (see updated PRODUCT_FRAGMENT below) — the original
- * skeleton fragment only fetched the variant's single `image`.
+ * Sibling to ProductDetail, which handles the right-hand column.
  */
-export function ProductGallery({
+export function ProductMedia({
   images,
   selectedVariantImage,
   productTitle,
@@ -27,6 +24,7 @@ export function ProductGallery({
   const [activeIndex, setActiveIndex] = useState(0);
   const viewerRef = useRef<HTMLDivElement>(null);
   const galleryRef = useRef<HTMLDivElement>(null);
+  const thumbTrackRef = useRef<HTMLDivElement>(null);
 
   // When the shopper picks a variant that has its own image, jump the
   // main viewer + active thumbnail to match (mirrors the
@@ -60,6 +58,16 @@ export function ProductGallery({
     return () => observer.disconnect();
   }, []);
 
+  function scrollThumbnails(direction: 'up' | 'down') {
+    const track = thumbTrackRef.current;
+    if (!track) return;
+    const amount = track.clientHeight * 0.8;
+    track.scrollBy({
+      top: direction === 'up' ? -amount : amount,
+      behavior: 'smooth',
+    });
+  }
+
   if (!images.length) return null;
 
   const activeImage = images[activeIndex];
@@ -68,22 +76,32 @@ export function ProductGallery({
     <div className="product-gallery" ref={galleryRef}>
       {images.length > 1 && (
         <div className="product-thumbnails">
-          <div className="thumbnail-container">
+          <button
+            type="button"
+            className="thumbnail-scroll-arrow thumbnail-scroll-arrow--up"
+            aria-label="Scroll thumbnails up"
+            onClick={() => scrollThumbnails('up')}
+          >
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path
+                d="M5 12.5L10 7.5L15 12.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+
+          <div className="thumbnail-container" ref={thumbTrackRef}>
             {images.map((image, index) => (
-              <div
+              <button
                 key={image.id ?? image.url}
+                type="button"
                 className={`thumbnail-item${index === activeIndex ? ' active' : ''}`}
-                tabIndex={0}
-                role="button"
                 aria-label={`View image ${index + 1}`}
                 aria-pressed={index === activeIndex}
                 onClick={() => setActiveIndex(index)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    setActiveIndex(index);
-                  }
-                }}
               >
                 <div className="thumbnail-wrapper">
                   <Image
@@ -98,9 +116,26 @@ export function ProductGallery({
                     sizes="84px"
                   />
                 </div>
-              </div>
+              </button>
             ))}
           </div>
+
+          <button
+            type="button"
+            className="thumbnail-scroll-arrow thumbnail-scroll-arrow--down"
+            aria-label="Scroll thumbnails down"
+            onClick={() => scrollThumbnails('down')}
+          >
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path
+                d="M5 7.5L10 12.5L15 7.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
         </div>
       )}
 

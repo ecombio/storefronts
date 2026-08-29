@@ -11,12 +11,9 @@ import {
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {useYotpoRefresh} from '~/hooks/useYotpoRefresh';
 import {getYotpoBottomline} from '~/lib/yotpo';
-import {StarRating} from '~/snippets/StarRating';
 import {ReviewsWidget} from '~/sections/ReviewsWidget';
-import {ProductPrice} from '~/snippets/ProductPrice';
-import {ProductImage} from '~/snippets/ProductImage';
-import {ProductForm} from '~/sections/ProductForm';
-import {Description} from '~/snippets/ProductDescription';
+import {ProductMedia} from '~/sections/ProductMedia';
+import {ProductDetail} from '~/sections/ProductDetail';
 
 // Reviews widget instance stays on Yotpo's client-side script (needs
 // useYotpoRefresh below to init/re-init on mount + route change).
@@ -95,32 +92,27 @@ export default function Product() {
   const yotpoProductId = product.id.split('/').pop();
 
   return (
-    <div style={{display: "flex", flexDirection: "column", gap: "2rem"}}>
-      <div style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem", alignItems: "start"}}>
-        <div>
-          <ProductImage image={selectedVariant?.image} />
-        </div>
-        <div>
-          <h1>{title}</h1>
-          {bottomline && (
-            <StarRating
-              averageScore={bottomline.averageScore}
-              totalReviews={bottomline.totalReviews}
-            />
-          )}
-          <ProductPrice
-            price={selectedVariant?.price}
-            compareAtPrice={selectedVariant?.compareAtPrice}
-          />
-          <br />
-          <ProductForm
-            productOptions={productOptions}
-            selectedVariant={selectedVariant}
-          />
-          <br />
-          <br />
-          <Description descriptionHtml={descriptionHtml} />
-        </div>
+    <div style={{display: 'flex', flexDirection: 'column', gap: '2rem'}}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '2rem',
+          alignItems: 'start',
+        }}
+      >
+        <ProductMedia
+          images={product.images?.nodes ?? []}
+          selectedVariantImage={selectedVariant?.image}
+          productTitle={title}
+        />
+        <ProductDetail
+          title={title}
+          descriptionHtml={descriptionHtml}
+          productOptions={productOptions}
+          selectedVariant={selectedVariant}
+          bottomline={bottomline}
+        />
       </div>
       <div>
         <ReviewsWidget
@@ -200,6 +192,15 @@ const PRODUCT_FRAGMENT = `#graphql
     description
     encodedVariantExistence
     encodedVariantAvailability
+    images(first: 12) {
+      nodes {
+        id
+        url
+        altText
+        width
+        height
+      }
+    }
     options {
       name
       optionValues {
