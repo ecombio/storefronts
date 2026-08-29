@@ -22,6 +22,7 @@ import resetStyles from '~/assets/reset.css?url';
 import appStyles from '~/assets/app.css?url';
 import menuStyles from '~/assets/menu.css?url';
 import mainProductStyles from '~/assets/main-product.css?url';
+import productDescriptionStyles from '~/assets/product-description.css?url';
 import tailwindCss from '~/assets/tailwind.css?url';
 import {PageLayout} from './components/PageLayout';
 
@@ -209,6 +210,7 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={appStyles}></link>
         <link rel="stylesheet" href={menuStyles}></link>
         <link rel="stylesheet" href={mainProductStyles}></link>
+        <link rel="stylesheet" href={productDescriptionStyles}></link>
         <Meta />
         <Links />
       </head>
@@ -273,5 +275,3 @@ export function ErrorBoundary() {
     </div>
   );
 }
-
-

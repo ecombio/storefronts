@@ -171,3 +171,161 @@
     display: none;
   }
 }
+
+/* ==========================================================================
+   Right-hand PDP column — used by app/sections/ProductDetail.tsx,
+   app/sections/ProductForm.tsx, and app/snippets/ProductDescription.tsx
+   ========================================================================== */
+
+.product-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.product-detail-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+/* --- Sale badge --- */
+
+.sale-badge {
+  display: inline-block;
+  align-self: flex-start;
+  background: #e11d2e;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0.35rem 0.6rem;
+  border-radius: 4px;
+  letter-spacing: 0.01em;
+}
+
+/* --- Price --- */
+
+.product-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.product-price-on-sale {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.product-price-on-sale s {
+  font-size: 1.125rem;
+  font-weight: 400;
+  color: #999;
+}
+
+/* --- Variant selectors --- */
+
+.product-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.product-options h5 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #666;
+  margin: 0 0 0.5rem;
+}
+
+.product-options-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.product-options-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.1rem;
+  border-radius: 999px;
+  border: 1px solid #ddd;
+  font-size: 0.9rem;
+  font-weight: 500;
+  background: #fff;
+  color: #111;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.product-options-item:hover {
+  border-color: #999;
+}
+
+.product-options-item--selected {
+  border-color: #000;
+  background: #000;
+  color: #fff;
+}
+
+.product-options-item--selected:hover {
+  border-color: #000;
+}
+
+.product-options-item--unavailable {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Swatch (color/image) variant — overrides the pill's own background
+   with the swatch color/image instead. */
+.product-option-label-swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-option-label-swatch img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* --- Add to cart CTA --- */
+
+.product-form button[type='submit'] {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  background: #111;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.product-form button[type='submit']:hover:not(:disabled) {
+  background: #333;
+}
+
+.product-form button[type='submit']:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* Description / Shipping / Refund / Warranty panel styles have moved
+   to assets/product-description.css (see that file's header comment
+   for the wiring this needs in root.tsx). */
