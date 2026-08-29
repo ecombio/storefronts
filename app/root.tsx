@@ -1,3 +1,4 @@
+// app/root.tsx
 import {Analytics, getShopAnalytics, useNonce} from '@shopify/hydrogen';
 import {
   Outlet,
@@ -20,7 +21,7 @@ import {
 } from '~/config/Header.constants';
 import resetStyles from '~/assets/reset.css?url';
 import appStyles from '~/assets/app.css?url';
-import menuStyles from '~/assets/header-menu.css?url';
+import menuStyles from '~/assets/highlight.css?url';
 import mainProductStyles from '~/assets/main-product.css?url';
 import productDescriptionStyles from '~/assets/product-description.css?url';
 import tailwindCss from '~/assets/tailwind.css?url';
@@ -28,38 +29,18 @@ import {PageLayout} from './components/PageLayout';
 
 export type RootLoader = typeof loader;
 
-/**
- * This is important to avoid re-fetching root queries on sub-navigations
- */
 export const shouldRevalidate: ShouldRevalidateFunction = ({
   formMethod,
   currentUrl,
   nextUrl,
 }) => {
-  // revalidate when a mutation is performed e.g add to cart, login...
   if (formMethod && formMethod !== 'GET') return true;
 
-  // revalidate when manually revalidating via useRevalidator
   if (currentUrl.toString() === nextUrl.toString()) return true;
 
-  // Defaulting to no revalidation for root loader data to improve performance.
-  // When using this feature, you risk your UI getting out of sync with your server.
-  // Use with caution. If you are uncomfortable with this optimization, update the
-  // line below to `return defaultShouldRevalidate` instead.
-  // For more details see: https://remix.run/docs/en/main/route/should-revalidate
   return false;
 };
 
-/**
- * The main and reset stylesheets are added in the Layout component
- * to prevent a bug in development HMR updates.
- *
- * This avoids the "failed to execute 'insertBefore' on 'Node'" error
- * that occurs after editing and navigating to another page.
- *
- * It's a temporary fix until the issue is resolved.
- * https://github.com/remix-run/remix/issues/9242
- */
 export function links() {
   return [
     {
@@ -75,10 +56,8 @@ export function links() {
 }
 
 export async function loader(args: Route.LoaderArgs) {
-  // Start fetching non-critical data without blocking time to first byte
   const deferredData = loadDeferredData(args);
 
-  // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
 
   const {storefront, env} = args.context;
@@ -101,17 +80,12 @@ export async function loader(args: Route.LoaderArgs) {
       checkoutDomain: env.PUBLIC_CHECKOUT_DOMAIN,
       storefrontAccessToken: env.PUBLIC_STOREFRONT_API_TOKEN,
       withPrivacyBanner: false,
-      // localize the privacy banner
       country: args.context.storefront.i18n.country,
       language: args.context.storefront.i18n.language,
     },
   };
 }
 
-/**
- * Load data necessary for rendering content above the fold. This is the critical data
- * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
- */
 async function loadCriticalData({context}: Route.LoaderArgs) {
   const {storefront} = context;
 
@@ -119,18 +93,11 @@ async function loadCriticalData({context}: Route.LoaderArgs) {
     storefront.query(HEADER_QUERY, {
       cache: storefront.CacheLong(),
       variables: {
-        headerMenuHandle: 'main-menu', // Adjust to your header menu handle
+        headerMenuHandle: 'main-menu',
       },
     }),
-    // Add other queries here, so that they are loaded in parallel
   ]);
 
-  // The header menu's second-level items (the cards shown in the mega-menu
-  // drawer) carry a `resourceId` whenever they're linked to a real Shopify
-  // resource in Admin (see MENU_FRAGMENT in ~/lib/fragments). When that
-  // resource is a Collection, fetch its real image here so MenuDrawer can
-  // use it instead of falling back to the static SUBMENU_IMAGES map or the
-  // generic placeholder icon.
   const collectionImages = await loadMenuCollectionImages(storefront, header.menu);
 
   return {header, collectionImages};
@@ -164,29 +131,18 @@ async function loadMenuCollectionImages(
   );
 }
 
-/**
- * Load data for rendering content below the fold. This data is deferred and will be
- * fetched after the initial page load. If it's unavailable, the page should still 200.
- * Make sure to not throw any errors here, as it will cause the page to 500.
- */
 function loadDeferredData({context}: Route.LoaderArgs) {
   const {storefront, customerAccount, cart} = context;
 
-  // Defer the footer query (below the fold). Resolves to `{ menu, policiesMenu }` —
-  // `menu` carries the footer's column links (handle: footer), and `policiesMenu`
-  // carries the flat legal-links row at the bottom (handle: policies), fully
-  // editable from Admin > Content > Menus > Store Policy. <Footer> destructures
-  // both directly off the resolved value.
   const footer = storefront
     .query(FOOTER_QUERY, {
       cache: storefront.CacheLong(),
       variables: {
-        footerMenuHandle: 'footer', // Adjust to your footer menu handle
-        policiesMenuHandle: 'policies', // Store Policy menu — Admin > Content > Menus
+        footerMenuHandle: 'footer',
+        policiesMenuHandle: 'policies',
       },
     })
     .catch((error: Error) => {
-      // Log query errors, but don't throw them so the page can still render
       console.error(error);
       return null;
     });

@@ -1,3 +1,4 @@
+// app/snippets/MenuDrawer.tsx
 import {useEffect, useState} from 'react';
 import {createPortal} from 'react-dom';
 import {NavLink} from 'react-router';
@@ -11,17 +12,6 @@ import {
   type MenuItem,
 } from '~/config/Header.constants';
 
-/**
- * Everything to do with the mega-menu's dropdown content: the dimmed
- * backdrop and the tips/categories panel. HeaderMenu owns *when* a drawer
- * should be open (hover state, timers, escape/scroll handling); this file
- * owns *what* renders once it is.
- *
- * `item` is the currently-hovered top-level menu item, or undefined when
- * nothing is active. Whether that translates into a visible drawer (i.e.
- * whether the item actually has tips or sub-categories to show) is decided
- * in here, not by the caller.
- */
 export function MenuDrawer({
   item,
   top,
@@ -57,11 +47,6 @@ export function MenuDrawer({
   );
 }
 
-// Portaled to <body> so the dimmed/blurred backdrop escapes the header's
-// stacking context and can sit over the rest of the page, same reasoning
-// as SearchBar's backdrop in Header.tsx and RegionPicker's dropdown portal.
-// `top` pins it to the nav row's bottom edge (tracked in HeaderMenu) so it
-// never covers the logo/search row sitting above the nav.
 function DrawerBackdrop({
   open,
   top,
@@ -88,17 +73,6 @@ function DrawerBackdrop({
   );
 }
 
-// Maps 1:1 to the showcase-block.liquid snippet: a "Good to know" sidebar
-// (tip_1..tip_3, each an icon/heading/body) plus a category grid with an
-// optional "See all" link. z-40 keeps it above DrawerBackdrop's z-30.
-//
-// max-h-[75vh] + overflow-y-auto: on short viewports the tips column plus
-// a full 5-column category grid can be taller than the space left below
-// the nav row, and this panel has no other height constraint (it's
-// `absolute`, sized purely by its content) — without a cap, that excess
-// just gets clipped by the browser's own edge with no way to reach it.
-// Capping height and scrolling internally keeps the rest of the page (and
-// the backdrop behind it) usable instead of pushing layout around.
 function DrawerPanel({
   item,
   tips,
@@ -160,10 +134,6 @@ function DrawerPanel({
               {categories.map((sub) => {
                 if (!sub.url) return null;
                 const url = resolveUrl(sub.url, publicStoreDomain, primaryDomainUrl);
-                // Prefer the real, live collection image (fetched by
-                // resourceId — see MENU_COLLECTION_IMAGES_QUERY). Fall back
-                // to the static stand-in map, then to the icon placeholder,
-                // for items that don't resolve to a collection image.
                 const liveImage = sub.resourceId ? collectionImages?.[sub.resourceId] : undefined;
                 const imageSrc = liveImage?.url ?? SUBMENU_IMAGES[sub.title];
                 const imageAlt = liveImage?.altText ?? sub.title;
@@ -201,11 +171,6 @@ function DrawerPanel({
   );
 }
 
-// Stand-in for the Liquid snippet's `render 'menu-icon', icon: t_icon` —
-// that partial resolves arbitrary icon names from the theme's icon set;
-// this maps the handful of names used in Header.constants.ts's
-// SHOWCASE_TIPS to lucide-react equivalents, falling back to a generic
-// sparkle for anything unrecognized.
 function TipIcon({name}: {name?: string}) {
   const props = {size: 16, 'aria-hidden': true as const};
   switch (name) {

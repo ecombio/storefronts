@@ -1,52 +1,5 @@
-/* On Sale — red highlighted nav link with a subtle twinkling star trio,
-   tight to the text (matches target design: small, close, no hover speed
-   change — just a calm constant twinkle). */
-
-.menu-bar__link--highlight {
-  --hl-color: #ff2d2d;
-  color: var(--hl-color) !important;
-  font-weight: 700;
-  position: relative;
-  padding-right: 18px;
-}
-
-.menu-bar__link--highlight:hover {
-  opacity: 0.82;
-}
-
-.menu-item__star {
-  position: absolute;
-  width: 7px;
-  height: 7px;
-  color: var(--hl-color, #ff2d2d);
-  pointer-events: none;
-}
-
-.menu-item__star--1 {
-  top: -4px;
-  right: 2px;
-  animation: menu-item-twinkle 1.1s ease-in-out 0s infinite;
-}
-.menu-item__star--2 {
-  top: 3px;
-  right: -4px;
-  animation: menu-item-twinkle 1.6s ease-in-out 0.25s infinite;
-}
-.menu-item__star--3 {
-  top: 9px;
-  right: 3px;
-  animation: menu-item-twinkle 1.9s ease-in-out 0.5s infinite;
-}
-
-@keyframes menu-item-twinkle {
-  0%, 100% { opacity: 0.2; transform: scale(0.5) rotate(0deg); }
-  50%      { opacity: 1;   transform: scale(1.1) rotate(15deg); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .menu-item__star--1,
-  .menu-item__star--2,
-  .menu-item__star--3 {
-    animation-duration: 2.4s;
-  }
-}
+/* "On Sale" star-highlight styles have moved to Highlight.css —
+   this file previously duplicated those rules, which caused
+   conflicting/unpredictable styling depending on load order.
+   Do not re-add .menu-bar__link--highlight / .menu-item__star rules
+   here; edit Highlight.css instead. */

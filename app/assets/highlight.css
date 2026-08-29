@@ -1,0 +1,61 @@
+/* app/assets/highlight.css */
+
+.nav-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 14px;
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: -0.005em;
+  transition: color 0.15s ease;
+}
+
+.nav-item--highlight {
+  --hl-color: #ff2d2d;
+  color: var(--hl-color) !important;
+  font-weight: 700;
+  position: relative;
+  padding-right: 10px;
+}
+
+.nav-item--highlight:hover {
+  opacity: 0.82;
+}
+
+.nav-item__star {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  color: var(--hl-color, #ff2d2d);
+  pointer-events: none;
+}
+
+.nav-item__star--1 {
+  top: -2px;
+  right: -4px;
+  animation: nav-item-twinkle 0.9s ease-in-out 0s infinite;
+}
+.nav-item__star--2 {
+  top: 6px;
+  right: -10px;
+  animation: nav-item-twinkle 1.4s ease-in-out 0.2s infinite;
+}
+.nav-item__star--3 {
+  top: 13px;
+  right: -4px;
+  animation: nav-item-twinkle 1.75s ease-in-out 0.45s infinite;
+}
+
+@keyframes nav-item-twinkle {
+  0%, 100% { opacity: 0.15; transform: scale(0.4) rotate(0deg); }
+  50%      { opacity: 1;    transform: scale(1.25) rotate(20deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-item__star--1,
+  .nav-item__star--2,
+  .nav-item__star--3 {
+    animation-duration: 2.4s;
+  }
+}

@@ -1,46 +1,56 @@
-/* On Sale — red highlighted nav link with a subtle twinkling star trio,
-   tight to the text (matches target design: small, close, no hover speed
-   change — just a calm constant twinkle). */
+/* app/assets/highlight.css
+   On Sale — red highlighted nav link with a twinkling star trio.
+
+   Horizontal spacing: flex + gap on the link (self-correcting when
+   star size changes). Vertical stagger: each star is wrapped in a
+   .menu-item__star-wrap span that holds a static translateY — kept
+   separate from the <svg> itself because the twinkle keyframes below
+   already animate transform: scale()/rotate() on the svg, and a static
+   transform on the same element would get overwritten by the
+   animation rather than combined with it. */
 
 .menu-bar__link--highlight {
   --hl-color: #ff2d2d;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   color: var(--hl-color) !important;
   font-weight: 700;
-  position: relative;
-  padding-right: 18px;
 }
 
 .menu-bar__link--highlight:hover {
   opacity: 0.82;
 }
 
+.menu-item__star-wrap {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.menu-item__star-wrap--1 { transform: translateY(-3px); }
+.menu-item__star-wrap--2 { transform: translateY(1px); }
+.menu-item__star-wrap--3 { transform: translateY(4px); }
+
 .menu-item__star {
-  position: absolute;
-  width: 7px;
-  height: 7px;
   color: var(--hl-color, #ff2d2d);
+  width: 6px;
+  height: 6px;
   pointer-events: none;
 }
 
 .menu-item__star--1 {
-  top: -4px;
-  right: 2px;
-  animation: menu-item-twinkle 1.1s ease-in-out 0s infinite;
+  animation: menu-item-twinkle 0.9s ease-in-out 0s infinite;
 }
 .menu-item__star--2 {
-  top: 3px;
-  right: -4px;
-  animation: menu-item-twinkle 1.6s ease-in-out 0.25s infinite;
+  animation: menu-item-twinkle 1.4s ease-in-out 0.2s infinite;
 }
 .menu-item__star--3 {
-  top: 9px;
-  right: 3px;
-  animation: menu-item-twinkle 1.9s ease-in-out 0.5s infinite;
+  animation: menu-item-twinkle 1.75s ease-in-out 0.45s infinite;
 }
 
 @keyframes menu-item-twinkle {
-  0%, 100% { opacity: 0.2; transform: scale(0.5) rotate(0deg); }
-  50%      { opacity: 1;   transform: scale(1.1) rotate(15deg); }
+  0%, 100% { opacity: 0.15; transform: scale(0.4) rotate(0deg); }
+  50%      { opacity: 1;    transform: scale(1.25) rotate(20deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
