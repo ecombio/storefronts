@@ -80,13 +80,16 @@ of loader/API data. Ask:
 2. **Does it own or consume a slice of loader/Storefront API data**, rather
    than just receiving props? Usually yes for sections.
 3. **Does it have "page block" identity** — could you describe it to a
-   non-engineer as "a part of the page"? (Header, Footer, ProductGallery,
+   non-engineer as "a part of the page"? (Header, Footer, ProductMedia,
    ReviewsWidget) → section.
 
 Current sections: `AnnouncementBar`, `BenefitGrid`, `FeatureGrid`, `Header`,
-`Footer`, `UtilityBar`, `MockShopNotice`, `ProductForm`, `ProductGallery`,
-`StickyAddToCart`, `ReviewsWidget`, `ProductDescriptionPanels`, `CartMain`,
-`SearchPanel`.
+`Footer`, `UtilityBar`, `MockShopNotice`, `ProductForm`, `ProductMedia`,
+`ProductDetail`, `StickyAddToCart`, `ReviewsWidget`, `ProductDescriptionPanels`,
+`CartMain`, `SearchPanel`.
+
+(`ProductGallery` was renamed/absorbed into `ProductMedia`, and
+`ProductDetail` is new — see Changelog.)
 
 ### snippets/ ← reusable, nested-only pieces
 
@@ -104,11 +107,16 @@ Current snippets: `AddToCartButton`, `CartLineItem`, `CartSummary`,
 `SearchFormPredictive`, `SearchResults`, `SearchResultsPredictive`,
 `ProductDescription`.
 
+(`ProductImage` is still a standalone snippet — it is not currently used by
+`ProductMedia`, which renders its own `<Image>` calls directly. Worth
+revisiting whether `ProductMedia`'s main-image rendering should delegate to
+`ProductImage` instead of duplicating it — see Changelog.)
+
 ### assets/ ← static files
 
 Global CSS lives here: `app.css`, `article.css`, `blog-category.css`,
-`menu.css`, `reset.css`, `tailwind.css`, `typewriter.css`, plus `favicon.svg`
-and `wordmark.svg`.
+`menu.css`, `reset.css`, `tailwind.css`, `typewriter.css`, `main-product.css`,
+plus `favicon.svg` and `wordmark.svg`.
 
 Component-scoped CSS (e.g. `ai-search.css`) may stay co-located with its
 component rather than moving here — that's also a legitimate pattern, decide
@@ -246,3 +254,52 @@ If none of this cleanly applies, it's fine to leave it in `components/`.
   of `sections/` into `config/`), both the relative imports *and* the
   previously-fixed absolute imports need a second pass — don't assume a
   file is done moving just because it moved once already.
+
+## Changelog
+
+### 2026-08-28 — PDP split into `ProductMedia` / `ProductDetail`
+
+`templates/products.$handle.tsx` previously hand-assembled the whole
+two-column product layout inline (image on the left via the `ProductImage`
+snippet, title/rating/price/form/description on the right). Per the
+decision framework, both halves are sections — a route renders each
+directly, and each owns a slice of loader/Storefront API data.
+
+- **`ProductGallery` → `ProductMedia`**: `ProductGallery` (multi-image
+  gallery with thumbnails, ported from `product-media.liquid` +
+  `product-media.js`, added in an earlier pass) had been built but never
+  wired into the route — the route was still using the older single-image
+  `ProductImage` snippet. Rather than create a thin wrapper around
+  `ProductGallery`, its full implementation was inlined into
+  `sections/ProductMedia.tsx` and `ProductGallery.tsx` was deleted (git
+  recorded this as a rename, ~65% similarity).
+  - `PRODUCT_FRAGMENT` in the route was updated to fetch
+    `images(first: 12) { nodes { id url altText width height } }`, since
+    the original fragment only fetched the selected variant's single
+    `image` field — insufficient for a multi-image gallery.
+  - Added hover-reveal scroll arrows (up/down) on the thumbnail rail,
+    thumbnails bumped 84px → 96px with more gap, thumbnail track scrollbar
+    hidden in favor of the new arrow controls.
+  - Made the gallery `position: sticky` (pinned while the usually-taller
+    `ProductDetail` column scrolls past it), disabled on mobile
+    (`≤768px`) where the layout stacks vertically instead.
+  - New stylesheet `assets/main-product.css` created for all of the
+    above (this file was previously only referenced in a code comment as
+    aspirational/never-ported — see "Known issue" note in `assets/`
+    above, which now no longer applies to this file; it does still apply
+    to `typewriter.css`). Wired into `root.tsx` the same way as the
+    existing `resetStyles`/`appStyles`/`menuStyles` — `?url` import +
+    manual `<link rel="stylesheet">` tag (not the `links()` export).
+- **`ProductDetail` (new)**: composes title, `StarRating`, `ProductPrice`,
+  `ProductForm`, and the `Description` snippet — previously inlined
+  directly in the route's JSX.
+- **Not yet done**: `ProductDetail` still uses the plain `Description`
+  snippet rather than `ProductDescriptionPanels` (the accordion-style
+  Description/Shipping/Refund/Warranty component, built earlier but also
+  never wired in — it needs `shippingHtml`/`refundHtml`/`warrantyHtml`
+  sourced from shop policies or a metaobject, which the route doesn't
+  currently fetch). Revisit when that data is available.
+- **Not yet done**: `ProductMedia`'s main image duplicates `<Image>`
+  rendering logic that also exists in the `ProductImage` snippet, rather
+  than delegating to it. `ProductImage` is currently unused by the PDP as
+  a result (still may be used elsewhere — not audited).
