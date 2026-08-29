@@ -5,14 +5,14 @@ import type {
   HeaderQuery,
 } from 'storefrontapi.generated';
 import {Aside} from '~/components/Aside';
-import {Footer, type FooterQueryData} from '~/components/Footer';
-import {Header, HeaderMenu} from '~/components/Header';
-import {CartMain} from '~/components/CartMain';
+import {Footer, type FooterQueryData} from '~/sections/Footer';
+import {Header, HeaderMenu} from '~/sections/Header';
+import {CartMain} from '~/sections/CartMain';
 import {
   SEARCH_ENDPOINT,
   SearchFormPredictive,
-} from '~/components/SearchFormPredictive';
-import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
+} from '~/snippets/SearchFormPredictive';
+import {SearchResultsPredictive} from '~/snippets/SearchResultsPredictive';
 import type {AlgoliaConfig} from '~/lib/algolia';
 
 interface PageLayoutProps {

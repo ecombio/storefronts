@@ -1,5 +1,5 @@
 import {Link} from 'react-router';
-import blogCategoryStyles from '~/styles/blog-category.css?url';
+import blogCategoryStyles from '~/assets/blog-category.css?url';
 
 export function links() {
   return [{rel: 'stylesheet', href: blogCategoryStyles}];

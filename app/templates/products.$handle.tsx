@@ -11,11 +11,12 @@ import {
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {useYotpoRefresh} from '~/hooks/useYotpoRefresh';
 import {getYotpoBottomline} from '~/lib/yotpo';
-import {StarRating} from '~/components/StarRating';
-import {ReviewsWidget} from '~/components/ReviewsWidget';
-import {ProductPrice} from '~/components/ProductPrice';
-import {ProductImage} from '~/components/ProductImage';
-import {ProductForm} from '~/components/ProductForm';
+import {StarRating} from '~/snippets/StarRating';
+import {ReviewsWidget} from '~/sections/ReviewsWidget';
+import {ProductPrice} from '~/snippets/ProductPrice';
+import {ProductImage} from '~/snippets/ProductImage';
+import {ProductForm} from '~/sections/ProductForm';
+import {Description} from '~/snippets/ProductDescription';
 
 // Reviews widget instance stays on Yotpo's client-side script (needs
 // useYotpoRefresh below to init/re-init on mount + route change).
@@ -118,11 +119,7 @@ export default function Product() {
           />
           <br />
           <br />
-          <p>
-            <strong>Description</strong>
-          </p>
-          <br />
-          <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
+          <Description descriptionHtml={descriptionHtml} />
         </div>
       </div>
       <div>

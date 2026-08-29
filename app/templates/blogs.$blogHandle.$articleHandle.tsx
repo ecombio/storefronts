@@ -3,7 +3,7 @@ import {useLoaderData} from 'react-router';
 import type {Route} from './+types/blogs.$blogHandle.$articleHandle';
 import {Image} from '@shopify/hydrogen';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
-import articleStyles from '~/styles/article.css?url';
+import articleStyles from '~/assets/article.css?url';
 
 export function links() {
   return [{rel: 'stylesheet', href: articleStyles}];

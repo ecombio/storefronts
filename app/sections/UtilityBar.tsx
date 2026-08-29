@@ -1,6 +1,6 @@
 import {NavLink} from 'react-router';
 import {UTILITY_LINKS} from './Header.constants';
-import {RegionPicker} from './RegionPicker';
+import {RegionPicker} from '~/snippets/RegionPicker';
 
 // Maps 1:1 to sections/utility-bar.liquid + snippets/utility-links.liquid.
 //

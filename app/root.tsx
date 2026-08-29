@@ -13,15 +13,15 @@ import {
 import type {Route} from './+types/root';
 import favicon from '~/assets/favicon.svg';
 import {HEADER_QUERY} from '~/lib/fragments';
-import {FOOTER_QUERY} from '~/components/Footer';
+import {FOOTER_QUERY} from '~/sections/Footer';
 import {
   MENU_COLLECTION_IMAGES_QUERY,
   type CollectionImage,
-} from '~/components/Header.constants';
-import resetStyles from '~/styles/reset.css?url';
-import appStyles from '~/styles/app.css?url';
-import menuStyles from '~/styles/menu.css?url';
-import tailwindCss from './styles/tailwind.css?url';
+} from '~/sections/Header.constants';
+import resetStyles from '~/assets/reset.css?url';
+import appStyles from '~/assets/app.css?url';
+import menuStyles from '~/assets/menu.css?url';
+import tailwindCss from '~/assets/tailwind.css?url';
 import {PageLayout} from './components/PageLayout';
 
 export type RootLoader = typeof loader;

@@ -2,8 +2,8 @@ import {useOptimisticCart} from '@shopify/hydrogen';
 import {Link} from 'react-router';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import {useAside} from '~/components/Aside';
-import {CartLineItem, type CartLine} from '~/components/CartLineItem';
-import {CartSummary} from './CartSummary';
+import {CartLineItem, type CartLine} from '~/snippets/CartLineItem';
+import {CartSummary} from '~/snippets/CartSummary';
 
 export type CartLayout = 'page' | 'aside';
 

@@ -7,11 +7,11 @@ import {
 } from '@shopify/hydrogen';
 import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
 import {useAside} from '~/components/Aside';
-import {HeaderSearch} from '~/components/HeaderSearch';
-import {HeaderAccount} from '~/components/HeaderAccount';
-import {HeaderCart} from '~/components/HeaderCart';
-import {HeaderMenu} from './HeaderMenu';
-export {HeaderMenu} from './HeaderMenu';
+import {HeaderSearch} from '~/snippets/HeaderSearch';
+import {HeaderAccount} from '~/snippets/HeaderAccount';
+import {HeaderCart} from '~/snippets/HeaderCart';
+import {HeaderMenu} from '~/snippets/HeaderMenu';
+export {HeaderMenu} from '~/snippets/HeaderMenu';
 import {AnnouncementBar} from './AnnouncementBar';
 export {AnnouncementBar} from './AnnouncementBar';
 import {UtilityBar} from './UtilityBar';

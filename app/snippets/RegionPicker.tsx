@@ -1,7 +1,7 @@
 import {useEffect, useRef, useState} from 'react';
 import {createPortal} from 'react-dom';
 import {Search, X} from 'lucide-react';
-import {COUNTRIES, CURRENT_COUNTRY, CURRENT_LANGUAGE} from './Header.constants';
+import {COUNTRIES, CURRENT_COUNTRY, CURRENT_LANGUAGE} from '~/sections/Header.constants';
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
