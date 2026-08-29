@@ -6,7 +6,7 @@ import {
   ANNOUNCEMENT_ENABLE_CLOSE,
   ANNOUNCEMENT_SLIDES,
   type AnnouncementSlideConfig,
-} from './Header.constants';
+} from '~/config/Header.constants';
 
 const DISMISS_KEY = 'announcement_bar_dismissed';
 

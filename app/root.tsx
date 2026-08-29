@@ -17,7 +17,7 @@ import {FOOTER_QUERY} from '~/sections/Footer';
 import {
   MENU_COLLECTION_IMAGES_QUERY,
   type CollectionImage,
-} from '~/sections/Header.constants';
+} from '~/config/Header.constants';
 import resetStyles from '~/assets/reset.css?url';
 import appStyles from '~/assets/app.css?url';
 import menuStyles from '~/assets/menu.css?url';

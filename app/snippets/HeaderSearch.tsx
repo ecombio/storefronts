@@ -2,7 +2,7 @@ import {useRef, useState} from 'react';
 import {useNavigate} from 'react-router';
 import {AiSearchBar} from '~/components/ai-search/AiSearchBar';
 import '~/components/ai-search/ai-search.css';
-import {TRENDING_SEARCH_TERMS} from '~/sections/Header.constants';
+import {TRENDING_SEARCH_TERMS} from '~/config/Header.constants';
 import {
   SearchPanel,
   readRecentSearches,

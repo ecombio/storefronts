@@ -11,7 +11,7 @@ import {
   Heart,
   ArrowUpLeft,
 } from 'lucide-react';
-import {TRENDING_SEARCH_TERMS} from './Header.constants';
+import {TRENDING_SEARCH_TERMS} from '~/config/Header.constants';
 
 // Matches the shape returned by the /api/predictive-search route loader
 // (app/routes/api.predictive-search.tsx), which wraps Shopify's

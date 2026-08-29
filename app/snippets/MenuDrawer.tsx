@@ -9,7 +9,7 @@ import {
   SUBMENU_IMAGES,
   type CollectionImage,
   type MenuItem,
-} from '~/sections/Header.constants';
+} from '~/config/Header.constants';
 
 /**
  * Everything to do with the mega-menu's dropdown content: the dimmed

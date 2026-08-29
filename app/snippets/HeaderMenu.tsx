@@ -2,7 +2,7 @@ import {useEffect, useRef, useState} from 'react';
 import {NavLink} from 'react-router';
 import {useAside} from '~/components/Aside';
 import type {HeaderProps, Viewport} from '~/sections/Header';
-import {FALLBACK_HEADER_MENU, MEGA_MENU_CLOSE_DELAY, resolveUrl} from '~/sections/Header.constants';
+import {FALLBACK_HEADER_MENU, MEGA_MENU_CLOSE_DELAY, resolveUrl} from '~/config/Header.constants';
 import {MenuDrawer} from './MenuDrawer';
 
 function navLinkClass({isActive, isPending}: {isActive: boolean; isPending: boolean}) {

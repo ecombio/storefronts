@@ -16,7 +16,7 @@ import {AnnouncementBar} from './AnnouncementBar';
 export {AnnouncementBar} from './AnnouncementBar';
 import {UtilityBar} from './UtilityBar';
 export {UtilityBar} from './UtilityBar';
-import type {CollectionImage} from './Header.constants';
+import type {CollectionImage} from '~/config/Header.constants';
 import wordmarkSrc from '~/assets/wordmark.svg';
 
 export interface HeaderProps {
