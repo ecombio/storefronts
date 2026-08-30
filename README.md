@@ -7,13 +7,10 @@ Add-Content -Path .env -Value "PUBLIC_CHECKOUT_DOMAIN=ecombio.myshopify.com"
 npm install
 npm run dev
 
-git add .
 
-# commit
-git commit -m "update" --no-verify
+git add . && git commit -m "update" --no-verify && git pull --rebase origin $(git branch --show-current) && git push origin $(git branch --show-current)
 
-# push current branch
-git push origin
+git add . && git commit -m "update" --no-verify && git pull --rebase origin $(git branch --show-current) || git push origin $(git branch --show-current) --force
 
 # 1. Create destination and clone the headless branch
 mkdir "C:\Users\Admin\Shopify\Storefronts\Headless" -Force
