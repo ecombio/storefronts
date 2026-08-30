@@ -7,7 +7,24 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 24px 0;
+  padding: 24px 16px;
+  max-width: 1200px;
+  margin-inline: auto;
+}
+
+/* Matches Header.tsx's own responsive horizontal padding
+   (px-4 sm:px-6 lg:px-8) so the carousel's content lines up under
+   the header's content instead of drifting to a different edge. */
+@media (min-width: 640px) {
+  .product-carousel {
+    padding-inline: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .product-carousel {
+    padding-inline: 32px;
+  }
 }
 
 .product-carousel__header {
@@ -92,16 +109,36 @@
   scroll-snap-align: start;
 }
 
-@media (max-width: 640px) {
+/* Mobile tier (< 640px) — see base.css --bp-sm.
+   Smallest card width/gap — the most constrained viewport. */
+@media (max-width: 639px) {
   .product-carousel {
     --product-carousel-card-width: 168px;
     --product-carousel-gap: 10px;
   }
+}
 
+/* Tablet tier (640px – 1023px) — see base.css --bp-sm / --bp-lg.
+   Its own step between mobile's 168px and desktop's 240px default —
+   was previously missing entirely, so tablets fell through to the
+   240px desktop width with no arrows to navigate it (see below),
+   which felt bare given no hover/pointer precision to rely on
+   instead. */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .product-carousel {
+    --product-carousel-card-width: 200px;
+    --product-carousel-gap: 14px;
+  }
+}
+
+/* Arrow visibility is gated to desktop only (>= 1024px) — see
+   base.css --bp-lg. Hiding arrows and relying on native touch swipe
+   is a structural nav decision, same category as Header collapsing to
+   its hamburger menu below this line. Mobile AND tablet both rely on
+   swipe: neither has reliable hover/pointer precision for small arrow
+   buttons, matching Header treating both as the "drawer nav" tier. */
+@media (max-width: 1023px) {
   .product-carousel__arrows {
-    /* Touch devices get native swipe; arrows just add clutter at this
-       width, same reasoning as .product-card__quickview-btn's
-       always-visible fallback under `@media (hover: none)`. */
     display: none;
   }
 }

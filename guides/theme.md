@@ -106,6 +106,10 @@ Global CSS and other static files (images, fonts) live here.
 Component-scoped CSS may stay co-located with its component rather than
 moving here — that's also a legitimate pattern, decide per case.
 
+Global, cross-component design tokens (breakpoints, content max-width, and
+any future shared values) live in `assets/theme.css`, imported ahead of
+component-scoped stylesheets — see **Design Tokens & Breakpoints** below.
+
 ### config/ ← app-wide constants
 
 Liquid's `config/settings_schema.json` + `settings_data.json` define
@@ -197,3 +201,133 @@ If none of this cleanly applies, it's fine to leave it in `components/`.
 - When moving a file between folders, grep for both its old absolute import
   path *and* any relative `./` imports in files that used to be its siblings
   — both break silently until Vite/MiniOxygen hits the route at runtime.
+
+## Design Tokens & Breakpoints
+
+All shared design tokens live in `app/assets/theme.css` (formerly split
+between `base.css` and this doc — now consolidated so the values and their
+rationale aren't drifting apart in two places). Import `theme.css` ahead of
+component-scoped stylesheets.
+
+**Single source of truth for the values themselves:** `app/sections/Header.tsx`
+
+Header is the one component every page shares, it's the hardest to change
+without site-wide impact, and it's already built on Tailwind's `sm:` / `lg:`
+utility prefixes and a `max-w-[1200px]` content cap. Every other
+component's tokens should match it — not invent their own.
+
+### The three breakpoint tiers
+
+Tokenized in `theme.css` as `--bp-sm` / `--bp-lg`. These two pixel
+values mark the boundaries of **three** named tiers — mobile, tablet,
+desktop — not two:
+
+| Tier | Range | Nav (Header) | Layout expectation |
+|------|-------|--------------|---------------------|
+| **Mobile** | `< 640px` | Hamburger / drawer | Most compact spacing and type. Touch-only — no hover reveals; anything that would hide-until-hover on desktop (wishlist icon, quickview) is shown permanently instead. |
+| **Tablet** | `640px – 1023px` | Hamburger / drawer *(same as mobile — Header doesn't switch nav until 1024px)* | Roomier spacing/type, closer to desktop's — there's more screen to use — but still touch-first: no hover reveals, same as mobile. |
+| **Desktop** | `≥ 1024px` | Full inline nav, inline search, mega-menu row | Full spacing. Hover-reveal interactions are appropriate (wishlist fade-in on card hover, quickview button, hover-swap product image). |
+
+`--bp-sm` (640px) is the **mobile/tablet** boundary. `--bp-lg` (1024px) is
+the **tablet/desktop** boundary — and, not incidentally, the point where
+Header's own nav structurally changes. No new pixel values were needed to
+introduce the third tier — `sm` simply stopped being treated as
+"cosmetic-only" and became a real tier line.
+
+**Nav is intentionally still 2-state**, even though layout is now 3-state:
+Header doesn't have a distinct tablet nav treatment today (tablet gets the
+same drawer as mobile). If tablet ever needs its own nav pattern (e.g. a
+condensed inline bar instead of a drawer), that's a `Header.tsx` change
+first — reflect it here afterward, don't invent it in another component.
+
+### Content max-width
+
+Tokenized in `theme.css` as `--content-max-width: 1200px`. Matches
+Header's own `lg:max-w-[1200px]` + `mx-auto` centering — confirmed via
+DevTools that the header's content row measures exactly 1200px wide at
+desktop viewports, so this isn't a guess.
+
+Any section/component that renders full-width page content (i.e. isn't
+already nested inside another capped container) should cap and center at
+this same width, with responsive horizontal padding matching Header's own
+`px-4 sm:px-6 lg:px-8` scale. Without this, a component can render wider
+than the header sitting above it on the page — this happened in practice:
+`ProductCarousel` had no max-width at all, so its content (and its scroll
+arrows) stretched to the full, uncontained page width while Header stayed
+capped at 1200px, leaving the carousel's arrows stranded far past the
+header's right edge instead of aligned under it. Fixed in
+`product-carousel.css` — see that file for the working pattern
+(`max-width: 1200px` + `margin-inline: auto` + tiered `padding-inline`).
+
+### How we got here
+
+An audit of the codebase (Aug 2026) found three different components each
+using a different "mobile" cutoff, and a two-tier (mobile/desktop only)
+model in this doc's first draft that then proved too coarse for card/grid
+layouts, which benefit from a tablet step. A later pass found a separate
+content-max-width gap on top of that.
+
+| File | Issue found | Correct? |
+|------|--------------|----------|
+| `Header.tsx` | `lg:` 1024px (nav), `sm:` 640px (label/spacing tweaks), `lg:max-w-[1200px]` content cap | ✅ still the standard for all three tokens |
+| `product-card.css` | `max-width: 767px` breakpoint | ❌ was invented locally |
+| `product-carousel.css` | `max-width: 640px` breakpoint; no content max-width at all | ❌ breakpoint invented locally; max-width simply missing |
+| `app.css` (legacy) | `45em` / `48em` (720px / 768px) breakpoints | ❌ dead code — tied to markup that predates the current Tailwind-based `Header.tsx` |
+
+Practical effect of the breakpoint mismatch: at a width like 900px (a
+tablet), the header still showed its mobile hamburger nav, while the
+product card had already switched into "desktop" styling (larger price
+text, hover-only wishlist icon meant for pointer devices). Practical
+effect of the missing content max-width: the product carousel section
+rendered wider than the header above it, so its layout visually
+disagreed with the rest of the page instead of lining up under it.
+
+### Rules for new and updated components
+
+1. **Use the three breakpoint tiers, keyed off the same two pixel
+   values.** Don't add a fourth boundary without updating Header first
+   and reflecting the change here.
+2. **Tablet is its own visual tier, not folded into mobile or desktop.**
+   Give it deliberate values (spacing, type scale) rather than reusing
+   mobile's compact numbers or desktop's hover-dependent ones wholesale.
+3. **Hover-reveal interactions are desktop-only** (`≥ 1024px`). Mobile and
+   tablet both get the always-visible/touch-first version — neither has
+   reliable hover.
+4. **Nav stays keyed to `lg` (1024px) only**, matching Header, unless
+   Header itself grows a tablet-specific nav pattern.
+5. **Any full-width section caps at `--content-max-width` (1200px)**,
+   centered with `margin-inline: auto`, with horizontal padding tiered to
+   match Header's `px-4 / sm:px-6 / lg:px-8` scale. Don't let a section
+   render wider than Header's own content row.
+6. **Tailwind components:** use the `sm:` / `lg:` prefixes and
+   `max-w-[1200px]` directly.
+7. **Plain CSS components:** hardcode the literal px values in `@media`
+   queries and `max-width` declarations (CSS custom properties don't work
+   inside media conditions), but reference `theme.css`'s `--bp-sm` /
+   `--bp-lg` / `--content-max-width` in a comment above each rule, and
+   name the tier it targets, e.g.:
+   ```css
+   /* Tablet tier (640–1023px) — see theme.css --bp-sm / --bp-lg */
+   @media (min-width: 640px) and (max-width: 1023px) {
+     ...
+   }
+   ```
+8. **Legacy `app.css` rules using `45em`/`48em`** (720px/768px, e.g.
+   `.header-menu-mobile-toggle`, `.recommended-products-grid`,
+   `.products-grid`, `.product`, `.collection-description`,
+   `.featured-collection-image`) are dead code from the pre-Tailwind
+   Hydrogen starter markup. Do not copy these values into new work.
+   Confirm each is unused before deleting.
+
+### Checklist for reviewing a new component's CSS
+
+- [ ] No hardcoded breakpoint other than `640px` or `1024px`
+- [ ] Three tiers are addressed deliberately (mobile, tablet, desktop) —
+      tablet isn't silently inheriting mobile's or desktop's values by
+      omission
+- [ ] Hover-only interactions are gated to `≥ 1024px`; mobile and tablet
+      show the always-visible equivalent
+- [ ] Nav-level structural changes (drawer vs. inline, mega-menu) still
+      happen only at `1024px`, matching Header
+- [ ] If Tailwind, uses `sm:` / `lg:` — no arbitrary `min-width:[...]`
+      values for breakpoints that duplicate these two numbers

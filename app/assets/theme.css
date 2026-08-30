@@ -1,0 +1,78 @@
+/*
+ * app/assets/theme.css
+ *
+ * Canonical design tokens shared across every component in this
+ * storefront. This is the ONE file to check before hardcoding a
+ * breakpoint, a content width, or any other number a second component
+ * might later need to agree with. Import this ahead of component-scoped
+ * stylesheets.
+ *
+ * Formerly `base.css` — consolidated here so tokens and their rationale
+ * live in a single file instead of being split across base.css and
+ * theme.md. theme.md still documents the full "why" and the rules for
+ * using these tokens; this file is the source values plus a short
+ * summary of each.
+ *
+ * ---------------------------------------------------------------------
+ * BREAKPOINTS — three tiers: mobile / tablet / desktop
+ * ---------------------------------------------------------------------
+ * Source of truth: app/sections/Header.tsx's live Tailwind classes
+ * (`sm:` / `lg:`). Header is the one component every route renders and
+ * can't be changed without affecting the whole site, so its breakpoints
+ * are the ones every other component should match.
+ *
+ * These two values mark the boundaries of THREE tiers, not two:
+ *
+ *   mobile:  < 640px           Most compact spacing/type. Touch-only —
+ *                               no hover reveals; show the always-visible
+ *                               equivalent of any hover-only UI.
+ *
+ *   tablet:  640px – 1023px    Roomier spacing/type (closer to desktop),
+ *                               but still touch-first like mobile — no
+ *                               hover reveals here either. Nav is still
+ *                               the mobile drawer (Header doesn't switch
+ *                               nav until 1024px).
+ *
+ *   desktop: >= 1024px         Full spacing. Hover-reveal interactions
+ *                               (wishlist fade-in, quickview, hover-swap
+ *                               image) are appropriate here only. Full
+ *                               inline nav + mega-menu.
+ *
+ *   --bp-sm  (640px)   mobile/tablet boundary
+ *   --bp-lg  (1024px)  tablet/desktop boundary — also where Header's own
+ *                       nav structurally changes
+ *
+ * IMPORTANT — plain CSS limitation:
+ * Custom properties cannot be used inside `@media` conditions
+ * (`@media (max-width: var(--bp-lg))` is invalid CSS). These tokens exist
+ * as a single documented source of truth and for use in JS/TS (e.g.
+ * matchMedia, ResizeObserver thresholds) — component stylesheets still
+ * need to hardcode the literal px value in their @media queries, but
+ * should reference --bp-sm / --bp-lg in a comment so the number is
+ * traceable back here instead of being invented locally.
+ *
+ * Tailwind-based components should use the `sm:` / `lg:` prefixes
+ * directly rather than duplicating these numbers.
+ *
+ * ---------------------------------------------------------------------
+ * CONTENT MAX-WIDTH
+ * ---------------------------------------------------------------------
+ * Matches Header.tsx's own `lg:max-w-[1200px]` + `mx-auto` centering
+ * (confirmed via DevTools: the header's content row measures exactly
+ * 1200px wide at desktop viewports). Any section/component that renders
+ * full-width page content — i.e. isn't already nested inside another
+ * capped container — should cap and center at this same width, or its
+ * content will drift wider than the header sitting above it on the
+ * page. See product-carousel.css for a working example (max-width +
+ * margin-inline: auto + responsive padding-inline matching Header's
+ * own px-4/sm:px-6/lg:px-8 scale).
+ *
+ * See theme.md (same folder) for the full audit history, rationale,
+ * and rules for using these tokens in new components.
+ */
+
+:root {
+  --bp-sm: 640px;
+  --bp-lg: 1024px;
+  --content-max-width: 1200px;
+}
