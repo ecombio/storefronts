@@ -10,16 +10,6 @@ function flagUrl(isoCode: string) {
   return `https://cdn.shopify.com/shopifycloud/preview-bar/assets/${isoCode.toLowerCase()}.svg`;
 }
 
-// Maps 1:1 to snippets/region-picker.liquid + its slice of utility-bar.js:
-// a trigger button plus a dropdown teleported out of the header's stacking
-// context (there: appendChild to <body>; here: a React portal) so it never
-// gets clipped by header overflow/z-index.
-//
-// Country/language data comes from Header.constants.ts as a stand-in for
-// `localization.available_countries`. selectCountry is a stub — see the
-// note in HeaderUtility.tsx on why the real localization POST-and-redirect
-// flow needs its own Hydrogen-specific wiring rather than a port of the
-// theme's form.submit() calls.
 export function RegionPicker() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -56,7 +46,7 @@ export function RegionPicker() {
     searchRef.current?.focus();
 
     function onScroll() {
-      updatePosition();
+      closePicker();
     }
     function onResize() {
       updatePosition();
@@ -110,9 +100,6 @@ export function RegionPicker() {
   );
 
   function selectCountry(isoCode: string) {
-    // TODO: wire to Hydrogen localization — fetcher POST to a resource
-    // route that sets the locale cookie and redirects, matching the
-    // Liquid theme's country-select form.
     console.log('select country', isoCode);
     closePicker();
   }

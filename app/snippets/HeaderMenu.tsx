@@ -117,15 +117,13 @@ export function HeaderMenu({
   }
 
   return (
-    <>
+    <div onMouseEnter={cancelClose} onMouseLeave={scheduleClose}>
       <div className="relative min-w-0 max-w-full">
         <nav
           ref={navWrapRef}
           onScroll={updateScrollEdges}
           className="flex min-w-0 items-center gap-6 overflow-x-auto text-sm font-medium [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           role="navigation"
-          onMouseLeave={scheduleClose}
-          onMouseEnter={cancelClose}
         >
           {items.map((item) => {
             if (!item.url) return null;
@@ -187,6 +185,6 @@ export function HeaderMenu({
         collectionImages={collectionImages}
         onClose={() => setActiveItemId(null)}
       />
-    </>
+    </div>
   );
 }

@@ -1,4 +1,4 @@
-import {Suspense} from 'react';
+import {Suspense, useEffect, useRef, useState} from 'react';
 import {Await, Link, NavLink, useAsyncValue} from 'react-router';
 import {ShoppingBag, User} from 'lucide-react';
 import {
@@ -38,13 +38,42 @@ export function Header({
   customer,
 }: HeaderProps) {
   const {shop, menu} = header;
+  const [hidden, setHidden] = useState(false);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    lastScrollY.current = window.scrollY;
+
+    function onScroll() {
+      const currentY = window.scrollY;
+      const delta = currentY - lastScrollY.current;
+
+      if (currentY < 80) {
+        setHidden(false);
+      } else if (delta > 5) {
+        setHidden(true);
+      } else if (delta < -5) {
+        setHidden(false);
+      }
+
+      lastScrollY.current = currentY;
+    }
+
+    window.addEventListener('scroll', onScroll, {passive: true});
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   return (
-    <header className="w-full bg-white font-sans shadow-[0_4px_20px_rgba(0,0,0,0.10)]">
+    <header
+      className={`sticky top-0 z-50 w-full bg-white font-sans shadow-[0_4px_20px_rgba(0,0,0,0.10)] transition-transform duration-300 ${
+        hidden ? '-translate-y-full' : 'translate-y-0'
+      }`}
+    >
       <AnnouncementBar />
       <HeaderUtility />
       <div
         data-header-search-row
-        className="relative border-b border-gray-100"
+        className="relative"
       >
         <div className="mx-auto flex max-w-full items-center gap-3 px-4 py-2 sm:gap-4 sm:px-6 lg:max-w-[1200px] lg:gap-6 lg:px-8 lg:pt-2.5 lg:pb-2.5">
           <HeaderMenuMobileToggle />
@@ -53,19 +82,19 @@ export function Header({
             <img src={wordmarkSrc} alt={shop.name} width={140} height={28} className="h-6 w-auto sm:h-7" />
           </NavLink>
 
-          <div className="hidden flex-1 justify-center sm:flex">
+          <div className="hidden flex-1 justify-center lg:flex">
             <HeaderSearch />
           </div>
 
           <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} customer={customer} />
         </div>
 
-        <div className="border-t border-gray-100 px-4 py-2 sm:hidden">
+        <div className="w-full px-4 py-2 lg:hidden">
           <HeaderSearch />
         </div>
       </div>
 
-      <div data-header-menu-row className="relative hidden border-b border-gray-100 lg:block">
+      <div data-header-menu-row className="relative hidden lg:block">
         <div className="mx-auto flex min-w-0 max-w-full px-6 pt-2.5 pb-2.5 lg:max-w-[1200px] lg:px-8">
           <HeaderMenu
             menu={menu}
@@ -86,7 +115,7 @@ function HeaderCtas({
   customer,
 }: Pick<HeaderProps, 'isLoggedIn' | 'cart' | 'customer'>) {
   return (
-    <nav className="flex shrink-0 items-center gap-3 sm:gap-6" role="navigation">
+    <nav className="ml-auto flex shrink-0 items-center gap-3 sm:gap-6" role="navigation">
       <HeaderAccount isLoggedIn={isLoggedIn} customer={customer} />
       <CartToggle cart={cart} />
     </nav>

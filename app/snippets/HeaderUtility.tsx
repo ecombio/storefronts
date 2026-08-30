@@ -16,14 +16,14 @@ export function HeaderUtility() {
   const links = UTILITY_LINKS.filter((link) => link.label && link.url);
 
   return (
-    <div className="hidden border-b border-gray-100 sm:block">
-      <div className="mx-auto flex max-w-[1200px] items-center justify-between px-8 pt-2.5 pb-2.5 text-sm text-gray-700">
+    <div className="hidden sm:block">
+      <div className="mx-auto flex max-w-full items-center justify-between px-6 pt-2 pb-2 text-sm text-gray-700 lg:max-w-[1200px] lg:px-8 lg:pt-2.5 lg:pb-2.5">
         <nav className="flex items-center" role="list">
           {links.map((link, i) => (
             <NavLink
               key={`${link.label}-${i}`}
               to={link.url}
-              className={`flex h-8 items-center px-3.5 hover:text-gray-950 ${i === 0 ? 'pl-0' : ''}`}
+              className={`flex h-8 items-center px-2.5 hover:text-gray-950 sm:px-3.5 ${i === 0 ? 'pl-0' : ''}`}
             >
               {link.label}
             </NavLink>
