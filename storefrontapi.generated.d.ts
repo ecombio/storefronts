@@ -543,43 +543,6 @@ export type PredictiveSearchInstantQuery = {
   }>;
 };
 
-export type ArticleQueryVariables = StorefrontAPI.Exact<{
-  articleHandle: StorefrontAPI.Scalars['String']['input'];
-  blogHandle: StorefrontAPI.Scalars['String']['input'];
-  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
-  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
-}>;
-
-export type ArticleQuery = {
-  blog?: StorefrontAPI.Maybe<
-    Pick<StorefrontAPI.Blog, 'handle'> & {
-      articleByHandle?: StorefrontAPI.Maybe<
-        Pick<
-          StorefrontAPI.Article,
-          'handle' | 'title' | 'contentHtml' | 'publishedAt'
-        > & {
-          author?: StorefrontAPI.Maybe<
-            Pick<StorefrontAPI.ArticleAuthor, 'name'>
-          >;
-          image?: StorefrontAPI.Maybe<
-            Pick<
-              StorefrontAPI.Image,
-              'id' | 'altText' | 'url' | 'width' | 'height'
-            >
-          >;
-          seo?: StorefrontAPI.Maybe<
-            Pick<StorefrontAPI.Seo, 'description' | 'title'>
-          >;
-          blog: Pick<StorefrontAPI.Blog, 'handle'>;
-          layoutVariant?: StorefrontAPI.Maybe<
-            Pick<StorefrontAPI.Metafield, 'value'>
-          >;
-        }
-      >;
-    }
-  >;
-};
-
 export type BlogsQueryVariables = StorefrontAPI.Exact<{
   country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
   endCursor?: StorefrontAPI.InputMaybe<
@@ -1490,10 +1453,6 @@ interface GeneratedQueryTypes {
   '#graphql\n  query PredictiveSearchInstant(\n    $country: CountryCode\n    $language: LanguageCode\n    $limit: Int!\n    $limitScope: PredictiveSearchLimitScope!\n    $query: String!\n    $types: [PredictiveSearchType!]\n  ) @inContext(country: $country, language: $language) {\n    predictiveSearch(\n      limit: $limit\n      limitScope: $limitScope\n      query: $query\n      types: $types\n    ) {\n      queries {\n        text\n      }\n      products {\n        id\n        title\n        handle\n        vendor\n        tags\n        selectedOrFirstAvailableVariant(\n          ignoreUnknownOptions: true\n          caseInsensitiveMatch: true\n        ) {\n          image {\n            url\n            altText\n          }\n          price {\n            amount\n            currencyCode\n          }\n          compareAtPrice {\n            amount\n            currencyCode\n          }\n        }\n      }\n      collections {\n        id\n        title\n        handle\n        image {\n          url\n          altText\n        }\n      }\n      articles {\n        id\n        title\n        handle\n        publishedAt\n        image {\n          url\n          altText\n        }\n        blog {\n          handle\n        }\n      }\n      pages {\n        id\n        title\n        handle\n      }\n    }\n  }\n': {
     return: PredictiveSearchInstantQuery;
     variables: PredictiveSearchInstantQueryVariables;
-  };
-  '#graphql\n  query Article(\n    $articleHandle: String!\n    $blogHandle: String!\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(language: $language, country: $country) {\n    blog(handle: $blogHandle) {\n      handle\n      articleByHandle(handle: $articleHandle) {\n        handle\n        title\n        contentHtml\n        publishedAt\n        author: authorV2 {\n          name\n        }\n        image {\n          id\n          altText\n          url\n          width\n          height\n        }\n        seo {\n          description\n          title\n        }\n        blog {\n          handle\n        }\n        layoutVariant: metafield(namespace: "custom", key: "layout_variant") {\n          value\n        }\n      }\n    }\n  }\n': {
-    return: ArticleQuery;
-    variables: ArticleQueryVariables;
   };
   '#graphql\n  query Blogs(\n    $country: CountryCode\n    $endCursor: String\n    $first: Int\n    $language: LanguageCode\n    $last: Int\n    $startCursor: String\n  ) @inContext(country: $country, language: $language) {\n    blogs(\n      first: $first,\n      last: $last,\n      before: $startCursor,\n      after: $endCursor\n    ) {\n      pageInfo {\n        hasNextPage\n        hasPreviousPage\n        startCursor\n        endCursor\n      }\n      nodes {\n        title\n        handle\n        seo {\n          title\n          description\n        }\n      }\n    }\n  }\n': {
     return: BlogsQuery;
