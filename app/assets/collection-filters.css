@@ -1,0 +1,261 @@
+/* app/assets/collection-filters.css */
+
+.collection-layout {
+  position: relative;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+#collection-filters.collection-filters {
+  --gs-black: #0d0d0d;
+  --gs-white: #ffffff;
+  --gs-bg: #f7f6f4;
+  --gs-gray: #8c8c89;
+  --gs-hairline: #e3e1dc;
+
+  box-sizing: border-box;
+  position: sticky;
+  top: 24px;
+  width: 100%;
+  max-width: 260px;
+  /* Cap to the viewport (minus the sticky offset and a little breathing
+     room) so a long, fully-expanded filter list can never grow taller
+     than the screen and bleed past the product grid into the footer.
+     The actual scrolling happens on .collection-filters__scroll below —
+     kept on a separate element from `position: sticky` deliberately,
+     since sticky + overflow on the same box is a spot some browsers and
+     build pipelines handle inconsistently. */
+  max-height: calc(100vh - 48px);
+  background: var(--gs-bg);
+  border-radius: 0;
+  box-shadow: none;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--gs-black);
+}
+
+#collection-filters .collection-filters__scroll {
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+#collection-filters .collection-filters__header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  background: var(--gs-bg);
+  border-bottom: 2px solid var(--gs-black);
+  margin-bottom: 4px;
+}
+
+#collection-filters .collection-filters__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+#collection-filters .collection-filters__clear {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  color: var(--gs-gray);
+}
+
+#collection-filters .collection-filters__clear:hover {
+  color: var(--gs-black);
+}
+
+#collection-filters .collection-filters__group {
+  border-bottom: 1px solid var(--gs-hairline);
+  padding: 16px 0;
+}
+
+#collection-filters .collection-filters__group:last-child {
+  border-bottom: none;
+}
+
+#collection-filters .collection-filters__group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+#collection-filters .collection-filters__group-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Hand-drawn plus/minus, not a chevron: a horizontal bar plus a vertical
+   bar that rotates flat to read as a minus when the group is open. */
+#collection-filters .collection-filters__toggle-icon {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+}
+
+#collection-filters .collection-filters__toggle-icon::before,
+#collection-filters .collection-filters__toggle-icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background: var(--gs-black);
+  transform: translate(-50%, -50%);
+}
+
+#collection-filters .collection-filters__toggle-icon::before {
+  width: 10px;
+  height: 2px;
+}
+
+#collection-filters .collection-filters__toggle-icon::after {
+  width: 2px;
+  height: 10px;
+  transition: transform 0.15s ease;
+}
+
+#collection-filters .collection-filters__toggle-icon--open::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+#collection-filters .collection-filters__values {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+#collection-filters .collection-filters__value-item {
+  margin: 0;
+  padding: 0;
+}
+
+/* Signature interaction: selecting a filter inverts the row to solid
+   black/white, the same logic Gymshark uses for a selected size chip,
+   rather than a checkbox + check icon. */
+#collection-filters .collection-filters__value {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 10px;
+  text-decoration: none;
+  color: var(--gs-black);
+  background: transparent;
+  border: 1px solid transparent;
+}
+
+#collection-filters .collection-filters__value:hover {
+  border-color: var(--gs-black);
+}
+
+#collection-filters .collection-filters__value--active {
+  background: var(--gs-black);
+  border-color: var(--gs-black);
+  color: var(--gs-white);
+}
+
+#collection-filters .collection-filters__value-label {
+  font-weight: 600;
+}
+
+#collection-filters .collection-filters__value-count {
+  color: var(--gs-gray);
+  font-variant-numeric: tabular-nums;
+}
+
+#collection-filters .collection-filters__value--active .collection-filters__value-count {
+  color: var(--gs-white);
+  opacity: 0.7;
+}
+
+#collection-filters .collection-filters__price-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+#collection-filters .collection-filters__price-input {
+  box-sizing: border-box;
+  width: 72px;
+  padding: 6px 4px;
+  border: none;
+  border-bottom: 1px solid var(--gs-black);
+  border-radius: 0;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gs-black);
+}
+
+#collection-filters .collection-filters__price-input::placeholder {
+  color: var(--gs-gray);
+  font-weight: 400;
+}
+
+#collection-filters .collection-filters__price-input:focus {
+  outline: none;
+  border-bottom-width: 2px;
+}
+
+#collection-filters .collection-filters__price-separator {
+  color: var(--gs-gray);
+}
+
+#collection-filters .collection-filters__price-submit {
+  padding: 6px 14px;
+  border: 1px solid var(--gs-black);
+  border-radius: 0;
+  background: var(--gs-black);
+  color: var(--gs-white);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+#collection-filters .collection-filters__price-submit:hover {
+  background: var(--gs-white);
+  color: var(--gs-black);
+}
+
+/* Disable stickiness on mobile, same breakpoint as ProductMedia's sticky
+   gallery — the layout stacks vertically instead. */
+@media (max-width: 768px) {
+  .collection-layout {
+    grid-template-columns: 1fr;
+  }
+
+  #collection-filters.collection-filters {
+    position: static;
+    max-width: none;
+  }
+}

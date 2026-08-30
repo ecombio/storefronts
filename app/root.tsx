@@ -24,6 +24,7 @@ import appStyles from '~/assets/app.css?url';
 import menuStyles from '~/assets/highlight.css?url';
 import mainProductStyles from '~/assets/main-product.css?url';
 import productDescriptionStyles from '~/assets/product-description.css?url';
+import collectionFiltersStyles from '~/assets/collection-filters.css?url';
 import tailwindCss from '~/assets/tailwind.css?url';
 import {PageLayout} from './components/PageLayout';
 
@@ -167,6 +168,7 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={menuStyles}></link>
         <link rel="stylesheet" href={mainProductStyles}></link>
         <link rel="stylesheet" href={productDescriptionStyles}></link>
+        <link rel="stylesheet" href={collectionFiltersStyles}></link>
         <Meta />
         <Links />
       </head>

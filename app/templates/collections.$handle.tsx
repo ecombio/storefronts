@@ -1,10 +1,14 @@
+// app/templates/collections.$handle.tsx
+
 import {redirect, useLoaderData} from 'react-router';
 import type {Route} from './+types/collections.$handle';
 import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
-import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
-import {ProductItem} from '~/snippets/ProductItem';
-import type {ProductItemFragment} from 'storefrontapi.generated';
+import {CollectionFilters} from '~/sections/CollectionFilters';
+import {CollectionFeed} from '~/sections/CollectionFeed';
+import type {ProductFilter} from '@shopify/hydrogen/storefront-api-types';
+
+const FILTER_URL_PARAM_NAME = 'filter';
 
 export const meta: Route.MetaFunction = ({data}) => {
   return [{title: `Hydrogen | ${data?.collection.title ?? ''} Collection`}];
@@ -27,9 +31,11 @@ export async function loader(args: Route.LoaderArgs) {
 async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   const {handle} = params;
   const {storefront} = context;
+  const url = new URL(request.url);
   const paginationVariables = getPaginationVariables(request, {
     pageBy: 8,
   });
+  const filters = parseFiltersFromUrl(url);
 
   if (!handle) {
     throw redirect('/collections');
@@ -37,7 +43,7 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
 
   const [{collection}] = await Promise.all([
     storefront.query(COLLECTION_QUERY, {
-      variables: {handle, ...paginationVariables},
+      variables: {handle, filters, ...paginationVariables},
       // Add other queries here, so that they are loaded in parallel
     }),
   ]);
@@ -65,6 +71,25 @@ function loadDeferredData({context}: Route.LoaderArgs) {
   return {};
 }
 
+/**
+ * Each selected filter is stored as its own `filter` URL param, JSON-encoded
+ * to match the Storefront API's `ProductFilter` input shape directly (this
+ * is the same encoding Hydrogen's own skeleton template uses, so `?filter=`
+ * links are shareable and work without JS).
+ */
+function parseFiltersFromUrl(url: URL): ProductFilter[] {
+  return url.searchParams
+    .getAll(FILTER_URL_PARAM_NAME)
+    .map((rawFilter) => {
+      try {
+        return JSON.parse(rawFilter) as ProductFilter;
+      } catch {
+        return null;
+      }
+    })
+    .filter((filter): filter is ProductFilter => filter !== null);
+}
+
 export default function Collection() {
   const {collection} = useLoaderData<typeof loader>();
 
@@ -72,18 +97,10 @@ export default function Collection() {
     <div className="collection">
       <h1>{collection.title}</h1>
       <p className="collection-description">{collection.description}</p>
-      <PaginatedResourceSection<ProductItemFragment>
-        connection={collection.products}
-        resourcesClassName="products-grid"
-      >
-        {({node: product, index}) => (
-          <ProductItem
-            key={product.id}
-            product={product}
-            loading={index < 8 ? 'eager' : undefined}
-          />
-        )}
-      </PaginatedResourceSection>
+      <div className="collection-layout">
+        <CollectionFilters filters={collection.products.filters} />
+        <CollectionFeed products={collection.products} />
+      </div>
       <Analytics.CollectionView
         data={{
           collection: {
@@ -130,6 +147,7 @@ const COLLECTION_QUERY = `#graphql
     $handle: String!
     $country: CountryCode
     $language: LanguageCode
+    $filters: [ProductFilter!]
     $first: Int
     $last: Int
     $startCursor: String
@@ -144,8 +162,20 @@ const COLLECTION_QUERY = `#graphql
         first: $first,
         last: $last,
         before: $startCursor,
-        after: $endCursor
+        after: $endCursor,
+        filters: $filters
       ) {
+        filters {
+          id
+          label
+          type
+          values {
+            id
+            label
+            count
+            input
+          }
+        }
         nodes {
           ...ProductItem
         }
