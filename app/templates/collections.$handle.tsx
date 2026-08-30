@@ -9,7 +9,6 @@ import {CollectionFeed} from '~/sections/CollectionFeed';
 import {CollectionToolbar} from '~/sections/CollectionToolbar';
 import {CollectionArticles} from '~/sections/CollectionArticles';
 import {SubCollections} from '~/sections/SubCollections';
-import {CollectionAfterItems} from '~/sections/CollectionAfterItems';
 import type {CollectionTab} from '~/sections/CollectionToolbar';
 import type {ProductFilter} from '@shopify/hydrogen/storefront-api-types';
 
@@ -76,7 +75,7 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
  * fetched after the initial page load. If it's unavailable, the page should still 200.
  * Make sure to not throw any errors here, as it will cause the page to 500.
  */
-function loadDeferredData({context}: Route.LoaderArgs) {
+function loadDeferredData(_args: Route.LoaderArgs) {
   return {};
 }
 
@@ -120,6 +119,12 @@ export default function Collection() {
     (node): node is NonNullable<typeof node> => Boolean(node),
   );
 
+  // "custom.after_item_lists" is a single page_reference metafield (confirmed
+  // in Shopify Admin: Type = "One" -> "Page"). The referenced Page's body is
+  // merchant-authored HTML (same source as Liquid's `page.content`), so it's
+  // injected as markup via dangerouslySetInnerHTML, not rendered as text.
+  const afterItemsPage = collection.afterItemsMetafield?.reference ?? null;
+
   return (
     <div className="collection">
       <h1>{collection.title}</h1>
@@ -151,7 +156,12 @@ export default function Collection() {
         </div>
       </div>
 
-      <CollectionAfterItems body={collection.afterItemsMetafield?.reference?.body} />
+      {afterItemsPage?.body && (
+        <div
+          className="after-items rte"
+          dangerouslySetInnerHTML={{__html: afterItemsPage.body}}
+        />
+      )}
 
       <Analytics.CollectionView
         data={{
@@ -270,6 +280,7 @@ const COLLECTION_QUERY = `#graphql
       }
       afterItemsMetafield: metafield(namespace: "custom", key: "after_item_lists") {
         reference {
+          __typename
           ... on Page {
             id
             body
