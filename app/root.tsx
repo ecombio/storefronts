@@ -1,4 +1,5 @@
 // app/root.tsx
+import {useEffect} from 'react';
 import {Analytics, getShopAnalytics, useNonce} from '@shopify/hydrogen';
 import {
   Outlet,
@@ -193,6 +194,26 @@ export default function App() {
   const data = useRouteLoaderData<RootLoader>('root');
   const nonce = useNonce();
 
+  // Inject the Yotpo loader script only after React has mounted/hydrated.
+  // A declarative <script> tag here would render before Hydrogen's own
+  // <Scripts /> in document order, and defer/module scripts execute in
+  // document order — so `defer` alone still let Yotpo's script run
+  // before hydration and caused hydration mismatches. Injecting from an
+  // effect sidesteps document order entirely: this only runs post-mount.
+  // 'strict-dynamic' in the CSP scriptSrc means a script inserted by an
+  // already-trusted (nonced) script is automatically trusted too, so no
+  // nonce needs to be set on the injected element.
+  useEffect(() => {
+    if (!data?.yotpoAppKey) return;
+    if (document.querySelector('script[data-yotpo-loader]')) return;
+
+    const script = document.createElement('script');
+    script.src = `https://cdn-widgetsrepository.yotpo.com/v1/loader/${data.yotpoAppKey}`;
+    script.async = true;
+    script.setAttribute('data-yotpo-loader', 'true');
+    document.body.appendChild(script);
+  }, [data?.yotpoAppKey]);
+
   if (!data) {
     return <Outlet />;
   }
@@ -206,13 +227,6 @@ export default function App() {
       <PageLayout {...data}>
         <Outlet />
       </PageLayout>
-      {data.yotpoAppKey && (
-        <script
-          nonce={nonce}
-          src={`https://cdn-widgetsrepository.yotpo.com/v1/loader/${data.yotpoAppKey}`}
-          async
-        />
-      )}
     </Analytics.Provider>
   );
 }

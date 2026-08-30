@@ -12,13 +12,17 @@ import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {useYotpoRefresh} from '~/hooks/useYotpoRefresh';
 import {YotpoReviewsWidget} from '~/snippets/YotpoReviewsWidget';
 import {ProductMedia} from '~/sections/ProductMedia';
-import {ProductDetail} from '~/sections/ProductDetail';
+import {ProductPrice} from '~/snippets/ProductPrice';
+import {ProductForm} from '~/sections/ProductForm';
+import {ProductDescriptionPanels} from '~/snippets/ProductDescriptionPanels';
+import {SaleBadge} from '~/snippets/SaleBadge';
 import {Breadcrumbs} from '~/snippets/Breadcrumbs';
 
-// Reviews stay on Yotpo's client-side widget (see useYotpoRefresh);
-// Star Rating is custom-coded in StarRating.tsx / lib/yotpo.ts since
-// Yotpo's own Star Rating widget never rendered reliably.
+// Reviews stay on Yotpo's client-side widget (see useYotpoRefresh).
 const YOTPO_REVIEWS_INSTANCE_ID = '1332840';
+
+// Yotpo Star Rating Widget instance ID — see Yotpo dashboard.
+const YOTPO_STAR_RATING_INSTANCE_ID = '1332841';
 
 // Collections fetched per product for breadcrumb parent/child
 // resolution. Must cover the vendor auto-collection plus every real
@@ -73,8 +77,6 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   }
 
   redirectIfHandleIsLocalized(request, {handle, data: product});
-
-  const yotpoProductId = product.id.split('/').pop()!;
 
   const policyFields = product.policyMetafield?.reference;
   const {parentCollection, childCollection} = getBreadcrumbCollections(product);
@@ -241,16 +243,52 @@ export default function Product() {
           selectedVariantImage={selectedVariant?.image}
           productTitle={title}
         />
-        <ProductDetail
-          title={title}
-          descriptionHtml={descriptionHtml}
-          shippingHtml={shippingHtml}
-          refundHtml={refundHtml}
-          warrantyHtml={warrantyHtml}
-          productOptions={productOptions}
-          selectedVariant={selectedVariant}
-          yotpoProductId={yotpoProductId}
-        />
+
+        {/* Inlined from ProductDetail.tsx */}
+        <div className="product-detail">
+          <SaleBadge
+            price={selectedVariant?.price}
+            compareAtPrice={selectedVariant?.compareAtPrice}
+          />
+          <h1 className="product-detail-title">{title}</h1>
+          {yotpoProductId && (
+            <div
+              className="yotpo-widget-instance"
+              data-yotpo-instance-id={YOTPO_STAR_RATING_INSTANCE_ID}
+              data-yotpo-product-id={yotpoProductId}
+              data-yotpo-section-id="product"
+              suppressHydrationWarning
+            />
+          )}
+          <ProductPrice
+            price={selectedVariant?.price}
+            compareAtPrice={selectedVariant?.compareAtPrice}
+          />
+          <ProductForm
+            productOptions={productOptions}
+            selectedVariant={selectedVariant}
+          />
+          <ProductDescriptionPanels
+            panels={[
+              {id: 'description', title: 'Description', html: descriptionHtml},
+              {
+                id: 'shipping',
+                title: 'Shipping Policy',
+                html: shippingHtml ?? '',
+              },
+              {
+                id: 'refund',
+                title: 'Refund & Return Policy',
+                html: refundHtml ?? '',
+              },
+              {
+                id: 'warranty',
+                title: 'Warranty',
+                html: warrantyHtml ?? '',
+              },
+            ]}
+          />
+        </div>
       </div>
       <div id="reviews">
         <YotpoReviewsWidget

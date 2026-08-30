@@ -67,7 +67,7 @@ npx shopify hydrogen link
 npx shopify hydrogen env pull
 ```
 
-This logs you into the `ecombio` shop, links to the `Ecombio` storefront (`store.ecombio.com`), and writes a local `.env` file with the required variables:
+This logs you into the `ecombio` shop, links to the `Ecombio` storefront (`ecombio.com`), and writes a local `.env` file with the required variables:
 
 - `PUBLIC_STOREFRONT_ID`
 - `PUBLIC_STOREFRONT_API_TOKEN`
