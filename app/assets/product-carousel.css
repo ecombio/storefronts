@@ -1,0 +1,113 @@
+/* app/assets/product-carousel.css */
+.product-carousel {
+  --product-carousel-arrow-size: 36px;
+  --product-carousel-gap: 16px;
+  --product-carousel-card-width: 240px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px 0;
+}
+
+.product-carousel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 4px;
+}
+
+.product-carousel__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.product-carousel__controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.product-carousel__view-all {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--product-card-accent, #4f46e5);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.product-carousel__view-all:hover {
+  text-decoration: underline;
+}
+
+.product-carousel__arrows {
+  display: flex;
+  gap: 8px;
+}
+
+.product-carousel__arrow {
+  width: var(--product-carousel-arrow-size);
+  height: var(--product-carousel-arrow-size);
+  border-radius: 50%;
+  border: 1px solid var(--product-card-border, #e5e7eb);
+  background: #fff;
+  color: var(--product-card-text, #111827);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+}
+
+.product-carousel__arrow:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.product-carousel__arrow:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.product-carousel__track {
+  display: flex;
+  gap: var(--product-carousel-gap);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: 4px;
+  padding: 4px 4px 12px;
+
+  /* Hide scrollbar visually while keeping it usable via drag/trackpad —
+     the arrow buttons and native touch swipe are the primary controls,
+     matching product-card.js's philosophy of light, native interactions
+     over a heavy custom widget. */
+  scrollbar-width: thin;
+}
+
+.product-carousel__item {
+  flex: 0 0 auto;
+  width: var(--product-carousel-card-width);
+  scroll-snap-align: start;
+}
+
+@media (max-width: 640px) {
+  .product-carousel {
+    --product-carousel-card-width: 168px;
+    --product-carousel-gap: 10px;
+  }
+
+  .product-carousel__arrows {
+    /* Touch devices get native swipe; arrows just add clutter at this
+       width, same reasoning as .product-card__quickview-btn's
+       always-visible fallback under `@media (hover: none)`. */
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-carousel__track {
+    scroll-behavior: auto;
+  }
+}

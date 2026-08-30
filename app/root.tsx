@@ -25,6 +25,8 @@ import appStyles from '~/assets/app.css?url';
 import menuStyles from '~/assets/highlight.css?url';
 import mainProductStyles from '~/assets/main-product.css?url';
 import productDescriptionStyles from '~/assets/product-description.css?url';
+import productCardStyles from '~/assets/product-card.css?url';
+import productCarouselStyles from '~/assets/product-carousel.css?url';
 import collectionFiltersStyles from '~/assets/collection-filters.css?url';
 import collectionToolbarStyles from '~/assets/collection-toolbar.css?url';
 import articleCardStyles from '~/assets/article-card.css?url';
@@ -173,6 +175,8 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={menuStyles}></link>
         <link rel="stylesheet" href={mainProductStyles}></link>
         <link rel="stylesheet" href={productDescriptionStyles}></link>
+        <link rel="stylesheet" href={productCardStyles}></link>
+        <link rel="stylesheet" href={productCarouselStyles}></link>
         <link rel="stylesheet" href={collectionFiltersStyles}></link>
         <link rel="stylesheet" href={collectionToolbarStyles}></link>
         <link rel="stylesheet" href={articleCardStyles}></link>

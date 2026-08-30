@@ -1,12 +1,11 @@
+// app/templates/_index.tsx
 import {Await, useLoaderData, Link} from 'react-router';
 import type {Route} from './+types/_index';
 import {Suspense} from 'react';
 import {Image} from '@shopify/hydrogen';
-import type {
-  FeaturedCollectionFragment,
-  RecommendedProductsQuery,
-} from 'storefrontapi.generated';
-import {ProductItem} from '~/snippets/ProductItem';
+import type {FeaturedCollectionFragment} from 'storefrontapi.generated';
+import {ProductCarousel} from '~/sections/ProductCarousel';
+import {PRODUCT_CARD_FRAGMENT, type ProductCardData} from '~/graphql/ProductCardFragment';
 import {MockShopNotice} from '~/sections/MockShopNotice';
 
 export const meta: Route.MetaFunction = () => {
@@ -98,29 +97,22 @@ function FeaturedCollection({
 function RecommendedProducts({
   products,
 }: {
-  products: Promise<RecommendedProductsQuery | null>;
+  // ASSUMPTION: once you run codegen with PRODUCT_CARD_FRAGMENT in this
+  // file, `storefrontapi.generated` will export a real
+  // `RecommendedProductsQuery` type shaped by the new fragment — this
+  // loose cast is a stand-in until that regenerates.
+  products: Promise<{products: {nodes: ProductCardData[]}} | null>;
 }) {
   return (
-    <section
-      className="recommended-products"
-      aria-labelledby="recommended-products"
-    >
-      <h2 id="recommended-products">Recommended Products</h2>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Await resolve={products}>
-          {(response) => (
-            <div className="recommended-products-grid">
-              {response
-                ? response.products.nodes.map((product) => (
-                    <ProductItem key={product.id} product={product} />
-                  ))
-                : null}
-            </div>
-          )}
-        </Await>
-      </Suspense>
-      <br />
-    </section>
+    <Suspense fallback={<div className="recommended-products-loading">Loading...</div>}>
+      <Await resolve={products}>
+        {(response) =>
+          response ? (
+            <ProductCarousel title="Recommended Products" products={response.products.nodes} />
+          ) : null
+        }
+      </Await>
+    </Suspense>
   );
 }
 
@@ -147,30 +139,17 @@ const FEATURED_COLLECTION_QUERY = `#graphql
   }
 ` as const;
 
+// Was: an inline `RecommendedProduct` fragment with just title/handle/price/
+// image — swapped for PRODUCT_CARD_FRAGMENT so these tiles get the full
+// ProductCard treatment (wishlist, compare, hover image, sale badge, ATC)
+// instead of ProductItem's plainer rendering.
 const RECOMMENDED_PRODUCTS_QUERY = `#graphql
-  fragment RecommendedProduct on Product {
-    id
-    title
-    handle
-    priceRange {
-      minVariantPrice {
-        amount
-        currencyCode
-      }
-    }
-    featuredImage {
-      id
-      url
-      altText
-      width
-      height
-    }
-  }
+  ${PRODUCT_CARD_FRAGMENT}
   query RecommendedProducts ($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
     products(first: 4, sortKey: UPDATED_AT, reverse: true) {
       nodes {
-        ...RecommendedProduct
+        ...ProductCard
       }
     }
   }
