@@ -1,40 +1,28 @@
 /**
  * Thin wrapper around Yotpo's official client-side Star Rating widget div
  * (instance 1332841 — see Yotpo dashboard: Star Rating Widget install
- * snippet). This is separate from `~/snippets/StarRating.tsx`, which is a
- * custom-built React/SVG star rating that hits Yotpo's server-side Bottom
- * Line API instead of relying on this client-side widget.
+ * snippet). This is the sole star-rating implementation — the earlier
+ * custom-built ~/snippets/StarRating.tsx (server-side Bottom Line API)
+ * was removed in favor of this official widget.
  *
- * Historical note: the custom StarRating.tsx exists because this official
- * widget "never rendered reliably" (see comment in products.$handle.tsx) —
- * but that was evaluated before `useYotpoRefresh()` existed to re-trigger
- * Yotpo's DOM scan after client-side route navigations. This component is
- * for re-testing that assumption. It relies on `useYotpoRefresh()` already
- * being called once elsewhere on the route (e.g. in products.$handle.tsx)
- * — Yotpo's refreshWidgets()/initWidgets() scans the whole DOM for
- * `.yotpo-widget-instance` nodes, so no additional hook call is needed
- * here.
+ * It relies on `useYotpoRefresh()` already being called once elsewhere on
+ * the route (e.g. in products.$handle.tsx) — Yotpo's refreshWidgets()/
+ * initWidgets() scans the whole DOM for `.yotpo-widget-instance` nodes, so
+ * no additional hook call is needed here.
  *
- * suppressHydrationWarning is required for the same reason as in
- * ReviewsWidget.tsx: without it, React's hydration reconcile detects a
- * mismatch against our empty JSX and wipes out whatever Yotpo already
- * rendered into this node.
- *
- * To compare against the custom StarRating.tsx, swap it in temporarily in
- * ProductDetail.tsx:
- *
- *   {bottomline && (
- *     <YotpoStarRating
- *       instanceId="1332841"
- *       productId={yotpoProductId}
- *     />
- *   )}
- *
- * If this renders reliably in production (including after client-side PDP
- * navigations), it may be worth retiring StarRating.tsx and
- * getYotpoBottomline() in favor of this — trading control/SSR-on-first-
- * paint for less custom code to maintain. If it still doesn't render
- * consistently, that confirms the custom approach remains the right call.
+ * dangerouslySetInnerHTML={{__html: ''}} (not just suppressHydrationWarning)
+ * is required here. Yotpo's async loader script races React's hydration —
+ * it can mutate this div's children (inserting its own Vue-rendered nodes,
+ * comments, whitespace) before hydration reaches it. suppressHydrationWarning
+ * alone only silences *text content* mismatch warnings one level deep; it
+ * does not stop React from throwing when it finds unexpected *child nodes*
+ * that don't match the empty server render, which previously caused
+ * intermittent "Hydration failed" errors that forced the whole page to
+ * fall back to full client-side re-rendering. Setting
+ * dangerouslySetInnerHTML tells React to treat this node's contents as
+ * opaque — it claims the DOM node during hydration but never diffs its
+ * children — so it no longer matters whether Yotpo's script has already
+ * mutated the div by the time hydration gets there.
  */
 
 export function YotpoStarRating({
@@ -50,6 +38,7 @@ export function YotpoStarRating({
       data-yotpo-instance-id={instanceId}
       data-yotpo-product-id={productId}
       suppressHydrationWarning
+      dangerouslySetInnerHTML={{__html: ''}}
     />
   );
 }

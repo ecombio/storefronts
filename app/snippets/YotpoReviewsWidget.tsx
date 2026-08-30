@@ -8,12 +8,17 @@
  *
  * Named YotpoReviewsWidget (rather than ReviewsWidget) to pair clearly
  * with ~/snippets/YotpoStarRating.tsx — both wrap official Yotpo
- * client-side widgets, as distinct from the custom-built
- * ~/snippets/StarRating.tsx.
+ * client-side widgets.
  *
- * suppressHydrationWarning is required: without it, React's hydration
- * reconcile detects a mismatch against our empty JSX and wipes out
- * whatever Yotpo already rendered into this node.
+ * dangerouslySetInnerHTML={{__html: ''}} (not just suppressHydrationWarning)
+ * is required here — same reasoning as YotpoStarRating.tsx. Yotpo's async
+ * loader script races React's hydration and can mutate this div's children
+ * before hydration reaches it; suppressHydrationWarning alone doesn't stop
+ * React from throwing on unexpected child nodes, only on mismatched text
+ * content one level deep. This was confirmed to intermittently break
+ * YotpoStarRating.tsx with a full-page hydration failure — applying the
+ * same fix here preemptively, since this component has the identical
+ * architecture and is exposed to the same race.
  */
 
 export function YotpoReviewsWidget({
@@ -47,6 +52,7 @@ export function YotpoReviewsWidget({
       data-yotpo-currency={currency}
       data-yotpo-description={description}
       suppressHydrationWarning
+      dangerouslySetInnerHTML={{__html: ''}}
     />
   );
 }

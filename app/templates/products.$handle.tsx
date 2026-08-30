@@ -10,7 +10,6 @@ import {
 } from '@shopify/hydrogen';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {useYotpoRefresh} from '~/hooks/useYotpoRefresh';
-import {getYotpoBottomline} from '~/lib/yotpo';
 import {YotpoReviewsWidget} from '~/snippets/YotpoReviewsWidget';
 import {ProductMedia} from '~/sections/ProductMedia';
 import {ProductDetail} from '~/sections/ProductDetail';
@@ -76,10 +75,6 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   redirectIfHandleIsLocalized(request, {handle, data: product});
 
   const yotpoProductId = product.id.split('/').pop()!;
-  const bottomline = await getYotpoBottomline(
-    yotpoProductId,
-    context.env.PUBLIC_YOTPO_APP_KEY,
-  );
 
   const policyFields = product.policyMetafield?.reference;
   const {parentCollection, childCollection} = getBreadcrumbCollections(product);
@@ -87,7 +82,6 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   return {
     product,
     shopUrl: context.env.PUBLIC_STORE_DOMAIN,
-    bottomline,
     parentCollection,
     childCollection,
     shippingHtml:
@@ -203,7 +197,6 @@ export default function Product() {
   const {
     product,
     shopUrl,
-    bottomline,
     shippingHtml,
     refundHtml,
     warrantyHtml,
@@ -256,7 +249,6 @@ export default function Product() {
           warrantyHtml={warrantyHtml}
           productOptions={productOptions}
           selectedVariant={selectedVariant}
-          bottomline={bottomline}
           yotpoProductId={yotpoProductId}
         />
       </div>
