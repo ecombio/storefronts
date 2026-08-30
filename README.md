@@ -11,6 +11,7 @@ git add . && git commit -m "update" --no-verify && git pull --rebase origin $(gi
 
 git add . && git commit -m "update" --no-verify && git pull --rebase origin $(git branch --show-current) || git push origin $(git branch --show-current) --force
 
+git add . && git commit -m "your message here" --no-verify && git pull --rebase origin $(git branch --show-current) && git push origin $(git branch --show-current)
 
 Get-ChildItem -Recurse -File -Path .\app
 
