@@ -1,0 +1,36 @@
+/* app/assets/collection-toolbar.css */
+
+.collection-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #0d0d0d;
+  margin-bottom: 24px;
+}
+
+.tab-switcher {
+  display: flex;
+}
+
+.tab-switcher__tab {
+  padding: 10px 4px;
+  margin-right: 20px;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  color: #8c8c89;
+  border-bottom: 2px solid transparent;
+}
+
+.tab-switcher__tab:hover {
+  color: #0d0d0d;
+}
+
+.tab-switcher__tab--active {
+  color: #0d0d0d;
+  border-bottom-color: #0d0d0d;
+}

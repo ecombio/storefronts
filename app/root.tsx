@@ -25,6 +25,10 @@ import menuStyles from '~/assets/highlight.css?url';
 import mainProductStyles from '~/assets/main-product.css?url';
 import productDescriptionStyles from '~/assets/product-description.css?url';
 import collectionFiltersStyles from '~/assets/collection-filters.css?url';
+import collectionToolbarStyles from '~/assets/collection-toolbar.css?url';
+import articleCardStyles from '~/assets/article-card.css?url';
+import subCollectionStyles from '~/assets/sub-collection.css?url';
+import collectionAfterItemsStyles from '~/assets/collection-after-items.css?url';
 import tailwindCss from '~/assets/tailwind.css?url';
 import {PageLayout} from './components/PageLayout';
 
@@ -169,6 +173,10 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={mainProductStyles}></link>
         <link rel="stylesheet" href={productDescriptionStyles}></link>
         <link rel="stylesheet" href={collectionFiltersStyles}></link>
+        <link rel="stylesheet" href={collectionToolbarStyles}></link>
+        <link rel="stylesheet" href={articleCardStyles}></link>
+        <link rel="stylesheet" href={subCollectionStyles}></link>
+        <link rel="stylesheet" href={collectionAfterItemsStyles}></link>
         <Meta />
         <Links />
       </head>

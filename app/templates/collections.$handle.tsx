@@ -6,9 +6,16 @@ import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {CollectionFilters} from '~/sections/CollectionFilters';
 import {CollectionFeed} from '~/sections/CollectionFeed';
+import {CollectionToolbar} from '~/sections/CollectionToolbar';
+import {CollectionArticles} from '~/sections/CollectionArticles';
+import {SubCollections} from '~/sections/SubCollections';
+import {CollectionAfterItems} from '~/sections/CollectionAfterItems';
+import type {CollectionTab} from '~/sections/CollectionToolbar';
 import type {ProductFilter} from '@shopify/hydrogen/storefront-api-types';
 
 const FILTER_URL_PARAM_NAME = 'filter';
+const TAB_URL_PARAM_NAME = 'tab';
+const VALID_TABS: CollectionTab[] = ['products', 'articles'];
 
 export const meta: Route.MetaFunction = ({data}) => {
   return [{title: `Hydrogen | ${data?.collection.title ?? ''} Collection`}];
@@ -36,6 +43,7 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
     pageBy: 8,
   });
   const filters = parseFiltersFromUrl(url);
+  const activeTab = parseActiveTab(url);
 
   if (!handle) {
     throw redirect('/collections');
@@ -59,6 +67,7 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
 
   return {
     collection,
+    activeTab,
   };
 }
 
@@ -90,17 +99,60 @@ function parseFiltersFromUrl(url: URL): ProductFilter[] {
     .filter((filter): filter is ProductFilter => filter !== null);
 }
 
+/**
+ * The active Products/Expert Advice tab is stored in a `?tab=` URL param,
+ * same pattern as the filter params above — shareable and works without JS.
+ * Falls back to 'products' for anything missing or invalid.
+ */
+function parseActiveTab(url: URL): CollectionTab {
+  const tab = url.searchParams.get(TAB_URL_PARAM_NAME);
+  return (VALID_TABS as string[]).includes(tab ?? '') ? (tab as CollectionTab) : 'products';
+}
+
 export default function Collection() {
-  const {collection} = useLoaderData<typeof loader>();
+  const {collection, activeTab} = useLoaderData<typeof loader>();
+
+  const articles = (collection.postsMetafield?.references?.nodes ?? []).filter(
+    (node): node is NonNullable<typeof node> => Boolean(node),
+  );
+
+  const subCollections = (collection.subCollectionsMetafield?.references?.nodes ?? []).filter(
+    (node): node is NonNullable<typeof node> => Boolean(node),
+  );
 
   return (
     <div className="collection">
       <h1>{collection.title}</h1>
       <p className="collection-description">{collection.description}</p>
+
+      <CollectionToolbar activeTab={activeTab} />
+
       <div className="collection-layout">
         <CollectionFilters filters={collection.products.filters} />
-        <CollectionFeed products={collection.products} />
+
+        <div className="collection-feed">
+          <div
+            id="panel-products"
+            role="tabpanel"
+            aria-labelledby="tab-products"
+            hidden={activeTab !== 'products'}
+          >
+            <SubCollections collections={subCollections} />
+            <CollectionFeed products={collection.products} />
+          </div>
+          <div
+            id="panel-articles"
+            role="tabpanel"
+            aria-labelledby="tab-articles"
+            hidden={activeTab !== 'articles'}
+          >
+            <CollectionArticles articles={articles} />
+          </div>
+        </div>
       </div>
+
+      <CollectionAfterItems body={collection.afterItemsMetafield?.reference?.body} />
+
       <Analytics.CollectionView
         data={{
           collection: {
@@ -140,9 +192,49 @@ const PRODUCT_ITEM_FRAGMENT = `#graphql
   }
 ` as const;
 
+const ARTICLE_ITEM_FRAGMENT = `#graphql
+  fragment ArticleItem on Article {
+    id
+    handle
+    title
+    excerpt
+    publishedAt
+    blog {
+      handle
+    }
+    image {
+      id
+      url
+      altText
+      width
+      height
+    }
+    readingTime: metafield(namespace: "custom", key: "reading_time") {
+      value
+    }
+  }
+` as const;
+
+const SUB_COLLECTION_ITEM_FRAGMENT = `#graphql
+  fragment SubCollectionItem on Collection {
+    id
+    handle
+    title
+    image {
+      id
+      url
+      altText
+      width
+      height
+    }
+  }
+` as const;
+
 // NOTE: https://shopify.dev/docs/api/storefront/2022-04/objects/collection
 const COLLECTION_QUERY = `#graphql
   ${PRODUCT_ITEM_FRAGMENT}
+  ${ARTICLE_ITEM_FRAGMENT}
+  ${SUB_COLLECTION_ITEM_FRAGMENT}
   query Collection(
     $handle: String!
     $country: CountryCode
@@ -158,6 +250,32 @@ const COLLECTION_QUERY = `#graphql
       handle
       title
       description
+      postsMetafield: metafield(namespace: "custom", key: "posts") {
+        references(first: 10) {
+          nodes {
+            ... on Article {
+              ...ArticleItem
+            }
+          }
+        }
+      }
+      subCollectionsMetafield: metafield(namespace: "custom", key: "sub_collections") {
+        references(first: 20) {
+          nodes {
+            ... on Collection {
+              ...SubCollectionItem
+            }
+          }
+        }
+      }
+      afterItemsMetafield: metafield(namespace: "custom", key: "after_item_lists") {
+        reference {
+          ... on Page {
+            id
+            body
+          }
+        }
+      }
       products(
         first: $first,
         last: $last,
