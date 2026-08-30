@@ -13,7 +13,7 @@ const graphqlConfig: IGraphQLConfig = {
       documents: [
         './*.{ts,tsx,js,jsx}',
         './app/**/*.{ts,tsx,js,jsx}',
-        '!./app/graphql/**/*.{ts,tsx,js,jsx}',
+        '!./app/graphql/customer-account/**/*.{ts,tsx,js,jsx}',
       ],
     },
 

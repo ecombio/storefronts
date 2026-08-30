@@ -1,4 +1,4 @@
-// app/graphql/ProductCardFragment.ts
+// app/graphql/ProductCardFragment.tsx
 //
 // STAGE 1: bare minimum — same fields ProductItem/RecommendedProduct
 // already used successfully. No metafields, no variant lookups. This
@@ -26,25 +26,3 @@ export const PRODUCT_CARD_FRAGMENT = `#graphql
     }
   }
 ` as const;
-
-export interface ProductCardImage {
-  id: string;
-  url: string;
-  altText: string | null;
-  width: number | null;
-  height: number | null;
-}
-
-export interface ProductCardMoney {
-  amount: string;
-  currencyCode: string;
-}
-
-export interface ProductCardData {
-  id: string;
-  handle: string;
-  title: string;
-  vendor: string | null;
-  featuredImage: ProductCardImage | null;
-  priceRange: {minVariantPrice: ProductCardMoney};
-}

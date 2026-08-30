@@ -7,10 +7,10 @@
 
 import {Link} from 'react-router';
 import {Image, Money} from '@shopify/hydrogen';
-import type {ProductCardData} from '~/graphql/ProductCardFragment';
+import type {ProductCardFragment} from 'storefrontapi.generated';
 
 export interface ProductCardProps {
-  product: ProductCardData;
+  product: ProductCardFragment;
   showVendor?: boolean;
 }
 

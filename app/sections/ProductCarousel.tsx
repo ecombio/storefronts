@@ -2,11 +2,11 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {Link} from 'react-router';
 import {ProductCard} from '~/snippets/ProductCard';
-import type {ProductCardData} from '~/graphql/ProductCardFragment';
+import type {ProductCardFragment} from 'storefrontapi.generated';
 
 export interface ProductCarouselProps {
   title: string;
-  products: ProductCardData[];
+  products: ProductCardFragment[];
   /** Optional "View all" link next to the heading, e.g. a collection URL. */
   viewAllUrl?: string;
   viewAllLabel?: string;

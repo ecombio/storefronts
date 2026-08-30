@@ -3,9 +3,9 @@ import {Await, useLoaderData, Link} from 'react-router';
 import type {Route} from './+types/_index';
 import {Suspense} from 'react';
 import {Image} from '@shopify/hydrogen';
-import type {FeaturedCollectionFragment} from 'storefrontapi.generated';
+import type {FeaturedCollectionFragment, ProductCardFragment} from 'storefrontapi.generated';
 import {ProductCarousel} from '~/sections/ProductCarousel';
-import {PRODUCT_CARD_FRAGMENT, type ProductCardData} from '~/graphql/ProductCardFragment';
+import {PRODUCT_CARD_FRAGMENT} from '~/graphql/ProductCardFragment';
 import {MockShopNotice} from '~/sections/MockShopNotice';
 
 export const meta: Route.MetaFunction = () => {
@@ -97,11 +97,7 @@ function FeaturedCollection({
 function RecommendedProducts({
   products,
 }: {
-  // ASSUMPTION: once you run codegen with PRODUCT_CARD_FRAGMENT in this
-  // file, `storefrontapi.generated` will export a real
-  // `RecommendedProductsQuery` type shaped by the new fragment — this
-  // loose cast is a stand-in until that regenerates.
-  products: Promise<{products: {nodes: ProductCardData[]}} | null>;
+  products: Promise<{products: {nodes: ProductCardFragment[]}} | null>;
 }) {
   return (
     <Suspense fallback={<div className="recommended-products-loading">Loading...</div>}>
