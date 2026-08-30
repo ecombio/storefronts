@@ -11,7 +11,7 @@ import {
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {useYotpoRefresh} from '~/hooks/useYotpoRefresh';
 import {getYotpoBottomline} from '~/lib/yotpo';
-import {ReviewsWidget} from '~/sections/ReviewsWidget';
+import {YotpoReviewsWidget} from '~/snippets/YotpoReviewsWidget';
 import {ProductMedia} from '~/sections/ProductMedia';
 import {ProductDetail} from '~/sections/ProductDetail';
 import {Breadcrumbs} from '~/snippets/Breadcrumbs';
@@ -76,7 +76,10 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   redirectIfHandleIsLocalized(request, {handle, data: product});
 
   const yotpoProductId = product.id.split('/').pop()!;
-  const bottomline = await getYotpoBottomline(yotpoProductId);
+  const bottomline = await getYotpoBottomline(
+    yotpoProductId,
+    context.env.PUBLIC_YOTPO_APP_KEY,
+  );
 
   const policyFields = product.policyMetafield?.reference;
   const {parentCollection, childCollection} = getBreadcrumbCollections(product);
@@ -254,15 +257,11 @@ export default function Product() {
           productOptions={productOptions}
           selectedVariant={selectedVariant}
           bottomline={bottomline}
+          yotpoProductId={yotpoProductId}
         />
       </div>
-      {/* id added as the scroll target for StarRating's "Jump to reviews"
-          aria-label — that label currently promises a jump with no
-          onClick wired up anywhere (see StarRating.tsx). Once an
-          onClick/handler is added there (or threaded through
-          ProductDetail), it should scroll/focus this element. */}
       <div id="reviews">
-        <ReviewsWidget
+        <YotpoReviewsWidget
           instanceId={YOTPO_REVIEWS_INSTANCE_ID}
           productId={yotpoProductId}
           productTitle={product.title}

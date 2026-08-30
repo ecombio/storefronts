@@ -1,11 +1,18 @@
 import type {MappedProductOptions} from '@shopify/hydrogen';
 import type {ProductFragment} from 'storefrontapi.generated';
 import {StarRating} from '~/snippets/StarRating';
+import {YotpoStarRating} from '~/snippets/YotpoStarRating';
 import {ProductPrice} from '~/snippets/ProductPrice';
 import {ProductForm} from '~/sections/ProductForm';
 import {ProductDescriptionPanels} from '~/snippets/ProductDescriptionPanels';
 import {SaleBadge} from '~/snippets/SaleBadge';
 import type {YotpoBottomline} from '~/lib/yotpo';
+
+// Yotpo's official Star Rating Widget instance ID — see Yotpo dashboard.
+// Used only by YotpoStarRating below, for side-by-side comparison against
+// the custom-built StarRating. Not the same instance as the Reviews
+// Widget (see YOTPO_REVIEWS_INSTANCE_ID in products.$handle.tsx).
+const YOTPO_STAR_RATING_INSTANCE_ID = '1332841';
 
 /**
  * Right-hand column of the PDP: sale badge, title, star rating, price,
@@ -23,6 +30,7 @@ export function ProductDetail({
   productOptions,
   selectedVariant,
   bottomline,
+  yotpoProductId,
 }: {
   title: ProductFragment['title'];
   descriptionHtml: ProductFragment['descriptionHtml'];
@@ -32,6 +40,10 @@ export function ProductDetail({
   productOptions: MappedProductOptions[];
   selectedVariant: ProductFragment['selectedOrFirstAvailableVariant'];
   bottomline: YotpoBottomline | null;
+  /** Legacy numeric Yotpo product id — required by YotpoStarRating below.
+   *  StarRating (the custom-built one) doesn't need this; it only uses
+   *  `bottomline`, which is already resolved server-side. */
+  yotpoProductId: string | undefined;
 }) {
   return (
     <div className="product-detail">
@@ -51,6 +63,14 @@ export function ProductDetail({
           }
         />
       )}
+      {/* Temporary: side-by-side comparison against Yotpo's official
+          Star Rating widget, to re-test whether it now renders reliably
+          now that useYotpoRefresh() exists. Remove once the comparison
+          is done — keep whichever one wins. */}
+      <YotpoStarRating
+        instanceId={YOTPO_STAR_RATING_INSTANCE_ID}
+        productId={yotpoProductId}
+      />
       <ProductPrice
         price={selectedVariant?.price}
         compareAtPrice={selectedVariant?.compareAtPrice}
