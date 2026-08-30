@@ -1,4 +1,3 @@
-// app/sections/Header.tsx
 import {Suspense} from 'react';
 import {Await, NavLink, useAsyncValue} from 'react-router';
 import {
@@ -13,10 +12,10 @@ import {HeaderAccount} from '~/snippets/HeaderAccount';
 import {HeaderCart} from '~/snippets/HeaderCart';
 import {HeaderMenu} from '~/snippets/HeaderMenu';
 export {HeaderMenu} from '~/snippets/HeaderMenu';
+import {HeaderUtility} from '~/snippets/HeaderUtility';
+export {HeaderUtility} from '~/snippets/HeaderUtility';
 import {AnnouncementBar} from './AnnouncementBar';
 export {AnnouncementBar} from './AnnouncementBar';
-import {UtilityBar} from './UtilityBar';
-export {UtilityBar} from './UtilityBar';
 import type {CollectionImage} from '~/config/Header.constants';
 import wordmarkSrc from '~/assets/wordmark.svg';
 
@@ -43,26 +42,30 @@ export function Header({
   return (
     <header className="w-full bg-white font-sans shadow-[0_4px_20px_rgba(0,0,0,0.10)]">
       <AnnouncementBar />
-      <UtilityBar />
+      <HeaderUtility />
       <div
         data-header-search-row
         className="relative border-b border-gray-100"
       >
-        <div className="mx-auto flex max-w-[1400px] items-center gap-6 px-4 py-3">
+        <div className="mx-auto flex max-w-full items-center gap-3 px-4 py-2 sm:gap-4 sm:px-6 lg:max-w-[1200px] lg:gap-6 lg:px-8 lg:pt-2.5 lg:pb-2.5">
           <NavLink prefetch="intent" to="/" end className="shrink-0" aria-label={`${shop.name} — home`}>
-            <img src={wordmarkSrc} alt={shop.name} width={140} height={28} />
+            <img src={wordmarkSrc} alt={shop.name} width={140} height={28} className="h-6 w-auto sm:h-7" />
           </NavLink>
 
-          <div className="flex flex-1 justify-center">
+          <div className="hidden flex-1 justify-center sm:flex">
             <HeaderSearch />
           </div>
 
           <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} customer={customer} />
         </div>
+
+        <div className="border-t border-gray-100 px-4 py-2 sm:hidden">
+          <HeaderSearch />
+        </div>
       </div>
 
-      <div data-header-menu-row className="relative border-b border-gray-100">
-        <div className="mx-auto flex min-w-0 max-w-[1400px] px-4 py-2">
+      <div data-header-menu-row className="relative hidden border-b border-gray-100 lg:block">
+        <div className="mx-auto flex min-w-0 max-w-full px-6 pt-2.5 pb-2.5 lg:max-w-[1200px] lg:px-8">
           <HeaderMenu
             menu={menu}
             viewport="desktop"
@@ -82,7 +85,7 @@ function HeaderCtas({
   customer,
 }: Pick<HeaderProps, 'isLoggedIn' | 'cart' | 'customer'>) {
   return (
-    <nav className="flex shrink-0 items-center gap-6" role="navigation">
+    <nav className="flex shrink-0 items-center gap-3 sm:gap-6" role="navigation">
       <HeaderMenuMobileToggle />
       <HeaderAccount isLoggedIn={isLoggedIn} customer={customer} />
       <CartToggle cart={cart} />
@@ -95,7 +98,7 @@ function HeaderMenuMobileToggle() {
   return (
     <button
       aria-label="Open menu"
-      className="rounded p-1 text-gray-800 hover:text-gray-950 sm:hidden"
+      className="rounded p-1 text-gray-800 hover:text-gray-950 lg:hidden"
       onClick={() => open('mobile')}
     >
       <span className="text-lg">☰</span>

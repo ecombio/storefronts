@@ -12,12 +12,12 @@ import {RegionPicker} from '~/snippets/RegionPicker';
 // locale cookie and redirects) is a separate pass, not a copy of the
 // theme's vanilla JS. RegionPicker below is UI-complete but its
 // selection callback is a stub for the same reason — see RegionPicker.tsx.
-export function UtilityBar() {
+export function HeaderUtility() {
   const links = UTILITY_LINKS.filter((link) => link.label && link.url);
 
   return (
     <div className="hidden border-b border-gray-100 sm:block">
-      <div className="mx-auto flex max-w-[1400px] items-center justify-between px-4 py-2 text-sm text-gray-700">
+      <div className="mx-auto flex max-w-[1200px] items-center justify-between px-8 pt-2.5 pb-2.5 text-sm text-gray-700">
         <nav className="flex items-center" role="list">
           {links.map((link, i) => (
             <NavLink
