@@ -1,3 +1,4 @@
+import {useState} from 'react';
 import {useLoaderData} from 'react-router';
 import type {Route} from './+types/products.$handle';
 import {
@@ -11,7 +12,8 @@ import {
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {getYotpoBottomline} from '~/lib/yotpo.server';
 import {useYotpoRefresh} from '~/hooks/useYotpoRefresh';
-import {YotpoReviewsWidget} from '~/snippets/YotpoReviewsWidget';
+import {ReviewsWidget} from '~/snippets/ReviewsWidget';
+import {ReviewModal} from '~/snippets/ReviewModal';
 import {StarRating} from '~/snippets/StarRating';
 import {ProductMedia} from '~/sections/ProductMedia';
 import {ProductPrice} from '~/snippets/ProductPrice';
@@ -217,6 +219,8 @@ export default function Product() {
 
   useYotpoRefresh();
 
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+
   const selectedVariant = useOptimisticVariant(
     product.selectedOrFirstAvailableVariant,
     getAdjacentAndFirstAvailableVariants(product),
@@ -231,6 +235,7 @@ export default function Product() {
 
   const {title, descriptionHtml} = product;
   const yotpoProductId = product.id.split('/').pop();
+  const productUrl = `https://${shopUrl}/products/${product.handle}`;
 
   return (
     <div style={{display: 'flex', flexDirection: 'column', gap: '2rem'}}>
@@ -268,6 +273,7 @@ export default function Product() {
                 .getElementById('reviews')
                 ?.scrollIntoView({behavior: 'smooth'})
             }
+            onWriteReviewClick={() => setIsReviewModalOpen(true)}
           />
           <ProductPrice
             price={selectedVariant?.price}
@@ -300,17 +306,26 @@ export default function Product() {
         </div>
       </div>
       <div id="reviews">
-        <YotpoReviewsWidget
+        <ReviewsWidget
           instanceId={YOTPO_REVIEWS_INSTANCE_ID}
           productId={yotpoProductId}
           productTitle={product.title}
-          productUrl={`https://${shopUrl}/products/${product.handle}`}
+          productUrl={productUrl}
           imageUrl={selectedVariant?.image?.url}
           price={selectedVariant?.price?.amount}
           currency={selectedVariant?.price?.currencyCode}
           description={product.description}
         />
       </div>
+      {isReviewModalOpen && yotpoProductId && (
+        <ReviewModal
+          productId={yotpoProductId}
+          productTitle={product.title}
+          productUrl={productUrl}
+          productImageUrl={selectedVariant?.image?.url}
+          onClose={() => setIsReviewModalOpen(false)}
+        />
+      )}
       <Analytics.ProductView
         data={{
           products: [
