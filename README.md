@@ -7,7 +7,6 @@ Add-Content -Path .env -Value "PUBLIC_CHECKOUT_DOMAIN=ecombio.myshopify.com"
 npm install
 npm run dev
 
-
 git add . && git commit -m "update" --no-verify && git pull --rebase origin $(git branch --show-current) && git push origin $(git branch --show-current)
 
 git add . && git commit -m "update" --no-verify && git pull --rebase origin $(git branch --show-current) || git push origin $(git branch --show-current) --force
