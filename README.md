@@ -11,6 +11,10 @@ git add . && git commit -m "update" --no-verify && git pull --rebase origin $(gi
 
 git add . && git commit -m "update" --no-verify && git pull --rebase origin $(git branch --show-current) || git push origin $(git branch --show-current) --force
 
+
+Get-ChildItem -Recurse -File -Path .\app
+
+
 # 1. Create destination and clone the headless branch
 mkdir "C:\Users\Admin\Shopify\Storefronts\Headless" -Force
 cd "C:\Users\Admin\Shopify\Storefronts\Headless"
