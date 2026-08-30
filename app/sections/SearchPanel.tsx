@@ -250,7 +250,7 @@ export function SearchPanel({
   const total = hits.length;
 
   // Panel always covers the entire viewport starting from the very top
-  // (y: 0) — including AnnouncementBar and UtilityBar above the header
+  // (y: 0) — including AnnouncementBar and HeaderUtility above the header
   // row — rather than starting just below it.
   const topOffset = 0;
 

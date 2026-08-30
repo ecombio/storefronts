@@ -17,7 +17,7 @@ function flagUrl(isoCode: string) {
 //
 // Country/language data comes from Header.constants.ts as a stand-in for
 // `localization.available_countries`. selectCountry is a stub — see the
-// note in UtilityBar.tsx on why the real localization POST-and-redirect
+// note in HeaderUtility.tsx on why the real localization POST-and-redirect
 // flow needs its own Hydrogen-specific wiring rather than a port of the
 // theme's form.submit() calls.
 export function RegionPicker() {
