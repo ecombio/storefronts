@@ -19,6 +19,7 @@ export function ProductDetail({
   descriptionHtml,
   shippingHtml,
   refundHtml,
+  warrantyHtml,
   productOptions,
   selectedVariant,
   bottomline,
@@ -27,6 +28,7 @@ export function ProductDetail({
   descriptionHtml: ProductFragment['descriptionHtml'];
   shippingHtml?: string | null;
   refundHtml?: string | null;
+  warrantyHtml?: string | null;
   productOptions: MappedProductOptions[];
   selectedVariant: ProductFragment['selectedOrFirstAvailableVariant'];
   bottomline: YotpoBottomline | null;
@@ -42,6 +44,11 @@ export function ProductDetail({
         <StarRating
           averageScore={bottomline.averageScore}
           totalReviews={bottomline.totalReviews}
+          onClick={() =>
+            document
+              .getElementById('reviews')
+              ?.scrollIntoView({behavior: 'smooth', block: 'start'})
+          }
         />
       )}
       <ProductPrice
@@ -65,9 +72,11 @@ export function ProductDetail({
             title: 'Refund & Return Policy',
             html: refundHtml ?? '',
           },
-          // Warranty panel slots in here once that content has a
-          // source (product metafield or policy page) — see the
-          // priority order in the reference implementation.
+          {
+            id: 'warranty',
+            title: 'Warranty',
+            html: warrantyHtml ?? '',
+          },
         ]}
       />
     </div>

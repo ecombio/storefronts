@@ -41,7 +41,6 @@ const buttonStyle = {
   flexDirection: 'row',
   alignItems: 'flex-start',
   direction: 'ltr',
-  cursor: 'pointer',
   background: 'none',
   border: 'none',
   padding: 0,
@@ -110,27 +109,56 @@ const starPathStyle = {pointerEvents: 'none'} as const;
 export const StarRating = memo(function StarRating({
   averageScore,
   totalReviews,
+  onClick,
 }: {
   averageScore: number;
   totalReviews: number;
+  /** Optional — if provided, the rating becomes a real jump-to-reviews
+   *  control (button gets a working click + honest aria-label). If
+   *  omitted, it renders as a non-interactive summary instead of
+   *  promising an action it can't perform. */
+  onClick?: () => void;
 }) {
   // useId guarantees each rendered instance gets unique SVG gradient ids —
   // important if multiple StarRating components ever render on the same
   // page (e.g. a product grid), since duplicate <linearGradient> ids
   // silently break fills in the browser.
-  const instanceId = useId();
+  //
+  // React's useId() returns an id containing colons (e.g. ":r0:"). Safari
+  // fails to resolve an SVG fill="url(#...)" reference when the target id
+  // contains a colon — the gradient reference silently fails to resolve
+  // and the fill falls back to nothing, so the star renders completely
+  // unpainted (not missing, just invisible). Stripping the colons here
+  // keeps the id unique while avoiding that failure mode.
+  const rawInstanceId = useId();
+  const instanceId = rawInstanceId.replace(/:/g, '');
 
-  if (!totalReviews) return null;
+  // Deliberately no early return when totalReviews is 0 — Yotpo's own
+  // widget still renders the star bar at zero reviews (empty stars +
+  // "0 Reviews"), using it as an invitation to leave the first review.
+  // Whether there's Yotpo data at all is already gated one level up,
+  // by the `bottomline &&` check in ProductDetail.
+
+  const interactive = Boolean(onClick);
+  const label = interactive
+    ? `${averageScore.toFixed(
+        1,
+      )} out of 5 stars rating in total ${totalReviews} reviews. Jump to reviews.`
+    : `${averageScore.toFixed(
+        1,
+      )} out of 5 stars rating in total ${totalReviews} reviews.`;
 
   return (
     <div style={wrapperStyle}>
       <div style={scrollPanelStyle}>
         <button
           type="button"
-          aria-label={`${averageScore.toFixed(
-            1,
-          )} out 5 stars rating in total ${totalReviews} reviews. Jump to reviews.`}
-          style={buttonStyle}
+          onClick={onClick}
+          aria-label={label}
+          style={{
+            ...buttonStyle,
+            cursor: interactive ? 'pointer' : 'default',
+          }}
         >
           <span style={starsRowOuterStyle}>
             <span aria-hidden="true" style={starsRowInnerStyle}>
@@ -163,7 +191,7 @@ export const StarRating = memo(function StarRating({
                       style={starPathStyle}
                       d={STAR_PATH}
                       stroke="#FFE000"
-                      fill={`url('#${gradientId}')`}
+                      fill={`url(#${gradientId})`}
                     />
                   </svg>
                 );

@@ -203,6 +203,7 @@ export default function Product() {
     bottomline,
     shippingHtml,
     refundHtml,
+    warrantyHtml,
     parentCollection,
     childCollection,
   } = useLoaderData<typeof loader>();
@@ -249,12 +250,18 @@ export default function Product() {
           descriptionHtml={descriptionHtml}
           shippingHtml={shippingHtml}
           refundHtml={refundHtml}
+          warrantyHtml={warrantyHtml}
           productOptions={productOptions}
           selectedVariant={selectedVariant}
           bottomline={bottomline}
         />
       </div>
-      <div>
+      {/* id added as the scroll target for StarRating's "Jump to reviews"
+          aria-label — that label currently promises a jump with no
+          onClick wired up anywhere (see StarRating.tsx). Once an
+          onClick/handler is added there (or threaded through
+          ProductDetail), it should scroll/focus this element. */}
+      <div id="reviews">
         <ReviewsWidget
           instanceId={YOTPO_REVIEWS_INSTANCE_ID}
           productId={yotpoProductId}
