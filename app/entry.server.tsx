@@ -51,6 +51,7 @@ export default async function handleRequest(
     ],
     fontSrc: [
       "'self'",
+      'https://cdn.shopify.com',
       'https://staticw2.yotpo.com',
       'https://cdn-widgetsrepository.yotpo.com',
       'https://fonts.gstatic.com',

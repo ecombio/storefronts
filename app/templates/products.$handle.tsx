@@ -9,8 +9,10 @@ import {
   useSelectedOptionInUrlParam,
 } from '@shopify/hydrogen';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
+import {getYotpoBottomline} from '~/lib/yotpo.server';
 import {useYotpoRefresh} from '~/hooks/useYotpoRefresh';
 import {YotpoReviewsWidget} from '~/snippets/YotpoReviewsWidget';
+import {StarRating} from '~/snippets/StarRating';
 import {ProductMedia} from '~/sections/ProductMedia';
 import {ProductPrice} from '~/snippets/ProductPrice';
 import {ProductForm} from '~/sections/ProductForm';
@@ -20,9 +22,6 @@ import {Breadcrumbs} from '~/snippets/Breadcrumbs';
 
 // Reviews stay on Yotpo's client-side widget (see useYotpoRefresh).
 const YOTPO_REVIEWS_INSTANCE_ID = '1332840';
-
-// Yotpo Star Rating Widget instance ID — see Yotpo dashboard.
-const YOTPO_STAR_RATING_INSTANCE_ID = '1332841';
 
 // Collections fetched per product for breadcrumb parent/child
 // resolution. Must cover the vendor auto-collection plus every real
@@ -54,7 +53,7 @@ export async function loader(args: Route.LoaderArgs) {
 
 async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   const {handle} = params;
-  const {storefront} = context;
+  const {storefront, env} = context;
 
   if (!handle) {
     throw new Error('Expected product handle to be defined');
@@ -78,6 +77,14 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
 
   redirectIfHandleIsLocalized(request, {handle, data: product});
 
+  const yotpoProductId = product.id.split('/').pop()!;
+  const yotpoBottomline = env.PUBLIC_YOTPO_APP_KEY
+    ? (await getYotpoBottomline(env.PUBLIC_YOTPO_APP_KEY, yotpoProductId)) ?? {
+        averageScore: 0,
+        totalReviews: 0,
+      }
+    : null;
+
   const policyFields = product.policyMetafield?.reference;
   const {parentCollection, childCollection} = getBreadcrumbCollections(product);
 
@@ -86,6 +93,7 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
     shopUrl: context.env.PUBLIC_STORE_DOMAIN,
     parentCollection,
     childCollection,
+    yotpoBottomline,
     shippingHtml:
       readSafeMetafieldHtml(policyFields?.shippingPolicyField) ??
       nullIfBlank(shippingPage?.body) ??
@@ -204,6 +212,7 @@ export default function Product() {
     warrantyHtml,
     parentCollection,
     childCollection,
+    yotpoBottomline,
   } = useLoaderData<typeof loader>();
 
   useYotpoRefresh();
@@ -251,15 +260,15 @@ export default function Product() {
             compareAtPrice={selectedVariant?.compareAtPrice}
           />
           <h1 className="product-detail-title">{title}</h1>
-          {yotpoProductId && (
-            <div
-              className="yotpo-widget-instance"
-              data-yotpo-instance-id={YOTPO_STAR_RATING_INSTANCE_ID}
-              data-yotpo-product-id={yotpoProductId}
-              data-yotpo-section-id="product"
-              suppressHydrationWarning
-            />
-          )}
+          <StarRating
+            averageScore={yotpoBottomline?.averageScore ?? 0}
+            totalReviews={yotpoBottomline?.totalReviews ?? 0}
+            onReviewsClick={() =>
+              document
+                .getElementById('reviews')
+                ?.scrollIntoView({behavior: 'smooth'})
+            }
+          />
           <ProductPrice
             price={selectedVariant?.price}
             compareAtPrice={selectedVariant?.compareAtPrice}
