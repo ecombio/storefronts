@@ -1,13 +1,15 @@
-import {forwardRef, useEffect, useState, useRef, useCallback} from "react";
-import svgPaths from "./svg-paths";
+import { forwardRef, useState, useEffect, useRef, useCallback } from "react";
+// Icon path data now lives alongside this file in snippets/ (moved out
+// of components/ai-search/, which no longer exists).
+import svgPaths from "./ai-search-svg-paths";
 
 const DEFAULT_SUGGESTIONS = ["anything with AI", "iPhone 17", "Robot Vacuum", "LG Qned AI"];
-const ITEM_HEIGHT = 16;
+const ITEM_HEIGHT = 22;
 const CYCLE_MS = 2200;
 
 function AISearchIcon() {
   return (
-    <div className="overflow-clip relative size-[15px] shrink-0">
+    <div className="overflow-clip relative size-[24px] shrink-0">
       <div className="absolute inset-[12.77%_12.61%_12.5%_12.5%]">
         <svg
           className="absolute block inset-0 size-full"
@@ -76,19 +78,13 @@ function CloseIconSvg() {
 function BlinkingCursor() {
   return (
     <span
-      className="inline-block w-[1.5px] h-[13px] bg-[#559bf1] shrink-0 rounded-[1px]"
+      className="inline-block w-[2px] h-[18px] bg-[#559bf1] shrink-0 rounded-[1px]"
       style={{ animation: "blink 1s step-end infinite" }}
     />
   );
 }
 
-function AnimatedPlaceholder({
-  index,
-  suggestions,
-}: {
-  index: number;
-  suggestions: string[];
-}) {
+function AnimatedPlaceholder({ index, suggestions }: { index: number; suggestions: string[] }) {
   return (
     <div className="overflow-hidden shrink-0" style={{ height: ITEM_HEIGHT }}>
       <div
@@ -102,8 +98,8 @@ function AnimatedPlaceholder({
             style={{
               height: ITEM_HEIGHT,
               fontFamily: "'Rubik', sans-serif",
-              fontSize: 13,
-              lineHeight: "16px",
+              fontSize: 16,
+              lineHeight: "18px",
               color: "#7f8999",
               fontWeight: 400,
             }}
@@ -121,39 +117,31 @@ const pillBg = {
     "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 620 64' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.11999999731779099'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(36.141 -3.4171e-14 8.2601e-14 12.373 310 32)'><stop stop-color='rgba(255,255,255,0)' offset='0.45'/><stop stop-color='rgba(255,255,255,1)' offset='1'/></radialGradient></defs></svg>\"), linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.2) 100%), linear-gradient(180deg, rgba(0, 0, 0, 0.053) 0%, rgba(188, 182, 237, 0.22) 100%)",
 };
 
-// Resting shadow: a soft, tight, low-opacity outline so the pill reads
-// as a raised element on a plain white header without leaving a visible
-// gray smear/line trailing below it (the previous version used the
-// Figma prototype's shadow unconditionally here — 17-25px blur/spread
-// values tuned for a colored/dark background — which is what was
-// showing up as a stray shadow line under the search bar on our plain
-// white header row).
-const restingShadow =
-  "0px 1px 2px 0px rgba(16,24,40,0.06), 0px 1px 3px 0px rgba(16,24,40,0.08)";
-
-// Slightly more lift on focus, still much lighter than the original
-// always-on shadow.
-const focusedShadow =
-  "0px 2px 4px 0px rgba(16,24,40,0.06), 0px 4px 10px 0px rgba(85,155,241,0.12)";
-
-export interface AiSearchBarProps {
-  /** Controlled input value — this component no longer owns its own text state. */
+interface AiSearchBarProps {
+  /** Controlled input value — lift this to the same state SearchPanel reads as `term`. */
   value: string;
-  /** Fired on every keystroke (and on clear) with the new value. */
+  /** Called on every keystroke. Wire this to the same setter you pass SearchPanel as `onTermChange`. */
   onQueryChange: (value: string) => void;
-  /** Fired when the user submits a search query (Enter key). */
-  onSearch?: (query: string) => void;
-  /** Fired when the input receives focus — wire this to opening a results panel. */
+  /** Called when the user submits a search query (Enter key). Wire this to what you pass SearchPanel as `onNavigate`. */
+  onSearch: (query: string) => void;
+  /** Optional — fires when the input gains focus. Use this to open SearchPanel, mirroring how the plain SearchBar's focus currently opens it. */
   onFocus?: () => void;
-  /** Placeholder suggestions to cycle through while empty. */
+  /**
+   * Optional external ref (e.g. the same ref SearchPanel passes as
+   * `panelInputRef` if you reuse this component inside the panel too).
+   * Falls back to an internal ref when this is the header trigger only.
+   */
+  inputRef?: React.RefObject<HTMLInputElement>;
+  /** Placeholder suggestions to cycle through */
   suggestions?: string[];
   className?: string;
 }
 
 /**
- * Forwards a ref to the root div (not the inner <input>) so a parent can
- * use it for click-outside detection on an accompanying results panel —
- * see SearchPanel's `triggerRef`.
+ * Forwards a ref to the root div (not the inner <input>) so a parent
+ * (HeaderSearch) can use it for click-outside detection via
+ * SearchPanel's `triggerRef` prop — mirrors SearchBar's forwardRef
+ * exactly, so the two are interchangeable as the header trigger.
  */
 export const AiSearchBar = forwardRef<HTMLDivElement, AiSearchBarProps>(
   function AiSearchBar(
@@ -162,15 +150,16 @@ export const AiSearchBar = forwardRef<HTMLDivElement, AiSearchBarProps>(
       onQueryChange,
       onSearch,
       onFocus,
+      inputRef: externalInputRef,
       suggestions = DEFAULT_SUGGESTIONS,
       className = "",
     },
     ref,
   ) {
-    // Local UI-only state — the actual text lives in the `value` prop now.
     const [focused, setFocused] = useState(false);
     const [suggestionIndex, setSuggestionIndex] = useState(0);
-    const inputRef = useRef<HTMLInputElement>(null);
+    const internalInputRef = useRef<HTMLInputElement>(null);
+    const inputRef = externalInputRef ?? internalInputRef;
 
     useEffect(() => {
       if (value.length > 0) return;
@@ -186,12 +175,12 @@ export const AiSearchBar = forwardRef<HTMLDivElement, AiSearchBarProps>(
         onQueryChange("");
         inputRef.current?.focus();
       },
-      [onQueryChange],
+      [inputRef, onQueryChange],
     );
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Enter" && value.trim()) {
-        onSearch?.(value.trim());
+        onSearch(value.trim());
       }
       if (e.key === "Escape") {
         onQueryChange("");
@@ -205,16 +194,17 @@ export const AiSearchBar = forwardRef<HTMLDivElement, AiSearchBarProps>(
     return (
       <div
         ref={ref}
-        className={`relative h-[36px] w-full max-w-[260px] cursor-text ${className}`}
+        className={`relative h-[64px] w-full max-w-[620px] cursor-text ${className}`}
         onClick={() => inputRef.current?.focus()}
       >
         {/* Pill background layers */}
         <div className="absolute inset-0 rounded-[999px]" style={pillBg} />
         <div
           aria-hidden
-          className="absolute border-2 border-[rgba(193,193,193,0.6)] border-solid inset-0 rounded-[999px] transition-shadow duration-150"
+          className="absolute border-2 border-[rgba(193,193,193,0.6)] border-solid inset-0 rounded-[999px]"
           style={{
-            boxShadow: focused ? focusedShadow : restingShadow,
+            boxShadow:
+              "0px 7px 15px 0px rgba(176,194,250,0.2), 0px 4px 10.3px 0px rgba(0,0,0,0.03), 0px 17px 25.8px 0px rgba(0,0,0,0.06), 0px 4px 6px 0px rgba(255,255,255,0.32)",
           }}
         />
         <div
@@ -226,7 +216,7 @@ export const AiSearchBar = forwardRef<HTMLDivElement, AiSearchBarProps>(
         />
 
         {/* Content row */}
-        <div className="absolute inset-0 flex items-center px-[12px] gap-[6px]">
+        <div className="absolute inset-0 flex items-center px-[28px] gap-[8px]">
           <AISearchIcon />
 
           {/* Text zone */}
@@ -237,8 +227,8 @@ export const AiSearchBar = forwardRef<HTMLDivElement, AiSearchBarProps>(
                   className="whitespace-nowrap shrink-0"
                   style={{
                     fontFamily: "'Rubik', sans-serif",
-                    fontSize: 13,
-                    lineHeight: "16px",
+                    fontSize: 16,
+                    lineHeight: "18px",
                     color: "#0b0c0e",
                     fontWeight: 400,
                   }}
@@ -256,8 +246,8 @@ export const AiSearchBar = forwardRef<HTMLDivElement, AiSearchBarProps>(
                     className="whitespace-nowrap shrink-0 mr-[4px]"
                     style={{
                       fontFamily: "'Rubik', sans-serif",
-                      fontSize: 13,
-                      lineHeight: "16px",
+                      fontSize: 16,
+                      lineHeight: "18px",
                       color: "#7f8999",
                       fontWeight: 400,
                     }}
@@ -289,7 +279,7 @@ export const AiSearchBar = forwardRef<HTMLDivElement, AiSearchBarProps>(
 
           {/* Clear button */}
           <button
-            className={`relative shrink-0 size-[15px] cursor-pointer overflow-hidden transition-opacity duration-150 ${
+            className={`relative shrink-0 size-[24px] cursor-pointer overflow-hidden transition-opacity duration-150 ${
               showX ? "opacity-100" : "opacity-0 pointer-events-none"
             }`}
             onMouseDown={handleClear}

@@ -2,9 +2,10 @@ import type {LoaderFunctionArgs} from 'react-router';
 
 // Requests every predictiveSearch type we use in the panel:
 // - QUERY: text suggestions ("adidas trainers", "adidas gazelle"...)
-// - PRODUCT: product cards in the results grid (vendor + tags included
-//   so the panel can derive brand suggestions and an "ECO" badge from
-//   real merchant data, not fabricated fields)
+// - PRODUCT: product cards in the results grid (vendor + productType +
+//   tags included so the panel can render a "BRAND / TYPE" line and
+//   derive brand suggestions and an "ECO" badge from real merchant
+//   data, not fabricated fields)
 // - COLLECTION: category suggestions (e.g. "Sneakers")
 // - ARTICLE: blog posts for the Articles row
 // - PAGE: static pages (e.g. shipping policy) for the Suggestions rail
@@ -31,6 +32,7 @@ const PREDICTIVE_SEARCH_QUERY = `#graphql
         title
         handle
         vendor
+        productType
         tags
         selectedOrFirstAvailableVariant(
           ignoreUnknownOptions: true
@@ -89,6 +91,10 @@ export type PredictiveSearchHit = {
   price: number | null;
   compare_at_price: number | null;
   is_eco: boolean;
+  /** Shown as the small "BRAND" label above the title in SearchPanel.tsx. */
+  vendor: string | null;
+  /** Shown as the small "/ TYPE" label above the title in SearchPanel.tsx. */
+  product_type: string | null;
 };
 
 export type PredictiveCollection = {
@@ -161,6 +167,8 @@ export async function loader({request, context}: LoaderFunctionArgs) {
         is_eco: (product.tags ?? []).some(
           (tag: string) => tag.toLowerCase() === 'eco',
         ),
+        vendor: product.vendor ?? null,
+        product_type: product.productType || null,
       };
     });
 

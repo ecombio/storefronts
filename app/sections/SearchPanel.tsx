@@ -1,4 +1,6 @@
-import {useEffect, useRef, useState} from 'react';
+// app/sections/SearchPanel.tsx
+
+import {useEffect, useRef, useState, useCallback} from 'react';
 import {createPortal} from 'react-dom';
 import {Link, useFetcher} from 'react-router';
 import {
@@ -10,6 +12,7 @@ import {
   Info,
   Heart,
   ArrowUpLeft,
+  ImageOff,
 } from 'lucide-react';
 import {TRENDING_SEARCH_TERMS} from '~/config/Header.constants';
 import {SearchBar} from '~/snippets/SearchBar';
@@ -25,6 +28,13 @@ type PredictiveSearchHit = {
   price: number | null;
   compare_at_price: number | null;
   is_eco: boolean;
+  /**
+   * Per-product vendor, shown as the small "BRAND" label above the
+   * title. Optional/nullable because it requires api.predictive-search.tsx
+   * to include `vendor` on each hit — see the patch note alongside this
+   * file if it isn't wired up yet.
+   */
+  vendor?: string | null;
 };
 
 type PredictiveCollection = {
@@ -77,6 +87,31 @@ function formatArticleDate(iso: string): string {
     month: 'long',
     year: 'numeric',
   });
+}
+
+/**
+ * Bolds the first occurrence of `query` inside `text` (case-insensitive).
+ * Mirrors the reference design's match-highlighting in the suggestions
+ * rail so it's visually obvious why a given suggestion surfaced.
+ */
+function HighlightedText({text, query}: {text: string; query: string}) {
+  const q = query.trim();
+  if (!q) return <span>{text}</span>;
+
+  const idx = text.toLowerCase().indexOf(q.toLowerCase());
+  if (idx === -1) return <span>{text}</span>;
+
+  const before = text.slice(0, idx);
+  const match = text.slice(idx, idx + q.length);
+  const after = text.slice(idx + q.length);
+
+  return (
+    <span>
+      {before}
+      <span className="font-bold text-gray-950">{match}</span>
+      {after}
+    </span>
+  );
 }
 
 // Exported so HeaderSearch (which now owns the "commit a search" flow)
@@ -165,6 +200,11 @@ export function SearchPanel({
     vendors.length > 0 ||
     collections.length > 0 ||
     pages.length > 0;
+
+  // Primary matched collection, shown inline next to the "Products"
+  // label (e.g. "Products In Gloves") the way the reference design
+  // shows the active category next to the section header.
+  const primaryCollection = collections[0] ?? null;
 
   const panelRef = useRef<HTMLDivElement>(null);
   // The panel's own copy of the search input. This is the visible bar
@@ -278,7 +318,7 @@ export function SearchPanel({
         }`}
       >
         <div className="overflow-hidden">
-          <div className="mx-auto max-h-[80vh] max-w-[980px] overflow-y-auto px-6 py-7">
+          <div className="mx-auto max-h-[80vh] max-w-[1080px] overflow-y-auto px-6 py-7">
             {/* The panel's own visible search bar + close button. This
                 is what the user sees/types into while the panel is
                 open — it's the same controlled `term`/`onTermChange`
@@ -333,9 +373,10 @@ export function SearchPanel({
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-8 md:grid-cols-[220px_1fr]">
+                <div className="grid grid-cols-1 gap-8 md:grid-cols-[260px_1fr]">
                   {hasSuggestions && (
                     <SuggestionsRail
+                      term={term}
                       recent={matchingRecent}
                       queries={querySuggestions}
                       vendors={vendors}
@@ -348,38 +389,35 @@ export function SearchPanel({
                   <div className="min-w-0">
                     {total > 0 && (
                       <div>
-                        <p className="mb-3.5 text-[10.5px] font-semibold uppercase tracking-wider text-gray-400">
+                        <p className="mb-4 text-sm text-gray-400">
                           Products
+                          {primaryCollection && (
+                            <span className="ml-1.5 font-semibold text-gray-800">
+                              In {primaryCollection.title}
+                            </span>
+                          )}
                         </p>
-                        <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
-                          {hits.map((hit) => (
-                            <ProductHit
-                              key={hit.objectID}
-                              hit={hit}
-                              onNavigate={closeSearch}
-                            />
-                          ))}
-                        </div>
+                        <ProductHitsCarousel hits={hits} onNavigate={closeSearch} />
 
-                        <button
-                          type="button"
-                          onClick={() => {
-                            onNavigate(term);
-                            onClose();
-                          }}
-                          className="mt-6 inline-flex items-center justify-center rounded-lg bg-gray-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-800"
-                        >
-                          See all results for &ldquo;{term}&rdquo;
-                        </button>
+                        <div className="mt-6 flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onNavigate(term);
+                              onClose();
+                            }}
+                            className="inline-flex items-center justify-center rounded-sm bg-gray-950 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-gray-800"
+                          >
+                            See all results for &ldquo;{term}&rdquo;
+                          </button>
+                        </div>
                       </div>
                     )}
 
                     {articles.length > 0 && (
                       <div className={total > 0 ? 'mt-8' : ''}>
-                        <div className="mb-3.5 flex items-center justify-between">
-                          <p className="text-[10.5px] font-semibold uppercase tracking-wider text-gray-400">
-                            Articles
-                          </p>
+                        <div className="mb-4 flex items-center justify-between">
+                          <p className="text-sm text-gray-400">Articles</p>
                           <Link
                             to={`/search?q=${encodeURIComponent(term)}&type=article`}
                             onClick={closeSearch}
@@ -397,12 +435,16 @@ export function SearchPanel({
                               className="group flex items-center gap-3 rounded-xl border border-gray-100 p-2.5 transition hover:border-gray-200 hover:bg-gray-50"
                             >
                               <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-gray-100">
-                                {article.image_url && (
+                                {article.image_url ? (
                                   <img
                                     src={article.image_url}
                                     alt={article.title}
                                     className="h-full w-full object-cover"
                                   />
+                                ) : (
+                                  <div className="flex h-full w-full items-center justify-center">
+                                    <ImageOff size={16} className="text-gray-300" aria-hidden="true" />
+                                  </div>
                                 )}
                               </div>
                               <div className="min-w-0">
@@ -431,14 +473,22 @@ export function SearchPanel({
   );
 }
 
+const MAX_SUGGESTIONS = 8;
+
 /**
  * Left-hand "Suggestions" rail — blends recent searches the user has
  * already typed with live matches from Shopify: query text suggestions,
  * vendors (derived from matched products), collections, and pages.
  * Each row uses a distinct icon so the source of the suggestion stays
  * legible at a glance, matching the reference pattern.
+ *
+ * Capped at MAX_SUGGESTIONS total (not per-source) so a broad term
+ * doesn't dump 20+ rows into the rail — recent searches take priority,
+ * then queries, then vendors, then collections, then pages, filling
+ * remaining slots in that order.
  */
 function SuggestionsRail({
+  term,
   recent,
   queries,
   vendors,
@@ -446,6 +496,7 @@ function SuggestionsRail({
   pages,
   onSelectTerm,
 }: {
+  term: string;
   recent: string[];
   queries: string[];
   vendors: string[];
@@ -453,61 +504,77 @@ function SuggestionsRail({
   pages: PredictivePage[];
   onSelectTerm: (term: string) => void;
 }) {
+  let remaining = MAX_SUGGESTIONS;
+
+  const take = <T,>(items: T[]): T[] => {
+    if (remaining <= 0) return [];
+    const slice = items.slice(0, remaining);
+    remaining -= slice.length;
+    return slice;
+  };
+
+  const shownRecent = take(recent);
+  const shownQueries = take(queries);
+  const shownVendors = take(vendors);
+  const shownCollections = take(collections);
+  const shownPages = take(pages);
+
   return (
     <div className="border-b border-gray-100 pb-6 md:border-b-0 md:border-r md:border-gray-100 md:pb-0 md:pr-6">
-      <p className="mb-3.5 text-[10.5px] font-semibold uppercase tracking-wider text-gray-400">
-        Suggestions
-      </p>
-      <div className="flex flex-col gap-1">
-        {recent.map((value) => (
+      <p className="mb-4 text-sm text-gray-400">Suggestions</p>
+      <div className="flex flex-col gap-1.5">
+        {shownRecent.map((value) => (
           <SuggestionRow
             key={`recent-${value}`}
             icon={<RotateCcw size={15} aria-hidden="true" />}
             label={value}
+            query={term}
             onClick={() => onSelectTerm(value)}
           />
         ))}
-        {queries.map((value) => (
+        {shownQueries.map((value) => (
           <SuggestionRow
             key={`query-${value}`}
             icon={<Search size={15} aria-hidden="true" />}
             label={value}
+            query={term}
             onClick={() => onSelectTerm(value)}
           />
         ))}
-        {vendors.map((value) => (
+        {shownVendors.map((value) => (
           <SuggestionRow
             key={`vendor-${value}`}
             icon={<Tag size={15} aria-hidden="true" />}
             label={value}
+            query={term}
             onClick={() => onSelectTerm(value)}
           />
         ))}
-        {collections.map((collection) => (
+        {shownCollections.map((collection) => (
           <Link
             key={collection.id}
             to={`/collections/${collection.handle}`}
-            className="group flex items-center gap-2.5 rounded-lg px-2 py-2 text-left text-sm text-gray-800 transition hover:bg-gray-50"
+            className="group flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm text-gray-800 transition hover:bg-gray-50"
           >
             <span className="text-gray-400">
               <LayoutGrid size={15} aria-hidden="true" />
             </span>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate">{collection.title}</span>
+            <span className="min-w-0 flex-1 leading-snug">
+              <HighlightedText text={collection.title} query={term} />
             </span>
           </Link>
         ))}
-        {pages.map((page) => (
+        {shownPages.map((page) => (
           <Link
             key={page.id}
             to={`/pages/${page.handle}`}
-            className="group flex items-center gap-2.5 rounded-lg px-2 py-2 text-left text-sm text-gray-800 transition hover:bg-gray-50"
+            className="group flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm text-gray-800 transition hover:bg-gray-50"
           >
             <span className="text-gray-400">
               <Info size={15} aria-hidden="true" />
             </span>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate">{page.title}</span>
+            <span className="min-w-0 flex-1 leading-snug">
+              <HighlightedText text={page.title} query={term} />
             </span>
           </Link>
         ))}
@@ -519,24 +586,138 @@ function SuggestionsRail({
 function SuggestionRow({
   icon,
   label,
+  query,
   onClick,
 }: {
   icon: React.ReactNode;
   label: string;
+  query: string;
   onClick: () => void;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="group flex items-center gap-2.5 rounded-lg px-2 py-2 text-left text-sm text-gray-800 transition hover:bg-gray-50"
+      className="group flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm text-gray-800 transition hover:bg-gray-50"
     >
       <span className="text-gray-400">{icon}</span>
-      <span className="min-w-0 flex-1 truncate">{label}</span>
-      <span className="text-gray-300 opacity-0 transition group-hover:opacity-100">
+      <span className="min-w-0 flex-1 leading-snug">
+        <HighlightedText text={label} query={query} />
+      </span>
+      <span className="shrink-0 text-gray-300 opacity-0 transition group-hover:opacity-100">
         <ArrowUpLeft size={14} aria-hidden="true" />
       </span>
     </button>
+  );
+}
+
+/**
+ * Horizontal scrolling carousel for predictive-search product hits.
+ * Replaces the previous CSS-grid layout so results scroll sideways
+ * instead of wrapping into rows — mirrors the scroll/arrow logic used
+ * by sections/ProductCarousel.tsx elsewhere in the app.
+ */
+function ProductHitsCarousel({
+  hits,
+  onNavigate,
+}: {
+  hits: PredictiveSearchHit[];
+  onNavigate: () => void;
+}) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
+
+  const updateScrollState = useCallback(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    setCanScrollPrev(el.scrollLeft > 1);
+    setCanScrollNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
+  }, []);
+
+  useEffect(() => {
+    updateScrollState();
+    const el = trackRef.current;
+    if (!el) return;
+
+    el.addEventListener('scroll', updateScrollState, {passive: true});
+    const ro = new ResizeObserver(updateScrollState);
+    ro.observe(el);
+
+    return () => {
+      el.removeEventListener('scroll', updateScrollState);
+      ro.disconnect();
+    };
+  }, [updateScrollState, hits.length]);
+
+  function scrollByDirection(direction: 1 | -1) {
+    const el = trackRef.current;
+    if (!el) return;
+    const card = el.querySelector<HTMLElement>('[data-carousel-item]');
+    const styles = card ? getComputedStyle(el) : null;
+    const gap = styles ? parseFloat(styles.columnGap || styles.gap || '0') : 0;
+    const step = card ? card.offsetWidth + gap : el.clientWidth * 0.8;
+    el.scrollBy({left: step * direction, behavior: 'smooth'});
+  }
+
+  if (!hits.length) return null;
+
+  return (
+    <div className="relative">
+      <div
+        ref={trackRef}
+        role="group"
+        aria-label="Product results"
+        className="flex gap-5 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {hits.map((hit) => (
+          <div
+            key={hit.objectID}
+            data-carousel-item
+            className="w-[45%] shrink-0 snap-start sm:w-[31%] lg:w-[23%]"
+          >
+            <ProductHit hit={hit} onNavigate={onNavigate} />
+          </div>
+        ))}
+      </div>
+
+      {canScrollPrev && (
+        <button
+          type="button"
+          onClick={() => scrollByDirection(-1)}
+          aria-label="Scroll to previous products"
+          className="absolute left-0 top-1/2 hidden -translate-x-3 -translate-y-1/2 items-center justify-center rounded-full bg-white p-2 text-gray-700 shadow-md ring-1 ring-gray-200 transition hover:bg-gray-50 sm:flex"
+        >
+          <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <path
+              d="M11 4.5 6.5 9l4.5 4.5"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      )}
+      {canScrollNext && (
+        <button
+          type="button"
+          onClick={() => scrollByDirection(1)}
+          aria-label="Scroll to next products"
+          className="absolute right-0 top-1/2 hidden translate-x-3 -translate-y-1/2 items-center justify-center rounded-full bg-white p-2 text-gray-700 shadow-md ring-1 ring-gray-200 transition hover:bg-gray-50 sm:flex"
+        >
+          <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <path
+              d="M7 4.5 11.5 9 7 13.5"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -562,12 +743,16 @@ function ProductHit({
     <div className="group relative">
       <Link to={`/products/${hit.handle}`} onClick={onNavigate}>
         <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-gray-100 ring-1 ring-transparent transition group-hover:ring-gray-200">
-          {hit.image_url && (
+          {hit.image_url ? (
             <img
               src={hit.image_url}
               alt={hit.title}
               className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.04]"
             />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              <ImageOff size={22} className="text-gray-300" aria-hidden="true" />
+            </div>
           )}
           <div className="absolute left-2 top-2 flex flex-col items-start gap-1">
             {hit.is_eco && (
@@ -582,19 +767,24 @@ function ProductHit({
             )}
           </div>
         </div>
-        <p className="mt-2.5 line-clamp-2 text-sm font-medium leading-snug text-gray-900 group-hover:text-gray-950">
+        {hit.vendor && (
+          <p className="mt-2.5 text-[10px] font-medium uppercase tracking-wider text-gray-400">
+            {hit.vendor}
+          </p>
+        )}
+        <p className="mt-1 line-clamp-2 text-[15px] leading-snug text-gray-900 group-hover:text-gray-950">
           {hit.title}
         </p>
-        <div className="mt-1 flex items-center gap-1.5">
+        <div className="mt-1.5 flex items-baseline gap-2">
           {price && (
-            <small className="text-sm font-semibold text-gray-900">
+            <span className="text-[15px] font-semibold text-gray-900">
               {price}
-            </small>
+            </span>
           )}
           {onSale && compareAtPrice && (
-            <small className="text-xs text-gray-400 line-through">
+            <span className="text-[13px] text-gray-400 line-through">
               {compareAtPrice}
-            </small>
+            </span>
           )}
         </div>
       </Link>
@@ -633,9 +823,7 @@ function PopularSearches({
 
   return (
     <div>
-      <p className="mb-3.5 text-[10.5px] font-semibold uppercase tracking-wider text-gray-400">
-        Popular searches
-      </p>
+      <p className="mb-4 text-sm text-gray-400">Popular searches</p>
       <div className="flex flex-wrap gap-2.5">
         {terms.map((term) => (
           <button

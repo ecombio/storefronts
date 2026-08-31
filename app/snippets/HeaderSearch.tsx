@@ -1,6 +1,6 @@
 import {useRef, useState} from 'react';
 import {useNavigate} from 'react-router';
-import {SearchBar} from '~/snippets/SearchBar';
+import {AiSearchBar} from '~/snippets/AiSearchBar';
 import '~/assets/search-bar.css';
 import {
   SearchPanel,
@@ -36,7 +36,7 @@ export function HeaderSearch() {
 
   return (
     <div className="search-trigger flex w-full items-center">
-      <SearchBar
+      <AiSearchBar
         ref={containerRef}
         className="w-full"
         value={term}
