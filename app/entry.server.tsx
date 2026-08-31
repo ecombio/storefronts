@@ -70,6 +70,13 @@ export default async function handleRequest(
       // a scheme mismatch (not just a missing domain).
       'http://p.yotpoapi.com',
       'https://p.yotpoapi.com',
+      // Temporary: picsum.photos placeholder images used in SlideShow,
+      // CollectionCarousel, and ImageCarousel dev content. picsum.photos
+      // redirects to fastly.picsum.photos to actually serve the image,
+      // so both need whitelisting. Remove once real Shopify CDN images
+      // replace these placeholders.
+      'https://picsum.photos',
+      'https://fastly.picsum.photos',
     ],
   });
 
@@ -100,6 +107,7 @@ export default async function handleRequest(
 
   return new Response(body, {
     headers: responseHeaders,
+    
     status: responseStatusCode,
   });
 }
