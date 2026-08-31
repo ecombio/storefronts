@@ -9,7 +9,17 @@ import {
   MAX_RECENT_SEARCHES,
 } from '~/sections/SearchPanel';
 
-export function HeaderSearch() {
+export function HeaderSearch({
+  size = 'default',
+}: {
+  /**
+   * "default" — full-width pill, its own row (mobile row below the
+   * header, or any standalone placement).
+   * "compact" — sized to sit inline next to nav links/icons, e.g. in
+   * the single Nike-style desktop header row.
+   */
+  size?: 'default' | 'compact';
+}) {
   const [open, setOpen] = useState(false);
   const [term, setTerm] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
@@ -35,10 +45,16 @@ export function HeaderSearch() {
   }
 
   return (
-    <div className="search-trigger flex w-full items-center">
+    <div
+      className={`search-trigger flex items-center ${
+        size === 'compact' ? 'shrink-0' : 'w-full'
+      }`}
+    >
+      {/* AiSearchBar owns its own width per `size` (fixed for compact,
+          w-full+max-w for default) — no width class needed here. */}
       <AiSearchBar
         ref={containerRef}
-        className="w-full"
+        size={size}
         value={term}
         onQueryChange={setTerm}
         onFocus={() => setOpen(true)}

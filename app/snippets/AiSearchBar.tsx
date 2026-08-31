@@ -1,23 +1,72 @@
 import { forwardRef, useState, useEffect, useRef, useCallback } from "react";
-// Icon path data now lives alongside this file in snippets/ (moved out
-// of components/ai-search/, which no longer exists).
+// Icon path data lives alongside this file in snippets/.
 import svgPaths from "./ai-search-svg-paths";
 
 const DEFAULT_SUGGESTIONS = ["anything with AI", "iPhone 17", "Robot Vacuum", "LG Qned AI"];
-const ITEM_HEIGHT = 22;
-const CYCLE_MS = 2200;
 
-function AISearchIcon() {
+type Size = "default" | "compact";
+
+// Per-size tuning. "default" is the original full pill (centerpiece of
+// its own row). "compact" is sized to sit inline next to nav links and
+// icons, mirroring Nike's header where search shares a row with the
+// primary nav instead of owning the whole row.
+const SIZE_CONFIG: Record<
+  Size,
+  {
+    height: string;
+    // Full width class, including the sizing strategy: "default" fills
+    // whatever definite-width ancestor it's given (w-full, capped by
+    // max-w); "compact" carries its OWN fixed width instead of relying
+    // on w-full, because everything inside this pill is absolutely
+    // positioned (see the content row below) — a w-full child inside a
+    // shrink-to-fit/auto-width ancestor (e.g. a flex item with no
+    // explicit width, as compact sits in Header.tsx's centered row)
+    // resolves to width:auto per spec, and since no in-flow content
+    // exists to size it, the pill would collapse to 0 width. A fixed
+    // width sidesteps that entirely.
+    widthClass: string;
+    paddingX: string;
+    gap: string;
+    iconSize: number;
+    itemHeight: number;
+    fontSize: number;
+    lineHeight: string;
+    clearSize: number;
+  }
+> = {
+  default: {
+    height: "h-[64px]",
+    widthClass: "w-full max-w-[620px]",
+    paddingX: "px-[28px]",
+    gap: "gap-[8px]",
+    iconSize: 24,
+    itemHeight: 22,
+    fontSize: 16,
+    lineHeight: "18px",
+    clearSize: 24,
+  },
+  compact: {
+    height: "h-[40px]",
+    widthClass: "w-[260px] shrink-0",
+    paddingX: "px-[14px]",
+    gap: "gap-[6px]",
+    iconSize: 18,
+    itemHeight: 17,
+    fontSize: 13,
+    lineHeight: "16px",
+    clearSize: 16,
+  },
+};
+
+function AISearchIcon({ size }: { size: number }) {
   return (
-    <div className="overflow-clip relative size-[24px] shrink-0">
+    <div className="overflow-clip relative shrink-0" style={{ width: size, height: size }}>
       <div className="absolute inset-[12.77%_12.61%_12.5%_12.5%]">
         <svg
           className="absolute block inset-0 size-full"
           fill="none"
-          height="17.9354"
           preserveAspectRatio="none"
           viewBox="0 0 17.9726 17.9354"
-          width="17.9726"
         >
           <path d={svgPaths.p3f87f980} fill="#666F7F" />
         </svg>
@@ -26,10 +75,8 @@ function AISearchIcon() {
         <svg
           className="absolute block inset-0 size-full"
           fill="none"
-          height="3"
           preserveAspectRatio="none"
           viewBox="0 0 3 3"
-          width="3"
         >
           <path d={svgPaths.p20021000} fill="#666F7F" />
         </svg>
@@ -39,14 +86,7 @@ function AISearchIcon() {
         style={{ containerType: "size" }}
       >
         <div className="flex-none h-[100cqh] rotate-180 w-[100cqw]">
-          <svg
-            className="block size-full"
-            fill="none"
-            height="8"
-            preserveAspectRatio="none"
-            viewBox="0 0 8 8"
-            width="8"
-          >
+          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 8 8">
             <path d={svgPaths.p3872200} fill="#666F7F" />
           </svg>
         </div>
@@ -60,10 +100,8 @@ function CloseIconSvg() {
     <svg
       className="block size-full"
       fill="none"
-      height="13.5"
       preserveAspectRatio="none"
       viewBox="0 0 13.5 13.5"
-      width="13.5"
     >
       <path
         d={svgPaths.pd9eea00}
@@ -75,31 +113,45 @@ function CloseIconSvg() {
   );
 }
 
-function BlinkingCursor() {
+function BlinkingCursor({ compact }: { compact: boolean }) {
   return (
     <span
-      className="inline-block w-[2px] h-[18px] bg-[#559bf1] shrink-0 rounded-[1px]"
+      className={`inline-block shrink-0 rounded-[1px] bg-[#559bf1] ${
+        compact ? "w-[1.5px] h-[14px]" : "w-[2px] h-[18px]"
+      }`}
       style={{ animation: "blink 1s step-end infinite" }}
     />
   );
 }
 
-function AnimatedPlaceholder({ index, suggestions }: { index: number; suggestions: string[] }) {
+function AnimatedPlaceholder({
+  index,
+  suggestions,
+  itemHeight,
+  fontSize,
+  lineHeight,
+}: {
+  index: number;
+  suggestions: string[];
+  itemHeight: number;
+  fontSize: number;
+  lineHeight: string;
+}) {
   return (
-    <div className="overflow-hidden shrink-0" style={{ height: ITEM_HEIGHT }}>
+    <div className="overflow-hidden shrink-0" style={{ height: itemHeight }}>
       <div
         className="transition-transform duration-500 ease-in-out"
-        style={{ transform: `translateY(-${index * ITEM_HEIGHT}px)` }}
+        style={{ transform: `translateY(-${index * itemHeight}px)` }}
       >
         {suggestions.map((s) => (
           <div
             key={s}
             className="flex items-center whitespace-nowrap"
             style={{
-              height: ITEM_HEIGHT,
+              height: itemHeight,
               fontFamily: "'Rubik', sans-serif",
-              fontSize: 16,
-              lineHeight: "18px",
+              fontSize,
+              lineHeight,
               color: "#7f8999",
               fontWeight: 400,
             }}
@@ -124,24 +176,26 @@ interface AiSearchBarProps {
   onQueryChange: (value: string) => void;
   /** Called when the user submits a search query (Enter key). Wire this to what you pass SearchPanel as `onNavigate`. */
   onSearch: (query: string) => void;
-  /** Optional — fires when the input gains focus. Use this to open SearchPanel, mirroring how the plain SearchBar's focus currently opens it. */
+  /** Optional — fires when the input gains focus. Use this to open SearchPanel. */
   onFocus?: () => void;
-  /**
-   * Optional external ref (e.g. the same ref SearchPanel passes as
-   * `panelInputRef` if you reuse this component inside the panel too).
-   * Falls back to an internal ref when this is the header trigger only.
-   */
+  /** Optional external ref for imperative focus (e.g. SearchPanel's own copy of the bar). */
   inputRef?: React.RefObject<HTMLInputElement>;
   /** Placeholder suggestions to cycle through */
   suggestions?: string[];
   className?: string;
+  /**
+   * "default" — full pill, the centerpiece of its own row.
+   * "compact" — sized to sit inline next to nav links/icons, e.g. in a
+   * single Nike-style header row. Defaults to "default" so existing
+   * standalone usage (mobile row, SearchPanel's own input) is untouched.
+   */
+  size?: Size;
 }
 
 /**
  * Forwards a ref to the root div (not the inner <input>) so a parent
  * (HeaderSearch) can use it for click-outside detection via
- * SearchPanel's `triggerRef` prop — mirrors SearchBar's forwardRef
- * exactly, so the two are interchangeable as the header trigger.
+ * SearchPanel's `triggerRef` prop — mirrors SearchBar's forwardRef.
  */
 export const AiSearchBar = forwardRef<HTMLDivElement, AiSearchBarProps>(
   function AiSearchBar(
@@ -153,6 +207,7 @@ export const AiSearchBar = forwardRef<HTMLDivElement, AiSearchBarProps>(
       inputRef: externalInputRef,
       suggestions = DEFAULT_SUGGESTIONS,
       className = "",
+      size = "default",
     },
     ref,
   ) {
@@ -160,12 +215,14 @@ export const AiSearchBar = forwardRef<HTMLDivElement, AiSearchBarProps>(
     const [suggestionIndex, setSuggestionIndex] = useState(0);
     const internalInputRef = useRef<HTMLInputElement>(null);
     const inputRef = externalInputRef ?? internalInputRef;
+    const cfg = SIZE_CONFIG[size];
+    const compact = size === "compact";
 
     useEffect(() => {
       if (value.length > 0) return;
       const id = setInterval(() => {
         setSuggestionIndex((i) => (i + 1) % suggestions.length);
-      }, CYCLE_MS);
+      }, 2200);
       return () => clearInterval(id);
     }, [value, suggestions.length]);
 
@@ -194,7 +251,7 @@ export const AiSearchBar = forwardRef<HTMLDivElement, AiSearchBarProps>(
     return (
       <div
         ref={ref}
-        className={`relative h-[64px] w-full max-w-[620px] cursor-text ${className}`}
+        className={`relative cursor-text ${cfg.height} ${cfg.widthClass} ${className}`}
         onClick={() => inputRef.current?.focus()}
       >
         {/* Pill background layers */}
@@ -203,8 +260,9 @@ export const AiSearchBar = forwardRef<HTMLDivElement, AiSearchBarProps>(
           aria-hidden
           className="absolute border-2 border-[rgba(193,193,193,0.6)] border-solid inset-0 rounded-[999px]"
           style={{
-            boxShadow:
-              "0px 7px 15px 0px rgba(176,194,250,0.2), 0px 4px 10.3px 0px rgba(0,0,0,0.03), 0px 17px 25.8px 0px rgba(0,0,0,0.06), 0px 4px 6px 0px rgba(255,255,255,0.32)",
+            boxShadow: compact
+              ? "0px 2px 6px 0px rgba(16,24,40,0.06)"
+              : "0px 7px 15px 0px rgba(176,194,250,0.2), 0px 4px 10.3px 0px rgba(0,0,0,0.03), 0px 17px 25.8px 0px rgba(0,0,0,0.06), 0px 4px 6px 0px rgba(255,255,255,0.32)",
           }}
         />
         <div
@@ -216,8 +274,8 @@ export const AiSearchBar = forwardRef<HTMLDivElement, AiSearchBarProps>(
         />
 
         {/* Content row */}
-        <div className="absolute inset-0 flex items-center px-[28px] gap-[8px]">
-          <AISearchIcon />
+        <div className={`absolute inset-0 flex items-center ${cfg.paddingX} ${cfg.gap}`}>
+          <AISearchIcon size={cfg.iconSize} />
 
           {/* Text zone */}
           <div className="relative flex-1 flex items-center min-w-0 gap-[1px]">
@@ -227,27 +285,27 @@ export const AiSearchBar = forwardRef<HTMLDivElement, AiSearchBarProps>(
                   className="whitespace-nowrap shrink-0"
                   style={{
                     fontFamily: "'Rubik', sans-serif",
-                    fontSize: 16,
-                    lineHeight: "18px",
+                    fontSize: cfg.fontSize,
+                    lineHeight: cfg.lineHeight,
                     color: "#0b0c0e",
                     fontWeight: 400,
                   }}
                 >
                   {value}
                 </span>
-                {focused && <BlinkingCursor />}
+                {focused && <BlinkingCursor compact={compact} />}
               </>
             ) : (
               <>
                 {focused ? (
-                  <BlinkingCursor />
+                  <BlinkingCursor compact={compact} />
                 ) : (
                   <span
                     className="whitespace-nowrap shrink-0 mr-[4px]"
                     style={{
                       fontFamily: "'Rubik', sans-serif",
-                      fontSize: 16,
-                      lineHeight: "18px",
+                      fontSize: cfg.fontSize,
+                      lineHeight: cfg.lineHeight,
                       color: "#7f8999",
                       fontWeight: 400,
                     }}
@@ -255,7 +313,15 @@ export const AiSearchBar = forwardRef<HTMLDivElement, AiSearchBarProps>(
                     Search
                   </span>
                 )}
-                <AnimatedPlaceholder index={suggestionIndex} suggestions={suggestions} />
+                {!compact && (
+                  <AnimatedPlaceholder
+                    index={suggestionIndex}
+                    suggestions={suggestions}
+                    itemHeight={cfg.itemHeight}
+                    fontSize={cfg.fontSize}
+                    lineHeight={cfg.lineHeight}
+                  />
+                )}
               </>
             )}
 
@@ -279,9 +345,10 @@ export const AiSearchBar = forwardRef<HTMLDivElement, AiSearchBarProps>(
 
           {/* Clear button */}
           <button
-            className={`relative shrink-0 size-[24px] cursor-pointer overflow-hidden transition-opacity duration-150 ${
+            className={`relative shrink-0 cursor-pointer overflow-hidden transition-opacity duration-150 ${
               showX ? "opacity-100" : "opacity-0 pointer-events-none"
             }`}
+            style={{ width: cfg.clearSize, height: cfg.clearSize }}
             onMouseDown={handleClear}
             aria-label="Clear search"
             tabIndex={showX ? 0 : -1}

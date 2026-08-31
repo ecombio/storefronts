@@ -81,38 +81,66 @@ export function Header({
       >
         <AnnouncementBar />
         <HeaderUtility />
-        <div
-          data-header-search-row
-          className="relative"
-        >
-          <div className="mx-auto flex max-w-full items-center gap-3 px-4 py-2 sm:gap-4 sm:px-6 lg:max-w-[1200px] lg:gap-6 lg:px-8 lg:pt-2.5 lg:pb-2.5">
+
+        {/*
+          Single row (desktop, lg+): logo — centered nav menu — compact
+          search + account/cart, mirroring Nike's header where search
+          shares a row with the primary nav instead of the menu living
+          in its own row underneath. Replaces the previous two-row
+          layout (a full-width search row, then a separate menu row).
+
+          Mobile (<lg): unchanged from before — hamburger + logo + cart
+          on top, full-width search on its own row below. The nav menu
+          itself lives in the mobile drawer (Aside), not inline here,
+          same as previously.
+        */}
+        <div data-header-row className="relative">
+          <div className="mx-auto flex max-w-full items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6 lg:max-w-[1200px] lg:gap-6 lg:px-8">
             <HeaderMenuMobileToggle />
 
             <NavLink prefetch="intent" to="/" end className="shrink-0" aria-label={`${shop.name} — home`}>
               <img src={wordmarkSrc} alt={shop.name} width={140} height={28} className="h-6 w-auto sm:h-7" />
             </NavLink>
 
-            <div className="hidden flex-1 justify-center lg:flex">
-              <HeaderSearch />
+            {/*
+              [&>*]:!w-auto forces HeaderMenu's root element to shrink
+              to its content instead of stretching to fill this flex-1
+              wrapper. Without it, if HeaderMenu's own root renders with
+              a `w-full`-style class, `justify-center` has no leftover
+              space left to center within — the menu just pins to the
+              left edge and its rightmost items collide with whatever
+              sits next to it (here, the compact search pill).
+              This is a blunt override, not a root-cause fix — the
+              real fix belongs in HeaderMenu.tsx's own className. Swap
+              this out once that file's been checked/updated.
+            */}
+            <div className="hidden flex-1 justify-center lg:flex [&>*]:!w-auto">
+              <HeaderMenu
+                menu={menu}
+                viewport="desktop"
+                primaryDomainUrl={header.shop.primaryDomain.url}
+                publicStoreDomain={publicStoreDomain}
+                collectionImages={collectionImages}
+              />
             </div>
 
-            <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} customer={customer} />
+            {/* Mobile has no centered menu (it lives in the drawer via
+                HeaderMenuMobileToggle) — this spacer keeps the same
+                logo-left / ctas-right split as desktop. */}
+            <div className="flex-1 lg:hidden" />
+
+            <div className="hidden items-center gap-4 lg:flex">
+              <HeaderSearch size="compact" />
+              <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} customer={customer} />
+            </div>
+
+            <div className="lg:hidden">
+              <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} customer={customer} />
+            </div>
           </div>
 
           <div className="w-full px-4 py-2 lg:hidden">
             <HeaderSearch />
-          </div>
-        </div>
-
-        <div data-header-menu-row className="relative hidden lg:block">
-          <div className="mx-auto flex min-w-0 max-w-full px-6 pt-2.5 pb-2.5 lg:max-w-[1200px] lg:px-8">
-            <HeaderMenu
-              menu={menu}
-              viewport="desktop"
-              primaryDomainUrl={header.shop.primaryDomain.url}
-              publicStoreDomain={publicStoreDomain}
-              collectionImages={collectionImages}
-            />
           </div>
         </div>
       </div>
@@ -126,7 +154,7 @@ function HeaderCtas({
   customer,
 }: Pick<HeaderProps, 'isLoggedIn' | 'cart' | 'customer'>) {
   return (
-    <nav className="ml-auto flex shrink-0 items-center gap-3 sm:gap-6" role="navigation">
+    <nav className="flex shrink-0 items-center gap-3 sm:gap-6" role="navigation">
       <HeaderAccount isLoggedIn={isLoggedIn} customer={customer} />
       <CartToggle cart={cart} />
     </nav>
