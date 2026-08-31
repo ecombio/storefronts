@@ -292,6 +292,18 @@ export function CustomerReviews({
   const [page, setPage] = useState(initialData?.pagination.page ?? 1);
   const [query, setQuery] = useState('');
 
+  // Re-sync local state whenever the server sends fresh initialData —
+  // this fires when the loader re-runs after a sort change (via
+  // handleSortChange's setSearchParams below). Without this, reviews/page
+  // stay frozen at whatever they were on first mount: the URL and the
+  // server-side data update correctly, but the on-screen list silently
+  // keeps showing the old sort order, since useState's initial value is
+  // only ever read once.
+  useEffect(() => {
+    setReviews(initialData?.reviews ?? []);
+    setPage(initialData?.pagination.page ?? 1);
+  }, [initialData]);
+
   const bottomline = initialData?.bottomline;
   const pagination = initialData?.pagination;
   const hasMore = pagination ? reviews.length < pagination.total : false;
@@ -307,7 +319,7 @@ export function CustomerReviews({
   function handleSortChange(nextKey: YotpoSortKey) {
     // Full loader round-trip: products.$handle.tsx's loader re-runs
     // getYotpoReviews() server-side with the new sort and returns a
-    // fresh first page as initialData.
+    // fresh first page as initialData — picked up by the useEffect above.
     setSearchParams((prev) => {
       prev.set('sort', nextKey);
       return prev;
@@ -317,13 +329,17 @@ export function CustomerReviews({
   function handleLoadMore() {
     const nextPage = page + 1;
     fetcher.load(
-      `/api/product-reviews?productId=${productId}&page=${nextPage}&sort=${currentSortKey}`,
+      `/api/reviews?productId=${productId}&page=${nextPage}&sort=${currentSortKey}`,
     );
     setPage(nextPage);
   }
 
-  // Append fetched page once it lands.
-  useMemo(() => {
+  // Append fetched page once it lands. This is a side effect (setReviews),
+  // so it belongs in useEffect, not useMemo — useMemo is for computing and
+  // returning a value during render; using it purely for its side effect
+  // works today but isn't a guarantee React makes, and it skips the
+  // dependency-array warning tooling that would otherwise catch bugs here.
+  useEffect(() => {
     if (fetcher.data?.reviews) {
       setReviews((prev) => [...prev, ...fetcher.data!.reviews]);
     }
