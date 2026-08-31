@@ -1,5 +1,7 @@
 // app/lib/yotpo.server.ts
 
+import {readJson} from '~/lib/utils';
+
 /**
  * Fetches a page of individual reviews + bottomline stats for a product
  * from Yotpo's reviews.json endpoint. Bottomline (average score, total
@@ -75,7 +77,27 @@ export async function getYotpoReviews(
       return null;
     }
 
-    const data = await res.json();
+    const data = await readJson<{
+      response?: {
+        reviews?: Array<{
+          id: number;
+          score: number;
+          title?: string;
+          content?: string;
+          created_at: string;
+          verified_buyer?: boolean;
+          votes_up?: number;
+          votes_down?: number;
+          user?: {display_name?: string; social_image?: string | null};
+        }>;
+        bottomline?: {
+          average_score?: number;
+          total_review?: number;
+          star_distribution?: Record<'1' | '2' | '3' | '4' | '5', number>;
+        };
+        pagination?: {page?: number; per_page?: number; total?: number};
+      };
+    }>(res);
     const response = data?.response;
     if (!response) return null;
 

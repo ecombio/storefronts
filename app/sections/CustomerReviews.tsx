@@ -2,8 +2,8 @@
 //
 // Pairs with app/assets/customer-reviews.css. Wired to real Yotpo data
 // via getYotpoReviews() (server-rendered first page) and
-// app/templates/api.product-reviews.tsx (client-fetched subsequent
-// pages / sort changes).
+// app/templates/api.reviews.tsx (client-fetched subsequent pages / sort
+// changes).
 
 import {useEffect, useMemo, useRef, useState} from 'react';
 import {useFetcher, useSearchParams} from 'react-router';
@@ -292,6 +292,16 @@ export function CustomerReviews({
   const [page, setPage] = useState(initialData?.pagination.page ?? 1);
   const [query, setQuery] = useState('');
 
+  // Tracks which sort key the in-flight "Load more" fetcher.load() call
+  // was issued under. Without this, a sort change that fires while a
+  // "Load more" request for the *previous* sort is still in flight can
+  // have that stale response land after the sort change and get
+  // appended onto the new, freshly-sorted list — mixing sort orders and
+  // risking duplicate `review.id` keys. The fetcher-data effect below
+  // only applies a response if the sort it was requested under still
+  // matches the sort currently in effect.
+  const pendingSortRef = useRef<YotpoSortKey | null>(null);
+
   // Re-sync local state whenever the server sends fresh initialData —
   // this fires when the loader re-runs after a sort change (via
   // handleSortChange's setSearchParams below). Without this, reviews/page
@@ -302,6 +312,10 @@ export function CustomerReviews({
   useEffect(() => {
     setReviews(initialData?.reviews ?? []);
     setPage(initialData?.pagination.page ?? 1);
+    // A fresh server page has landed for the current sort — any older
+    // in-flight "Load more" request is now stale regardless of what it
+    // resolves to, so it should never be appended once it lands.
+    pendingSortRef.current = null;
   }, [initialData]);
 
   const bottomline = initialData?.bottomline;
@@ -328,9 +342,13 @@ export function CustomerReviews({
 
   function handleLoadMore() {
     const nextPage = page + 1;
-    fetcher.load(
-      `/api/reviews?productId=${productId}&page=${nextPage}&sort=${currentSortKey}`,
-    );
+    pendingSortRef.current = currentSortKey;
+    const params = new URLSearchParams({
+      productId,
+      page: String(nextPage),
+      sort: currentSortKey,
+    });
+    fetcher.load(`/api/reviews?${params}`);
     setPage(nextPage);
   }
 
@@ -340,9 +358,13 @@ export function CustomerReviews({
   // works today but isn't a guarantee React makes, and it skips the
   // dependency-array warning tooling that would otherwise catch bugs here.
   useEffect(() => {
-    if (fetcher.data?.reviews) {
+    if (fetcher.data?.reviews && pendingSortRef.current === currentSortKey) {
       setReviews((prev) => [...prev, ...fetcher.data!.reviews]);
     }
+    // Whether applied or discarded as stale, this response has been
+    // handled — clear the pending marker so a later, unrelated fetch
+    // isn't accidentally compared against it.
+    pendingSortRef.current = null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetcher.data]);
 

@@ -1,5 +1,6 @@
 // app/snippets/ReviewModal.tsx
 import {useEffect, useRef, useState} from 'react';
+import {readJson} from '~/lib/utils';
 
 // Matches Yotpo's own star-rating fieldset labels exactly (see their
 // rendered aria-labels: "Score 1 Very poor" ... "Score 5 Great!").
@@ -142,7 +143,7 @@ export function ReviewModal({
         }),
       });
 
-      const data = await res.json();
+      const data = await readJson<{error?: string}>(res);
 
       if (!res.ok) {
         setStatus('error');

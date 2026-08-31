@@ -1,5 +1,7 @@
 // app/snippets/StarRating.tsx
 
+import {useId} from 'react';
+
 /**
  * Renders a 5-star rating display from a plain average score + review
  * count. Replaces Yotpo's on-site Star Rating widget (instance 1332841),
@@ -25,6 +27,17 @@ export function StarRating({
   onWriteReviewClick?: () => void;
 }) {
   const hasReviews = totalReviews > 0;
+
+  // Scopes this instance's star gradient ids so multiple StarRating
+  // instances on the same page (e.g. a future collection grid showing
+  // per-product ratings) don't collide. useId() also keeps the id
+  // stable between server- and client-render, avoiding a hydration
+  // mismatch, which is the same reason index-only ids were originally
+  // chosen over Math.random() — see the Star component comment below.
+  // Colons in useId()'s output are valid in HTML ids but need escaping
+  // inside a CSS url(#...) reference, so they're stripped here rather
+  // than handled at every usage site.
+  const uid = useId().replace(/:/g, '');
 
   return (
     <div style={{display: 'flex', flexDirection: 'row', alignItems: 'flex-start'}}>
@@ -52,7 +65,12 @@ export function StarRating({
           style={{display: 'flex', flexDirection: 'row', alignItems: 'center', height: 28}}
         >
           {Array.from({length: 5}).map((_, i) => (
-            <Star key={i} index={i} fillPercent={hasReviews ? getFillPercent(averageScore, i) : 0} />
+            <Star
+              key={i}
+              index={i}
+              uid={uid}
+              fillPercent={hasReviews ? getFillPercent(averageScore, i) : 0}
+            />
           ))}
         </span>
 
@@ -144,16 +162,18 @@ function getFillPercent(score: number, starIndex: number): number {
 }
 
 // Mirrors Yotpo's own star SVG path/viewBox/gradient-fill approach.
-// Gradient id is derived from the star's position (0-4) rather than
-// Math.random() — a random id changes on every render, which is both
+// Gradient id incorporates the parent StarRating instance's `uid` (from
+// useId(), passed down) plus this star's position (0-4) — not
+// Math.random(). A random id changes on every render, which is both
 // wasteful (defeats any memoization) and unsafe for SSR: the id
 // generated on the server won't match the one generated during client
-// hydration, causing a hydration mismatch. Position is stable and
-// unique within a single StarRating instance (exactly 5 stars, each
-// rendered once), so index alone is enough here — no need to also
-// incorporate fillPercent.
-function Star({fillPercent, index}: {fillPercent: number; index: number}) {
-  const id = `star-fill-${index}`;
+// hydration, causing a hydration mismatch. `uid` is what keeps this
+// safe for SSR (stable per component instance across server/client),
+// and combining it with `index` is what keeps ids unique when more
+// than one StarRating instance renders on the same page — index alone
+// was only unique within a single instance.
+function Star({fillPercent, index, uid}: {fillPercent: number; index: number; uid: string}) {
+  const id = `star-fill-${uid}-${index}`;
 
   return (
     <svg

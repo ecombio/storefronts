@@ -53,6 +53,21 @@ export async function loader(args: Route.LoaderArgs) {
   return {...deferredData, ...criticalData};
 }
 
+// Validates the `?sort=` URL param against real key membership rather
+// than blindly casting it. Previously, an unrecognized value (e.g.
+// `?sort=bogus`) still fell through to YOTPO_SORT_OPTIONS.top when
+// building the Yotpo request, but the *raw, unvalidated* string was
+// returned to the client as `currentSortKey` — so the UI showed
+// "Sort by: undefined", no option appeared selected, and every
+// subsequent "Load more" request carried the bogus sort forward. This
+// resolves once, and the same resolved value is used both to build
+// the Yotpo request and as the value handed to the client.
+function resolveSortKey(value: string | null): YotpoSortKey {
+  return value !== null && value in YOTPO_SORT_OPTIONS
+    ? (value as YotpoSortKey)
+    : 'top';
+}
+
 async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   const {handle} = params;
   const {storefront, env} = context;
@@ -85,8 +100,8 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   // shareable/linkable and survives a full page reload — see
   // CustomerReviews.tsx's handleSortChange.
   const url = new URL(request.url);
-  const sortKey = (url.searchParams.get('sort') ?? 'top') as YotpoSortKey;
-  const sortConfig = YOTPO_SORT_OPTIONS[sortKey] ?? YOTPO_SORT_OPTIONS.top;
+  const sortKey = resolveSortKey(url.searchParams.get('sort'));
+  const sortConfig = YOTPO_SORT_OPTIONS[sortKey];
 
   const yotpoReviews = env.PUBLIC_YOTPO_APP_KEY
     ? await getYotpoReviews(env.PUBLIC_YOTPO_APP_KEY, yotpoProductId, {
@@ -187,6 +202,21 @@ function nullIfBlank(value?: string | null): string | null {
   return value?.trim() ? value : null;
 }
 
+// Minimal HTML-escaping for text interpolated into a raw HTML string
+// before it's handed to dangerouslySetInnerHTML. The multi_line_text_field
+// branch below builds HTML by string interpolation rather than a real
+// templating layer, so unescaped `<`/`>`/`&` in the metaobject field's
+// value would be parsed as markup instead of rendered as literal text.
+// Merchant-authored content is lower risk than user input, but there's
+// no reason to build raw HTML from unescaped text when it's this cheap
+// to avoid.
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
 // Renders a metaobject field as HTML only for types safe to drop into
 // dangerouslySetInnerHTML. rich_text_field's value is Shopify's rich-text
 // JSON AST, not HTML — no parser for that here, so it's skipped rather
@@ -199,7 +229,7 @@ function readSafeMetafieldHtml(
   if (field.type === 'multi_line_text_field') {
     return field.value
       .split('\n')
-      .map((line) => `<p>${line}</p>`)
+      .map((line) => `<p>${escapeHtml(line)}</p>`)
       .join('');
   }
 

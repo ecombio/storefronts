@@ -4,24 +4,40 @@ import {
   YOTPO_SORT_OPTIONS,
   type YotpoSortKey,
 } from '~/lib/yotpo.server';
+import {readJson} from '~/lib/utils';
 
 /**
  * Resource route (GET) used by CustomerReviews.tsx's "Load more" button
  * and sort changes to fetch additional pages of reviews via
  * fetcher.load(), without a full Remix navigation.
  *
- * Query params: productId (required), page (default 1), sort (one of
- * YOTPO_SORT_OPTIONS' keys, default "top").
+ * Query params: productId (required), page (default 1, clamped to a
+ * finite integer >= 1), sort (one of YOTPO_SORT_OPTIONS' keys, default
+ * "top" — validated via real key membership, not a blind cast).
  *
  * Merged from the former app/templates/api.product-reviews.tsx so that
  * GET and POST for reviews share a single resource route
  * (/api/reviews), per React Router's loader/action dispatch by method.
  */
+
+function resolveSortKey(value: string | null): YotpoSortKey {
+  return value !== null && value in YOTPO_SORT_OPTIONS
+    ? (value as YotpoSortKey)
+    : 'top';
+}
+
+// Guards against `?page=abc` -> NaN, `?page=0`/negative, and fractional
+// values, all of which would otherwise be forwarded to Yotpo as-is.
+function resolvePage(value: string | null): number {
+  const parsed = Number(value ?? '1');
+  return Number.isFinite(parsed) && parsed >= 1 ? Math.floor(parsed) : 1;
+}
+
 export async function loader({request, context}: Route.LoaderArgs) {
   const url = new URL(request.url);
   const productId = url.searchParams.get('productId');
-  const page = Number(url.searchParams.get('page') ?? '1');
-  const sortKey = (url.searchParams.get('sort') ?? 'top') as YotpoSortKey;
+  const page = resolvePage(url.searchParams.get('page'));
+  const sortKey = resolveSortKey(url.searchParams.get('sort'));
 
   if (!productId) {
     return Response.json({error: 'Missing productId'}, {status: 400});
@@ -35,7 +51,7 @@ export async function loader({request, context}: Route.LoaderArgs) {
     );
   }
 
-  const sortConfig = YOTPO_SORT_OPTIONS[sortKey] ?? YOTPO_SORT_OPTIONS.top;
+  const sortConfig = YOTPO_SORT_OPTIONS[sortKey];
   const result = await getYotpoReviews(appKey, productId, {
     page,
     sort: sortConfig.sort,
@@ -92,7 +108,11 @@ export async function action({request, context}: Route.ActionArgs) {
   };
 
   try {
-    body = await request.json();
+    // request.json() has the same Oxygen-types ambiguity res.json() does
+    // (both are just `.json()` methods structurally), so this goes
+    // through the same readJson<T> helper as the response-parsing call
+    // sites below rather than a bare `await request.json()`.
+    body = await readJson<typeof body>(request);
   } catch {
     return Response.json({error: 'Invalid request body'}, {status: 400});
   }
@@ -122,6 +142,17 @@ export async function action({request, context}: Route.ActionArgs) {
     return Response.json({error: 'Missing required review fields'}, {status: 400});
   }
 
+  // Presence checks above only confirm `score` is truthy — it could
+  // still be a string, a float, or out of Yotpo's 1-5 range. Catch
+  // that here with a clear 400 instead of forwarding a bad value and
+  // surfacing whatever opaque error Yotpo happens to return for it.
+  if (typeof score !== 'number' || !Number.isInteger(score) || score < 1 || score > 5) {
+    return Response.json(
+      {error: 'score must be an integer between 1 and 5'},
+      {status: 400},
+    );
+  }
+
   let domain: string;
   try {
     domain = new URL(productUrl).hostname;
@@ -147,18 +178,15 @@ export async function action({request, context}: Route.ActionArgs) {
     }),
   });
 
-  let data: unknown;
+  let data: {message?: string} | null;
   try {
-    data = await yotpoRes.json();
+    data = await readJson<{message?: string}>(yotpoRes);
   } catch {
     data = null;
   }
 
   if (!yotpoRes.ok) {
-    const message =
-      (data && typeof data === 'object' && 'message' in data
-        ? String((data as {message?: unknown}).message)
-        : null) ?? 'Yotpo rejected the review submission';
+    const message = data?.message ?? 'Yotpo rejected the review submission';
     return Response.json({error: message}, {status: yotpoRes.status});
   }
 
