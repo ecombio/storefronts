@@ -166,7 +166,7 @@ function AnimatedPlaceholder({
 
 const pillBg = {
   backgroundImage:
-    "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 620 64' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.11999999731779099'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(36.141 -3.4171e-14 8.2601e-14 12.373 310 32)'><stop stop-color='rgba(255,255,255,0)' offset='0.45'/><stop stop-color='rgba(255,255,255,1)' offset='1'/></radialGradient></defs></svg>\"), linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.2) 100%), linear-gradient(180deg, rgba(0, 0, 0, 0.053) 0%, rgba(188, 182, 237, 0.22) 100%)",
+    "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 620 64' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0'height='100%' width='100%' fill='url(%23grad)' opacity='0.11999999731779099'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse'cx='0' cy='0' r='10' gradientTransform='matrix(36.141 -3.4171e-14 8.2601e-14 12.373 310 32)'><stop stop-color='rgba(255,255,255,0)' offset='0.45'/><stop stop-color='rgba(255,255,255,1)' offset='1'/></radialGradient></defs></svg>\"), linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.2) 100%), linear-gradient(180deg, rgba(0, 0, 0, 0.053) 0%, rgba(188, 182, 237, 0.22) 100%)",
 };
 
 interface AiSearchBarProps {
@@ -313,15 +313,21 @@ export const AiSearchBar = forwardRef<HTMLDivElement, AiSearchBarProps>(
                     Search
                   </span>
                 )}
-                {!compact && (
-                  <AnimatedPlaceholder
-                    index={suggestionIndex}
-                    suggestions={suggestions}
-                    itemHeight={cfg.itemHeight}
-                    fontSize={cfg.fontSize}
-                    lineHeight={cfg.lineHeight}
-                  />
-                )}
+                {/* Was gated behind `!compact`, which silently disabled the
+                    animated/cycling placeholder whenever this bar rendered
+                    in compact mode (e.g. the single-row desktop header) —
+                    that gate has been removed so the animation renders at
+                    both sizes. If "Search" + a longer cycling term overflow
+                    or wrap at compact's 260px width, widen `compact.widthClass`
+                    in SIZE_CONFIG above, or drop the static "Search" label
+                    for compact specifically. */}
+                <AnimatedPlaceholder
+                  index={suggestionIndex}
+                  suggestions={suggestions}
+                  itemHeight={cfg.itemHeight}
+                  fontSize={cfg.fontSize}
+                  lineHeight={cfg.lineHeight}
+                />
               </>
             )}
 

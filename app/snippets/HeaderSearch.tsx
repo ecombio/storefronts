@@ -1,6 +1,7 @@
 import {useRef, useState} from 'react';
 import {useNavigate} from 'react-router';
 import {AiSearchBar} from '~/snippets/AiSearchBar';
+import {TRENDING_SEARCH_TERMS} from '~/config/Header.constants';
 import '~/assets/search-bar.css';
 import {
   SearchPanel,
@@ -59,6 +60,7 @@ export function HeaderSearch({
         onQueryChange={setTerm}
         onFocus={() => setOpen(true)}
         onSearch={commitSearch}
+        suggestions={TRENDING_SEARCH_TERMS}
       />
 
       <SearchPanel

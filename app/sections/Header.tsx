@@ -224,11 +224,15 @@ function HeaderAccount({
   );
 }
 
+// `label` is still threaded through (and used as the accessible name)
+// so screen readers still get "Sign in/ Register" / "Account" /
+// "Hi, {firstName}" even though the visible text label has been
+// hidden — only a sighted-UI change, not an accessibility regression.
 function AccountContent({label}: {label: string}) {
   return (
     <>
       <User size={18} aria-hidden="true" />
-      <span className="hidden whitespace-nowrap sm:inline">{label}</span>
+      <span className="sr-only">{label}</span>
     </>
   );
 }
@@ -261,9 +265,6 @@ function CartBadge({count = 0}: {count?: number}) {
         >
           {count}
         </span>
-      </span>
-      <span className="hidden sm:inline" aria-hidden="true">
-        Cart
       </span>
     </Link>
   );
