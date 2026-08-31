@@ -11,17 +11,36 @@
   width: 100%;
   overflow: hidden;
   background: #111827;
+  /* Intentionally full-bleed — exempt from --content-max-width
+     (see theme-architecture.md); only the caption text below is
+     width-constrained. */
 }
 
 .slideshow__track {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 7;
+  aspect-ratio: 12 / 5; /* ~2.4:1 — desktop default */
 }
 
+/* Mobile tier (<640px) — see theme.css --bp-sm */
 @media (max-width: 639px) {
   .slideshow__track {
     aspect-ratio: 4 / 5;
+    max-height: 480px;
+  }
+}
+
+/* Tablet tier (640–1023px) — see theme.css --bp-sm / --bp-lg */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .slideshow__track {
+    aspect-ratio: 2 / 1;
+    max-height: 440px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .slideshow__track {
+    max-height: 480px;
   }
 }
 
@@ -29,8 +48,6 @@
   position: absolute;
   inset: 0;
   transition: transform 0.5s ease;
-  display: flex;
-  align-items: flex-end;
 }
 
 .slideshow__image-zone {
@@ -45,60 +62,101 @@
   display: block;
 }
 
+/* Caption — centered, upper-third placement, matching the reference. */
 .slideshow__content {
-  position: relative;
+  position: absolute;
+  inset: 0;
   z-index: 1;
-  padding: 32px 24px 56px;
-  color: #fff;
-  max-width: 560px;
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0) 60%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 56px 24px 96px;
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+/* Tablet tier (640–1023px) — see theme.css --bp-sm / --bp-lg */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .slideshow__content {
+    padding-top: 72px;
+  }
 }
 
 @media (min-width: 1024px) {
   .slideshow__content {
-    padding: 48px 64px 72px;
+    padding: 96px 64px 128px;
   }
+}
+
+/* Theme = dark text, no scrim — for bright/open images (reference default). */
+.slideshow__content[data-theme='dark'] {
+  color: #111827;
+}
+
+/* Theme = light text, with scrim — for dark/busy images. */
+.slideshow__content[data-theme='light'] {
+  color: #fff;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.4) 0%,
+    rgba(0, 0, 0, 0) 45%
+  );
+}
+
+/* Safety net for light text over busier/brighter photos that don't have
+   a strong dark region behind the caption (e.g. a bright open-sky shot) —
+   the reference relies on this rather than a heavier scrim in that case. */
+.slideshow__content[data-theme='light'] .slideshow__eyebrow,
+.slideshow__content[data-theme='light'] .slideshow__title,
+.slideshow__content[data-theme='light'] .slideshow__subtitle {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
 }
 
 .slideshow__eyebrow {
   display: inline-block;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 0.95rem;
+  font-weight: 600;
   margin-bottom: 8px;
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 .slideshow__title {
-  font-size: 1.75rem;
+  font-size: clamp(1.75rem, 1rem + 5vw, 3.25rem);
   font-weight: 800;
-  margin: 0 0 8px;
-  line-height: 1.15;
-}
-
-@media (min-width: 1024px) {
-  .slideshow__title {
-    font-size: 2.5rem;
-  }
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  margin: 0 0 12px;
+  line-height: 1.05;
 }
 
 .slideshow__subtitle {
-  font-size: 1rem;
-  margin: 0 0 20px;
+  font-size: 1.05rem;
+  font-weight: 500;
+  margin: 0 0 24px;
   opacity: 0.9;
+  max-width: 520px;
+}
+
+.slideshow__ctas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
 }
 
 .slideshow__cta {
   display: inline-block;
-  background: #fff;
-  color: #111827;
+  background: var(--color-brand, #dc2626);
+  color: #fff;
   font-weight: 700;
-  font-size: 0.9rem;
-  padding: 12px 24px;
+  font-size: 0.95rem;
+  padding: 14px 32px;
   border-radius: 999px;
   text-decoration: none;
-  transition: transform 0.15s ease, opacity 0.15s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  transition: transform 0.15s ease, opacity 0.15s ease, background 0.15s ease;
 }
 
 .slideshow__cta:hover {
@@ -106,17 +164,34 @@
   opacity: 0.92;
 }
 
+/* Ghost/outline variant — e.g. "Order Now" alongside a solid "Learn More".
+   Inherits the caption's current color so it adapts to light/dark theme
+   automatically instead of needing its own color per theme. */
+.slideshow__cta--secondary {
+  background: transparent;
+  color: currentColor;
+  border: 1.5px solid currentColor;
+  box-shadow: none;
+}
+
+.slideshow__cta--secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Always a dark translucent circle regardless of caption theme — this
+   holds true across every reference slide, including the light-stage one,
+   so it's not tied to data-theme. */
 .slideshow__arrow {
   position: absolute;
-  top: 50%;
+  top: 45%;
   transform: translateY(-50%);
   z-index: 2;
   width: 40px;
   height: 40px;
   border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.85);
-  color: #111827;
+  background: rgba(17, 24, 39, 0.45);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -125,7 +200,7 @@
 }
 
 .slideshow__arrow:hover {
-  background: #fff;
+  background: rgba(17, 24, 39, 0.7);
 }
 
 .slideshow__arrow--prev {
@@ -136,31 +211,75 @@
   right: 16px;
 }
 
-.slideshow__dots {
+/* Bottom tab strip — replaces the old dot pagination. One continuous
+   divider line, active tab shown via bold white text vs. dim gray for
+   the rest (no per-tab underline segment — matches the reference).
+   Scrolls horizontally rather than wrapping on narrow screens, instead
+   of switching to a separate indicator style. */
+.slideshow__tabs {
   position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: 0;
+  left: 0;
+  right: 0;
   z-index: 2;
   display: flex;
-  gap: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  background: linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.4) 0%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 
-.slideshow__dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+.slideshow__tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.slideshow__tab {
+  flex: 1 0 auto;
+  white-space: nowrap;
+  padding: 14px 18px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.55);
+  background: none;
   border: none;
-  background: rgba(255, 255, 255, 0.5);
   cursor: pointer;
-  padding: 0;
-  transition: background 0.15s ease, width 0.15s ease;
+  transition: color 0.15s ease;
 }
 
-.slideshow__dot[data-active='true'] {
-  background: #fff;
-  width: 22px;
-  border-radius: 4px;
+.slideshow__tab:hover {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Tablet tier (640–1023px) — see theme.css --bp-sm / --bp-lg */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .slideshow__tab {
+    flex: 1 1 0;
+    text-align: center;
+  }
+}
+
+@media (min-width: 1024px) {
+  .slideshow__tab {
+    flex: 1 1 0;
+    text-align: center;
+    font-size: 0.875rem;
+    padding: 18px 12px;
+  }
+}
+
+.slideshow__tab[data-active='true'] {
+  color: #fff;
+  font-weight: 700;
+}
+
+.slideshow__tab:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -2px;
 }
 
 @media (prefers-reduced-motion: reduce) {

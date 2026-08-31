@@ -18,6 +18,17 @@ export interface SlideShowSlide {
   subtitle?: string;
   ctaLabel?: string;
   ctaUrl?: string;
+  /** Optional second, outlined/ghost CTA — e.g. "Order Now" alongside "Learn More". */
+  secondaryCtaLabel?: string;
+  secondaryCtaUrl?: string;
+  /** Short label shown in the bottom tab strip. Falls back to `title`. */
+  navLabel?: string;
+  /**
+   * Text color scheme for this slide's caption. Use 'dark' over bright/open
+   * images (no scrim, matches the reference design) and 'light' over
+   * dark/busy images (adds a scrim for contrast). Defaults to 'dark'.
+   */
+  theme?: 'light' | 'dark';
 }
 
 export interface SlideShowProps {
@@ -32,6 +43,7 @@ export function SlideShow({slides, interval = 6000}: SlideShowProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const goTo = useCallback(
     (index: number) => {
@@ -56,6 +68,22 @@ export function SlideShow({slides, interval = 6000}: SlideShowProps) {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [interval, isPaused, slides.length]);
+
+  // Standard ARIA tablist arrow-key pattern for the bottom tab strip.
+  const handleTabKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
+      let nextIndex: number | null = null;
+      if (event.key === 'ArrowRight') nextIndex = (index + 1) % slides.length;
+      if (event.key === 'ArrowLeft')
+        nextIndex = (index - 1 + slides.length) % slides.length;
+      if (nextIndex !== null) {
+        event.preventDefault();
+        goTo(nextIndex);
+        tabRefs.current[nextIndex]?.focus();
+      }
+    },
+    [goTo, slides.length],
+  );
 
   if (slides.length === 0) return null;
 
@@ -92,7 +120,10 @@ export function SlideShow({slides, interval = 6000}: SlideShowProps) {
               />
             </div>
 
-            <div className="slideshow__content">
+            <div
+              className="slideshow__content"
+              data-theme={slide.theme ?? 'dark'}
+            >
               {slide.eyebrow && (
                 <span className="slideshow__eyebrow">{slide.eyebrow}</span>
               )}
@@ -100,11 +131,24 @@ export function SlideShow({slides, interval = 6000}: SlideShowProps) {
               {slide.subtitle && (
                 <p className="slideshow__subtitle">{slide.subtitle}</p>
               )}
-              {slide.ctaLabel && slide.ctaUrl && (
-                <Link to={slide.ctaUrl} className="slideshow__cta">
-                  {slide.ctaLabel}
-                </Link>
-              )}
+              {(slide.ctaLabel && slide.ctaUrl) ||
+              (slide.secondaryCtaLabel && slide.secondaryCtaUrl) ? (
+                <div className="slideshow__ctas">
+                  {slide.ctaLabel && slide.ctaUrl && (
+                    <Link to={slide.ctaUrl} className="slideshow__cta">
+                      {slide.ctaLabel}
+                    </Link>
+                  )}
+                  {slide.secondaryCtaLabel && slide.secondaryCtaUrl && (
+                    <Link
+                      to={slide.secondaryCtaUrl}
+                      className="slideshow__cta slideshow__cta--secondary"
+                    >
+                      {slide.secondaryCtaLabel}
+                    </Link>
+                  )}
+                </div>
+              ) : null}
             </div>
           </div>
         ))}
@@ -145,18 +189,22 @@ export function SlideShow({slides, interval = 6000}: SlideShowProps) {
             </svg>
           </button>
 
-          <div className="slideshow__dots" role="tablist" aria-label="Slides">
+          <div className="slideshow__tabs" role="tablist" aria-label="Slides">
             {slides.map((slide, index) => (
               <button
                 key={slide.id}
+                ref={(el) => (tabRefs.current[index] = el)}
                 type="button"
                 role="tab"
-                className="slideshow__dot"
+                className="slideshow__tab"
                 aria-selected={index === activeIndex}
-                aria-label={`Go to slide ${index + 1}`}
+                tabIndex={index === activeIndex ? 0 : -1}
                 data-active={index === activeIndex}
                 onClick={() => goTo(index)}
-              />
+                onKeyDown={(event) => handleTabKeyDown(event, index)}
+              >
+                {slide.navLabel ?? slide.title}
+              </button>
             ))}
           </div>
         </>

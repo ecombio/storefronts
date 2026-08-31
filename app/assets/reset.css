@@ -78,8 +78,15 @@ body {
   min-height: 100vh;
 }
 
+/*
+ * Left/right margin removed (was `margin: 0 1rem 1rem 1rem`) — that was
+ * silently clipping 32px total off every full-bleed section site-wide,
+ * including the slideshow. Sections that need horizontal spacing handle
+ * it themselves via --content-max-width / Tailwind's max-w-[1200px]
+ * (see theme.css / theme.md), so they don't depend on this rule for it.
+ */
 body > main {
-  margin: 0 1rem 1rem 1rem;
+  margin-bottom: 1rem;
 }
 
 section {
