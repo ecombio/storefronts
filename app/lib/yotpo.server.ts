@@ -8,7 +8,7 @@
  * list — no separate bottomline request needed.
  *
  * Powers app/sections/CustomerReviews.tsx (initial server-rendered page)
- * and app/templates/api.product-reviews.tsx (subsequent "Load more" /
+ * and app/templates/api.reviews.tsx's GET loader (subsequent "Load more" /
  * sort-change pages fetched client-side).
  *
  * Docs: https://apidocs.yotpo.com/reference/retrieve-reviews-for-a-product
