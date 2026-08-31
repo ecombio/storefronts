@@ -1,0 +1,100 @@
+/* app/assets/image-card.css */
+.image-card,
+.image-card *,
+.image-card *::before,
+.image-card *::after {
+  box-sizing: border-box;
+}
+
+.image-card {
+  --image-card-radius: 10px;
+  --image-card-border: #E5E7EB;
+  --image-card-text: #111827;
+  --image-card-text-secondary: #6B7280;
+  --image-card-eyebrow-bg: #111827;
+  --image-card-eyebrow-text: #ffffff;
+  --image-card-transition: 0.2s ease;
+
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-radius: var(--image-card-radius);
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--image-card-border);
+  text-decoration: none;
+  color: inherit;
+  height: 100%;
+  transition: box-shadow var(--image-card-transition), transform var(--image-card-transition);
+}
+
+a.image-card:hover {
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.image-card__img-zone {
+  position: relative;
+  flex-shrink: 0;
+  background: #F9FAFB;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+}
+
+.image-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.35s ease;
+}
+
+a.image-card:hover .image-card__img {
+  transform: scale(1.04);
+}
+
+.image-card__eyebrow {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: var(--image-card-eyebrow-bg);
+  color: var(--image-card-eyebrow-text);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.image-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 12px 14px;
+}
+
+.image-card__title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--image-card-text);
+  line-height: 1.35;
+}
+
+.image-card__caption {
+  font-size: 0.78rem;
+  color: var(--image-card-text-secondary);
+  line-height: 1.35;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image-card,
+  .image-card__img {
+    transition: none;
+  }
+  a.image-card:hover {
+    transform: none;
+  }
+}

@@ -27,6 +27,10 @@ import mainProductStyles from '~/assets/main-product.css?url';
 import productDescriptionStyles from '~/assets/product-description.css?url';
 import productCardStyles from '~/assets/product-card.css?url';
 import productCarouselStyles from '~/assets/product-carousel.css?url';
+import collectionCardStyles from '~/assets/collection-card.css?url';
+import collectionCarouselStyles from '~/assets/collection-carousel.css?url';
+import imageCardStyles from '~/assets/image-card.css?url';
+import imageCarouselStyles from '~/assets/image-carousel.css?url';
 import collectionFiltersStyles from '~/assets/collection-filters.css?url';
 import collectionToolbarStyles from '~/assets/collection-toolbar.css?url';
 import articleCardStyles from '~/assets/article-card.css?url';
@@ -177,6 +181,10 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={productDescriptionStyles}></link>
         <link rel="stylesheet" href={productCardStyles}></link>
         <link rel="stylesheet" href={productCarouselStyles}></link>
+        <link rel="stylesheet" href={collectionCardStyles}></link>
+        <link rel="stylesheet" href={collectionCarouselStyles}></link>
+        <link rel="stylesheet" href={imageCardStyles}></link>
+        <link rel="stylesheet" href={imageCarouselStyles}></link>
         <link rel="stylesheet" href={collectionFiltersStyles}></link>
         <link rel="stylesheet" href={collectionToolbarStyles}></link>
         <link rel="stylesheet" href={articleCardStyles}></link>
@@ -198,15 +206,6 @@ export default function App() {
   const data = useRouteLoaderData<RootLoader>('root');
   const nonce = useNonce();
 
-  // Inject the Yotpo loader script only after React has mounted/hydrated.
-  // A declarative <script> tag here would render before Hydrogen's own
-  // <Scripts /> in document order, and defer/module scripts execute in
-  // document order — so `defer` alone still let Yotpo's script run
-  // before hydration and caused hydration mismatches. Injecting from an
-  // effect sidesteps document order entirely: this only runs post-mount.
-  // 'strict-dynamic' in the CSP scriptSrc means a script inserted by an
-  // already-trusted (nonced) script is automatically trusted too, so no
-  // nonce needs to be set on the injected element.
   useEffect(() => {
     if (!data?.yotpoAppKey) return;
     if (document.querySelector('script[data-yotpo-loader]')) return;

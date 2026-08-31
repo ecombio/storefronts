@@ -88,6 +88,47 @@
   cursor: default;
 }
 
+/* Filter pills (e.g. "Price drop" / "Best sellers"), rendered only when
+   ProductCarousel is given a `tabs` prop — sits between the header and
+   the track. Kept visually lighter than the arrow buttons (pill shape,
+   no shadow) so it reads as a filter control, not primary navigation. */
+.product-carousel__tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 4px;
+  flex-wrap: wrap;
+}
+
+.product-carousel__tab {
+  appearance: none;
+  border: 1px solid var(--product-card-border, #e5e7eb);
+  background: #fff;
+  color: var(--product-card-text, #111827);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+}
+
+.product-carousel__tab:hover {
+  border-color: #d1d5db;
+}
+
+.product-carousel__tab.is-active {
+  background: #EEF2FF;
+  border-color: #C7D2FE;
+  color: var(--product-card-accent, #4f46e5);
+}
+
+.product-carousel__tab:focus-visible {
+  outline: 2px solid var(--product-card-accent, #4f46e5);
+  outline-offset: 2px;
+}
+
 .product-carousel__track {
   display: flex;
   gap: var(--product-carousel-gap);
@@ -103,9 +144,18 @@
   scrollbar-width: thin;
 }
 
+/* flex: 1 1 <card-width> (was: 0 0 auto + a plain `width`) — when the
+   track has fewer cards than fit its width (e.g. 4 cards in a row sized
+   for 5), flex-grow distributes the leftover space across the existing
+   cards so the row fills the container instead of leaving a dead gap
+   before the arrow buttons. max-width caps how far a card can stretch
+   on a wide screen with very few items. Once there are enough cards to
+   overflow the track, there's no positive free space left to
+   distribute, so flex-grow is a no-op and cards fall back to their
+   normal --product-carousel-card-width, scrolling exactly as before. */
 .product-carousel__item {
-  flex: 0 0 auto;
-  width: var(--product-carousel-card-width);
+  flex: 1 1 var(--product-carousel-card-width);
+  max-width: calc(var(--product-carousel-card-width) * 1.25);
   scroll-snap-align: start;
 }
 

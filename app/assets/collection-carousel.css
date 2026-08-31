@@ -1,0 +1,125 @@
+/* app/assets/collection-carousel.css */
+.collection-carousel {
+  --collection-carousel-arrow-size: 32px;
+  --collection-carousel-gap: 20px;
+  --collection-carousel-card-width: 120px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px 16px;
+  max-width: 1200px;
+  margin-inline: auto;
+}
+
+@media (min-width: 640px) {
+  .collection-carousel {
+    padding-inline: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .collection-carousel {
+    padding-inline: 32px;
+  }
+}
+
+.collection-carousel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 4px;
+}
+
+.collection-carousel__title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.collection-carousel__controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.collection-carousel__view-all {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--product-card-accent, #4f46e5);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.collection-carousel__view-all:hover {
+  text-decoration: underline;
+}
+
+.collection-carousel__arrows {
+  display: flex;
+  gap: 8px;
+}
+
+.collection-carousel__arrow {
+  width: var(--collection-carousel-arrow-size);
+  height: var(--collection-carousel-arrow-size);
+  border-radius: 50%;
+  border: 1px solid var(--product-card-border, #e5e7eb);
+  background: #fff;
+  color: var(--product-card-text, #111827);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+}
+
+.collection-carousel__arrow:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.collection-carousel__arrow:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.collection-carousel__track {
+  display: flex;
+  gap: var(--collection-carousel-gap);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: 4px;
+  padding: 4px 4px 12px;
+  scrollbar-width: thin;
+}
+
+/* Same fill/scroll behavior as ProductCarousel and ImageCarousel: grows
+   to fill the row when there are fewer tiles than fit, becomes a no-op
+   once there are enough to overflow and scroll. */
+.collection-carousel__item {
+  flex: 1 1 var(--collection-carousel-card-width);
+  max-width: calc(var(--collection-carousel-card-width) * 1.25);
+  scroll-snap-align: start;
+}
+
+@media (max-width: 639px) {
+  .collection-carousel {
+    --collection-carousel-card-width: 84px;
+    --collection-carousel-gap: 14px;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .collection-carousel {
+    --collection-carousel-card-width: 104px;
+    --collection-carousel-gap: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collection-carousel__track {
+    scroll-behavior: auto;
+  }
+}

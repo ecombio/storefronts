@@ -5,7 +5,10 @@ import {Suspense} from 'react';
 import {Image} from '@shopify/hydrogen';
 import type {FeaturedCollectionFragment, ProductCardFragment} from 'storefrontapi.generated';
 import {ProductCarousel} from '~/sections/ProductCarousel';
+import {ImageCarousel, type ImageCarouselItem} from '~/sections/ImageCarousel';
+import {CollectionCarousel, type CollectionCarouselItem} from '~/sections/CollectionCarousel';
 import {PRODUCT_CARD_FRAGMENT} from '~/graphql/ProductCardFragment';
+import {COLLECTION_CARD_FRAGMENT} from '~/graphql/CollectionCardFragment';
 import {MockShopNotice} from '~/sections/MockShopNotice';
 
 export const meta: Route.MetaFunction = () => {
@@ -13,41 +16,30 @@ export const meta: Route.MetaFunction = () => {
 };
 
 export async function loader(args: Route.LoaderArgs) {
-  // Start fetching non-critical data without blocking time to first byte
   const deferredData = loadDeferredData(args);
 
-  // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
 
   return {...deferredData, ...criticalData};
 }
 
-/**
- * Load data necessary for rendering content above the fold. This is the critical data
- * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
- */
 async function loadCriticalData({context}: Route.LoaderArgs) {
-  const [{collections}] = await Promise.all([
+  const [{collections}, {collections: shopByCategory}] = await Promise.all([
     context.storefront.query(FEATURED_COLLECTION_QUERY),
-    // Add other queries here, so that they are loaded in parallel
+    context.storefront.query(SHOP_BY_CATEGORY_QUERY),
   ]);
 
   return {
     isShopLinked: Boolean(context.env.PUBLIC_STORE_DOMAIN),
     featuredCollection: collections.nodes[0],
+    shopByCategory: shopByCategory.nodes,
   };
 }
 
-/**
- * Load data for rendering content below the fold. This data is deferred and will be
- * fetched after the initial page load. If it's unavailable, the page should still 200.
- * Make sure to not throw any errors here, as it will cause the page to 500.
- */
 function loadDeferredData({context}: Route.LoaderArgs) {
   const recommendedProducts = context.storefront
     .query(RECOMMENDED_PRODUCTS_QUERY)
     .catch((error: Error) => {
-      // Log query errors, but don't throw them so the page can still render
       console.error(error);
       return null;
     });
@@ -57,13 +49,53 @@ function loadDeferredData({context}: Route.LoaderArgs) {
   };
 }
 
+const SHOP_THE_LOOK_ITEMS: ImageCarouselItem[] = [
+  {
+    id: 'placeholder-1',
+    title: 'Studio Sessions',
+    caption: 'New for fall',
+    eyebrow: 'New',
+    image: {url: 'https://picsum.photos/seed/shoplook1/600/450'},
+  },
+  {
+    id: 'placeholder-2',
+    title: 'Weekend Edit',
+    caption: 'Casual layers',
+    image: {url: 'https://picsum.photos/seed/shoplook2/600/450'},
+  },
+  {
+    id: 'placeholder-3',
+    title: 'City Commute',
+    caption: 'Built for the ride in',
+    eyebrow: 'Going fast',
+    image: {url: 'https://picsum.photos/seed/shoplook3/600/450'},
+  },
+];
+
+const SHOP_BY_CATEGORY_PLACEHOLDER: CollectionCarouselItem[] = [
+  {id: 'ph-1', title: 'iPhone', image: {url: 'https://picsum.photos/seed/iphone/300/300'}},
+  {id: 'ph-2', title: 'iPad', image: {url: 'https://picsum.photos/seed/ipad/300/300'}},
+  {id: 'ph-3', title: 'Apple Watch', image: {url: 'https://picsum.photos/seed/watch/300/300'}},
+  {id: 'ph-4', title: 'AirPods', image: {url: 'https://picsum.photos/seed/airpods/300/300'}},
+  {id: 'ph-5', title: 'AirTag', image: {url: 'https://picsum.photos/seed/airtag/300/300'}},
+  {id: 'ph-6', title: 'Apple TV 4K', image: {url: 'https://picsum.photos/seed/appletv/300/300'}},
+  {id: 'ph-7', title: 'HomePod', image: {url: 'https://picsum.photos/seed/homepod/300/300'}},
+  {id: 'ph-8', title: 'Accessories', image: {url: 'https://picsum.photos/seed/accessories/300/300'}},
+];
+
 export default function Homepage() {
   const data = useLoaderData<typeof loader>();
   return (
     <div className="home">
       {data.isShopLinked ? null : <MockShopNotice />}
       <FeaturedCollection collection={data.featuredCollection} />
+      <CollectionCarousel
+        title="Shop by Category"
+        items={SHOP_BY_CATEGORY_PLACEHOLDER}
+        viewAllUrl="/collections"
+      />
       <RecommendedProducts products={data.recommendedProducts} />
+      <ImageCarousel title="Shop the Look" items={SHOP_THE_LOOK_ITEMS} />
     </div>
   );
 }
@@ -135,10 +167,18 @@ const FEATURED_COLLECTION_QUERY = `#graphql
   }
 ` as const;
 
-// Was: an inline `RecommendedProduct` fragment with just title/handle/price/
-// image — swapped for PRODUCT_CARD_FRAGMENT so these tiles get the full
-// ProductCard treatment (wishlist, compare, hover image, sale badge, ATC)
-// instead of ProductItem's plainer rendering.
+const SHOP_BY_CATEGORY_QUERY = `#graphql
+  ${COLLECTION_CARD_FRAGMENT}
+  query ShopByCategory($country: CountryCode, $language: LanguageCode)
+    @inContext(country: $country, language: $language) {
+    collections(first: 10, sortKey: TITLE) {
+      nodes {
+        ...CollectionCard
+      }
+    }
+  }
+` as const;
+
 const RECOMMENDED_PRODUCTS_QUERY = `#graphql
   ${PRODUCT_CARD_FRAGMENT}
   query RecommendedProducts ($country: CountryCode, $language: LanguageCode)

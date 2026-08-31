@@ -1,0 +1,132 @@
+/* app/assets/image-carousel.css */
+.image-carousel {
+  --image-carousel-arrow-size: 36px;
+  --image-carousel-gap: 16px;
+  --image-carousel-card-width: 280px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px 16px;
+  max-width: 1200px;
+  margin-inline: auto;
+}
+
+@media (min-width: 640px) {
+  .image-carousel {
+    padding-inline: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .image-carousel {
+    padding-inline: 32px;
+  }
+}
+
+.image-carousel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 4px;
+}
+
+.image-carousel__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.image-carousel__controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.image-carousel__view-all {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--product-card-accent, #4f46e5);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.image-carousel__view-all:hover {
+  text-decoration: underline;
+}
+
+.image-carousel__arrows {
+  display: flex;
+  gap: 8px;
+}
+
+.image-carousel__arrow {
+  width: var(--image-carousel-arrow-size);
+  height: var(--image-carousel-arrow-size);
+  border-radius: 50%;
+  border: 1px solid var(--image-card-border, #e5e7eb);
+  background: #fff;
+  color: var(--image-card-text, #111827);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+}
+
+.image-carousel__arrow:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.image-carousel__arrow:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.image-carousel__track {
+  display: flex;
+  gap: var(--image-carousel-gap);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: 4px;
+  padding: 4px 4px 12px;
+  scrollbar-width: thin;
+}
+
+/* Learned from ProductCarousel: flex-grow lets items fill the row when
+   there are fewer of them than fit the track width, and becomes a
+   no-op (falls back to --image-carousel-card-width) once there are
+   enough items to overflow and scroll. */
+.image-carousel__item {
+  flex: 1 1 var(--image-carousel-card-width);
+  max-width: calc(var(--image-carousel-card-width) * 1.25);
+  scroll-snap-align: start;
+}
+
+@media (max-width: 639px) {
+  .image-carousel {
+    --image-carousel-card-width: 200px;
+    --image-carousel-gap: 10px;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .image-carousel {
+    --image-carousel-card-width: 240px;
+    --image-carousel-gap: 14px;
+  }
+}
+
+@media (max-width: 1023px) {
+  .image-carousel__arrows {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image-carousel__track {
+    scroll-behavior: auto;
+  }
+}
