@@ -64,45 +64,56 @@ export function Header({
   }, []);
 
   return (
-    <header
-      className={`sticky top-0 z-50 w-full bg-white font-sans shadow-[0_4px_20px_rgba(0,0,0,0.10)] transition-transform duration-300 ${
-        hidden ? '-translate-y-full' : 'translate-y-0'
-      }`}
-    >
-      <AnnouncementBar />
-      <HeaderUtility />
+    // NOTE: `sticky` lives on this outer element and this element ONLY.
+    // Do not add a `transform`/`translate` class here — combining
+    // `position: sticky` with `transform` on the same element forces a
+    // compositor layer that can rasterize with a sub-pixel gap at the
+    // top edge on non-integer DPI/zoom (Chrome/Safari). That gap shows
+    // up as a thin white line above the header at some zoom levels.
+    // The hide-on-scroll transform is applied to the inner wrapper
+    // below instead, which is a plain in-flow child, not the sticky
+    // element itself.
+    <header className="sticky top-0 z-50 w-full">
       <div
-        data-header-search-row
-        className="relative"
+        className={`w-full bg-white font-sans shadow-[0_4px_20px_rgba(0,0,0,0.10)] transition-transform duration-300 ${
+          hidden ? '-translate-y-full' : 'translate-y-0'
+        }`}
       >
-        <div className="mx-auto flex max-w-full items-center gap-3 px-4 py-2 sm:gap-4 sm:px-6 lg:max-w-[1200px] lg:gap-6 lg:px-8 lg:pt-2.5 lg:pb-2.5">
-          <HeaderMenuMobileToggle />
+        <AnnouncementBar />
+        <HeaderUtility />
+        <div
+          data-header-search-row
+          className="relative"
+        >
+          <div className="mx-auto flex max-w-full items-center gap-3 px-4 py-2 sm:gap-4 sm:px-6 lg:max-w-[1200px] lg:gap-6 lg:px-8 lg:pt-2.5 lg:pb-2.5">
+            <HeaderMenuMobileToggle />
 
-          <NavLink prefetch="intent" to="/" end className="shrink-0" aria-label={`${shop.name} — home`}>
-            <img src={wordmarkSrc} alt={shop.name} width={140} height={28} className="h-6 w-auto sm:h-7" />
-          </NavLink>
+            <NavLink prefetch="intent" to="/" end className="shrink-0" aria-label={`${shop.name} — home`}>
+              <img src={wordmarkSrc} alt={shop.name} width={140} height={28} className="h-6 w-auto sm:h-7" />
+            </NavLink>
 
-          <div className="hidden flex-1 justify-center lg:flex">
-            <HeaderSearch />
+            <div className="hidden flex-1 justify-center lg:flex">
+              <HeaderSearch />
+            </div>
+
+            <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} customer={customer} />
           </div>
 
-          <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} customer={customer} />
+          <div className="w-full px-4 py-2 lg:hidden">
+            <HeaderSearch />
+          </div>
         </div>
 
-        <div className="w-full px-4 py-2 lg:hidden">
-          <HeaderSearch />
-        </div>
-      </div>
-
-      <div data-header-menu-row className="relative hidden lg:block">
-        <div className="mx-auto flex min-w-0 max-w-full px-6 pt-2.5 pb-2.5 lg:max-w-[1200px] lg:px-8">
-          <HeaderMenu
-            menu={menu}
-            viewport="desktop"
-            primaryDomainUrl={header.shop.primaryDomain.url}
-            publicStoreDomain={publicStoreDomain}
-            collectionImages={collectionImages}
-          />
+        <div data-header-menu-row className="relative hidden lg:block">
+          <div className="mx-auto flex min-w-0 max-w-full px-6 pt-2.5 pb-2.5 lg:max-w-[1200px] lg:px-8">
+            <HeaderMenu
+              menu={menu}
+              viewport="desktop"
+              primaryDomainUrl={header.shop.primaryDomain.url}
+              publicStoreDomain={publicStoreDomain}
+              collectionImages={collectionImages}
+            />
+          </div>
         </div>
       </div>
     </header>

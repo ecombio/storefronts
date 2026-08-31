@@ -1,0 +1,565 @@
+===== .\app\lib\yotpo.server.ts =====
+// app/lib/yotpo.server.ts
+
+/**
+ * Fetches aggregate star rating data (average score + review count) for a
+ * single product directly from Yotpo's Bottomline API. This bypasses the
+ * on-site Star Rating widget entirely — no client script, no CSP entries
+ * needed for this piece, no widget-mounting mystery. Used instead of the
+ * `data-yotpo-instance-id="1332841"` div, which was rendering empty
+ * despite the product having 5 published reviews (widget-specific issue,
+ * not a data or integration problem — the main Reviews widget, instance
+ * 1332840, renders the same underlying data correctly).
+ *
+ * Docs: https://apidocs.yotpo.com/reference/retrieve-bottom-line
+ */
+
+export type YotpoBottomline = {
+  averageScore: number;
+  totalReviews: number;
+} | null;
+
+export async function getYotpoBottomline(
+  appKey: string,
+  yotpoProductId: string,
+): Promise<YotpoBottomline> {
+  try {
+    const res = await fetch(
+      `https://api-cdn.yotpo.com/v1/widget/${appKey}/products/${yotpoProductId}/bottomline.json`,
+    );
+
+    if (!res.ok) {
+      console.error(`Yotpo bottomline fetch failed: ${res.status}`);
+      return null;
+    }
+
+    const data = await res.json();
+    const bottomline = data?.response?.bottomline;
+
+    if (!bottomline || typeof bottomline.average_score !== 'number') {
+      return null;
+    }
+
+    return {
+      averageScore: bottomline.average_score,
+      totalReviews: bottomline.total_review ?? 0,
+    };
+  } catch (error) {
+    console.error('Yotpo bottomline fetch error:', error);
+    return null;
+  }
+}
+
+
+===== .\app\hooks\useYotpoRefresh.ts =====
+import {useEffect} from 'react';
+import {useLocation} from 'react-router';
+
+declare global {
+  interface Window {
+    yotpo?: {
+      refreshWidgets?: () => void;
+      initWidgets?: () => void;
+    };
+    yotpoWidgetsContainer?: {
+      initWidgets?: () => void;
+    };
+  }
+}
+
+/**
+ * Yotpo's loader script scans the DOM once on initial page load.
+ * React Router client-side navigations swap the DOM without a full
+ * reload, so Yotpo never notices new `.yotpo-widget-instance` nodes
+ * (or that an existing node's product id changed).
+ *
+ * Call this once per route that renders Yotpo widgets. It re-triggers
+ * Yotpo's scan after each navigation, once the new DOM has committed.
+ */
+export function useYotpoRefresh() {
+  const location = useLocation();
+  useEffect(() => {
+    const id = window.requestAnimationFrame(() => {
+      if (window.yotpo?.refreshWidgets) {
+        window.yotpo.refreshWidgets();
+      } else if (window.yotpoWidgetsContainer?.initWidgets) {
+        window.yotpoWidgetsContainer.initWidgets();
+      }
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, [location.key]);
+}
+
+
+===== .\app\snippets\YotpoReviewsWidget.tsx =====
+/**
+ * Thin wrapper around Yotpo's client-side "Reviews" widget div (instance
+ * 1332840 — see Yotpo dashboard: Reviews Widget install snippet).
+ * Yotpo's async loader script (in root.tsx) finds this div by its
+ * data-yotpo-instance-id and injects its own rendered markup into it.
+ * useYotpoRefresh() (called in the parent route) tells that script to
+ * init/re-init this instance on mount + route change.
+ *
+ * Named YotpoReviewsWidget (rather than ReviewsWidget) to pair clearly
+ * with ~/snippets/YotpoStarRating.tsx — both wrap official Yotpo
+ * client-side widgets.
+ *
+ * dangerouslySetInnerHTML={{__html: ''}} (not just suppressHydrationWarning)
+ * is required here — same reasoning as YotpoStarRating.tsx. Yotpo's async
+ * loader script races React's hydration and can mutate this div's children
+ * before hydration reaches it; suppressHydrationWarning alone doesn't stop
+ * React from throwing on unexpected child nodes, only on mismatched text
+ * content one level deep. This was confirmed to intermittently break
+ * YotpoStarRating.tsx with a full-page hydration failure — applying the
+ * same fix here preemptively, since this component has the identical
+ * architecture and is exposed to the same race.
+ */
+
+export function YotpoReviewsWidget({
+  instanceId,
+  productId,
+  productTitle,
+  productUrl,
+  imageUrl,
+  price,
+  currency,
+  description,
+}: {
+  instanceId: string;
+  productId: string | undefined;
+  productTitle: string;
+  productUrl: string;
+  imageUrl: string | undefined;
+  price: string | undefined;
+  currency: string | undefined;
+  description: string | null | undefined;
+}) {
+  return (
+    <div
+      className="yotpo-widget-instance"
+      data-yotpo-instance-id={instanceId}
+      data-yotpo-product-id={productId}
+      data-yotpo-name={productTitle}
+      data-yotpo-url={productUrl}
+      data-yotpo-image-url={imageUrl}
+      data-yotpo-price={price}
+      data-yotpo-currency={currency}
+      data-yotpo-description={description}
+      suppressHydrationWarning
+      dangerouslySetInnerHTML={{__html: ''}}
+    />
+  );
+}
+
+
+===== .\app\snippets\YotpoStarRating.tsx =====
+/**
+ * Thin wrapper around Yotpo's official client-side Star Rating widget div
+ * (instance 1332841 — see Yotpo dashboard: Star Rating Widget install
+ * snippet). This is the sole star-rating implementation — the earlier
+ * custom-built ~/snippets/StarRating.tsx (server-side Bottom Line API)
+ * was removed in favor of this official widget.
+ *
+ * It relies on `useYotpoRefresh()` already being called once elsewhere on
+ * the route (e.g. in products.$handle.tsx) — Yotpo's refreshWidgets()/
+ * initWidgets() scans the whole DOM for `.yotpo-widget-instance` nodes, so
+ * no additional hook call is needed here.
+ *
+ * dangerouslySetInnerHTML={{__html: ''}} (not just suppressHydrationWarning)
+ * is required here. Yotpo's async loader script races React's hydration —
+ * it can mutate this div's children (inserting its own Vue-rendered nodes,
+ * comments, whitespace) before hydration reaches it. suppressHydrationWarning
+ * alone only silences *text content* mismatch warnings one level deep; it
+ * does not stop React from throwing when it finds unexpected *child nodes*
+ * that don't match the empty server render, which previously caused
+ * intermittent "Hydration failed" errors that forced the whole page to
+ * fall back to full client-side re-rendering. Setting
+ * dangerouslySetInnerHTML tells React to treat this node's contents as
+ * opaque — it claims the DOM node during hydration but never diffs its
+ * children — so it no longer matters whether Yotpo's script has already
+ * mutated the div by the time hydration gets there.
+ */
+
+export function YotpoStarRating({
+  instanceId,
+  productId,
+}: {
+  instanceId: string;
+  productId: string | undefined;
+}) {
+  return (
+    <div
+      className="yotpo-widget-instance"
+      data-yotpo-instance-id={instanceId}
+      data-yotpo-product-id={productId}
+      suppressHydrationWarning
+      dangerouslySetInnerHTML={{__html: ''}}
+    />
+  );
+}
+
+
+===== .\app\sections\ReviewModal.tsx =====
+
+
+===== .\app\snippets\ReviewsWidget.tsx =====
+// app/snippets/ReviewsWidget.tsx
+
+/**
+ * Renders the container div Yotpo's loader script scans for and
+ * populates client-side with the full reviews widget (list, photos,
+ * "Write a review" form, etc). This is the Hydrogen equivalent of the
+ * Liquid snippet Yotpo's install instructions ask you to paste into
+ * product.liquid — same data-yotpo-* attributes, built from Storefront
+ * API data instead of Liquid's product/shop objects.
+ *
+ * Named ReviewsWidget rather than YotpoReviewsWidget so a future
+ * reviews-provider swap doesn't require a rename — only the internals
+ * and data-yotpo-* attributes are vendor-specific.
+ *
+ * Yotpo's loader script (injected once in root.tsx) attaches to any
+ * element with a matching data-yotpo-instance-id at load time. Because
+ * Hydrogen is an SPA under the hood, useYotpoRefresh() re-triggers that
+ * scan on every client-side route change — the loader only runs once
+ * by default and won't notice this div on its own after navigation.
+ *
+ * data-yotpo-prevent-load-rs="true" stops Yotpo from also rendering its
+ * own star-rating summary line inside this widget, since that's already
+ * handled by the separate <StarRating /> component above it on the
+ * page — without this you get two star rows.
+ */
+export function ReviewsWidget({
+  instanceId,
+  productId,
+  productTitle,
+  productUrl,
+  imageUrl,
+  price,
+  currency,
+  description,
+}: {
+  instanceId: string;
+  productId?: string;
+  productTitle: string;
+  productUrl: string;
+  imageUrl?: string;
+  price?: string;
+  currency?: string;
+  description?: string | null;
+}) {
+  return (
+    <div
+      className="yotpo-widget-instance"
+      data-yotpo-instance-id={instanceId}
+      data-yotpo-product-id={productId}
+      data-yotpo-name={productTitle}
+      data-yotpo-url={productUrl}
+      data-yotpo-image-url={imageUrl}
+      data-yotpo-price={price}
+      data-yotpo-currency={currency}
+      data-yotpo-description={description ?? ''}
+      data-yotpo-section-id="product"
+      data-yotpo-cart-product-id=""
+      data-yotpo-prevent-load-rs="true"
+    />
+  );
+}
+
+
+===== .\app\snippets\StarRating.tsx =====
+// app/snippets/StarRating.tsx
+
+/**
+ * Renders a 5-star rating display from a plain average score + review
+ * count. Replaces Yotpo's on-site Star Rating widget (instance 1332841),
+ * which was returning empty despite the product having published
+ * reviews — see app/lib/yotpo.server.ts for why. Data comes from
+ * Yotpo's Bottomline API, fetched server-side in the product loader.
+ *
+ * Styled to match Yotpo's own widget output (gold stars, score, divider,
+ * review count) so it's visually consistent with the reviews widget
+ * below it on the page.
+ */
+export function StarRating({
+  averageScore,
+  totalReviews,
+  onReviewsClick,
+  onWriteReviewClick,
+}: {
+  averageScore: number;
+  totalReviews: number;
+  /** Optional: scroll to / focus the reviews widget below when clicked. */
+  onReviewsClick?: () => void;
+  /** Optional: separate handler for the empty-state "Write a review" button. Falls back to onReviewsClick if omitted. */
+  onWriteReviewClick?: () => void;
+}) {
+  const hasReviews = totalReviews > 0;
+
+  return (
+    <div style={{display: 'flex', flexDirection: 'row', alignItems: 'flex-start'}}>
+      <button
+        type="button"
+        onClick={onReviewsClick}
+        className="star-rating"
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'flex-start',
+          background: 'none',
+          border: 'none',
+          padding: 0,
+          cursor: onReviewsClick ? 'pointer' : 'default',
+        }}
+        aria-label={
+          hasReviews
+            ? `${averageScore.toFixed(1)} out of 5 stars rating in total ${totalReviews} review${totalReviews === 1 ? '' : 's'}. Jump to reviews.`
+            : '0 out of 5 stars rating in total 0 reviews. Jump to reviews.'
+        }
+      >
+        <span
+          aria-hidden="true"
+          style={{display: 'flex', flexDirection: 'row', alignItems: 'center', height: 28}}
+        >
+          {Array.from({length: 5}).map((_, i) => (
+            <Star key={i} fillPercent={hasReviews ? getFillPercent(averageScore, i) : 0} />
+          ))}
+        </span>
+
+        {hasReviews && (
+          <span
+            style={{
+              display: 'flex',
+              alignSelf: 'center',
+              color: '#FFE000',
+              fontFamily: '"Nunito Sans", sans-serif',
+              fontStyle: 'normal',
+              fontWeight: 700,
+              fontSize: '16px',
+              margin: '0 10px 1px 0',
+              paddingTop: '3px',
+            }}
+          >
+            {averageScore.toFixed(1)}
+          </span>
+        )}
+
+        {hasReviews && (
+          <span
+            aria-hidden="true"
+            style={{
+              display: 'flex',
+              alignSelf: 'center',
+              height: '11px',
+              borderRight: '1px solid black',
+              marginRight: '12px',
+            }}
+          />
+        )}
+
+        <span
+          style={{
+            whiteSpace: 'nowrap',
+            fontSize: '16px',
+            fontFamily: '"Nunito Sans", sans-serif',
+            fontStyle: 'normal',
+            fontWeight: 700,
+            color: '#2c2c2c',
+            paddingTop: '2px',
+            lineHeight: '28px',
+          }}
+        >
+          {totalReviews} {totalReviews === 1 ? 'Review' : 'Reviews'}
+        </span>
+      </button>
+
+      {!hasReviews && (
+        <button
+          type="button"
+          onClick={onWriteReviewClick ?? onReviewsClick}
+          style={{
+            whiteSpace: 'nowrap',
+            fontSize: '16px',
+            lineHeight: '18px',
+            fontFamily: '"Nunito Sans", sans-serif',
+            fontStyle: 'normal',
+            fontWeight: 700,
+            color: '#2c2c2c',
+            background: 'none',
+            marginLeft: '10px',
+            borderTop: 'none',
+            borderRight: 'none',
+            borderBottom: 'none',
+            borderLeft: '1px solid #2c2c2c',
+            paddingLeft: '10px',
+            cursor: 'pointer',
+            marginTop: '7px',
+          }}
+        >
+          Write a review
+        </button>
+      )}
+    </div>
+  );
+}
+
+// Returns 0–100: how much of star index `i` (0-based) should be filled,
+// so a score like 4.3 renders star 5 as ~30% filled rather than snapping
+// to whole stars only.
+function getFillPercent(score: number, starIndex: number): number {
+  const diff = score - starIndex;
+  if (diff >= 1) return 100;
+  if (diff <= 0) return 0;
+  return Math.round(diff * 100);
+}
+
+// Mirrors Yotpo's own star SVG path/viewBox/gradient-fill approach.
+function Star({fillPercent}: {fillPercent: number}) {
+  const id = `star-fill-${fillPercent}-${Math.random().toString(36).slice(2, 8)}`;
+
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 18 18"
+      xmlns="http://www.w3.org/2000/svg"
+      width="15"
+      height="15"
+      style={{display: 'flex', flexDirection: 'row', marginInlineEnd: '3.5px'}}
+    >
+      <defs>
+        <linearGradient id={id}>
+          <stop offset={`${fillPercent}%`} stopColor="#FFE000" />
+          <stop offset={`${fillPercent}%`} stopColor="#FFFFFF" stopOpacity={1} />
+        </linearGradient>
+      </defs>
+      <path
+        style={{pointerEvents: 'none'}}
+        d="M9 14.118L14.562 17.475L13.086 11.148L18 6.891L11.529 6.342L9 0.375L6.471 6.342L0 6.891L4.914 11.148L3.438 17.475L9 14.118Z"
+        stroke="#FFE000"
+        fill={`url(#${id})`}
+      />
+    </svg>
+  );
+}
+
+
+===== .\app\templates\api.reviews.tsx =====
+// app/templates/api.reviews.tsx
+import type {Route} from './+types/api.reviews';
+
+/**
+ * Resource route proxying review submissions to Yotpo's Create Review
+ * API (POST https://api.yotpo.com/v1/widget/reviews), called from
+ * ReviewModal.tsx.
+ *
+ * Field names below match Yotpo's documented request schema exactly
+ * (appkey, sku, product_title, product_url, display_name, email,
+ * review_content, review_title, review_score are all required) — see
+ * https://apidocs.yotpo.com/reference/create-review. `sku` is Yotpo's
+ * name for the product identifier field; it does not have to be an
+ * actual SKU, per their docs, so the Shopify product id is passed
+ * through as-is.
+ *
+ * Proxying server-side (rather than posting to Yotpo directly from
+ * ReviewModal) keeps this consistent with getYotpoBottomline's
+ * server-side fetch pattern and gives a single place to add
+ * rate-limiting or validation later if needed. The app key here is
+ * already public (it's embedded in the loader <script> src rendered
+ * to every visitor in root.tsx), so no secret is involved in this call.
+ */
+export async function action({request, context}: Route.ActionArgs) {
+  if (request.method !== 'POST') {
+    return Response.json({error: 'Method not allowed'}, {status: 405});
+  }
+
+  const appKey = context.env.PUBLIC_YOTPO_APP_KEY;
+  if (!appKey) {
+    return Response.json({error: 'Reviews are not configured for this store'}, {status: 500});
+  }
+
+  let body: {
+    productId?: string;
+    productTitle?: string;
+    productUrl?: string;
+    productImageUrl?: string;
+    score?: number;
+    title?: string;
+    content?: string;
+    displayName?: string;
+    email?: string;
+  };
+
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({error: 'Invalid request body'}, {status: 400});
+  }
+
+  const {
+    productId,
+    productTitle,
+    productUrl,
+    productImageUrl,
+    score,
+    title,
+    content,
+    displayName,
+    email,
+  } = body;
+
+  if (
+    !productId ||
+    !productTitle ||
+    !productUrl ||
+    !score ||
+    !title ||
+    !content ||
+    !displayName ||
+    !email
+  ) {
+    return Response.json({error: 'Missing required review fields'}, {status: 400});
+  }
+
+  let domain: string;
+  try {
+    domain = new URL(productUrl).hostname;
+  } catch {
+    return Response.json({error: 'Invalid product URL'}, {status: 400});
+  }
+
+  const yotpoRes = await fetch('https://api.yotpo.com/v1/widget/reviews', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      appkey: appKey,
+      domain,
+      sku: productId,
+      product_title: productTitle,
+      product_url: productUrl,
+      product_image_url: productImageUrl,
+      display_name: displayName,
+      email,
+      review_score: score,
+      review_title: title,
+      review_content: content,
+    }),
+  });
+
+  let data: unknown;
+  try {
+    data = await yotpoRes.json();
+  } catch {
+    data = null;
+  }
+
+  if (!yotpoRes.ok) {
+    const message =
+      (data && typeof data === 'object' && 'message' in data
+        ? String((data as {message?: unknown}).message)
+        : null) ?? 'Yotpo rejected the review submission';
+    return Response.json({error: message}, {status: yotpoRes.status});
+  }
+
+  return Response.json({success: true});
+}
+
+

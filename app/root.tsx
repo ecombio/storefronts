@@ -25,6 +25,7 @@ import appStyles from '~/assets/app.css?url';
 import menuStyles from '~/assets/highlight.css?url';
 import mainProductStyles from '~/assets/main-product.css?url';
 import productDescriptionStyles from '~/assets/product-description.css?url';
+import customerReviewsStyles from '~/assets/customer-reviews.css?url';
 import productCardStyles from '~/assets/product-card.css?url';
 import productCarouselStyles from '~/assets/product-carousel.css?url';
 import collectionCardStyles from '~/assets/collection-card.css?url';
@@ -180,6 +181,7 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={menuStyles}></link>
         <link rel="stylesheet" href={mainProductStyles}></link>
         <link rel="stylesheet" href={productDescriptionStyles}></link>
+        <link rel="stylesheet" href={customerReviewsStyles}></link>
         <link rel="stylesheet" href={productCardStyles}></link>
         <link rel="stylesheet" href={productCarouselStyles}></link>
         <link rel="stylesheet" href={collectionCardStyles}></link>
@@ -215,9 +217,10 @@ export default function App() {
     const script = document.createElement('script');
     script.src = `https://cdn-widgetsrepository.yotpo.com/v1/loader/${data.yotpoAppKey}`;
     script.async = true;
+    script.nonce = nonce;
     script.setAttribute('data-yotpo-loader', 'true');
     document.body.appendChild(script);
-  }, [data?.yotpoAppKey]);
+  }, [data?.yotpoAppKey, nonce]);
 
   if (!data) {
     return <Outlet />;

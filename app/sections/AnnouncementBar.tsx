@@ -10,17 +10,12 @@ import {
 
 const DISMISS_KEY = 'announcement_bar_dismissed';
 
-// Maps 1:1 to sections/announcement-bar.liquid + assets/announcement-bar.js.
-// Slide data lives in Header.constants.ts (ANNOUNCEMENT_SLIDES) as a
-// stand-in for the theme editor's ann_1..ann_5 settings.
 export function AnnouncementBar() {
   const slides = ANNOUNCEMENT_SLIDES;
   const [dismissed, setDismissed] = useState(false);
   const [index, setIndex] = useState(0);
   const rotateTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Dismiss state is session-scoped, same as the theme's JS. Checked in an
-  // effect (not lazy useState init) so this never runs during SSR.
   useEffect(() => {
     if (ANNOUNCEMENT_ENABLE_CLOSE && sessionStorage.getItem(DISMISS_KEY) === 'true') {
       setDismissed(true);
@@ -119,9 +114,33 @@ function CountdownContent({
 }) {
   const remainingMs = useCountdown(slide);
 
-  // Real theme behavior on expiry: hide this slide's content, not the
-  // whole bar — it stays in rotation, just renders blank.
-  if (remainingMs === null) return null;
+  // FIX: previously returned `null` while remainingMs was null (true on
+  // initial SSR paint, before the client-side timer effect runs). That
+  // made the announcement bar render with an empty content row on first
+  // paint, then grow taller a moment later once the countdown populated
+  // client-side — a real layout shift right at the point where the
+  // white line was reported. Rendering an invisible placeholder of the
+  // same shape reserves the final height from the very first paint, so
+  // there's nothing for the countdown's arrival to shift.
+  if (remainingMs === null) {
+    return (
+      <span className="invisible flex items-center gap-1" aria-hidden="true">
+        {slide.label && <span>{slide.label}</span>}
+        <Unit value="00" label="d" />
+        <Sep />
+        <Unit value="00" label="h" />
+        <Sep />
+        <Unit value="00" label="m" />
+        <Sep />
+        <Unit value="00" label="s" />
+        {slide.buttonLabel && (
+          <span className="ml-1 whitespace-nowrap rounded-full border px-3.5 py-1 text-xs font-semibold">
+            {slide.buttonLabel}
+          </span>
+        )}
+      </span>
+    );
+  }
 
   const totalSeconds = Math.max(0, Math.floor(remainingMs / 1000));
   const days = Math.floor(totalSeconds / 86400);
@@ -167,12 +186,6 @@ function Sep() {
   return <span className="mx-0.5 opacity-60">:</span>;
 }
 
-// Mirrors announcement-bar.js's countdown logic: fixed dates compute a
-// plain end timestamp; evergreen durations are persisted to sessionStorage
-// per visitor so a reload mid-session doesn't restart the clock. On expiry
-// this returns null and STAYS null — it does not loop or reset. "Evergreen"
-// only means the window length is fixed per-session, not that the
-// countdown repeats forever.
 function useCountdown(slide: Extract<AnnouncementSlideConfig, {type: 'countdown'}>) {
   const endMsRef = useRef<number | null>(null);
   const [remainingMs, setRemainingMs] = useState<number | null>(null);

@@ -131,6 +131,18 @@
   * {
     @apply border-border outline-ring/50;
     }
+  /* CONFIRMED FIX: html never had a background rule anywhere in this
+     project (checked reset.css, app.css, tailwind.css, and every
+     section-level stylesheet). body is explicitly painted white via
+     bg-background below, but html was left at browser default with no
+     explicit backing rule. When the announcement bar's height changes
+     after the countdown hydrates client-side, body's painted area can
+     lag one frame behind the new layout, briefly exposing html's
+     unstyled layer underneath as a thin seam. Giving html the same
+     background closes that gap regardless of timing. */
+  html {
+    @apply bg-background;
+    }
   body {
     @apply bg-background text-foreground;
     }

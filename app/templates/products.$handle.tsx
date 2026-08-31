@@ -10,20 +10,20 @@ import {
   useSelectedOptionInUrlParam,
 } from '@shopify/hydrogen';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
-import {getYotpoBottomline} from '~/lib/yotpo.server';
-import {useYotpoRefresh} from '~/hooks/useYotpoRefresh';
-import {ReviewsWidget} from '~/snippets/ReviewsWidget';
+import {
+  getYotpoReviews,
+  YOTPO_SORT_OPTIONS,
+  type YotpoSortKey,
+} from '~/lib/yotpo.server';
 import {ReviewModal} from '~/snippets/ReviewModal';
 import {StarRating} from '~/snippets/StarRating';
+import {CustomerReviews} from '~/sections/CustomerReviews';
 import {ProductMedia} from '~/sections/ProductMedia';
 import {ProductPrice} from '~/snippets/ProductPrice';
 import {ProductForm} from '~/sections/ProductForm';
 import {ProductDescriptionPanels} from '~/snippets/ProductDescriptionPanels';
 import {SaleBadge} from '~/snippets/SaleBadge';
 import {Breadcrumbs} from '~/snippets/Breadcrumbs';
-
-// Reviews stay on Yotpo's client-side widget (see useYotpoRefresh).
-const YOTPO_REVIEWS_INSTANCE_ID = '1332840';
 
 // Collections fetched per product for breadcrumb parent/child
 // resolution. Must cover the vendor auto-collection plus every real
@@ -80,11 +80,19 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   redirectIfHandleIsLocalized(request, {handle, data: product});
 
   const yotpoProductId = product.id.split('/').pop()!;
-  const yotpoBottomline = env.PUBLIC_YOTPO_APP_KEY
-    ? (await getYotpoBottomline(env.PUBLIC_YOTPO_APP_KEY, yotpoProductId)) ?? {
-        averageScore: 0,
-        totalReviews: 0,
-      }
+
+  // Sort selection lives in the URL (?sort=recent etc.) so it's
+  // shareable/linkable and survives a full page reload — see
+  // CustomerReviews.tsx's handleSortChange.
+  const url = new URL(request.url);
+  const sortKey = (url.searchParams.get('sort') ?? 'top') as YotpoSortKey;
+  const sortConfig = YOTPO_SORT_OPTIONS[sortKey] ?? YOTPO_SORT_OPTIONS.top;
+
+  const yotpoReviews = env.PUBLIC_YOTPO_APP_KEY
+    ? await getYotpoReviews(env.PUBLIC_YOTPO_APP_KEY, yotpoProductId, {
+        sort: sortConfig.sort,
+        direction: sortConfig.direction,
+      })
     : null;
 
   const policyFields = product.policyMetafield?.reference;
@@ -95,7 +103,8 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
     shopUrl: context.env.PUBLIC_STORE_DOMAIN,
     parentCollection,
     childCollection,
-    yotpoBottomline,
+    yotpoReviews,
+    currentSortKey: sortKey,
     shippingHtml:
       readSafeMetafieldHtml(policyFields?.shippingPolicyField) ??
       nullIfBlank(shippingPage?.body) ??
@@ -214,10 +223,9 @@ export default function Product() {
     warrantyHtml,
     parentCollection,
     childCollection,
-    yotpoBottomline,
+    yotpoReviews,
+    currentSortKey,
   } = useLoaderData<typeof loader>();
-
-  useYotpoRefresh();
 
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
@@ -266,8 +274,8 @@ export default function Product() {
           />
           <h1 className="product-detail-title">{title}</h1>
           <StarRating
-            averageScore={yotpoBottomline?.averageScore ?? 0}
-            totalReviews={yotpoBottomline?.totalReviews ?? 0}
+            averageScore={yotpoReviews?.bottomline.averageScore ?? 0}
+            totalReviews={yotpoReviews?.bottomline.totalReviews ?? 0}
             onReviewsClick={() =>
               document
                 .getElementById('reviews')
@@ -306,15 +314,14 @@ export default function Product() {
         </div>
       </div>
       <div id="reviews">
-        <ReviewsWidget
-          instanceId={YOTPO_REVIEWS_INSTANCE_ID}
-          productId={yotpoProductId}
+        <CustomerReviews
+          productId={yotpoProductId ?? ''}
           productTitle={product.title}
           productUrl={productUrl}
-          imageUrl={selectedVariant?.image?.url}
-          price={selectedVariant?.price?.amount}
-          currency={selectedVariant?.price?.currencyCode}
-          description={product.description}
+          productImageUrl={selectedVariant?.image?.url}
+          initialData={yotpoReviews}
+          currentSortKey={currentSortKey}
+          onWriteReviewClick={() => setIsReviewModalOpen(true)}
         />
       </div>
       {isReviewModalOpen && yotpoProductId && (

@@ -1,0 +1,497 @@
+/*
+* --------------------------------------------------
+* sections/CustomerReviews
+* --------------------------------------------------
+* Pairs with app/sections/CustomerReviews.tsx.
+*
+* Breakpoints: the literal px values below mirror theme.css's
+* --bp-sm (640px) / --bp-lg (1024px) tokens. Per theme.css's own
+* documented limitation, custom properties can't be used inside
+* @media conditions, so these numbers are hardcoded here —
+* traceable back to theme.css, not independently invented.
+*
+* Content width: capped + centered at theme.css's
+* --content-max-width (1200px), with padding-inline matching
+* Header.tsx's own responsive scale (px-4 / sm:px-6 / lg:px-8 ->
+* 16px / 24px / 32px), so this section's content doesn't drift
+* wider than the header sitting above it on the page.
+*
+* Tiering follows theme.css's three-tier model: mobile (<640px)
+* and tablet (640-1023px) share the stacked, touch-first layout
+* below; the side-by-side layout and any hover-only affordances
+* are desktop-only (>=1024px).
+*/
+
+.customer-reviews {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+  padding-block: 2rem;
+}
+
+@media (min-width: 640px) {
+  .customer-reviews {
+    padding-inline: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .customer-reviews {
+    padding-inline: 2rem;
+    padding-block: 3rem;
+  }
+}
+
+.customer-reviews-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2rem;
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .customer-reviews-layout {
+    flex-direction: row;
+    gap: 3rem;
+  }
+}
+
+/*
+* --------------------------------------------------
+* Left sidebar — rating summary + write-a-review CTA
+* --------------------------------------------------
+*/
+.customer-reviews-sidebar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4rem;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+@media (min-width: 1024px) {
+  .customer-reviews-sidebar {
+    width: 272px;
+  }
+}
+
+.customer-reviews-overview {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.customer-reviews-heading {
+  font-weight: 700;
+  color: #23263b;
+  font-size: 16px;
+  letter-spacing: 1px;
+  line-height: 1.2;
+}
+
+.customer-reviews-score-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.customer-reviews-score-label {
+  font-weight: 700;
+  color: #23263b;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.customer-reviews-count {
+  font-weight: 400;
+  color: #91929d;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.customer-reviews-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.customer-reviews-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.customer-reviews-bar-label {
+  font-weight: 700;
+  color: #003dff;
+  font-size: 12px;
+  line-height: 1.4;
+  width: 40px;
+  flex-shrink: 0;
+}
+
+.customer-reviews-bar-track {
+  position: relative;
+  height: 8px;
+  flex: 1;
+  min-width: 0;
+  background: #d3d4d8;
+  border-radius: 19px;
+  overflow: hidden;
+}
+
+.customer-reviews-bar-fill {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  background: #23263b;
+  border-radius: 19px;
+}
+
+.customer-reviews-bar-percentage {
+  font-weight: 400;
+  color: #23263b;
+  font-size: 12px;
+  line-height: 1.4;
+  width: 30px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.customer-reviews-calc-link {
+  font-weight: 700;
+  color: #003dff;
+  font-size: 12px;
+  line-height: 1.4;
+  margin-top: 4px;
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.customer-reviews-calc-link:hover {
+  text-decoration: underline;
+}
+
+.customer-reviews-write {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+  width: 100%;
+}
+
+.customer-reviews-write-title {
+  font-weight: 700;
+  color: #23263b;
+  font-size: 16px;
+  letter-spacing: 1px;
+  line-height: 1.2;
+}
+
+.customer-reviews-write-copy {
+  font-weight: 400;
+  color: #23263b;
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.customer-reviews-btn-outline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  background: #fff;
+  border: 2px solid #23263b;
+  border-radius: 2px;
+  padding: 9px 6px;
+  font-weight: 400;
+  color: #23263b;
+  font-size: 14px;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+
+/* Hover-reveal-adjacent affordance — fine at every tier since it's a
+   plain hover state on an always-visible button, not a hover-only
+   reveal of otherwise-hidden UI (theme.css's hover-reveal restriction
+   is about the latter). */
+.customer-reviews-btn-outline:hover {
+  background: #f5f5f5;
+}
+
+/*
+* --------------------------------------------------
+* Right panel — search, sort, review list
+* --------------------------------------------------
+*/
+.customer-reviews-panel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2rem;
+  min-width: 0;
+  width: 100%;
+}
+
+.customer-reviews-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: stretch;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .customer-reviews-controls {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+}
+
+.customer-reviews-search {
+  display: flex;
+  flex: 1;
+  gap: 8px;
+  height: 48px;
+  align-items: center;
+  min-width: 0;
+  background: #fff;
+  border: 1px solid #91929d;
+  padding-inline: 12px;
+}
+
+.customer-reviews-search input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-weight: 400;
+  color: #23263b;
+  font-size: 14px;
+}
+
+.customer-reviews-search input::placeholder {
+  color: #91929d;
+}
+
+.customer-reviews-sort {
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .customer-reviews-sort {
+    width: 175px;
+  }
+}
+
+.customer-reviews-sort-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: 48px;
+  width: 100%;
+  padding: 5px 8px;
+  background: #fff;
+  border: 1px solid #91929d;
+  border-radius: 2px;
+  font-weight: 400;
+  color: #23263b;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.customer-reviews-sort-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: #fff;
+  border: 1px solid #91929d;
+  border-top: none;
+  border-radius: 0 0 2px 2px;
+}
+
+.customer-reviews-sort-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  background: #fff;
+  border: none;
+  font-weight: 400;
+  color: #23263b;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.customer-reviews-sort-option:hover,
+.customer-reviews-sort-option[data-active='true'] {
+  background: #f5f5f5;
+  font-weight: 700;
+}
+
+/*
+* --------------------------------------------------
+* Individual review card
+* --------------------------------------------------
+*/
+.customer-review-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.customer-review-card + .customer-review-card {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #d3d4d8;
+}
+
+.customer-review-user {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding-bottom: 8px;
+  width: 100%;
+}
+
+.customer-review-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #d3d4d8;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+.customer-review-username {
+  font-weight: 400;
+  color: #23263b;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.customer-review-rating-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding-bottom: 24px;
+}
+
+.customer-review-title {
+  font-weight: 700;
+  color: #23263b;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.customer-review-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+  padding-bottom: 8px;
+  width: 100%;
+}
+
+.customer-review-date {
+  font-weight: 400;
+  color: #91929d;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.customer-review-verified {
+  font-weight: 800;
+  color: #219088;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1.4;
+}
+
+.customer-review-body {
+  font-weight: 400;
+  color: #23263b;
+  font-size: 14px;
+  line-height: 18px;
+  width: 100%;
+  margin: 0;
+}
+
+.customer-review-actions {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  padding-top: 12px;
+}
+
+.customer-review-helpful {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 107px;
+  background: #fff;
+  border: 2px solid #23263b;
+  border-radius: 2px;
+  padding: 5px 6px;
+  font-weight: 400;
+  color: #23263b;
+  font-size: 14px;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+
+.customer-review-helpful:hover {
+  background: #f5f5f5;
+}
+
+.customer-review-report {
+  background: none;
+  border: none;
+  font-weight: 400;
+  color: #4f5162;
+  font-size: 14px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.customer-review-report:hover {
+  text-decoration: underline;
+}
+
+/*
+* --------------------------------------------------
+* Star rating
+* --------------------------------------------------
+*/
+.customer-reviews-stars {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.customer-reviews-star {
+  display: block;
+}
