@@ -1,60 +1,11 @@
 // app/lib/yotpo.server.ts
 
 /**
- * Fetches aggregate star rating data (average score + review count) for a
- * single product directly from Yotpo's Bottomline API. This bypasses the
- * on-site Star Rating widget entirely — no client script, no CSP entries
- * needed for this piece, no widget-mounting mystery. Used instead of the
- * `data-yotpo-instance-id="1332841"` div, which was rendering empty
- * despite the product having 5 published reviews (widget-specific issue,
- * not a data or integration problem — the main Reviews widget, instance
- * 1332840, renders the same underlying data correctly).
- *
- * Docs: https://apidocs.yotpo.com/reference/retrieve-bottom-line
- */
-
-export type YotpoBottomline = {
-  averageScore: number;
-  totalReviews: number;
-} | null;
-
-export async function getYotpoBottomline(
-  appKey: string,
-  yotpoProductId: string,
-): Promise<YotpoBottomline> {
-  try {
-    const res = await fetch(
-      `https://api-cdn.yotpo.com/v1/widget/${appKey}/products/${yotpoProductId}/bottomline.json`,
-    );
-
-    if (!res.ok) {
-      console.error(`Yotpo bottomline fetch failed: ${res.status}`);
-      return null;
-    }
-
-    const data = await res.json();
-    const bottomline = data?.response?.bottomline;
-
-    if (!bottomline || typeof bottomline.average_score !== 'number') {
-      return null;
-    }
-
-    return {
-      averageScore: bottomline.average_score,
-      totalReviews: bottomline.total_review ?? 0,
-    };
-  } catch (error) {
-    console.error('Yotpo bottomline fetch error:', error);
-    return null;
-  }
-}
-
-/**
  * Fetches a page of individual reviews + bottomline stats for a product
- * from Yotpo's reviews.json endpoint. This is a superset of
- * getYotpoBottomline() — every response here already includes bottomline,
- * so callers that need both (e.g. the product template) can call this
- * alone instead of making two separate requests.
+ * from Yotpo's reviews.json endpoint. Bottomline (average score, total
+ * reviews, star distribution) is included in every response, so this
+ * single call covers both the star-rating summary and the full review
+ * list — no separate bottomline request needed.
  *
  * Powers app/sections/CustomerReviews.tsx (initial server-rendered page)
  * and app/templates/api.product-reviews.tsx (subsequent "Load more" /

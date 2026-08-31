@@ -1,5 +1,5 @@
 // app/snippets/ReviewModal.tsx
-import {useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 
 // Matches Yotpo's own star-rating fieldset labels exactly (see their
 // rendered aria-labels: "Score 1 Very poor" ... "Score 5 Great!").
@@ -10,6 +10,9 @@ const SCORE_LABELS: Record<number, string> = {
   4: 'Good',
   5: 'Great!',
 };
+
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
 
 /**
  * Custom "write a review" modal, submitting directly to Yotpo's Create
@@ -52,6 +55,60 @@ export function ReviewModal({
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const panelRef = useRef<HTMLDivElement>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+
+  // Modal open/close side effects: this component is marked
+  // role="dialog" aria-modal="true", which is a contract that keyboard
+  // and screen-reader users can rely on — Escape closes it, Tab stays
+  // trapped inside it, focus lands inside it on open and returns to
+  // whatever triggered it on close, and the page behind it doesn't
+  // scroll. None of that comes for free from the ARIA attributes alone;
+  // it has to be wired up explicitly.
+  useEffect(() => {
+    previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    // Focus the panel itself first — works identically whether the
+    // form or the success state is showing, unlike targeting a
+    // specific field that may not exist in both states.
+    panelRef.current?.focus();
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+
+      if (e.key !== 'Tab' || !panelRef.current) return;
+
+      const focusable = panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+      previouslyFocusedRef.current?.focus?.();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const canSubmit =
     score > 0 &&
@@ -118,6 +175,8 @@ export function ReviewModal({
       onClick={onClose}
     >
       <div
+        ref={panelRef}
+        tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
         style={{
           background: '#fff',
@@ -128,6 +187,7 @@ export function ReviewModal({
           maxHeight: '90vh',
           overflowY: 'auto',
           fontFamily: '"Nunito Sans", sans-serif',
+          outline: 'none',
         }}
       >
         <div

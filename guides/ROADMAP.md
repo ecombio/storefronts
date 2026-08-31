@@ -1,3 +1,6 @@
+Ecommerce Search & Discovery UI Kit
+Ecommerce Reviews & Rating UI Kit
+
 # Headless Storefront — Build Roadmap
 
 Based on the current `app/` tree (Shopify Hydrogen + Remix, Tailwind, Algolia, Yotpo, custom AI search).

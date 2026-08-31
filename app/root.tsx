@@ -1,5 +1,4 @@
 // app/root.tsx
-import {useEffect} from 'react';
 import {Analytics, getShopAnalytics, useNonce} from '@shopify/hydrogen';
 import {
   Outlet,
@@ -80,7 +79,6 @@ export async function loader(args: Route.LoaderArgs) {
     ...deferredData,
     ...criticalData,
     publicStoreDomain: env.PUBLIC_STORE_DOMAIN,
-    yotpoAppKey: env.PUBLIC_YOTPO_APP_KEY,
     algolia: {
       appId: env.PUBLIC_ALGOLIA_APP_ID,
       searchKey: env.PUBLIC_ALGOLIA_SEARCH_KEY,
@@ -208,19 +206,6 @@ export function Layout({children}: {children?: React.ReactNode}) {
 
 export default function App() {
   const data = useRouteLoaderData<RootLoader>('root');
-  const nonce = useNonce();
-
-  useEffect(() => {
-    if (!data?.yotpoAppKey) return;
-    if (document.querySelector('script[data-yotpo-loader]')) return;
-
-    const script = document.createElement('script');
-    script.src = `https://cdn-widgetsrepository.yotpo.com/v1/loader/${data.yotpoAppKey}`;
-    script.async = true;
-    script.nonce = nonce;
-    script.setAttribute('data-yotpo-loader', 'true');
-    document.body.appendChild(script);
-  }, [data?.yotpoAppKey, nonce]);
 
   if (!data) {
     return <Outlet />;

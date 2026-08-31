@@ -52,7 +52,7 @@ export function StarRating({
           style={{display: 'flex', flexDirection: 'row', alignItems: 'center', height: 28}}
         >
           {Array.from({length: 5}).map((_, i) => (
-            <Star key={i} fillPercent={hasReviews ? getFillPercent(averageScore, i) : 0} />
+            <Star key={i} index={i} fillPercent={hasReviews ? getFillPercent(averageScore, i) : 0} />
           ))}
         </span>
 
@@ -144,8 +144,16 @@ function getFillPercent(score: number, starIndex: number): number {
 }
 
 // Mirrors Yotpo's own star SVG path/viewBox/gradient-fill approach.
-function Star({fillPercent}: {fillPercent: number}) {
-  const id = `star-fill-${fillPercent}-${Math.random().toString(36).slice(2, 8)}`;
+// Gradient id is derived from the star's position (0-4) rather than
+// Math.random() — a random id changes on every render, which is both
+// wasteful (defeats any memoization) and unsafe for SSR: the id
+// generated on the server won't match the one generated during client
+// hydration, causing a hydration mismatch. Position is stable and
+// unique within a single StarRating instance (exactly 5 stars, each
+// rendered once), so index alone is enough here — no need to also
+// incorporate fillPercent.
+function Star({fillPercent, index}: {fillPercent: number; index: number}) {
+  const id = `star-fill-${index}`;
 
   return (
     <svg

@@ -23,13 +23,21 @@ export default async function handleRequest(
       "'self'",
       "'strict-dynamic'",
       'https://cdn.shopify.com',
-      'https://cdn-widgetsrepository.yotpo.com',
       "'sha256-IT5WN+Mz4HQ26TqWL7rMQVzvTWYttkhDr6qOCX3eig='", // fallback for browsers without strict-dynamic support
     ],
-    // The Yotpo widget script loads via scriptSrc above, but it then
-    // makes its own fetch() calls for ratings/reviews data and beacon
-    // analytics, plus loads fonts/styles from a separate Yotpo domain.
-    // Those are governed by these directives, not scriptSrc.
+    // Yotpo reviews now run through server-side API calls
+    // (app/lib/yotpo.server.ts) rather than the client-side widget
+    // script, which used to make its own fetch() calls for
+    // ratings/reviews data and beacon analytics, plus load fonts/styles
+    // from a separate Yotpo domain. The entries below are kept for now
+    // pending a live DevTools check (client still renders reviewer
+    // avatar <img> tags from Yotpo's social_image field) — see
+    // TODO below before removing further.
+    //
+    // TODO: once confirmed via DevTools (Network/Console tab on the
+    // PDP) that nothing is blocked or broken, trim connectSrc/styleSrc/
+    // fontSrc down to just what imgSrc's avatar loading actually needs,
+    // or remove entirely if avatars resolve to a non-Yotpo domain.
     connectSrc: [
       "'self'",
       'https://api-cdn.yotpo.com',
@@ -45,7 +53,6 @@ export default async function handleRequest(
     styleSrc: [
       "'self'",
       "'unsafe-inline'",
-      'https://cdn-widgetsrepository.yotpo.com',
       'https://staticw2.yotpo.com',
       'https://fonts.googleapis.com',
     ],
@@ -53,7 +60,6 @@ export default async function handleRequest(
       "'self'",
       'https://cdn.shopify.com',
       'https://staticw2.yotpo.com',
-      'https://cdn-widgetsrepository.yotpo.com',
       'https://fonts.gstatic.com',
     ],
     imgSrc: [
@@ -61,7 +67,6 @@ export default async function handleRequest(
       'data:',
       'https://cdn.shopify.com',
       'https://staticw2.yotpo.com',
-      'https://cdn-widgetsrepository.yotpo.com',
       'https://api-cdn.yotpo.com',
       // Beacon tracking pixels (loaded as <img>, so governed by img-src,
       // not connect-src) for widget-loaded / analytics events. Yotpo's
