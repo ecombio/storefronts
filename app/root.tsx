@@ -31,6 +31,7 @@ import collectionCardStyles from '~/assets/collection-card.css?url';
 import collectionCarouselStyles from '~/assets/collection-carousel.css?url';
 import imageCardStyles from '~/assets/image-card.css?url';
 import imageCarouselStyles from '~/assets/image-carousel.css?url';
+import slideshowStyles from '~/assets/slideshow.css?url';
 import collectionFiltersStyles from '~/assets/collection-filters.css?url';
 import collectionToolbarStyles from '~/assets/collection-toolbar.css?url';
 import articleCardStyles from '~/assets/article-card.css?url';
@@ -185,6 +186,7 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={collectionCarouselStyles}></link>
         <link rel="stylesheet" href={imageCardStyles}></link>
         <link rel="stylesheet" href={imageCarouselStyles}></link>
+        <link rel="stylesheet" href={slideshowStyles}></link>
         <link rel="stylesheet" href={collectionFiltersStyles}></link>
         <link rel="stylesheet" href={collectionToolbarStyles}></link>
         <link rel="stylesheet" href={articleCardStyles}></link>

@@ -7,9 +7,9 @@ import type {FeaturedCollectionFragment, ProductCardFragment} from 'storefrontap
 import {ProductCarousel} from '~/sections/ProductCarousel';
 import {ImageCarousel, type ImageCarouselItem} from '~/sections/ImageCarousel';
 import {CollectionCarousel, type CollectionCarouselItem} from '~/sections/CollectionCarousel';
+import {SlideShow, type SlideShowSlide} from '~/sections/SlideShow';
 import {PRODUCT_CARD_FRAGMENT} from '~/graphql/ProductCardFragment';
 import {COLLECTION_CARD_FRAGMENT} from '~/graphql/CollectionCardFragment';
-import {MockShopNotice} from '~/sections/MockShopNotice';
 
 export const meta: Route.MetaFunction = () => {
   return [{title: 'Hydrogen | Home'}];
@@ -49,6 +49,35 @@ function loadDeferredData({context}: Route.LoaderArgs) {
   };
 }
 
+const HERO_SLIDES: SlideShowSlide[] = [
+  {
+    id: 'hero-1',
+    title: 'Ride Into Fall',
+    subtitle: 'Save up to 20% on select electric bikes',
+    eyebrow: 'Limited time',
+    ctaLabel: 'Shop the Sale',
+    ctaUrl: '/collections/all',
+    image: {url: 'https://picsum.photos/seed/hero1/1600/700'},
+  },
+  {
+    id: 'hero-2',
+    title: 'Built for the Commute',
+    subtitle: 'Step-through comfort meets daily range',
+    ctaLabel: 'Shop Step-Through',
+    ctaUrl: '/collections/step-through-electric-bikes',
+    image: {url: 'https://picsum.photos/seed/hero2/1600/700'},
+  },
+  {
+    id: 'hero-3',
+    title: 'New Arrivals',
+    subtitle: 'The latest models just landed',
+    eyebrow: 'Just dropped',
+    ctaLabel: 'See What\'s New',
+    ctaUrl: '/collections/all',
+    image: {url: 'https://picsum.photos/seed/hero3/1600/700'},
+  },
+];
+
 const SHOP_THE_LOOK_ITEMS: ImageCarouselItem[] = [
   {
     id: 'placeholder-1',
@@ -87,7 +116,7 @@ export default function Homepage() {
   const data = useLoaderData<typeof loader>();
   return (
     <div className="home">
-      {data.isShopLinked ? null : <MockShopNotice />}
+      <SlideShow slides={HERO_SLIDES} />
       <FeaturedCollection collection={data.featuredCollection} />
       <CollectionCarousel
         title="Shop by Category"
