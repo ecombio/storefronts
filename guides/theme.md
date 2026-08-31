@@ -259,6 +259,20 @@ header's right edge instead of aligned under it. Fixed in
 `product-carousel.css` — see that file for the working pattern
 (`max-width: 1200px` + `margin-inline: auto` + tiered `padding-inline`).
 
+### Content padding (horizontal)
+
+Tokenized in `theme.css` as `--content-padding-mobile` (1rem / 16px),
+`--content-padding-tablet` (1.5rem / 24px), and `--content-padding-desktop`
+(2rem / 32px). Matches Header's own `px-4 / sm:px-6 / lg:px-8` scale,
+tiered to the same `--bp-sm` / `--bp-lg` boundaries above — this is not a
+fourth breakpoint, just the horizontal padding value that applies within
+each existing tier.
+
+Any component that caps at `--content-max-width` should also use these
+padding tokens so its edges align with Header's content row, not just its
+overall width — a matching max-width with mismatched padding still looks
+misaligned against Header at a glance.
+
 ### How we got here
 
 An audit of the codebase (Aug 2026) found three different components each
@@ -282,6 +296,18 @@ effect of the missing content max-width: the product carousel section
 rendered wider than the header above it, so its layout visually
 disagreed with the rest of the page instead of lining up under it.
 
+A separate audit (also Aug 2026) found `app/assets/header-menu.css`
+carrying a stale, divergent duplicate of the "On Sale" star-highlight
+styles now owned by `highlight.css` — different class names
+(`.menu-bar__link--highlight` vs. the live `.nav-item--highlight`),
+never `import`ed anywhere, left behind by an earlier rename
+(`66be44f`/`8a5babd`) that renamed the classes and moved the logic but
+never deleted the old file. Confirmed dead via `git log --follow` and
+removed. Not a token-drift case like the rows above, but the same root
+cause: a value (here, a whole file) drifting out of sync with its
+renamed/superseding counterpart because nothing forced the two to be
+updated together.
+
 ### Rules for new and updated components
 
 1. **Use the three breakpoint tiers, keyed off the same two pixel
@@ -296,9 +322,12 @@ disagreed with the rest of the page instead of lining up under it.
 4. **Nav stays keyed to `lg` (1024px) only**, matching Header, unless
    Header itself grows a tablet-specific nav pattern.
 5. **Any full-width section caps at `--content-max-width` (1200px)**,
-   centered with `margin-inline: auto`, with horizontal padding tiered to
-   match Header's `px-4 / sm:px-6 / lg:px-8` scale. Don't let a section
-   render wider than Header's own content row.
+   centered with `margin-inline: auto`, with horizontal padding using
+   `--content-padding-mobile` / `--content-padding-tablet` /
+   `--content-padding-desktop` (tokenized in `theme.css`, matching
+   Header's `px-4 / sm:px-6 / lg:px-8` scale). Don't let a section
+   render wider than Header's own content row, and don't hardcode a
+   padding value that isn't one of these three.
 6. **Tailwind components:** use the `sm:` / `lg:` prefixes and
    `max-w-[1200px]` directly.
 7. **Plain CSS components:** hardcode the literal px values in `@media`
@@ -318,6 +347,17 @@ disagreed with the rest of the page instead of lining up under it.
    `.featured-collection-image`) are dead code from the pre-Tailwind
    Hydrogen starter markup. Do not copy these values into new work.
    Confirm each is unused before deleting.
+9. **`Header.tsx` is the one-way source of truth.** Tokens in
+   `theme.css` are copied from Header's live Tailwind classes, not the
+   reverse — Header does not consume these tokens (it stays hardcoded
+   `px-4 sm:px-6 lg:px-8`, `max-w-[1200px]`, etc. on purpose). That
+   means the tokens can silently go stale: if Header's classes change,
+   nothing breaks or warns — `theme.css` just becomes wrong until
+   someone notices. This has already happened once with breakpoints
+   (see the audit table above) and separately with a whole orphaned
+   file (`header-menu.css`, also above). **Any PR touching Header's
+   `px-*`, `max-w-[...]`, or `sm:`/`lg:` breakpoint classes must update
+   `theme.css`'s matching values in the same PR.**
 
 ### Checklist for reviewing a new component's CSS
 
@@ -331,3 +371,7 @@ disagreed with the rest of the page instead of lining up under it.
       happen only at `1024px`, matching Header
 - [ ] If Tailwind, uses `sm:` / `lg:` — no arbitrary `min-width:[...]`
       values for breakpoints that duplicate these two numbers
+- [ ] Horizontal padding on any capped section uses the three
+      `--content-padding-*` tokens, not an invented value
+- [ ] If this PR changes Header.tsx's padding/max-width/breakpoint
+      classes, theme.css's tokens were updated to match in the same PR

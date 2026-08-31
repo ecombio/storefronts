@@ -7,20 +7,23 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 24px 16px;
-  max-width: 1200px;
+  padding-block: 24px;
+  padding-inline: var(--content-padding-mobile);
+  max-width: var(--content-max-width);
   margin-inline: auto;
 }
 
+/* Tablet tier (640–1023px) — see theme.css --bp-sm / --bp-lg */
 @media (min-width: 640px) {
   .collection-carousel {
-    padding-inline: 24px;
+    padding-inline: var(--content-padding-tablet);
   }
 }
 
+/* Desktop tier (≥1024px) — see theme.css --bp-sm / --bp-lg */
 @media (min-width: 1024px) {
   .collection-carousel {
-    padding-inline: 32px;
+    padding-inline: var(--content-padding-desktop);
   }
 }
 

@@ -631,7 +631,7 @@ export type PredictiveSearchInstantQuery = {
     products: Array<
       Pick<
         StorefrontAPI.Product,
-        'id' | 'title' | 'handle' | 'vendor' | 'tags'
+        'id' | 'title' | 'handle' | 'vendor' | 'productType' | 'tags'
       > & {
         selectedOrFirstAvailableVariant?: StorefrontAPI.Maybe<{
           image?: StorefrontAPI.Maybe<
@@ -1586,7 +1586,7 @@ interface GeneratedQueryTypes {
     return: RecommendedProductsQuery;
     variables: RecommendedProductsQueryVariables;
   };
-  '#graphql\n  query PredictiveSearchInstant(\n    $country: CountryCode\n    $language: LanguageCode\n    $limit: Int!\n    $limitScope: PredictiveSearchLimitScope!\n    $query: String!\n    $types: [PredictiveSearchType!]\n  ) @inContext(country: $country, language: $language) {\n    predictiveSearch(\n      limit: $limit\n      limitScope: $limitScope\n      query: $query\n      types: $types\n    ) {\n      queries {\n        text\n      }\n      products {\n        id\n        title\n        handle\n        vendor\n        tags\n        selectedOrFirstAvailableVariant(\n          ignoreUnknownOptions: true\n          caseInsensitiveMatch: true\n        ) {\n          image {\n            url\n            altText\n          }\n          price {\n            amount\n            currencyCode\n          }\n          compareAtPrice {\n            amount\n            currencyCode\n          }\n        }\n      }\n      collections {\n        id\n        title\n        handle\n        image {\n          url\n          altText\n        }\n      }\n      articles {\n        id\n        title\n        handle\n        publishedAt\n        image {\n          url\n          altText\n        }\n        blog {\n          handle\n        }\n      }\n      pages {\n        id\n        title\n        handle\n      }\n    }\n  }\n': {
+  '#graphql\n  query PredictiveSearchInstant(\n    $country: CountryCode\n    $language: LanguageCode\n    $limit: Int!\n    $limitScope: PredictiveSearchLimitScope!\n    $query: String!\n    $types: [PredictiveSearchType!]\n  ) @inContext(country: $country, language: $language) {\n    predictiveSearch(\n      limit: $limit\n      limitScope: $limitScope\n      query: $query\n      types: $types\n    ) {\n      queries {\n        text\n      }\n      products {\n        id\n        title\n        handle\n        vendor\n        productType\n        tags\n        selectedOrFirstAvailableVariant(\n          ignoreUnknownOptions: true\n          caseInsensitiveMatch: true\n        ) {\n          image {\n            url\n            altText\n          }\n          price {\n            amount\n            currencyCode\n          }\n          compareAtPrice {\n            amount\n            currencyCode\n          }\n        }\n      }\n      collections {\n        id\n        title\n        handle\n        image {\n          url\n          altText\n        }\n      }\n      articles {\n        id\n        title\n        handle\n        publishedAt\n        image {\n          url\n          altText\n        }\n        blog {\n          handle\n        }\n      }\n      pages {\n        id\n        title\n        handle\n      }\n    }\n  }\n': {
     return: PredictiveSearchInstantQuery;
     variables: PredictiveSearchInstantQueryVariables;
   };

@@ -247,9 +247,11 @@
   color: var(--gs-black);
 }
 
-/* Disable stickiness on mobile, same breakpoint as ProductMedia's sticky
-   gallery — the layout stacks vertically instead. */
-@media (max-width: 768px) {
+/* Disable stickiness below desktop tier — see theme.css --bp-lg
+   (1024px). Was previously 768px, a non-standard breakpoint not tied
+   to --bp-sm/--bp-lg; corrected to match the tablet/desktop boundary
+   per theme.md rule 4 (structural layout changes key off --bp-lg). */
+@media (max-width: 1023px) {
   .collection-layout {
     grid-template-columns: 1fr;
   }

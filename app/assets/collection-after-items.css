@@ -4,6 +4,9 @@
    the `.after-items` rules in the original main-collection.css. */
 
 .after-items {
+  max-width: var(--content-max-width);
+  margin-inline: auto;
+  padding-inline: var(--content-padding-mobile);
   padding-block: 5rem;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
 }
@@ -11,6 +14,20 @@
 @media (max-width: 639px) {
   .after-items {
     padding-block: 2rem;
+  }
+}
+
+/* Tablet tier (640–1023px) — see theme.css --bp-sm / --bp-lg */
+@media (min-width: 640px) {
+  .after-items {
+    padding-inline: var(--content-padding-tablet);
+  }
+}
+
+/* Desktop tier (≥1024px) — see theme.css --bp-sm / --bp-lg */
+@media (min-width: 1024px) {
+  .after-items {
+    padding-inline: var(--content-padding-desktop);
   }
 }
 

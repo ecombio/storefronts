@@ -21,7 +21,8 @@ import {
 } from '~/config/Header.constants';
 import resetStyles from '~/assets/reset.css?url';
 import appStyles from '~/assets/app.css?url';
-import menuStyles from '~/assets/highlight.css?url';
+import themeStyles from '~/assets/theme.css?url';
+import highlightStyles from '~/assets/highlight.css?url';
 import mainProductStyles from '~/assets/main-product.css?url';
 import breadcrumbsStyles from '~/assets/breadcrumbs.css?url';
 import productDescriptionStyles from '~/assets/product-description.css?url';
@@ -193,7 +194,8 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={tailwindCss}></link>
         <link rel="stylesheet" href={resetStyles}></link>
         <link rel="stylesheet" href={appStyles}></link>
-        <link rel="stylesheet" href={menuStyles}></link>
+        <link rel="stylesheet" href={themeStyles}></link>
+        <link rel="stylesheet" href={highlightStyles}></link>
         <link rel="stylesheet" href={mainProductStyles}></link>
         <link rel="stylesheet" href={breadcrumbsStyles}></link>
         <link rel="stylesheet" href={productDescriptionStyles}></link>
