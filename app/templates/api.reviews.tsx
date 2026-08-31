@@ -20,6 +20,15 @@ import {readJson} from '~/lib/utils';
  * (/api/reviews), per React Router's loader/action dispatch by method.
  */
 
+// Shared with the POST action's own direct fetch below — both are
+// third-party calls to Yotpo with no other timeout in front of them,
+// so both get the same ceiling. Not scoped to this route only: the GET
+// path's actual fetch lives in yotpo.server.ts (still untimed as of
+// this writing, tracked separately since it sits on the PDP's blocking
+// critical-data path rather than a client-triggered "Load more"/submit
+// action).
+const YOTPO_REQUEST_TIMEOUT_MS = 10_000;
+
 function resolveSortKey(value: string | null): YotpoSortKey {
   return value !== null && value in YOTPO_SORT_OPTIONS
     ? (value as YotpoSortKey)
@@ -160,23 +169,39 @@ export async function action({request, context}: Route.ActionArgs) {
     return Response.json({error: 'Invalid product URL'}, {status: 400});
   }
 
-  const yotpoRes = await fetch('https://api.yotpo.com/v1/widget/reviews', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({
-      appkey: appKey,
-      domain,
-      sku: productId,
-      product_title: productTitle,
-      product_url: productUrl,
-      product_image_url: productImageUrl,
-      display_name: displayName,
-      email,
-      review_score: score,
-      review_title: title,
-      review_content: content,
-    }),
-  });
+  let yotpoRes: Response;
+  try {
+    // Previously unbounded: a slow/hanging Yotpo response here left the
+    // review-submission request (and the submitter's browser) hanging
+    // indefinitely with no feedback. AbortSignal.timeout() rejects the
+    // fetch itself once the ceiling is hit, which surfaces below as a
+    // TimeoutError caught by the outer catch, and returns a clear 504
+    // rather than leaving the client waiting.
+    yotpoRes = await fetch('https://api.yotpo.com/v1/widget/reviews', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        appkey: appKey,
+        domain,
+        sku: productId,
+        product_title: productTitle,
+        product_url: productUrl,
+        product_image_url: productImageUrl,
+        display_name: displayName,
+        email,
+        review_score: score,
+        review_title: title,
+        review_content: content,
+      }),
+      signal: AbortSignal.timeout(YOTPO_REQUEST_TIMEOUT_MS),
+    });
+  } catch (error) {
+    console.error('Yotpo review submission error:', error);
+    return Response.json(
+      {error: 'Review submission timed out. Please try again.'},
+      {status: 504},
+    );
+  }
 
   let data: {message?: string} | null;
   try {

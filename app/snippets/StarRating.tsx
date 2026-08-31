@@ -11,7 +11,11 @@ import {useId} from 'react';
  *
  * Styled to match Yotpo's own widget output (gold stars, score, divider,
  * review count) so it's visually consistent with the reviews widget
- * below it on the page.
+ * below it on the page. Static styling lives in
+ * app/assets/star-rating.css (linked globally in app/root.tsx, matching
+ * how customer-reviews.css and every other section/snippet stylesheet
+ * is loaded); only genuinely dynamic values — the per-star gradient
+ * fill and the trigger's conditional cursor — stay inline here.
  */
 export function StarRating({
   averageScore,
@@ -40,30 +44,19 @@ export function StarRating({
   const uid = useId().replace(/:/g, '');
 
   return (
-    <div style={{display: 'flex', flexDirection: 'row', alignItems: 'flex-start'}}>
+    <div className="star-rating-root">
       <button
         type="button"
         onClick={onReviewsClick}
-        className="star-rating"
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'flex-start',
-          background: 'none',
-          border: 'none',
-          padding: 0,
-          cursor: onReviewsClick ? 'pointer' : 'default',
-        }}
+        className="star-rating star-rating-trigger"
+        style={{cursor: onReviewsClick ? 'pointer' : 'default'}}
         aria-label={
           hasReviews
             ? `${averageScore.toFixed(1)} out of 5 stars rating in total ${totalReviews} review${totalReviews === 1 ? '' : 's'}. Jump to reviews.`
             : '0 out of 5 stars rating in total 0 reviews. Jump to reviews.'
         }
       >
-        <span
-          aria-hidden="true"
-          style={{display: 'flex', flexDirection: 'row', alignItems: 'center', height: 28}}
-        >
+        <span aria-hidden="true" className="star-rating-stars">
           {Array.from({length: 5}).map((_, i) => (
             <Star
               key={i}
@@ -75,48 +68,12 @@ export function StarRating({
         </span>
 
         {hasReviews && (
-          <span
-            style={{
-              display: 'flex',
-              alignSelf: 'center',
-              color: '#FFE000',
-              fontFamily: '"Nunito Sans", sans-serif',
-              fontStyle: 'normal',
-              fontWeight: 700,
-              fontSize: '16px',
-              margin: '0 10px 1px 0',
-              paddingTop: '3px',
-            }}
-          >
-            {averageScore.toFixed(1)}
-          </span>
+          <span className="star-rating-score">{averageScore.toFixed(1)}</span>
         )}
 
-        {hasReviews && (
-          <span
-            aria-hidden="true"
-            style={{
-              display: 'flex',
-              alignSelf: 'center',
-              height: '11px',
-              borderRight: '1px solid black',
-              marginRight: '12px',
-            }}
-          />
-        )}
+        {hasReviews && <span aria-hidden="true" className="star-rating-divider" />}
 
-        <span
-          style={{
-            whiteSpace: 'nowrap',
-            fontSize: '16px',
-            fontFamily: '"Nunito Sans", sans-serif',
-            fontStyle: 'normal',
-            fontWeight: 700,
-            color: '#2c2c2c',
-            paddingTop: '2px',
-            lineHeight: '28px',
-          }}
-        >
+        <span className="star-rating-count">
           {totalReviews} {totalReviews === 1 ? 'Review' : 'Reviews'}
         </span>
       </button>
@@ -125,24 +82,7 @@ export function StarRating({
         <button
           type="button"
           onClick={onWriteReviewClick ?? onReviewsClick}
-          style={{
-            whiteSpace: 'nowrap',
-            fontSize: '16px',
-            lineHeight: '18px',
-            fontFamily: '"Nunito Sans", sans-serif',
-            fontStyle: 'normal',
-            fontWeight: 700,
-            color: '#2c2c2c',
-            background: 'none',
-            marginLeft: '10px',
-            borderTop: 'none',
-            borderRight: 'none',
-            borderBottom: 'none',
-            borderLeft: '1px solid #2c2c2c',
-            paddingLeft: '10px',
-            cursor: 'pointer',
-            marginTop: '7px',
-          }}
+          className="star-rating-write-btn"
         >
           Write a review
         </button>
@@ -172,6 +112,12 @@ function getFillPercent(score: number, starIndex: number): number {
 // and combining it with `index` is what keeps ids unique when more
 // than one StarRating instance renders on the same page — index alone
 // was only unique within a single instance.
+//
+// fillPercent (the gradient <stop> offsets) is the one piece of this
+// component's visual output that's genuinely per-render dynamic, so
+// it's the one piece that stays as an inline SVG attribute rather than
+// moving into star-rating.css — there's no static class that could
+// express it.
 function Star({fillPercent, index, uid}: {fillPercent: number; index: number; uid: string}) {
   const id = `star-fill-${uid}-${index}`;
 
@@ -182,7 +128,7 @@ function Star({fillPercent, index, uid}: {fillPercent: number; index: number; ui
       xmlns="http://www.w3.org/2000/svg"
       width="15"
       height="15"
-      style={{display: 'flex', flexDirection: 'row', marginInlineEnd: '3.5px'}}
+      className="star-rating-star"
     >
       <defs>
         <linearGradient id={id}>

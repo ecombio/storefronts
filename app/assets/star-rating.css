@@ -1,0 +1,112 @@
+/*
+* --------------------------------------------------
+* snippets/StarRating
+* --------------------------------------------------
+* Pairs with app/snippets/StarRating.tsx.
+*
+* Extracted from that component's inline style objects so its static,
+* non-dynamic styling lives here — matching the pattern established by
+* customer-reviews.css/CustomerReviews.tsx. Truly dynamic values stay
+* inline in the component rather than being forced into a class:
+*   - the per-star gradient fill (fillPercent-driven <stop> offsets)
+*   - the trigger button's cursor (pointer vs default, depends on
+*     whether onReviewsClick was passed)
+* Neither has a static value that a CSS class could express.
+*
+* Font: "Nunito Sans" is loaded/available the same way it is for
+* customer-reviews.css's type (no separate @font-face here) — kept
+* consistent with the rest of the reviews UI rather than the
+* storefront's default body font, since this renders inline with the
+* Yotpo-sourced review widgets below it on the PDP.
+*/
+
+.star-rating-root {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.star-rating-trigger {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.star-rating-stars {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 28px;
+}
+
+.star-rating-star {
+  display: flex;
+  flex-direction: row;
+  margin-inline-end: 3.5px;
+}
+
+.star-rating-score {
+  display: flex;
+  align-self: center;
+  color: #ffe000;
+  font-family: 'Nunito Sans', sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 16px;
+  margin: 0 10px 1px 0;
+  padding-top: 3px;
+}
+
+.star-rating-divider {
+  display: flex;
+  align-self: center;
+  height: 11px;
+  border-right: 1px solid black;
+  margin-right: 12px;
+}
+
+.star-rating-count {
+  white-space: nowrap;
+  font-size: 16px;
+  font-family: 'Nunito Sans', sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  color: #2c2c2c;
+  padding-top: 2px;
+  line-height: 28px;
+}
+
+.star-rating-write-btn {
+  white-space: nowrap;
+  font-size: 16px;
+  line-height: 18px;
+  font-family: 'Nunito Sans', sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  color: #2c2c2c;
+  background: none;
+  margin-left: 10px;
+  margin-top: 7px;
+  border-top: none;
+  border-right: none;
+  border-bottom: none;
+  border-left: 1px solid #2c2c2c;
+  padding-left: 10px;
+  cursor: pointer;
+}
+
+/* Same rationale as customer-reviews.css's .customer-reviews-btn-outline:
+   plain hover state on an always-visible button, not a hover-only reveal
+   of otherwise-hidden UI, so it's fine at every breakpoint tier. */
+.star-rating-write-btn:hover {
+  text-decoration: underline;
+}
+
+.star-rating-write-btn:focus-visible,
+.star-rating-trigger:focus-visible {
+  outline: 2px solid #23263b;
+  outline-offset: 2px;
+}

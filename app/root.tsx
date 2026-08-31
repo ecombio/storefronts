@@ -25,6 +25,7 @@ import menuStyles from '~/assets/highlight.css?url';
 import mainProductStyles from '~/assets/main-product.css?url';
 import productDescriptionStyles from '~/assets/product-description.css?url';
 import customerReviewsStyles from '~/assets/customer-reviews.css?url';
+import starRatingStyles from '~/assets/star-rating.css?url';
 import productCardStyles from '~/assets/product-card.css?url';
 import productCarouselStyles from '~/assets/product-carousel.css?url';
 import collectionCardStyles from '~/assets/collection-card.css?url';
@@ -98,19 +99,36 @@ export async function loader(args: Route.LoaderArgs) {
   };
 }
 
+// Header menu is rendered on every page via PageLayout, same as the
+// footer below — but until now had no failure handling, unlike the
+// footer's explicit `.catch` fallback. A transient GraphQL error here
+// used to throw straight through loadCriticalData and take down the
+// entire site shell (nav included) for every route. Falls back to an
+// empty menu/no collection images instead, mirroring the footer's
+// "degrade, don't crash" behavior — logged the same way.
 async function loadCriticalData({context}: Route.LoaderArgs) {
   const {storefront} = context;
 
-  const [header] = await Promise.all([
-    storefront.query(HEADER_QUERY, {
+  const header = await storefront
+    .query(HEADER_QUERY, {
       cache: storefront.CacheLong(),
       variables: {
         headerMenuHandle: 'main-menu',
       },
-    }),
-  ]);
+    })
+    .catch((error: Error) => {
+      console.error(error);
+      return {menu: null, shop: null} as unknown as Awaited<
+        ReturnType<typeof storefront.query<typeof HEADER_QUERY>>
+      >;
+    });
 
-  const collectionImages = await loadMenuCollectionImages(storefront, header.menu);
+  const collectionImages = await loadMenuCollectionImages(storefront, header.menu).catch(
+    (error: Error) => {
+      console.error(error);
+      return {};
+    },
+  );
 
   return {header, collectionImages};
 }
@@ -180,6 +198,7 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={mainProductStyles}></link>
         <link rel="stylesheet" href={productDescriptionStyles}></link>
         <link rel="stylesheet" href={customerReviewsStyles}></link>
+        <link rel="stylesheet" href={starRatingStyles}></link>
         <link rel="stylesheet" href={productCardStyles}></link>
         <link rel="stylesheet" href={productCarouselStyles}></link>
         <link rel="stylesheet" href={collectionCardStyles}></link>
@@ -230,7 +249,13 @@ export function ErrorBoundary() {
   let errorStatus = 500;
 
   if (isRouteErrorResponse(error)) {
-    errorMessage = error?.data?.message ?? error.data;
+    // Was: `error?.data?.message ?? error.data` — unconditionally
+    // overwrote the 'Unknown error' default even when both operands
+    // were undefined, silently losing the fallback (masked from
+    // crashing only by the `{errorMessage && (...)}` truthy check
+    // below, which just rendered nothing instead of showing anything
+    // useful). Falls through to the default now instead of `undefined`.
+    errorMessage = error?.data?.message ?? error.data ?? 'Unknown error';
     errorStatus = error.status;
   } else if (error instanceof Error) {
     errorMessage = error.message;

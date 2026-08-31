@@ -5,7 +5,7 @@
 // app/templates/api.reviews.tsx (client-fetched subsequent pages / sort
 // changes).
 
-import {useEffect, useMemo, useRef, useState} from 'react';
+import {useEffect, useId, useMemo, useRef, useState} from 'react';
 import {useFetcher, useSearchParams} from 'react-router';
 import type {YotpoReviewsResult, YotpoSortKey} from '~/lib/yotpo.server';
 // Stylesheet is linked globally in app/root.tsx (see customerReviewsStyles),
@@ -19,25 +19,37 @@ function Stars({score}: StarsProps) {
   const hasHalf = score % 1 >= 0.5;
   const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
 
+  // Scopes this instance's half-star gradient id so multiple Stars
+  // renders on the same page (the sidebar summary + one per
+  // ReviewCard) don't collide. Mirrors the same fix already applied to
+  // StarRating.tsx's per-star gradient ids: without this, every Stars
+  // instance shared the literal id "star-half-gradient", so any two
+  // fractional scores on one page resolved url(#star-half-gradient)
+  // ambiguously and could render the wrong half-fill. Colons in
+  // useId()'s output are valid in HTML ids but need escaping inside a
+  // CSS url(#...) reference, so they're stripped here rather than
+  // handled at every usage site.
+  const uid = useId().replace(/:/g, '');
+
   return (
     <div className="customer-reviews-stars">
       {Array.from({length: fullStars}).map((_, i) => (
-        <StarIcon key={`full-${i}`} fill="full" />
+        <StarIcon key={`full-${i}`} fill="full" uid={uid} />
       ))}
-      {hasHalf && <StarIcon fill="half" />}
+      {hasHalf && <StarIcon fill="half" uid={uid} />}
       {Array.from({length: emptyStars}).map((_, i) => (
-        <StarIcon key={`empty-${i}`} fill="empty" />
+        <StarIcon key={`empty-${i}`} fill="empty" uid={uid} />
       ))}
     </div>
   );
 }
 
-function StarIcon({fill}: {fill: 'full' | 'half' | 'empty'}) {
+function StarIcon({fill, uid}: {fill: 'full' | 'half' | 'empty'; uid: string}) {
   const path =
     'M10 1l2.39 4.84 5.34.78-3.87 3.77.91 5.32L10 13.27l-4.77 2.44.91-5.32L2.27 6.62l5.34-.78L10 1z';
 
   if (fill === 'half') {
-    const id = 'star-half-gradient';
+    const id = `star-half-gradient-${uid}`;
     return (
       <svg
         className="customer-reviews-star"
