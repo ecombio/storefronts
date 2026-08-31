@@ -1,38 +1,95 @@
-/* Product media gallery — used by app/sections/ProductMedia.tsx */
+/* ==========================================================================
+   Main Product — app/sections/MainProduct.tsx and its children
+   (ProductMedia, ProductForm, SaleBadge, ProductPrice)
 
-.product-gallery {
-  display: flex;
-  flex-direction: row;
+   Breakpoints follow theme.css tokens exactly — no invented values:
+     --bp-sm : 640px  (mobile / tablet boundary)
+     --bp-lg : 1024px (tablet / desktop boundary, matches Header's nav switch)
+   See docs/theme.md "Design Tokens & Breakpoints" for the full rationale.
+   ========================================================================== */
+
+/* ==========================================================================
+   Page layout — two-column grid wrapping ProductMedia and .product-detail
+   ========================================================================== */
+
+.product-layout {
+  /* Mobile tier (< 640px) — see theme.css --bp-sm / --bp-lg */
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 1.5rem;
-  width: 100%;
-
-  /* Pin the gallery in place as the (usually taller) ProductDetail
-     column scrolls past it. `top` matches whatever fixed header height
-     sits above the two-column grid — adjust if the header height
-     changes. `max-height` + the calc keep it from ever overlapping
-     the footer if the viewport is short. */
-  position: sticky;
-  top: 1rem;
-  align-self: flex-start;
-  max-height: calc(100vh - 2rem);
+  align-items: start;
+  max-width: var(--content-max-width, 1200px);
+  margin-inline: auto;
+  padding-inline: 1rem; /* matches Header's px-4 */
 }
 
-/* Thumbnail rail: fixed-width column on the left, scrollable if it
-   grows taller than the main image (height synced via --gallery-height,
-   set in ProductMedia's ResizeObserver). Positioned relative so the
-   scroll arrows can sit on top of it. */
+/* Tablet tier (640–1023px) — see theme.css --bp-sm / --bp-lg */
+@media (min-width: 640px) {
+  .product-layout {
+    gap: 2rem;
+    padding-inline: 1.5rem; /* matches Header's sm:px-6 */
+  }
+}
+
+/* Desktop tier (>= 1024px) — see theme.css --bp-sm / --bp-lg.
+   Structural column switch is keyed to --bp-lg so it lines up with
+   Header's own nav switch, per theme.md rule 4. */
+@media (min-width: 1024px) {
+  .product-layout {
+    grid-template-columns: 1fr 1fr;
+    padding-inline: 2rem; /* matches Header's lg:px-8 */
+  }
+}
+
+/* ==========================================================================
+   Product gallery — app/sections/ProductMedia.tsx
+   ========================================================================== */
+
+.product-gallery {
+  /* Mobile/tablet tier (< 1024px): stacked, static (no sticky) */
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  position: static;
+  max-height: none;
+}
+
+/* Desktop tier (>= 1024px) — see theme.css --bp-sm / --bp-lg.
+   Two-column layout has room for the sticky side-by-side gallery. */
+@media (min-width: 1024px) {
+  .product-gallery {
+    flex-direction: row;
+    gap: 1.5rem;
+
+    /* Pin the gallery as the (usually taller) product-detail column
+       scrolls past it. `top` matches the fixed header height above
+       the grid — adjust if header height changes. `max-height` keeps
+       it from overlapping the footer on short viewports. */
+    position: sticky;
+    top: 1rem;
+    align-self: flex-start;
+    max-height: calc(100vh - 2rem);
+  }
+}
+
+/* --- Thumbnails ---
+   Mobile/tablet tier (< 1024px): horizontal scrollable row above the
+   main image — a horizontal swipe is the natural touch gesture, and
+   there's no hover to drive scroll-arrow reveal at these widths. */
 .product-thumbnails {
   position: relative;
-  flex: 0 0 96px;
-  height: var(--gallery-height, auto);
+  flex: 0 0 auto;
+  width: 100%;
+  height: auto;
 }
 
 .thumbnail-container {
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  height: 100%;
-  overflow-y: auto;
+  flex-direction: row;
+  gap: 0.75rem;
+  overflow-x: auto;
+  overflow-y: visible;
   scrollbar-width: none; /* Firefox */
 }
 
@@ -42,15 +99,50 @@
 
 .thumbnail-item {
   display: block;
-  width: 96px;
-  height: 96px;
-  flex: 0 0 auto;
+  flex: 0 0 72px;
+  width: 72px;
+  height: 72px;
   padding: 0;
   border: 1px solid transparent;
   border-radius: 6px;
   cursor: pointer;
   background: none;
   transition: border-color 0.15s ease;
+}
+
+/* Tablet tier (640–1023px) — see theme.css --bp-sm / --bp-lg.
+   Slightly roomier thumbnails; still the horizontal row. */
+@media (min-width: 640px) {
+  .thumbnail-item {
+    flex-basis: 84px;
+    width: 84px;
+    height: 84px;
+  }
+}
+
+/* Desktop tier (>= 1024px) — see theme.css --bp-sm / --bp-lg.
+   Rail becomes a fixed-width vertical column on the left, height
+   synced to the main image via --gallery-height (set in ProductMedia's
+   ResizeObserver). Positioned relative so scroll arrows can sit on it. */
+@media (min-width: 1024px) {
+  .product-thumbnails {
+    flex: 0 0 96px;
+    height: var(--gallery-height, auto);
+  }
+
+  .thumbnail-container {
+    flex-direction: column;
+    gap: 1rem;
+    height: 100%;
+    overflow-x: visible;
+    overflow-y: auto;
+  }
+
+  .thumbnail-item {
+    flex: 0 0 96px;
+    width: 96px;
+    height: 96px;
+  }
 }
 
 .thumbnail-item:hover {
@@ -73,46 +165,80 @@
   border-radius: 5px;
 }
 
-/* Scroll arrows: hidden by default, fade in on hover over the rail. */
+/* --- Scroll arrows ---
+   Mobile/tablet tier (< 1024px): always visible, no hover to rely on
+   (theme.md rule 3 — touch-first tiers get the permanent affordance,
+   never a hover-only one). */
 .thumbnail-scroll-arrow {
   position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
   z-index: 2;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border: 1px solid #e5e5e5;
   border-radius: 50%;
   background: #fff;
   color: #333;
   cursor: pointer;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.15s ease, visibility 0.15s ease;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
-}
-
-.product-thumbnails:hover .thumbnail-scroll-arrow {
   opacity: 1;
   visibility: visible;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
 }
 
 .thumbnail-scroll-arrow:hover {
   background: #f5f5f5;
 }
 
+/* Horizontal row (mobile/tablet): left/right arrows, vertically centered */
 .thumbnail-scroll-arrow--up {
-  top: -8px;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .thumbnail-scroll-arrow--down {
-  bottom: -8px;
+  right: -8px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
-/* Main image: takes remaining space next to the thumbnail rail. */
+/* Desktop tier (>= 1024px) — see theme.css --bp-sm / --bp-lg.
+   Vertical rail: arrows move to top/bottom, centered horizontally,
+   and become hover-reveal — this is the one interaction in this file
+   allowed to be hover-gated, per theme.md rule 3. */
+@media (min-width: 1024px) {
+  .thumbnail-scroll-arrow {
+    left: 50%;
+    right: auto;
+    top: auto;
+    transform: translateX(-50%);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s ease, visibility 0.15s ease;
+  }
+
+  .product-thumbnails:hover .thumbnail-scroll-arrow {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .thumbnail-scroll-arrow--up {
+    top: -8px;
+    bottom: auto;
+    transform: translateX(-50%);
+  }
+
+  .thumbnail-scroll-arrow--down {
+    bottom: -8px;
+    top: auto;
+    transform: translateX(-50%);
+  }
+}
+
+/* --- Main image --- */
+
 .product-gallery-main {
   flex: 1 1 auto;
   min-width: 0;
@@ -134,61 +260,44 @@
   border-radius: 8px;
 }
 
-/* Below ~768px: thumbnails move above the main image, laid out in a
-   horizontal scrollable row instead of a vertical rail. Scroll arrows
-   are hidden here — a horizontal swipe/scroll is the natural gesture
-   on touch, and left/right arrows over a horizontal rail need a
-   different layout than the desktop up/down pair. */
-@media (max-width: 768px) {
-  .product-gallery {
-    flex-direction: column;
-  }
-
-  .product-gallery {
-    position: static;
-    max-height: none;
-  }
-
-  .product-thumbnails {
-    flex: 0 0 auto;
-    height: auto;
-    width: 100%;
-  }
-
-  .thumbnail-container {
-    flex-direction: row;
-    overflow-x: auto;
-    overflow-y: visible;
-  }
-
-  .thumbnail-item {
-    flex: 0 0 84px;
-    width: 84px;
-    height: 84px;
-  }
-
-  .thumbnail-scroll-arrow {
-    display: none;
-  }
-}
-
 /* ==========================================================================
-   Right-hand PDP column — used by app/sections/ProductDetail.tsx,
-   app/sections/ProductForm.tsx, and app/snippets/ProductDescription.tsx
+   Right-hand PDP column — app/sections/ProductForm.tsx,
+   app/snippets/ProductDescription.tsx
    ========================================================================== */
 
 .product-detail {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
+}
+
+/* Tablet tier (640–1023px) — see theme.css --bp-sm / --bp-lg */
+@media (min-width: 640px) {
+  .product-detail {
+    gap: 1.5rem;
+  }
 }
 
 .product-detail-title {
-  font-size: 1.875rem;
+  font-size: 1.625rem;
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.01em;
   margin: 0;
+}
+
+/* Tablet tier (640–1023px) — see theme.css --bp-sm / --bp-lg */
+@media (min-width: 640px) {
+  .product-detail-title {
+    font-size: 1.75rem;
+  }
+}
+
+/* Desktop tier (>= 1024px) — see theme.css --bp-sm / --bp-lg */
+@media (min-width: 1024px) {
+  .product-detail-title {
+    font-size: 1.875rem;
+  }
 }
 
 /* --- Sale badge --- */
@@ -209,8 +318,15 @@
 /* --- Price --- */
 
 .product-price {
-  font-size: 1.5rem;
+  font-size: 1.375rem;
   font-weight: 700;
+}
+
+/* Tablet tier (640–1023px) — see theme.css --bp-sm / --bp-lg */
+@media (min-width: 640px) {
+  .product-price {
+    font-size: 1.5rem;
+  }
 }
 
 .product-price-on-sale {
@@ -265,6 +381,11 @@
     opacity 0.15s ease;
 }
 
+/* Hover is a harmless enhancement here, not a reveal mechanism — the
+   pill's selected/unavailable states are always visible at every
+   tier via their own classes below, so no gating needed (theme.md
+   rule 3 only restricts hover-*reveal*, i.e. content invisible
+   without hover). */
 .product-options-item:hover {
   border-color: #999;
 }
@@ -284,8 +405,6 @@
   cursor: not-allowed;
 }
 
-/* Swatch (color/image) variant — overrides the pill's own background
-   with the swatch color/image instead. */
 .product-option-label-swatch {
   width: 20px;
   height: 20px;
@@ -326,6 +445,6 @@
   cursor: not-allowed;
 }
 
-/* Description / Shipping / Refund / Warranty panel styles have moved
-   to assets/product-description.css (see that file's header comment
-   for the wiring this needs in root.tsx). */
+/* Description / Shipping / Refund / Warranty panel styles live in
+   assets/product-description.css — see that file's header comment
+   for the wiring this needs in root.tsx. */

@@ -1,5 +1,6 @@
-import {useState} from 'react';
-import {useLoaderData} from 'react-router';
+// app/templates/products.$handle.tsx
+import {Suspense, useState} from 'react';
+import {useLoaderData, Await} from 'react-router';
 import type {Route} from './+types/products.$handle';
 import {
   Analytics,
@@ -15,26 +16,13 @@ import {
   YOTPO_SORT_OPTIONS,
   type YotpoSortKey,
 } from '~/lib/yotpo.server';
+import {getProductRecommendations} from '~/lib/recommendations.server';
 import {ReviewModal} from '~/snippets/ReviewModal';
-import {StarRating} from '~/snippets/StarRating';
 import {CustomerReviews} from '~/sections/CustomerReviews';
-import {ProductMedia} from '~/sections/ProductMedia';
-import {ProductPrice} from '~/snippets/ProductPrice';
-import {ProductForm} from '~/sections/ProductForm';
-import {ProductDescriptionPanels} from '~/snippets/ProductDescriptionPanels';
-import {SaleBadge} from '~/snippets/SaleBadge';
-import {Breadcrumbs} from '~/snippets/Breadcrumbs';
+import {ProductCarousel} from '~/sections/ProductCarousel';
+import {MainProduct} from '~/sections/MainProduct';
 
-// Collections fetched per product for breadcrumb parent/child
-// resolution. Must cover the vendor auto-collection plus every real
-// collection; bump if a product with more collections gets an
-// incomplete breadcrumb trail.
 const BREADCRUMB_COLLECTIONS_TO_FETCH = 20;
-
-// This API version has no `productsCount` field, so collection size
-// is approximated by capping product ids fetched per collection.
-// Two collections both over this cap will tie and lose ranking; raise
-// if breadcrumbs pick the wrong parent/child.
 const BREADCRUMB_COLLECTION_PRODUCTS_CAP = 50;
 
 export const meta: Route.MetaFunction = ({data}) => {
@@ -48,20 +36,11 @@ export const meta: Route.MetaFunction = ({data}) => {
 };
 
 export async function loader(args: Route.LoaderArgs) {
-  const deferredData = loadDeferredData(args);
   const criticalData = await loadCriticalData(args);
+  const deferredData = loadDeferredData(args, criticalData.product.id);
   return {...deferredData, ...criticalData};
 }
 
-// Validates the `?sort=` URL param against real key membership rather
-// than blindly casting it. Previously, an unrecognized value (e.g.
-// `?sort=bogus`) still fell through to YOTPO_SORT_OPTIONS.top when
-// building the Yotpo request, but the *raw, unvalidated* string was
-// returned to the client as `currentSortKey` — so the UI showed
-// "Sort by: undefined", no option appeared selected, and every
-// subsequent "Load more" request carried the bogus sort forward. This
-// resolves once, and the same resolved value is used both to build
-// the Yotpo request and as the value handed to the client.
 function resolveSortKey(value: string | null): YotpoSortKey {
   return value !== null && value in YOTPO_SORT_OPTIONS
     ? (value as YotpoSortKey)
@@ -96,9 +75,6 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
 
   const yotpoProductId = product.id.split('/').pop()!;
 
-  // Sort selection lives in the URL (?sort=recent etc.) so it's
-  // shareable/linkable and survives a full page reload — see
-  // CustomerReviews.tsx's handleSortChange.
   const url = new URL(request.url);
   const sortKey = resolveSortKey(url.searchParams.get('sort'));
   const sortConfig = YOTPO_SORT_OPTIONS[sortKey];
@@ -128,7 +104,6 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
       readSafeMetafieldHtml(policyFields?.returnsRefundsField) ??
       nullIfBlank(refundPage?.body) ??
       nullIfBlank(shop?.refundPolicy?.body),
-    // No shop-level equivalent for warranty — static fallback message.
     warrantyHtml:
       readSafeMetafieldHtml(policyFields?.warrantyPolicyField) ??
       nullIfBlank(warrantyPage?.body) ??
@@ -136,9 +111,12 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   };
 }
 
-// JS port of Liquid's `| handleize`: lowercase, collapse non-alphanumerics
-// to a single hyphen, trim edges. Doesn't transliterate accented/non-Latin
-// characters like Shopify's real handleize does.
+function loadDeferredData({context}: Route.LoaderArgs, productId: string) {
+  return {
+    recommended: getProductRecommendations(context, productId),
+  };
+}
+
 function handleize(value: string): string {
   return value
     .toLowerCase()
@@ -153,11 +131,6 @@ type BreadcrumbCollectionCandidate = {
   products?: {nodes?: {id: string}[] | null} | null;
 };
 
-// Ported from breadcrumbs.liquid: excludes the product's vendor
-// auto-collection (by handleized vendor name), then picks the largest
-// remaining collection as "parent" and the smallest as "child". Both
-// optional. "Size" is the capped product-id count from the query
-// (see BREADCRUMB_COLLECTION_PRODUCTS_CAP above), not a true total.
 function getBreadcrumbCollections(product: {
   vendor?: string | null;
   collections?: {nodes?: BreadcrumbCollectionCandidate[] | null} | null;
@@ -202,14 +175,6 @@ function nullIfBlank(value?: string | null): string | null {
   return value?.trim() ? value : null;
 }
 
-// Minimal HTML-escaping for text interpolated into a raw HTML string
-// before it's handed to dangerouslySetInnerHTML. The multi_line_text_field
-// branch below builds HTML by string interpolation rather than a real
-// templating layer, so unescaped `<`/`>`/`&` in the metaobject field's
-// value would be parsed as markup instead of rendered as literal text.
-// Merchant-authored content is lower risk than user input, but there's
-// no reason to build raw HTML from unescaped text when it's this cheap
-// to avoid.
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, '&amp;')
@@ -217,10 +182,6 @@ function escapeHtml(value: string): string {
     .replace(/>/g, '&gt;');
 }
 
-// Renders a metaobject field as HTML only for types safe to drop into
-// dangerouslySetInnerHTML. rich_text_field's value is Shopify's rich-text
-// JSON AST, not HTML — no parser for that here, so it's skipped rather
-// than rendered raw.
 function readSafeMetafieldHtml(
   field?: {value: string; type: string} | null,
 ): string | null {
@@ -240,10 +201,6 @@ function readSafeMetafieldHtml(
   return null;
 }
 
-function loadDeferredData({context, params}: Route.LoaderArgs) {
-  return {};
-}
-
 export default function Product() {
   const {
     product,
@@ -255,6 +212,7 @@ export default function Product() {
     childCollection,
     yotpoReviews,
     currentSortKey,
+    recommended,
   } = useLoaderData<typeof loader>();
 
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
@@ -271,78 +229,28 @@ export default function Product() {
     selectedOrFirstAvailableVariant: selectedVariant,
   });
 
-  const {title, descriptionHtml} = product;
   const yotpoProductId = product.id.split('/').pop();
   const productUrl = `https://${shopUrl}/products/${product.handle}`;
 
   return (
     <div style={{display: 'flex', flexDirection: 'column', gap: '2rem'}}>
-      <Breadcrumbs
-        productTitle={title}
+      <MainProduct
+        product={product}
+        selectedVariant={selectedVariant}
+        productOptions={productOptions}
+        shippingHtml={shippingHtml}
+        refundHtml={refundHtml}
+        warrantyHtml={warrantyHtml}
         parentCollection={parentCollection}
         childCollection={childCollection}
+        yotpoReviews={yotpoReviews}
+        onReviewsClick={() =>
+          document
+            .getElementById('reviews')
+            ?.scrollIntoView({behavior: 'smooth'})
+        }
+        onWriteReviewClick={() => setIsReviewModalOpen(true)}
       />
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '2rem',
-          alignItems: 'start',
-        }}
-      >
-        <ProductMedia
-          images={product.images?.nodes ?? []}
-          selectedVariantImage={selectedVariant?.image}
-          productTitle={title}
-        />
-
-        {/* Inlined from ProductDetail.tsx */}
-        <div className="product-detail">
-          <SaleBadge
-            price={selectedVariant?.price}
-            compareAtPrice={selectedVariant?.compareAtPrice}
-          />
-          <h1 className="product-detail-title">{title}</h1>
-          <StarRating
-            averageScore={yotpoReviews?.bottomline.averageScore ?? 0}
-            totalReviews={yotpoReviews?.bottomline.totalReviews ?? 0}
-            onReviewsClick={() =>
-              document
-                .getElementById('reviews')
-                ?.scrollIntoView({behavior: 'smooth'})
-            }
-            onWriteReviewClick={() => setIsReviewModalOpen(true)}
-          />
-          <ProductPrice
-            price={selectedVariant?.price}
-            compareAtPrice={selectedVariant?.compareAtPrice}
-          />
-          <ProductForm
-            productOptions={productOptions}
-            selectedVariant={selectedVariant}
-          />
-          <ProductDescriptionPanels
-            panels={[
-              {id: 'description', title: 'Description', html: descriptionHtml},
-              {
-                id: 'shipping',
-                title: 'Shipping Policy',
-                html: shippingHtml ?? '',
-              },
-              {
-                id: 'refund',
-                title: 'Refund & Return Policy',
-                html: refundHtml ?? '',
-              },
-              {
-                id: 'warranty',
-                title: 'Warranty',
-                html: warrantyHtml ?? '',
-              },
-            ]}
-          />
-        </div>
-      </div>
       <div id="reviews">
         <CustomerReviews
           productId={yotpoProductId ?? ''}
@@ -354,6 +262,15 @@ export default function Product() {
           onWriteReviewClick={() => setIsReviewModalOpen(true)}
         />
       </div>
+      <Suspense fallback={null}>
+        <Await resolve={recommended} errorElement={null}>
+          {(items) =>
+            items.length > 0 ? (
+              <ProductCarousel title="You may also like" products={items} />
+            ) : null
+          }
+        </Await>
+      </Suspense>
       {isReviewModalOpen && yotpoProductId && (
         <ReviewModal
           productId={yotpoProductId}

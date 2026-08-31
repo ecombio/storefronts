@@ -18,12 +18,30 @@
 * consistent with the rest of the reviews UI rather than the
 * storefront's default body font, since this renders inline with the
 * Yotpo-sourced review widgets below it on the PDP.
+*
+* Breakpoint: 640px mirrors theme.css's --bp-sm token, same value and
+* same reasoning as customer-reviews.css uses (custom properties can't
+* be used inside @media conditions per theme.css's own documented
+* limitation, so the number is hardcoded here too, traceable back to
+* the same source). This widget doesn't need the --bp-lg (1024px) tier
+* customer-reviews.css has — it's a single compact rating line, not a
+* two-column section, so there's no desktop-only layout to switch to.
+* Below 640px, the "Write a review" empty-state button wraps onto its
+* own line instead of squeezing beside the star row.
 */
 
 .star-rating-root {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
+  flex-wrap: wrap;
+  row-gap: 8px;
+}
+
+@media (min-width: 640px) {
+  .star-rating-root {
+    flex-wrap: nowrap;
+  }
 }
 
 .star-rating-trigger {
@@ -88,14 +106,23 @@
   font-weight: 700;
   color: #2c2c2c;
   background: none;
-  margin-left: 10px;
-  margin-top: 7px;
-  border-top: none;
-  border-right: none;
-  border-bottom: none;
-  border-left: 1px solid #2c2c2c;
-  padding-left: 10px;
+  margin-top: 0;
+  border: none;
+  padding-left: 0;
   cursor: pointer;
+}
+
+/* The left-border divider only makes sense sitting inline next to the
+   rating row; on its own wrapped line (below 640px) it reads as a
+   stray vertical rule with nothing to divide from, so it's added back
+   only once the row stops wrapping. */
+@media (min-width: 640px) {
+  .star-rating-write-btn {
+    margin-left: 10px;
+    margin-top: 7px;
+    border-left: 1px solid #2c2c2c;
+    padding-left: 10px;
+  }
 }
 
 /* Same rationale as customer-reviews.css's .customer-reviews-btn-outline:

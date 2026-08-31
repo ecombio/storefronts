@@ -1,4 +1,3 @@
-// app/sections/ProductCarousel.tsx
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {Link} from 'react-router';
 import {ProductCard} from '~/snippets/ProductCard';
@@ -12,18 +11,8 @@ export interface ProductCarouselTab {
 
 export interface ProductCarouselProps {
   title: string;
-  /**
-   * A single product list. Ignored if `tabs` is provided — pass one or
-   * the other, not both.
-   */
   products?: ProductCardFragment[];
-  /**
-   * Optional set of filter tabs (e.g. "Price drop" / "Best sellers"),
-   * each with its own product list. When provided, pill buttons render
-   * under the header and switch which list feeds the track.
-   */
   tabs?: ProductCarouselTab[];
-  /** Optional "View all" link next to the heading, e.g. a collection URL. */
   viewAllUrl?: string;
   viewAllLabel?: string;
 }
@@ -52,7 +41,6 @@ export function ProductCarousel({
   const updateScrollState = useCallback(() => {
     const el = trackRef.current;
     if (!el) return;
-    // 1px tolerance for sub-pixel rounding at the scroll bounds.
     setCanScrollPrev(el.scrollLeft > 1);
     setCanScrollNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
   }, []);
@@ -64,8 +52,6 @@ export function ProductCarousel({
 
     el.addEventListener('scroll', updateScrollState, {passive: true});
 
-    // Re-check on resize/layout changes too — e.g. rotating a tablet
-    // changes how many cards fit and whether "next" is still possible.
     const ro = new ResizeObserver(updateScrollState);
     ro.observe(el);
 
@@ -75,10 +61,6 @@ export function ProductCarousel({
     };
   }, [updateScrollState, activeProducts.length]);
 
-  // Jump back to the start whenever the active tab changes. Without this,
-  // switching tabs while scrolled right on the previous one leaves the
-  // new tab's track visually mid-scroll with a stale prev/next arrow
-  // state until the user manually scrolls it.
   useEffect(() => {
     if (!hasTabs) return;
     const el = trackRef.current;
@@ -91,9 +73,6 @@ export function ProductCarousel({
     const el = trackRef.current;
     if (!el) return;
 
-    // Scroll by roughly one card's width (including its gap) rather than
-    // a fixed pixel amount, so the "one card at a time" feel holds up
-    // across breakpoints without a hardcoded card width.
     const card = el.querySelector<HTMLElement>('.product-carousel__item');
     const styles = card ? getComputedStyle(el) : null;
     const gap = styles ? parseFloat(styles.columnGap || styles.gap || '0') : 0;
@@ -186,7 +165,11 @@ export function ProductCarousel({
       )}
 
       <div
-        className="product-carousel__track"
+        className={
+          'product-carousel__track' +
+          (!canScrollPrev ? ' is-at-start' : '') +
+          (!canScrollNext ? ' is-at-end' : '')
+        }
         ref={trackRef}
         tabIndex={0}
         role="group"

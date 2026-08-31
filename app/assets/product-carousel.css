@@ -1,26 +1,47 @@
-/* app/assets/product-carousel.css */
+/* app/assets/product-carousel.css
+ * Bare minimum, structurally aligned to theme.md: three breakpoint
+ * tiers keyed off Header's own --bp-sm (640px) / --bp-lg (1024px), and
+ * capped at --content-max-width so this section lines up under Header.
+ * Tablet currently reuses desktop's values on purpose — revisit once
+ * there's an actual tablet design, not before.
+ *
+ * Edge fade on .product-carousel__track is right-edge only (left edge
+ * never fades). It tracks the same scroll-edge state driving the arrow
+ * buttons' disabled state (see ProductCarousel.tsx:
+ * canScrollNext -> is-at-end class) so the fade never implies there's
+ * more content to the right when that direction is actually exhausted.
+ *
+ * Mask gradients use `white` (not `black`) for the opaque/fully-visible
+ * stops. Unprefixed `mask-image` defaults to luminance masking, where
+ * black = 0% visible despite being fully opaque — that was silently
+ * hiding cards (border included) sitting in that region of the mask.
+ * `white` is visible under both luminance and alpha masking, so it's
+ * mode-agnostic. `transparent` stops are unaffected either way.
+ */
+
 .product-carousel {
-  --product-carousel-arrow-size: 36px;
   --product-carousel-gap: 16px;
   --product-carousel-card-width: 240px;
 
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 24px 16px;
-  max-width: 1200px;
+
+  max-width: 1200px; /* --content-max-width, see theme.css */
   margin-inline: auto;
+  padding-inline: 16px;
 }
 
-/* Matches Header.tsx's own responsive horizontal padding
-   (px-4 sm:px-6 lg:px-8) so the carousel's content lines up under
-   the header's content instead of drifting to a different edge. */
+/* Tablet tier (640–1023px) — see theme.css --bp-sm / --bp-lg.
+   Padding step only, matching Header's px-4 sm:px-6 scale. No other
+   tablet-specific values yet — deliberately same as desktop below. */
 @media (min-width: 640px) {
   .product-carousel {
     padding-inline: 24px;
   }
 }
 
+/* Desktop tier (>=1024px) — see theme.css --bp-lg. */
 @media (min-width: 1024px) {
   .product-carousel {
     padding-inline: 32px;
@@ -32,7 +53,6 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 0 4px;
 }
 
 .product-carousel__title {
@@ -55,18 +75,14 @@
   white-space: nowrap;
 }
 
-.product-carousel__view-all:hover {
-  text-decoration: underline;
-}
-
 .product-carousel__arrows {
   display: flex;
   gap: 8px;
 }
 
 .product-carousel__arrow {
-  width: var(--product-carousel-arrow-size);
-  height: var(--product-carousel-arrow-size);
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   border: 1px solid var(--product-card-border, #e5e7eb);
   background: #fff;
@@ -75,28 +91,19 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
-}
-
-.product-carousel__arrow:hover:not(:disabled) {
-  background: #f9fafb;
-  border-color: #d1d5db;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 .product-carousel__arrow:disabled {
   opacity: 0.35;
   cursor: default;
+  box-shadow: none;
 }
 
-/* Filter pills (e.g. "Price drop" / "Best sellers"), rendered only when
-   ProductCarousel is given a `tabs` prop — sits between the header and
-   the track. Kept visually lighter than the arrow buttons (pill shape,
-   no shadow) so it reads as a filter control, not primary navigation. */
 .product-carousel__tabs {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 4px;
   flex-wrap: wrap;
 }
 
@@ -110,12 +117,7 @@
   padding: 8px 16px;
   border-radius: 999px;
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   white-space: nowrap;
-}
-
-.product-carousel__tab:hover {
-  border-color: #d1d5db;
 }
 
 .product-carousel__tab.is-active {
@@ -124,77 +126,66 @@
   color: var(--product-card-accent, #4f46e5);
 }
 
-.product-carousel__tab:focus-visible {
-  outline: 2px solid var(--product-card-accent, #4f46e5);
-  outline-offset: 2px;
-}
-
 .product-carousel__track {
   display: flex;
   gap: var(--product-carousel-gap);
   overflow-x: auto;
   scroll-snap-type: x mandatory;
-  scroll-padding-left: 4px;
-  padding: 4px 4px 12px;
 
-  /* Hide scrollbar visually while keeping it usable via drag/trackpad —
-     the arrow buttons and native touch swipe are the primary controls,
-     matching product-card.js's philosophy of light, native interactions
-     over a heavy custom widget. */
-  scrollbar-width: thin;
+  scrollbar-width: none;
+
+  /* Left edge never fades. Right edge fades by default (there's more
+     to scroll to); overridden to no fade by is-at-end below. */
+  mask-image: linear-gradient(
+    to right,
+    white 0,
+    white calc(100% - 24px),
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    white 0,
+    white calc(100% - 24px),
+    transparent 100%
+  );
 }
 
-/* flex: 1 1 <card-width> (was: 0 0 auto + a plain `width`) — when the
-   track has fewer cards than fit its width (e.g. 4 cards in a row sized
-   for 5), flex-grow distributes the leftover space across the existing
-   cards so the row fills the container instead of leaving a dead gap
-   before the arrow buttons. max-width caps how far a card can stretch
-   on a wide screen with very few items. Once there are enough cards to
-   overflow the track, there's no positive free space left to
-   distribute, so flex-grow is a no-op and cards fall back to their
-   normal --product-carousel-card-width, scrolling exactly as before. */
+.product-carousel__track::-webkit-scrollbar {
+  display: none;
+}
+
+/* At the end: nothing more to scroll to, so no right fade either. */
+.product-carousel__track.is-at-end {
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
 .product-carousel__item {
-  flex: 1 1 var(--product-carousel-card-width);
-  max-width: calc(var(--product-carousel-card-width) * 1.25);
+  flex: 0 0 var(--product-carousel-card-width);
   scroll-snap-align: start;
 }
 
-/* Mobile tier (< 640px) — see base.css --bp-sm.
-   Smallest card width/gap — the most constrained viewport. */
+/* Mobile tier (<640px) — see theme.css --bp-sm.
+   Most compact card size/gap. Arrows hidden — no reliable hover/pointer
+   precision, matching Header's drawer-nav tier. */
 @media (max-width: 639px) {
   .product-carousel {
     --product-carousel-card-width: 168px;
     --product-carousel-gap: 10px;
   }
-}
 
-/* Tablet tier (640px – 1023px) — see base.css --bp-sm / --bp-lg.
-   Its own step between mobile's 168px and desktop's 240px default —
-   was previously missing entirely, so tablets fell through to the
-   240px desktop width with no arrows to navigate it (see below),
-   which felt bare given no hover/pointer precision to rely on
-   instead. */
-@media (min-width: 640px) and (max-width: 1023px) {
-  .product-carousel {
-    --product-carousel-card-width: 200px;
-    --product-carousel-gap: 14px;
-  }
-}
-
-/* Arrow visibility is gated to desktop only (>= 1024px) — see
-   base.css --bp-lg. Hiding arrows and relying on native touch swipe
-   is a structural nav decision, same category as Header collapsing to
-   its hamburger menu below this line. Mobile AND tablet both rely on
-   swipe: neither has reliable hover/pointer precision for small arrow
-   buttons, matching Header treating both as the "drawer nav" tier. */
-@media (max-width: 1023px) {
   .product-carousel__arrows {
     display: none;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .product-carousel__track {
-    scroll-behavior: auto;
+/* Tablet tier (640–1023px) — see theme.css --bp-sm / --bp-lg.
+   Same touch-first reasoning as mobile: no hover, so arrows stay
+   hidden. Card size/gap currently just reuse desktop's default (no
+   var override here) — split out its own values once tablet has a
+   real design pass. */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .product-carousel__arrows {
+    display: none;
   }
 }
