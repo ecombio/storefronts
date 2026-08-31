@@ -58,7 +58,9 @@ export function AnnouncementBar() {
 
   return (
     <div className="bg-[#0b2559] text-sm text-white">
-      <div className="relative mx-auto flex max-w-[1400px] items-center px-4 py-2">
+      {/* Full width, no max-width cap — matches the header content row
+          and HeaderUtility, which were updated the same way. */}
+      <div className="relative mx-auto flex max-w-full items-center px-4 py-2">
         {slides.length > 1 && (
           <button
             aria-label="Previous announcement"

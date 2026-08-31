@@ -95,7 +95,12 @@ export function Header({
           same as previously.
         */}
         <div data-header-row className="relative">
-          <div className="mx-auto flex max-w-full items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6 lg:max-w-[1200px] lg:gap-6 lg:px-8">
+          {/* Full width at every breakpoint — no max-width cap, so this
+              row always spans the full header bar (matching AnnouncementBar
+              and HeaderUtility above it, which were already uncapped).
+              `mx-auto` is a no-op with nothing to center against now, but
+              left in place in case a max-width is reintroduced later. */}
+          <div className="mx-auto flex max-w-full items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6 lg:gap-6 lg:px-8">
             <HeaderMenuMobileToggle />
 
             <NavLink prefetch="intent" to="/" end className="shrink-0" aria-label={`${shop.name} — home`}>
@@ -139,7 +144,7 @@ export function Header({
             </div>
           </div>
 
-          <div className="w-full px-4 py-2 lg:hidden">
+          <div className="w-full py-2 lg:hidden">
             <HeaderSearch />
           </div>
         </div>
@@ -224,15 +229,14 @@ function HeaderAccount({
   );
 }
 
-// `label` is still threaded through (and used as the accessible name)
-// so screen readers still get "Sign in/ Register" / "Account" /
-// "Hi, {firstName}" even though the visible text label has been
-// hidden — only a sighted-UI change, not an accessibility regression.
+// Text label hidden below `sm` (mobile — icon only, to save space
+// next to the hamburger/logo/cart row) and visible at `sm` and up
+// (tablet/desktop, where there's room for it).
 function AccountContent({label}: {label: string}) {
   return (
     <>
       <User size={18} aria-hidden="true" />
-      <span className="sr-only">{label}</span>
+      <span className="hidden whitespace-nowrap sm:inline">{label}</span>
     </>
   );
 }
@@ -265,6 +269,9 @@ function CartBadge({count = 0}: {count?: number}) {
         >
           {count}
         </span>
+      </span>
+      <span className="hidden sm:inline" aria-hidden="true">
+        Cart
       </span>
     </Link>
   );

@@ -138,7 +138,14 @@ function AnimatedPlaceholder({
   lineHeight: string;
 }) {
   return (
-    <div className="overflow-hidden shrink-0" style={{ height: itemHeight }}>
+    // Was `shrink-0`, which told flexbox to never shrink this below its
+    // natural content width — so a suggestion wider than the available
+    // pill space (compact mode especially) just bled out past the pill
+    // edge instead of being constrained. `min-w-0 flex-1` lets it take
+    // only the space actually left after the "Search" label, and
+    // `overflow-hidden` + each item's `text-ellipsis` below then clip
+    // anything still too long, with "…" instead of a hard cutoff.
+    <div className="overflow-hidden min-w-0 flex-1" style={{ height: itemHeight }}>
       <div
         className="transition-transform duration-500 ease-in-out"
         style={{ transform: `translateY(-${index * itemHeight}px)` }}
@@ -146,7 +153,7 @@ function AnimatedPlaceholder({
         {suggestions.map((s) => (
           <div
             key={s}
-            className="flex items-center whitespace-nowrap"
+            className="flex items-center overflow-hidden whitespace-nowrap text-ellipsis"
             style={{
               height: itemHeight,
               fontFamily: "'Rubik', sans-serif",

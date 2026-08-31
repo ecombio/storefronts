@@ -17,7 +17,9 @@ export function HeaderUtility() {
 
   return (
     <div className="hidden sm:block">
-      <div className="mx-auto flex max-w-full items-center justify-between px-6 pt-2 pb-2 text-sm text-gray-700 lg:max-w-[1200px] lg:px-8 lg:pt-2.5 lg:pb-2.5">
+      {/* Full width, no max-width cap — matches the header content row
+          and AnnouncementBar, which were updated the same way. */}
+      <div className="mx-auto flex max-w-full items-center justify-between px-6 pt-2 pb-2 text-sm text-gray-700 lg:px-8 lg:pt-2.5 lg:pb-2.5">
         <nav className="flex items-center" role="list">
           {links.map((link, i) => (
             <NavLink
