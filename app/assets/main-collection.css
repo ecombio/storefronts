@@ -1,0 +1,344 @@
+/* app/assets/main-collection.css */
+
+/* ------------------------------------------------------------------ */
+/* Layout                                                              */
+/* ------------------------------------------------------------------ */
+
+/* Wraps the toolbar + collection-layout together so the toolbar's
+   sticky positioning is bounded by this element's bottom edge instead
+   of by whatever wraps <MainCollection /> in the route template
+   (which would let it stay stuck well past the end of the actual
+   product/article feed, e.g. through the after-items section). */
+.main-collection {
+  position: relative;
+}
+
+.collection-layout {
+  position: relative;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+/* Disable stickiness below desktop tier — see theme.css --bp-lg
+   (1024px). */
+@media (max-width: 1023px) {
+  .collection-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Toolbar (tab switcher)                                              */
+/* ------------------------------------------------------------------ */
+
+.collection-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #0d0d0d;
+  margin-bottom: 24px;
+  /* Needed now that this element is sticky (via the sticky-under-header
+     class added in MainCollection.tsx) — without an opaque
+     background, the product grid scrolls up visibly underneath/through
+     it instead of being covered by it. */
+  background: #f7f6f4;
+}
+
+.tab-switcher {
+  display: flex;
+}
+
+.tab-switcher__tab {
+  padding: 10px 4px;
+  margin-right: 20px;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  color: #8c8c89;
+  border-bottom: 2px solid transparent;
+}
+
+.tab-switcher__tab:hover {
+  color: #0d0d0d;
+}
+
+.tab-switcher__tab--active {
+  color: #0d0d0d;
+  border-bottom-color: #0d0d0d;
+}
+
+/* ------------------------------------------------------------------ */
+/* Filters panel                                                       */
+/* ------------------------------------------------------------------ */
+
+#collection-filters.collection-filters {
+  --gs-black: #0d0d0d;
+  --gs-white: #ffffff;
+  --gs-bg: #f7f6f4;
+  --gs-gray: #8c8c89;
+  --gs-hairline: #e3e1dc;
+
+  box-sizing: border-box;
+  position: sticky;
+  /* Chains BOTH the header's height and the toolbar's height, not
+     just the header's. --toolbar-height is written by the
+     CollectionToolbar logic (ResizeObserver, now inlined in
+     MainCollection.tsx), same pattern as --header-height from
+     useHeaderHeightSync.ts. */
+  top: calc(var(--header-height, 64px) + var(--toolbar-height, 56px) + 12px);
+  width: 100%;
+  max-width: 260px;
+  /* Sits below the header's z-50 but above ordinary page content. */
+  z-index: 30;
+  max-height: calc(100vh - var(--header-height, 64px) - var(--toolbar-height, 56px) - 24px);
+  background: var(--gs-bg);
+  border-radius: 0;
+  box-shadow: none;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--gs-black);
+  transition: top 0.25s ease, max-height 0.25s ease;
+}
+
+/* When the header hides on scroll-down (sticky-header.css sets the
+   toolbar's own `top: 0` in this state), this panel only needs to
+   clear the toolbar — the header term drops out entirely. Keep in
+   sync with html.header-hidden .sticky-under-header in
+   sticky-header.css. */
+html.header-hidden #collection-filters.collection-filters {
+  top: calc(var(--toolbar-height, 56px) + 12px);
+  max-height: calc(100vh - var(--toolbar-height, 56px) - 24px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #collection-filters.collection-filters {
+    transition: none;
+  }
+}
+
+#collection-filters .collection-filters__scroll {
+  max-height: calc(100vh - var(--header-height, 64px) - var(--toolbar-height, 56px) - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+html.header-hidden #collection-filters .collection-filters__scroll {
+  max-height: calc(100vh - var(--toolbar-height, 56px) - 24px);
+}
+
+#collection-filters .collection-filters__header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  background: var(--gs-bg);
+  border-bottom: 2px solid var(--gs-black);
+  margin-bottom: 4px;
+}
+
+#collection-filters .collection-filters__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+#collection-filters .collection-filters__clear {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  color: var(--gs-gray);
+}
+
+#collection-filters .collection-filters__clear:hover {
+  color: var(--gs-black);
+}
+
+#collection-filters .collection-filters__group {
+  border-bottom: 1px solid var(--gs-hairline);
+  padding: 16px 0;
+}
+
+#collection-filters .collection-filters__group:last-child {
+  border-bottom: none;
+}
+
+#collection-filters .collection-filters__group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+#collection-filters .collection-filters__group-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Hand-drawn plus/minus, not a chevron: a horizontal bar plus a vertical
+   bar that rotates flat to read as a minus when the group is open. */
+#collection-filters .collection-filters__toggle-icon {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+}
+
+#collection-filters .collection-filters__toggle-icon::before,
+#collection-filters .collection-filters__toggle-icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background: var(--gs-black);
+  transform: translate(-50%, -50%);
+}
+
+#collection-filters .collection-filters__toggle-icon::before {
+  width: 10px;
+  height: 2px;
+}
+
+#collection-filters .collection-filters__toggle-icon::after {
+  width: 2px;
+  height: 10px;
+  transition: transform 0.15s ease;
+}
+
+#collection-filters .collection-filters__toggle-icon--open::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+#collection-filters .collection-filters__values {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+#collection-filters .collection-filters__value-item {
+  margin: 0;
+  padding: 0;
+}
+
+/* Signature interaction: selecting a filter inverts the row to solid
+   black/white, rather than a checkbox + check icon. */
+#collection-filters .collection-filters__value {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 10px;
+  text-decoration: none;
+  color: var(--gs-black);
+  background: transparent;
+  border: 1px solid transparent;
+}
+
+#collection-filters .collection-filters__value:hover {
+  border-color: var(--gs-black);
+}
+
+#collection-filters .collection-filters__value--active {
+  background: var(--gs-black);
+  border-color: var(--gs-black);
+  color: var(--gs-white);
+}
+
+#collection-filters .collection-filters__value-label {
+  font-weight: 600;
+}
+
+#collection-filters .collection-filters__value-count {
+  color: var(--gs-gray);
+  font-variant-numeric: tabular-nums;
+}
+
+#collection-filters .collection-filters__value--active .collection-filters__value-count {
+  color: var(--gs-white);
+  opacity: 0.7;
+}
+
+#collection-filters .collection-filters__price-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+#collection-filters .collection-filters__price-input {
+  box-sizing: border-box;
+  width: 72px;
+  padding: 6px 4px;
+  border: none;
+  border-bottom: 1px solid var(--gs-black);
+  border-radius: 0;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gs-black);
+}
+
+#collection-filters .collection-filters__price-input::placeholder {
+  color: var(--gs-gray);
+  font-weight: 400;
+}
+
+#collection-filters .collection-filters__price-input:focus {
+  outline: none;
+  border-bottom-width: 2px;
+}
+
+#collection-filters .collection-filters__price-separator {
+  color: var(--gs-gray);
+}
+
+#collection-filters .collection-filters__price-submit {
+  padding: 6px 14px;
+  border: 1px solid var(--gs-black);
+  border-radius: 0;
+  background: var(--gs-black);
+  color: var(--gs-white);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+#collection-filters .collection-filters__price-submit:hover {
+  background: var(--gs-white);
+  color: var(--gs-black);
+}
+
+@media (max-width: 1023px) {
+  #collection-filters.collection-filters {
+    position: static;
+    max-width: none;
+  }
+}

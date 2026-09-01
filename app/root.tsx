@@ -36,8 +36,7 @@ import imageCardStyles from '~/assets/image-card.css?url';
 import imageCarouselStyles from '~/assets/image-carousel.css?url';
 import slideshowStyles from '~/assets/slideshow.css?url';
 import collectionHeroStyles from '~/assets/collection-hero.css?url';
-import collectionFiltersStyles from '~/assets/collection-filters.css?url';
-import collectionToolbarStyles from '~/assets/collection-toolbar.css?url';
+import mainCollectionStyles from '~/assets/main-collection.css?url';
 import stickyHeaderStyles from '~/assets/sticky-header.css?url';
 import articleCardStyles from '~/assets/article-card.css?url';
 import subCollectionStyles from '~/assets/sub-collection.css?url';
@@ -103,13 +102,6 @@ export async function loader(args: Route.LoaderArgs) {
   };
 }
 
-// Header menu is rendered on every page via PageLayout, same as the
-// footer below — but until now had no failure handling, unlike the
-// footer's explicit `.catch` fallback. A transient GraphQL error here
-// used to throw straight through loadCriticalData and take down the
-// entire site shell (nav included) for every route. Falls back to an
-// empty menu/no collection images instead, mirroring the footer's
-// "degrade, don't crash" behavior — logged the same way.
 async function loadCriticalData({context}: Route.LoaderArgs) {
   const {storefront} = context;
 
@@ -211,8 +203,7 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={imageCarouselStyles}></link>
         <link rel="stylesheet" href={slideshowStyles}></link>
         <link rel="stylesheet" href={collectionHeroStyles}></link>
-        <link rel="stylesheet" href={collectionFiltersStyles}></link>
-        <link rel="stylesheet" href={collectionToolbarStyles}></link>
+        <link rel="stylesheet" href={mainCollectionStyles}></link>
         <link rel="stylesheet" href={stickyHeaderStyles}></link>
         <link rel="stylesheet" href={articleCardStyles}></link>
         <link rel="stylesheet" href={subCollectionStyles}></link>
@@ -255,12 +246,6 @@ export function ErrorBoundary() {
   let errorStatus = 500;
 
   if (isRouteErrorResponse(error)) {
-    // Was: `error?.data?.message ?? error.data` — unconditionally
-    // overwrote the 'Unknown error' default even when both operands
-    // were undefined, silently losing the fallback (masked from
-    // crashing only by the `{errorMessage && (...)}` truthy check
-    // below, which just rendered nothing instead of showing anything
-    // useful). Falls through to the default now instead of `undefined`.
     errorMessage = error?.data?.message ?? error.data ?? 'Unknown error';
     errorStatus = error.status;
   } else if (error instanceof Error) {

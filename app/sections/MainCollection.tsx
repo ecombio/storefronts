@@ -36,18 +36,6 @@ interface MainCollectionProps {
   articles: ArticleItemFragment[];
 }
 
-/**
- * The tab-switcher + filters + feed unit for a collection page —
- * everything below the hero and above the after-items block.
- *
- * Previously split across CollectionToolbar.tsx, CollectionFilters.tsx,
- * and CollectionFeed.tsx (each still below as an internal function) —
- * inlined into one file since all three only ever render together, in
- * this exact nesting, for this one page. Note: CollectionFeed was
- * originally written generic (usable for search results or a related-
- * products feed too) — that reusability goes away with this merge
- * unless it's pulled back out into its own file later.
- */
 export function MainCollection({
   activeTab,
   filters,
@@ -56,7 +44,7 @@ export function MainCollection({
   articles,
 }: MainCollectionProps) {
   return (
-    <>
+    <div className="main-collection">
       <CollectionToolbar activeTab={activeTab} />
 
       <div className="collection-layout">
@@ -71,31 +59,10 @@ export function MainCollection({
           />
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* CollectionToolbar                                                   */
-/* ------------------------------------------------------------------ */
-
-/**
- * Tab switcher between a collection's product grid and its linked
- * articles (from the collection's `custom.posts` metafield). Tab
- * state lives in the `?tab=` URL param, same pattern CollectionFilters
- * uses for its own params, so it's shareable and needs no client JS.
- *
- * `sticky-under-header` (app/assets/sticky-header.css) sticks this
- * below the header and closes the gap when the header hides on
- * scroll. On top of that, this component measures its OWN rendered
- * height via ResizeObserver and writes it to `--toolbar-height` on
- * <html> — CollectionFilters reads that var to stick itself below
- * the toolbar rather than underneath/behind it. Without this, the
- * filter panel and the toolbar both compute their sticky offset from
- * only the header's height and end up overlapping once both are
- * stuck (toolbar tabs rendering on top of the filter's "Filters"
- * heading).
- */
 function CollectionToolbar({activeTab}: {activeTab: CollectionTab}) {
   const location = useLocation();
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -155,10 +122,6 @@ function CollectionToolbar({activeTab}: {activeTab: CollectionTab}) {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* CollectionFilters                                                   */
-/* ------------------------------------------------------------------ */
-
 function CollectionFilters({filters}: {filters: Filter[]}) {
   if (!filters?.length) {
     return null;
@@ -183,11 +146,6 @@ function CollectionFilters({filters}: {filters: Filter[]}) {
   );
 }
 
-/**
- * A single facet group (Availability, Category, Brand, Type, etc.) rendered
- * as a collapsible list of rows, one per filter value. Selecting a row
- * inverts it to solid black/white rather than checking a box.
- */
 function FilterGroup({filter}: {filter: Filter}) {
   const [isOpen, setIsOpen] = useState(true);
 
@@ -259,10 +217,6 @@ function FilterRow({
   );
 }
 
-/**
- * PRICE_RANGE filters don't have a fixed set of values like other filter
- * types do — they need a min/max input instead of a row list.
- */
 function PriceRangeFilterGroup({filter}: {filter: Filter}) {
   const [isOpen, setIsOpen] = useState(true);
   const location = useLocation();
@@ -371,11 +325,6 @@ function ClearFiltersLink() {
   );
 }
 
-/**
- * Toggles a single filter input in/out of the existing `filter` params,
- * leaving all other params (pagination cursors, other filters, etc.)
- * untouched.
- */
 function toggleFilterParam(filterInput: string, params: URLSearchParams) {
   const newParams = new URLSearchParams(params);
   const currentFilters = newParams.getAll(FILTER_URL_PARAM_NAME);
@@ -421,15 +370,6 @@ function getExistingPriceFilter(
     .find((parsed): parsed is ParsedPriceFilter => Boolean(parsed?.price));
 }
 
-/* ------------------------------------------------------------------ */
-/* CollectionFeed                                                      */
-/* ------------------------------------------------------------------ */
-
-/**
- * The tabbed content area for a collection page: the paginated product
- * grid (plus any sub-collections) for the "Products" tab, and the
- * article list for the "Expert Advice" tab.
- */
 function CollectionFeed({
   activeTab,
   products,
