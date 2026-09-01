@@ -35,7 +35,7 @@ import collectionCarouselStyles from '~/assets/collection-carousel.css?url';
 import imageCardStyles from '~/assets/image-card.css?url';
 import imageCarouselStyles from '~/assets/image-carousel.css?url';
 import slideshowStyles from '~/assets/slideshow.css?url';
-import collectionHeroStyles from '~/assets/collection-hero.css?url';
+import collectionBannerStyles from '~/assets/collection-banner.css?url';
 import mainCollectionStyles from '~/assets/main-collection.css?url';
 import paginatedResourceSectionStyles from '~/assets/paginated-resource-section.css?url';
 import stickyHeaderStyles from '~/assets/sticky-header.css?url';
@@ -203,7 +203,7 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={imageCardStyles}></link>
         <link rel="stylesheet" href={imageCarouselStyles}></link>
         <link rel="stylesheet" href={slideshowStyles}></link>
-        <link rel="stylesheet" href={collectionHeroStyles}></link>
+        <link rel="stylesheet" href={collectionBannerStyles}></link>
         <link rel="stylesheet" href={mainCollectionStyles}></link>
         <link rel="stylesheet" href={paginatedResourceSectionStyles}></link>
         <link rel="stylesheet" href={stickyHeaderStyles}></link>

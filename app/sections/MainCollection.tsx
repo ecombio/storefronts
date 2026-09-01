@@ -7,11 +7,9 @@ import type {Filter} from '@shopify/hydrogen/storefront-api-types';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 import {ProductCard} from '~/snippets/ProductCard';
 import {ArticleItem} from '~/snippets/ArticleItem';
-import {SubCollections} from '~/sections/SubCollections';
 import type {
   ProductCardFragment,
   ArticleItemFragment,
-  SubCollectionItemFragment,
 } from 'storefrontapi.generated';
 
 const TAB_PARAM_NAME = 'tab';
@@ -37,7 +35,6 @@ interface MainCollectionProps {
   activeTab: CollectionTab;
   filters: Filter[];
   products: ProductsConnection;
-  subCollections: SubCollectionItemFragment[];
   articles: ArticleItemFragment[];
   /** Precomputed "page number -> cursor" map for numbered pagination links; see collections.$handle.tsx. */
   pageCursors?: Record<number, string>;
@@ -64,7 +61,6 @@ export function MainCollection({
   activeTab,
   filters,
   products,
-  subCollections,
   articles,
   pageCursors,
   totalKnownPages,
@@ -81,7 +77,6 @@ export function MainCollection({
           <CollectionFeed
             activeTab={activeTab}
             products={products}
-            subCollections={subCollections}
             articles={articles}
             pageCursors={pageCursors}
             totalKnownPages={totalKnownPages}
@@ -164,11 +159,19 @@ function CollectionFilters({filters}: {filters: Filter[]}) {
           <h2 className="collection-filters__title">Filters</h2>
           <ClearFiltersLink />
         </div>
-        {filters.map((filter) =>
+        {filters.map((filter, index) =>
           filter.type === 'PRICE_RANGE' ? (
-            <PriceRangeFilterGroup key={filter.id} filter={filter} />
+            <PriceRangeFilterGroup
+              key={filter.id}
+              filter={filter}
+              defaultOpen={index === 0}
+            />
           ) : (
-            <FilterGroup key={filter.id} filter={filter} />
+            <FilterGroup
+              key={filter.id}
+              filter={filter}
+              defaultOpen={index === 0}
+            />
           ),
         )}
       </div>
@@ -176,8 +179,14 @@ function CollectionFilters({filters}: {filters: Filter[]}) {
   );
 }
 
-function FilterGroup({filter}: {filter: Filter}) {
-  const [isOpen, setIsOpen] = useState(true);
+function FilterGroup({
+  filter,
+  defaultOpen,
+}: {
+  filter: Filter;
+  defaultOpen: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
     <div className="collection-filters__group">
@@ -247,8 +256,14 @@ function FilterRow({
   );
 }
 
-function PriceRangeFilterGroup({filter}: {filter: Filter}) {
-  const [isOpen, setIsOpen] = useState(true);
+function PriceRangeFilterGroup({
+  filter,
+  defaultOpen,
+}: {
+  filter: Filter;
+  defaultOpen: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
   const location = useLocation();
   const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
@@ -428,7 +443,6 @@ function getExistingPriceFilter(
 function CollectionFeed({
   activeTab,
   products,
-  subCollections,
   articles,
   pageCursors,
   totalKnownPages,
@@ -436,7 +450,6 @@ function CollectionFeed({
 }: {
   activeTab: CollectionTab;
   products: ProductsConnection;
-  subCollections: SubCollectionItemFragment[];
   articles: ArticleItemFragment[];
   pageCursors?: Record<number, string>;
   totalKnownPages?: number;
@@ -450,7 +463,6 @@ function CollectionFeed({
         aria-labelledby="tab-products"
         hidden={activeTab !== 'products'}
       >
-        <SubCollections collections={subCollections} />
         <PaginatedResourceSection<ProductCardFragment>
           connection={products}
           resourcesClassName="products-grid"
