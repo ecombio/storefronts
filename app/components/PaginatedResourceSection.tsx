@@ -14,6 +14,18 @@ interface PaginatedResourceSectionProps<NodesType> {
   connection: ConnectionInput<NodesType>;
   children: (props: {node: NodesType; index: number}) => ReactNode;
   resourcesClassName?: string;
+  /**
+   * Precomputed "page number -> cursor" map (built server-side in
+   * collections.$handle.tsx) that lets numbered links jump straight to a
+   * page without walking through every page in between — cursor-based
+   * connections have no other way to do this. Omit to fall back to a
+   * plain "Page N" label with just Previous/Next.
+   */
+  pageCursors?: Record<number, string>;
+  /** How many page numbers can be linked to directly (bounded by the lookahead window). */
+  totalKnownPages?: number;
+  /** True if more pages exist beyond `totalKnownPages` — rendered as a trailing ellipsis. */
+  hasMoreBeyondKnownPages?: boolean;
 }
 
 /**
@@ -31,28 +43,73 @@ function withPageNumber(pageUrl: string, page: number): string {
 }
 
 /**
+ * Parses and validates the `p` param from the current URL. Falls back to 1
+ * for anything missing, non-numeric, negative, zero, or fractional — e.g. a
+ * hand-edited `?p=999` or `?p=-3` URL, a stale bookmark/browser-history
+ * entry, or a crawler retrying an old link. Without this guard, an invalid
+ * `p` would render as-is (even negative/decimal) and every subsequent
+ * arrow click would drift further from reality, since cursor pagination
+ * has no way to independently verify what "page" it's actually on.
+ */
+function getPageFromUrl(search: string): number {
+  const raw = new URLSearchParams(search).get(PAGE_PARAM_NAME);
+  const parsed = Number(raw);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : 1;
+}
+
+/**
+ * Builds the URL for a specific numbered page using its precomputed
+ * cursor. Page 1 is the one case with no cursor at all (it's the plain
+ * `first: PAGE_BY` fetch), so `cursor`/`direction` are cleared for it
+ * rather than set.
+ */
+function buildNumberedPageUrl(
+  search: string,
+  page: number,
+  cursor?: string,
+): string {
+  const params = new URLSearchParams(search);
+  if (page === 1) {
+    params.delete('cursor');
+    params.delete('direction');
+  } else if (cursor) {
+    params.set('cursor', cursor);
+    params.set('direction', 'next');
+  }
+  params.set(PAGE_PARAM_NAME, String(page));
+  return `?${params.toString()}`;
+}
+
+/**
  * Renders paginated data in a grid, wrapping Hydrogen's <Pagination>
- * render-prop component, with numbered ("Page N") arrow controls instead
- * of "Load more" text.
+ * render-prop component, with Previous/Next text controls plus clickable
+ * page numbers.
  *
  * Storefront API connections are cursor-based: Hydrogen only ever tells
  * you whether a next/previous page exists (hasNextPage/hasPreviousPage),
- * not a total count or a way to jump directly to page 7. So this renders
- * arrows that step one page at a time, with the current page number
- * displayed between them — rather than a clickable list of page numbers,
- * which cursor pagination can't support for pages you haven't visited yet.
+ * not a total count or a way to jump directly to an arbitrary page. To
+ * still offer numbered links, the caller precomputes a bounded window of
+ * page->cursor mappings server-side (see buildPageCursors in
+ * collections.$handle.tsx) and passes it in as `pageCursors`. Previous and
+ * Next always use Hydrogen's own live previousPageUrl/nextPageUrl, so
+ * they stay correct even past the end of that precomputed window.
  *
- * Previous/Next render as real <a href> links (react-router's Link), so
- * they stay crawlable and work without JS.
+ * All links render as real <a href> (react-router's Link), so they stay
+ * crawlable and work without JS.
  */
 export function PaginatedResourceSection<NodesType>({
   connection,
   children,
   resourcesClassName,
+  pageCursors,
+  totalKnownPages,
+  hasMoreBeyondKnownPages,
 }: PaginatedResourceSectionProps<NodesType>) {
   const location = useLocation();
-  const currentPage =
-    Number(new URLSearchParams(location.search).get(PAGE_PARAM_NAME)) || 1;
+  const currentPage = getPageFromUrl(location.search);
+  const pageNumbers = totalKnownPages
+    ? Array.from({length: totalKnownPages}, (_, i) => i + 1)
+    : [];
 
   return (
     <Pagination connection={connection}>
@@ -86,26 +143,64 @@ export function PaginatedResourceSection<NodesType>({
                   prefetch="intent"
                   preventScrollReset
                   replace
-                  aria-label="Previous page"
-                  className="paginated-resource-section__arrow"
+                  className="paginated-resource-section__prev-next"
                 >
-                  <span aria-hidden="true">&larr;</span>
+                  Previous
                 </Link>
               ) : (
-                <span
-                  aria-hidden="true"
-                  className="paginated-resource-section__arrow paginated-resource-section__arrow--disabled"
-                >
-                  &larr;
+                <span className="paginated-resource-section__prev-next paginated-resource-section__prev-next--disabled">
+                  Previous
                 </span>
               )}
 
-              <span
-                className="paginated-resource-section__page-number"
-                aria-live="polite"
-              >
-                {isLoading ? 'Loading…' : `Page ${currentPage}`}
-              </span>
+              {pageNumbers.length > 0 ? (
+                <ul className="paginated-resource-section__numbers">
+                  {pageNumbers.map((page) => {
+                    const isActive = page === currentPage;
+                    return (
+                      <li key={page}>
+                        {isActive ? (
+                          <span
+                            aria-current="page"
+                            className="paginated-resource-section__number paginated-resource-section__number--active"
+                          >
+                            {page}
+                          </span>
+                        ) : (
+                          <Link
+                            to={buildNumberedPageUrl(
+                              location.search,
+                              page,
+                              pageCursors?.[page],
+                            )}
+                            prefetch="intent"
+                            preventScrollReset
+                            replace
+                            className="paginated-resource-section__number"
+                          >
+                            {page}
+                          </Link>
+                        )}
+                      </li>
+                    );
+                  })}
+                  {hasMoreBeyondKnownPages && (
+                    <li
+                      aria-hidden="true"
+                      className="paginated-resource-section__ellipsis"
+                    >
+                      &hellip;
+                    </li>
+                  )}
+                </ul>
+              ) : (
+                <span
+                  className="paginated-resource-section__page-number"
+                  aria-live="polite"
+                >
+                  {isLoading ? 'Loading…' : `Page ${currentPage}`}
+                </span>
+              )}
 
               {hasNextPage ? (
                 <Link
@@ -113,17 +208,13 @@ export function PaginatedResourceSection<NodesType>({
                   prefetch="intent"
                   preventScrollReset
                   replace
-                  aria-label="Next page"
-                  className="paginated-resource-section__arrow"
+                  className="paginated-resource-section__prev-next"
                 >
-                  <span aria-hidden="true">&rarr;</span>
+                  Next
                 </Link>
               ) : (
-                <span
-                  aria-hidden="true"
-                  className="paginated-resource-section__arrow paginated-resource-section__arrow--disabled"
-                >
-                  &rarr;
+                <span className="paginated-resource-section__prev-next paginated-resource-section__prev-next--disabled">
+                  Next
                 </span>
               )}
             </nav>

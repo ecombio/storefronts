@@ -39,6 +39,12 @@ interface MainCollectionProps {
   products: ProductsConnection;
   subCollections: SubCollectionItemFragment[];
   articles: ArticleItemFragment[];
+  /** Precomputed "page number -> cursor" map for numbered pagination links; see collections.$handle.tsx. */
+  pageCursors?: Record<number, string>;
+  /** How many page numbers can be linked to directly. */
+  totalKnownPages?: number;
+  /** Whether pages exist beyond `totalKnownPages` (shown as an ellipsis). */
+  hasMoreBeyondKnownPages?: boolean;
 }
 
 /**
@@ -60,6 +66,9 @@ export function MainCollection({
   products,
   subCollections,
   articles,
+  pageCursors,
+  totalKnownPages,
+  hasMoreBeyondKnownPages,
 }: MainCollectionProps) {
   return (
     <div className="main-collection">
@@ -74,6 +83,9 @@ export function MainCollection({
             products={products}
             subCollections={subCollections}
             articles={articles}
+            pageCursors={pageCursors}
+            totalKnownPages={totalKnownPages}
+            hasMoreBeyondKnownPages={hasMoreBeyondKnownPages}
           />
         </div>
       </div>
@@ -265,9 +277,23 @@ function PriceRangeFilterGroup({filter}: {filter: Filter}) {
     nonPriceFilters.forEach((rawFilter) => newParams.append(FILTER_URL_PARAM_NAME, rawFilter));
 
     if (min || max) {
+      let minNum = min ? Number(min) : undefined;
+      let maxNum = max ? Number(max) : undefined;
+
+      // Guard against a reversed range (e.g. min=100, max=10), which the
+      // Storefront API would otherwise silently interpret as "no matches"
+      // rather than raising an error the user could act on. Swapping is
+      // the least surprising fix — it preserves both values the user
+      // typed instead of dropping one.
+      if (minNum !== undefined && maxNum !== undefined && minNum > maxNum) {
+        [minNum, maxNum] = [maxNum, minNum];
+        setMin(String(minNum));
+        setMax(String(maxNum));
+      }
+
       const price: {min?: number; max?: number} = {};
-      if (min) price.min = Number(min);
-      if (max) price.max = Number(max);
+      if (minNum !== undefined) price.min = minNum;
+      if (maxNum !== undefined) price.max = maxNum;
       newParams.append(FILTER_URL_PARAM_NAME, JSON.stringify({price}));
     }
 
@@ -404,11 +430,17 @@ function CollectionFeed({
   products,
   subCollections,
   articles,
+  pageCursors,
+  totalKnownPages,
+  hasMoreBeyondKnownPages,
 }: {
   activeTab: CollectionTab;
   products: ProductsConnection;
   subCollections: SubCollectionItemFragment[];
   articles: ArticleItemFragment[];
+  pageCursors?: Record<number, string>;
+  totalKnownPages?: number;
+  hasMoreBeyondKnownPages?: boolean;
 }) {
   return (
     <>
@@ -422,6 +454,9 @@ function CollectionFeed({
         <PaginatedResourceSection<ProductCardFragment>
           connection={products}
           resourcesClassName="products-grid"
+          pageCursors={pageCursors}
+          totalKnownPages={totalKnownPages}
+          hasMoreBeyondKnownPages={hasMoreBeyondKnownPages}
         >
           {({node: product, index}) => (
             <ProductCard

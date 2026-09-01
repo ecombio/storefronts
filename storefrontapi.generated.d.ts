@@ -996,24 +996,6 @@ export type ProductQuery = {
   warrantyPage?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Page, 'body'>>;
 };
 
-export type MoneyProductItemFragment = Pick<
-  StorefrontAPI.MoneyV2,
-  'amount' | 'currencyCode'
->;
-
-export type ProductItemFragment = Pick<
-  StorefrontAPI.Product,
-  'id' | 'handle' | 'title'
-> & {
-  featuredImage?: StorefrontAPI.Maybe<
-    Pick<StorefrontAPI.Image, 'id' | 'altText' | 'url' | 'width' | 'height'>
-  >;
-  priceRange: {
-    minVariantPrice: Pick<StorefrontAPI.MoneyV2, 'amount' | 'currencyCode'>;
-    maxVariantPrice: Pick<StorefrontAPI.MoneyV2, 'amount' | 'currencyCode'>;
-  };
-};
-
 export type ArticleItemFragment = Pick<
   StorefrontAPI.Article,
   'id' | 'handle' | 'title' | 'excerpt' | 'publishedAt'
@@ -1121,19 +1103,15 @@ export type CollectionQuery = {
           }
         >;
         nodes: Array<
-          Pick<StorefrontAPI.Product, 'id' | 'handle' | 'title'> & {
+          Pick<StorefrontAPI.Product, 'id' | 'handle' | 'title' | 'vendor'> & {
             featuredImage?: StorefrontAPI.Maybe<
               Pick<
                 StorefrontAPI.Image,
-                'id' | 'altText' | 'url' | 'width' | 'height'
+                'id' | 'url' | 'altText' | 'width' | 'height'
               >
             >;
             priceRange: {
               minVariantPrice: Pick<
-                StorefrontAPI.MoneyV2,
-                'amount' | 'currencyCode'
-              >;
-              maxVariantPrice: Pick<
                 StorefrontAPI.MoneyV2,
                 'amount' | 'currencyCode'
               >;
@@ -1598,7 +1576,7 @@ interface GeneratedQueryTypes {
     return: ProductQuery;
     variables: ProductQueryVariables;
   };
-  '#graphql\n  #graphql\n  fragment MoneyProductItem on MoneyV2 {\n    amount\n    currencyCode\n  }\n  fragment ProductItem on Product {\n    id\n    handle\n    title\n    featuredImage {\n      id\n      altText\n      url\n      width\n      height\n    }\n    priceRange {\n      minVariantPrice {\n        ...MoneyProductItem\n      }\n      maxVariantPrice {\n        ...MoneyProductItem\n      }\n    }\n  }\n\n  #graphql\n  fragment ArticleItem on Article {\n    id\n    handle\n    title\n    excerpt\n    publishedAt\n    blog {\n      handle\n    }\n    image {\n      id\n      url\n      altText\n      width\n      height\n    }\n    readingTime: metafield(namespace: "custom", key: "reading_time") {\n      value\n    }\n  }\n\n  #graphql\n  fragment SubCollectionItem on Collection {\n    id\n    handle\n    title\n    image {\n      id\n      url\n      altText\n      width\n      height\n    }\n  }\n\n  query Collection(\n    $handle: String!\n    $country: CountryCode\n    $language: LanguageCode\n    $filters: [ProductFilter!]\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n  ) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      id\n      handle\n      title\n      descriptionHtml\n      postsMetafield: metafield(namespace: "custom", key: "posts") {\n        references(first: 10) {\n          nodes {\n            ... on Article {\n              ...ArticleItem\n            }\n          }\n        }\n      }\n      subCollectionsMetafield: metafield(namespace: "custom", key: "sub_collections") {\n        references(first: 20) {\n          nodes {\n            ... on Collection {\n              ...SubCollectionItem\n            }\n          }\n        }\n      }\n      afterItemsMetafield: metafield(namespace: "custom", key: "after_item_lists") {\n        reference {\n          __typename\n          ... on Page {\n            id\n            body\n          }\n        }\n      }\n      products(\n        first: $first,\n        last: $last,\n        before: $startCursor,\n        after: $endCursor,\n        filters: $filters\n      ) {\n        filters {\n          id\n          label\n          type\n          values {\n            id\n            label\n            count\n            input\n          }\n        }\n        nodes {\n          ...ProductItem\n        }\n        pageInfo {\n          hasPreviousPage\n          hasNextPage\n          endCursor\n          startCursor\n        }\n      }\n    }\n  }\n': {
+  '#graphql\n  #graphql\n  fragment ProductCard on Product {\n    id\n    handle\n    title\n    vendor\n    featuredImage {\n      id\n      url\n      altText\n      width\n      height\n    }\n    priceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n  }\n\n  #graphql\n  fragment ArticleItem on Article {\n    id\n    handle\n    title\n    excerpt\n    publishedAt\n    blog {\n      handle\n    }\n    image {\n      id\n      url\n      altText\n      width\n      height\n    }\n    readingTime: metafield(namespace: "custom", key: "reading_time") {\n      value\n    }\n  }\n\n  #graphql\n  fragment SubCollectionItem on Collection {\n    id\n    handle\n    title\n    image {\n      id\n      url\n      altText\n      width\n      height\n    }\n  }\n\n  query Collection(\n    $handle: String!\n    $country: CountryCode\n    $language: LanguageCode\n    $filters: [ProductFilter!]\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n  ) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      id\n      handle\n      title\n      descriptionHtml\n      postsMetafield: metafield(namespace: "custom", key: "posts") {\n        references(first: 10) {\n          nodes {\n            ... on Article {\n              ...ArticleItem\n            }\n          }\n        }\n      }\n      subCollectionsMetafield: metafield(namespace: "custom", key: "sub_collections") {\n        references(first: 20) {\n          nodes {\n            ... on Collection {\n              ...SubCollectionItem\n            }\n          }\n        }\n      }\n      afterItemsMetafield: metafield(namespace: "custom", key: "after_item_lists") {\n        reference {\n          __typename\n          ... on Page {\n            id\n            body\n          }\n        }\n      }\n      products(\n        first: $first,\n        last: $last,\n        before: $startCursor,\n        after: $endCursor,\n        filters: $filters\n      ) {\n        filters {\n          id\n          label\n          type\n          values {\n            id\n            label\n            count\n            input\n          }\n        }\n        nodes {\n          ...ProductCard\n        }\n        pageInfo {\n          hasPreviousPage\n          hasNextPage\n          endCursor\n          startCursor\n        }\n      }\n    }\n  }\n': {
     return: CollectionQuery;
     variables: CollectionQueryVariables;
   };
