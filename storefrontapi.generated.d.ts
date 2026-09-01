@@ -1216,6 +1216,7 @@ export type StoreCollectionsQuery = {
 };
 
 export type CatalogQueryVariables = StorefrontAPI.Exact<{
+  handle: StorefrontAPI.Scalars['String']['input'];
   country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
   language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
   first?: StorefrontAPI.InputMaybe<StorefrontAPI.Scalars['Int']['input']>;
@@ -1226,71 +1227,89 @@ export type CatalogQueryVariables = StorefrontAPI.Exact<{
   endCursor?: StorefrontAPI.InputMaybe<
     StorefrontAPI.Scalars['String']['input']
   >;
-  query?: StorefrontAPI.InputMaybe<StorefrontAPI.Scalars['String']['input']>;
-  sortKey?: StorefrontAPI.InputMaybe<StorefrontAPI.ProductSortKeys>;
+  filters?: StorefrontAPI.InputMaybe<
+    Array<StorefrontAPI.ProductFilter> | StorefrontAPI.ProductFilter
+  >;
+  sortKey?: StorefrontAPI.InputMaybe<StorefrontAPI.ProductCollectionSortKeys>;
   reverse?: StorefrontAPI.InputMaybe<StorefrontAPI.Scalars['Boolean']['input']>;
 }>;
 
 export type CatalogQuery = {
-  products: {
-    nodes: Array<
-      Pick<StorefrontAPI.Product, 'id' | 'handle' | 'title' | 'vendor'> & {
-        featuredImage?: StorefrontAPI.Maybe<
-          Pick<
-            StorefrontAPI.Image,
-            'id' | 'url' | 'altText' | 'width' | 'height'
-          >
-        >;
-        priceRange: {
-          minVariantPrice: Pick<
-            StorefrontAPI.MoneyV2,
-            'amount' | 'currencyCode'
+  collection?: StorefrontAPI.Maybe<{
+    products: {
+      nodes: Array<
+        Pick<StorefrontAPI.Product, 'id' | 'handle' | 'title' | 'vendor'> & {
+          featuredImage?: StorefrontAPI.Maybe<
+            Pick<
+              StorefrontAPI.Image,
+              'id' | 'url' | 'altText' | 'width' | 'height'
+            >
           >;
-        };
-        compareAtPriceRange: {
-          minVariantPrice: Pick<
-            StorefrontAPI.MoneyV2,
-            'amount' | 'currencyCode'
+          priceRange: {
+            minVariantPrice: Pick<
+              StorefrontAPI.MoneyV2,
+              'amount' | 'currencyCode'
+            >;
+          };
+          compareAtPriceRange: {
+            minVariantPrice: Pick<
+              StorefrontAPI.MoneyV2,
+              'amount' | 'currencyCode'
+            >;
+          };
+          selectedOrFirstAvailableVariant?: StorefrontAPI.Maybe<
+            Pick<StorefrontAPI.ProductVariant, 'id' | 'availableForSale'>
           >;
-        };
-        selectedOrFirstAvailableVariant?: StorefrontAPI.Maybe<
-          Pick<StorefrontAPI.ProductVariant, 'id' | 'availableForSale'>
-        >;
-        etaText?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
-        sponsored?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
-        reviewsRating?: StorefrontAPI.Maybe<
-          Pick<StorefrontAPI.Metafield, 'value'>
-        >;
-        reviewsCount?: StorefrontAPI.Maybe<
-          Pick<StorefrontAPI.Metafield, 'value'>
-        >;
-      }
-    >;
-    pageInfo: Pick<
-      StorefrontAPI.PageInfo,
-      'hasPreviousPage' | 'hasNextPage' | 'startCursor' | 'endCursor'
-    >;
-  };
+          etaText?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
+          sponsored?: StorefrontAPI.Maybe<
+            Pick<StorefrontAPI.Metafield, 'value'>
+          >;
+          reviewsRating?: StorefrontAPI.Maybe<
+            Pick<StorefrontAPI.Metafield, 'value'>
+          >;
+          reviewsCount?: StorefrontAPI.Maybe<
+            Pick<StorefrontAPI.Metafield, 'value'>
+          >;
+        }
+      >;
+      filters: Array<
+        Pick<StorefrontAPI.Filter, 'id' | 'label' | 'type'> & {
+          values: Array<
+            Pick<StorefrontAPI.FilterValue, 'id' | 'label' | 'count' | 'input'>
+          >;
+        }
+      >;
+      pageInfo: Pick<
+        StorefrontAPI.PageInfo,
+        'hasPreviousPage' | 'hasNextPage' | 'startCursor' | 'endCursor'
+      >;
+    };
+  }>;
 };
 
 export type ProductsPageCursorsQueryVariables = StorefrontAPI.Exact<{
+  handle: StorefrontAPI.Scalars['String']['input'];
   country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
   language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
   first: StorefrontAPI.Scalars['Int']['input'];
-  query?: StorefrontAPI.InputMaybe<StorefrontAPI.Scalars['String']['input']>;
-  sortKey?: StorefrontAPI.InputMaybe<StorefrontAPI.ProductSortKeys>;
+  filters?: StorefrontAPI.InputMaybe<
+    Array<StorefrontAPI.ProductFilter> | StorefrontAPI.ProductFilter
+  >;
+  sortKey?: StorefrontAPI.InputMaybe<StorefrontAPI.ProductCollectionSortKeys>;
   reverse?: StorefrontAPI.InputMaybe<StorefrontAPI.Scalars['Boolean']['input']>;
 }>;
 
 export type ProductsPageCursorsQuery = {
-  products: {
-    edges: Array<
-      Pick<StorefrontAPI.ProductEdge, 'cursor'> & {
-        node: Pick<StorefrontAPI.Product, 'id'>;
-      }
-    >;
-    pageInfo: Pick<StorefrontAPI.PageInfo, 'hasNextPage'>;
-  };
+  collection?: StorefrontAPI.Maybe<{
+    products: {
+      edges: Array<
+        Pick<StorefrontAPI.ProductEdge, 'cursor'> & {
+          node: Pick<StorefrontAPI.Product, 'id'>;
+        }
+      >;
+      pageInfo: Pick<StorefrontAPI.PageInfo, 'hasNextPage'>;
+    };
+  }>;
 };
 
 export type PageQueryVariables = StorefrontAPI.Exact<{
@@ -1957,11 +1976,11 @@ interface GeneratedQueryTypes {
     return: StoreCollectionsQuery;
     variables: StoreCollectionsQueryVariables;
   };
-  '#graphql\n  query Catalog(\n    $country: CountryCode\n    $language: LanguageCode\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n    $query: String\n    $sortKey: ProductSortKeys\n    $reverse: Boolean\n  ) @inContext(country: $country, language: $language) {\n    products(\n      first: $first\n      last: $last\n      before: $startCursor\n      after: $endCursor\n      query: $query\n      sortKey: $sortKey\n      reverse: $reverse\n    ) {\n      nodes {\n        ...ProductCard\n      }\n      pageInfo {\n        hasPreviousPage\n        hasNextPage\n        startCursor\n        endCursor\n      }\n    }\n  }\n  #graphql\n  fragment ProductCard on Product {\n    id\n    handle\n    title\n    vendor\n    featuredImage {\n      id\n      url\n      altText\n      width\n      height\n    }\n    priceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n    compareAtPriceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n    selectedOrFirstAvailableVariant(\n      selectedOptions: []\n      ignoreUnknownOptions: true\n      caseInsensitiveMatch: true\n    ) {\n      id\n      availableForSale\n    }\n    etaText: metafield(namespace: "custom", key: "eta_text") {\n      value\n    }\n    sponsored: metafield(namespace: "custom", key: "sponsored") {\n      value\n    }\n    reviewsRating: metafield(namespace: "reviews", key: "rating") {\n      value\n    }\n    reviewsCount: metafield(namespace: "reviews", key: "rating_count") {\n      value\n    }\n  }\n\n': {
+  '#graphql\n  query Catalog(\n    $handle: String!\n    $country: CountryCode\n    $language: LanguageCode\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n    $filters: [ProductFilter!]\n    $sortKey: ProductCollectionSortKeys\n    $reverse: Boolean\n  ) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      products(\n        first: $first\n        last: $last\n        before: $startCursor\n        after: $endCursor\n        filters: $filters\n        sortKey: $sortKey\n        reverse: $reverse\n      ) {\n        nodes {\n          ...ProductCard\n        }\n        filters {\n          id\n          label\n          type\n          values {\n            id\n            label\n            count\n            input\n          }\n        }\n        pageInfo {\n          hasPreviousPage\n          hasNextPage\n          startCursor\n          endCursor\n        }\n      }\n    }\n  }\n  #graphql\n  fragment ProductCard on Product {\n    id\n    handle\n    title\n    vendor\n    featuredImage {\n      id\n      url\n      altText\n      width\n      height\n    }\n    priceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n    compareAtPriceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n    selectedOrFirstAvailableVariant(\n      selectedOptions: []\n      ignoreUnknownOptions: true\n      caseInsensitiveMatch: true\n    ) {\n      id\n      availableForSale\n    }\n    etaText: metafield(namespace: "custom", key: "eta_text") {\n      value\n    }\n    sponsored: metafield(namespace: "custom", key: "sponsored") {\n      value\n    }\n    reviewsRating: metafield(namespace: "reviews", key: "rating") {\n      value\n    }\n    reviewsCount: metafield(namespace: "reviews", key: "rating_count") {\n      value\n    }\n  }\n\n': {
     return: CatalogQuery;
     variables: CatalogQueryVariables;
   };
-  '#graphql\n  query ProductsPageCursors(\n    $country: CountryCode\n    $language: LanguageCode\n    $first: Int!\n    $query: String\n    $sortKey: ProductSortKeys\n    $reverse: Boolean\n  ) @inContext(country: $country, language: $language) {\n    products(first: $first, query: $query, sortKey: $sortKey, reverse: $reverse) {\n      edges {\n        cursor\n        node {\n          id\n        }\n      }\n      pageInfo {\n        hasNextPage\n      }\n    }\n  }\n': {
+  '#graphql\n  query ProductsPageCursors(\n    $handle: String!\n    $country: CountryCode\n    $language: LanguageCode\n    $first: Int!\n    $filters: [ProductFilter!]\n    $sortKey: ProductCollectionSortKeys\n    $reverse: Boolean\n  ) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      products(first: $first, filters: $filters, sortKey: $sortKey, reverse: $reverse) {\n        edges {\n          cursor\n          node {\n            id\n          }\n        }\n        pageInfo {\n          hasNextPage\n        }\n      }\n    }\n  }\n': {
     return: ProductsPageCursorsQuery;
     variables: ProductsPageCursorsQueryVariables;
   };

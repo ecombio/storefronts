@@ -32,6 +32,7 @@ import productCardStyles from '~/assets/product-card.css?url';
 import productCarouselStyles from '~/assets/product-carousel.css?url';
 import collectionCardStyles from '~/assets/collection-card.css?url';
 import collectionCarouselStyles from '~/assets/collection-carousel.css?url';
+import featuredCollectionStyles from '~/assets/featured-collection.css?url'; // ADDED — no shared class names with product-card/product-carousel, so load order relative to those doesn't matter; grouped here with the other collection-display styles for readability
 import imageCardStyles from '~/assets/image-card.css?url';
 import imageCarouselStyles from '~/assets/image-carousel.css?url';
 import slideshowStyles from '~/assets/slideshow.css?url';
@@ -206,6 +207,7 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={productCarouselStyles}></link>
         <link rel="stylesheet" href={collectionCardStyles}></link>
         <link rel="stylesheet" href={collectionCarouselStyles}></link>
+        <link rel="stylesheet" href={featuredCollectionStyles}></link>
         <link rel="stylesheet" href={imageCardStyles}></link>
         <link rel="stylesheet" href={imageCarouselStyles}></link>
         <link rel="stylesheet" href={slideshowStyles}></link>
