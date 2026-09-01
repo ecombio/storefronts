@@ -1293,34 +1293,6 @@ export type ProductsPageCursorsQuery = {
   };
 };
 
-export type AllArticlesQueryVariables = StorefrontAPI.Exact<{
-  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
-  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
-  first: StorefrontAPI.Scalars['Int']['input'];
-}>;
-
-export type AllArticlesQuery = {
-  articles: {
-    nodes: Array<
-      Pick<
-        StorefrontAPI.Article,
-        'id' | 'handle' | 'title' | 'excerpt' | 'publishedAt'
-      > & {
-        blog: Pick<StorefrontAPI.Blog, 'handle'>;
-        image?: StorefrontAPI.Maybe<
-          Pick<
-            StorefrontAPI.Image,
-            'id' | 'url' | 'altText' | 'width' | 'height'
-          >
-        >;
-        readingTime?: StorefrontAPI.Maybe<
-          Pick<StorefrontAPI.Metafield, 'value'>
-        >;
-      }
-    >;
-  };
-};
-
 export type PageQueryVariables = StorefrontAPI.Exact<{
   language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
   country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
@@ -1992,10 +1964,6 @@ interface GeneratedQueryTypes {
   '#graphql\n  query ProductsPageCursors(\n    $country: CountryCode\n    $language: LanguageCode\n    $first: Int!\n    $query: String\n    $sortKey: ProductSortKeys\n    $reverse: Boolean\n  ) @inContext(country: $country, language: $language) {\n    products(first: $first, query: $query, sortKey: $sortKey, reverse: $reverse) {\n      edges {\n        cursor\n        node {\n          id\n        }\n      }\n      pageInfo {\n        hasNextPage\n      }\n    }\n  }\n': {
     return: ProductsPageCursorsQuery;
     variables: ProductsPageCursorsQueryVariables;
-  };
-  '#graphql\n  query AllArticles(\n    $country: CountryCode\n    $language: LanguageCode\n    $first: Int!\n  ) @inContext(country: $country, language: $language) {\n    articles(first: $first, sortKey: PUBLISHED_AT, reverse: true) {\n      nodes {\n        ...ArticleItem\n      }\n    }\n  }\n  #graphql\n  fragment ArticleItem on Article {\n    id\n    handle\n    title\n    excerpt\n    publishedAt\n    blog {\n      handle\n    }\n    image {\n      id\n      url\n      altText\n      width\n      height\n    }\n    readingTime: metafield(namespace: "custom", key: "reading_time") {\n      value\n    }\n  }\n\n': {
-    return: AllArticlesQuery;
-    variables: AllArticlesQueryVariables;
   };
   '#graphql\n  query Page(\n    $language: LanguageCode,\n    $country: CountryCode,\n    $handle: String!\n  )\n  @inContext(language: $language, country: $country) {\n    page(handle: $handle) {\n      handle\n      id\n      title\n      body\n      seo {\n        description\n        title\n      }\n    }\n  }\n': {
     return: PageQuery;

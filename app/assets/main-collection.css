@@ -345,3 +345,9 @@ html.header-hidden #collection-filters .collection-filters__scroll {
     max-width: none;
   }
 }
+.products-grid {
+  display: grid;
+  grid-gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(var(--grid-item-width, 280px), 1fr));
+  margin-bottom: 2rem;
+}

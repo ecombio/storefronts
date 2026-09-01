@@ -457,7 +457,7 @@ button.reset:hover:not(:has(> *)) {
 .collections-grid {
   display: grid;
   grid-gap: 1.5rem;
-  grid-template-columns: repeat(auto-fit, minmax(var(--grid-item-width), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(var(--grid-item-width, 280px), 1fr));
   margin-bottom: 2rem;
 }
 
@@ -476,13 +476,6 @@ button.reset:hover:not(:has(> *)) {
   @media (min-width: 45em) {
     max-width: 600px;
   }
-}
-
-.products-grid {
-  display: grid;
-  grid-gap: 1.5rem;
-  grid-template-columns: repeat(auto-fit, minmax(var(--grid-item-width), 1fr));
-  margin-bottom: 2rem;
 }
 
 .product-item img {
@@ -559,7 +552,7 @@ button.reset:hover:not(:has(> *)) {
 .blog-grid {
   display: grid;
   grid-gap: 1.5rem;
-  grid-template-columns: repeat(auto-fit, minmax(var(--grid-item-width), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(var(--grid-item-width, 280px), 1fr));
   margin-bottom: 2rem;
 }
 
