@@ -53,7 +53,10 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   const filters = parseFiltersFromUrl(url);
   const activeTab = parseActiveTab(url);
   const canonicalUrl = buildSelfCanonicalUrl(request, {
-    keepParams: [TAB_URL_PARAM_NAME, 'cursor', 'direction'],
+    // `p` is PaginatedResourceSection's own display-only page-number param;
+    // it's kept here for the same reason as cursor/direction — each page
+    // shows different products and should canonicalize to itself.
+    keepParams: [TAB_URL_PARAM_NAME, 'cursor', 'direction', 'p'],
     dropDefaultValues: {[TAB_URL_PARAM_NAME]: DEFAULT_TAB},
   });
 

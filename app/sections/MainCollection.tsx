@@ -17,9 +17,10 @@ import type {
 const TAB_PARAM_NAME = 'tab';
 const FILTER_URL_PARAM_NAME = 'filter';
 
-// Params written by Hydrogen's getPaginationVariables/<Pagination> — see
-// https://shopify.dev/docs/api/hydrogen/utilities/getpaginationvariables
-const PAGINATION_PARAM_NAMES = ['cursor', 'direction'];
+// `cursor`/`direction` are written by Hydrogen's getPaginationVariables/
+// <Pagination> (see https://shopify.dev/docs/api/hydrogen/utilities/getpaginationvariables).
+// `p` is PaginatedResourceSection's own display-only page-number param.
+const PAGINATION_PARAM_NAMES = ['cursor', 'direction', 'p'];
 
 export type CollectionTab = 'products' | 'articles';
 
