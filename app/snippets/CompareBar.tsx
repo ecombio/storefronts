@@ -4,45 +4,25 @@
 // Mounted once, globally, in PageLayout.tsx (same pattern as QuickView)
 // — NOT inside ProductCard.tsx.
 //
-// Data source: the same `shopify_compare` localStorage key that
-// ProductCard.tsx's compare checkbox writes to. Kept in sync via:
-//   - the in-tab `compare:updated` CustomEvent (fired by ProductCard.tsx
-//     on every check/uncheck, and by this component on remove/clear)
+// Data source: the `shopify_compare` localStorage key, via lib/compare.ts
+// (previously this file had its own duplicated copy of the read/write
+// logic — now shared with ProductCard.tsx and templates/compare.tsx).
+// Kept in sync via:
+//   - the in-tab `compare:updated` CustomEvent (fired by lib/compare.ts
+//     on every add/remove/clear)
 //   - the native `storage` event, for cross-tab sync (fires in every
 //     OTHER tab when the key changes in one tab — never in the tab that
 //     made the change, so no dedupe/loop guard is needed)
 import {useCallback, useEffect, useState} from 'react';
 import {Link} from 'react-router';
-
-const COMPARE_KEY = 'shopify_compare';
-const COMPARE_MAX = 5;
-
-interface CompareEntry {
-  id: string;
-  handle: string;
-  title: string;
-  image: string;
-  price: {amount: string; currencyCode: string} | null;
-}
-
-function readCompareList(): CompareEntry[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = JSON.parse(window.localStorage.getItem(COMPARE_KEY) ?? '[]');
-    return Array.isArray(raw) ? raw : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeCompareList(list: CompareEntry[]) {
-  try {
-    window.localStorage.setItem(COMPARE_KEY, JSON.stringify(list));
-  } catch {
-    // localStorage unavailable (private mode, quota, etc.) — fail silently,
-    // matches the behavior in ProductCard.tsx
-  }
-}
+import {
+  type CompareEntry,
+  COMPARE_KEY,
+  readCompareList,
+  writeCompareList,
+  broadcastCompareUpdate,
+  COMPARE_MAX,
+} from '~/lib/compare';
 
 export function CompareBar() {
   // Start empty on both the server render and the first client render so
@@ -78,21 +58,14 @@ export function CompareBar() {
     setItems((current) => {
       const next = current.filter((entry) => entry.id !== id);
       writeCompareList(next);
-      document.dispatchEvent(
-        new CustomEvent('compare:updated', {
-          bubbles: true,
-          detail: {items: next},
-        }),
-      );
+      broadcastCompareUpdate(next);
       return next;
     });
   }, []);
 
   const clearAll = useCallback(() => {
     writeCompareList([]);
-    document.dispatchEvent(
-      new CustomEvent('compare:updated', {bubbles: true, detail: {items: []}}),
-    );
+    broadcastCompareUpdate([]);
     setItems([]);
   }, []);
 

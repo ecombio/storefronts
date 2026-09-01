@@ -13,6 +13,7 @@ import {
 import {SearchResultsPredictive} from '~/snippets/SearchResultsPredictive';
 import {QuickView} from '~/snippets/QuickView'; // ADDED
 import {CompareBar} from '~/snippets/CompareBar'; // ADDED
+import {WishlistBar} from '~/snippets/WishlistBar'; // ADDED
 import type {AlgoliaConfig} from '~/lib/algolia';
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;
@@ -39,6 +40,7 @@ export function PageLayout({
       <MobileMenuAside header={header} publicStoreDomain={publicStoreDomain} />
       <QuickView /> {/* ADDED — global, one instance for all product cards */}
       <CompareBar /> {/* ADDED — global sticky-bottom compare bar */}
+      <WishlistBar /> {/* ADDED — global sticky-bottom wishlist bar */}
       {header && (
         <Header
           header={header}

@@ -1,8 +1,9 @@
 // app/templates/compare.tsx
 //
 // Client-rendered compare table. Reads the same `shopify_compare`
-// localStorage snapshot that ProductCard.tsx writes to and CompareBar.tsx
-// mirrors — no server loader, since compare state is local-only for now.
+// localStorage snapshot that ProductCard.tsx writes to (via
+// lib/compare.ts) and CompareBar.tsx mirrors — no server loader, since
+// compare state is local-only for now.
 //
 // Scope note: only fields already cached in the compare snapshot (title,
 // image, price) are shown. Richer attributes (vendor, options,
@@ -13,38 +14,17 @@ import {useEffect, useState} from 'react';
 import {Link} from 'react-router';
 import {Money} from '@shopify/hydrogen';
 import type {MetaFunction} from 'react-router';
+import {
+  type CompareEntry,
+  COMPARE_KEY,
+  readCompareList,
+  writeCompareList,
+  broadcastCompareUpdate,
+} from '~/lib/compare';
 
 export const meta: MetaFunction = () => {
   return [{title: 'Compare products'}];
 };
-
-const COMPARE_KEY = 'shopify_compare';
-
-interface CompareEntry {
-  id: string;
-  handle: string;
-  title: string;
-  image: string;
-  price: {amount: string; currencyCode: string} | null;
-}
-
-function readCompareList(): CompareEntry[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = JSON.parse(window.localStorage.getItem(COMPARE_KEY) ?? '[]');
-    return Array.isArray(raw) ? raw : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeCompareList(list: CompareEntry[]) {
-  try {
-    window.localStorage.setItem(COMPARE_KEY, JSON.stringify(list));
-  } catch {
-    // localStorage unavailable — fail silently
-  }
-}
 
 export default function Compare() {
   const [items, setItems] = useState<CompareEntry[]>([]);
@@ -74,9 +54,7 @@ export default function Compare() {
   function removeItem(id: string) {
     const next = items.filter((entry) => entry.id !== id);
     writeCompareList(next);
-    document.dispatchEvent(
-      new CustomEvent('compare:updated', {bubbles: true, detail: {items: next}}),
-    );
+    broadcastCompareUpdate(next);
     setItems(next);
   }
 

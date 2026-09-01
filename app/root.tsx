@@ -46,6 +46,8 @@ import cartDrawerStyles from '~/assets/cart-drawer.css?url';
 import quickviewStyles from '~/assets/quickview.css?url'; // ADDED — must load after cartDrawerStyles so the [data-type='quickview'] overrides win
 import compareBarStyles from '~/assets/compare-bar.css?url'; // ADDED
 import comparePageStyles from '~/assets/compare-page.css?url'; // ADDED
+import wishlistBarStyles from '~/assets/wishlist-bar.css?url'; // ADDED
+import wishlistPageStyles from '~/assets/wishlist-page.css?url'; // ADDED
 import tailwindCss from '~/assets/tailwind.css?url';
 import {PageLayout} from './components/PageLayout';
 
@@ -219,6 +221,9 @@ export function Layout({children}: {children?: React.ReactNode}) {
         {/* ADDED — must render after cartDrawerStyles for override specificity/order */}
         <link rel="stylesheet" href={compareBarStyles}></link>
         <link rel="stylesheet" href={comparePageStyles}></link>
+        {/* ADDED — wishlist follows the same load-order rule as compare above */}
+        <link rel="stylesheet" href={wishlistBarStyles}></link>
+        <link rel="stylesheet" href={wishlistPageStyles}></link>
         <Meta />
         <Links />
       </head>

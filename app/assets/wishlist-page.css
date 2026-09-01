@@ -1,0 +1,124 @@
+/* app/assets/wishlist-page.css
+ *
+ * NOTE: written fresh — compare-page.css's content wasn't available to
+ * adapt from directly. This uses a browsable grid (rather than
+ * compare's side-by-side table, which doesn't fit a wishlist's
+ * open-ended item count) but reuses product-card.css's token names
+ * and radii so it reads as the same design language.
+ */
+
+.wishlist-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px var(--content-padding-mobile, 16px) 64px;
+}
+
+@media (min-width: 640px) {
+  .wishlist-page {
+    padding-inline: var(--content-padding-tablet, 24px);
+  }
+}
+
+@media (min-width: 1024px) {
+  .wishlist-page {
+    padding-inline: var(--content-padding-desktop, 32px);
+  }
+}
+
+.wishlist-page h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+.wishlist-page--empty {
+  text-align: center;
+  padding-top: 64px;
+  padding-bottom: 64px;
+}
+
+.wishlist-page--empty p {
+  color: var(--color-ink-muted, #6b7280);
+  margin-bottom: 16px;
+}
+
+.wishlist-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .wishlist-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .wishlist-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+}
+
+.wishlist-grid__item {
+  position: relative;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--color-surface, #ffffff);
+}
+
+.wishlist-grid__remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(4px);
+  color: var(--color-ink-muted, #6b7280);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wishlist-grid__remove:hover {
+  background: #fff;
+  color: #ef4444;
+}
+
+.wishlist-grid__link {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+}
+
+.wishlist-grid__img,
+.wishlist-grid__img-placeholder {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  background: #f9fafb;
+  display: block;
+}
+
+.wishlist-grid__title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-ink, #111827);
+  padding: 10px 12px 2px;
+  line-height: 1.35;
+}
+
+.wishlist-grid__price {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-ink, #111827);
+  padding: 0 12px 12px;
+}

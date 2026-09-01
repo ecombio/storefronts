@@ -8,6 +8,20 @@ import type {ProductCardFragment} from 'storefrontapi.generated';
 import {SaleBadge} from '~/snippets/SaleBadge';
 import {StarRating} from '~/snippets/StarRating';
 import {useAside} from '~/components/Aside';
+import {
+  type CompareEntry,
+  COMPARE_KEY,
+  COMPARE_MAX,
+  readCompareList,
+  addToCompare,
+  removeFromCompare,
+} from '~/lib/compare';
+import {
+  type WishlistEntry,
+  WISHLIST_KEY,
+  readWishlist,
+  toggleWishlistEntry,
+} from '~/lib/wishlist';
 
 export interface ProductCardProps {
   product: ProductCardFragment;
@@ -17,59 +31,6 @@ export interface ProductCardProps {
 
 const IMAGE_SIZES =
   '(max-width: 480px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw';
-
-const COMPARE_KEY = 'shopify_compare';
-const COMPARE_MAX = 5;
-const WISHLIST_KEY = 'shopify_wishlist';
-
-interface CompareEntry {
-  id: string;
-  handle: string;
-  title: string;
-  image: string;
-  price: {amount: string; currencyCode: string} | null;
-}
-
-interface WishlistEntry {
-  id: string;
-  handle: string;
-}
-
-function getCompareList(): CompareEntry[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = JSON.parse(window.localStorage.getItem(COMPARE_KEY) ?? '[]');
-    return Array.isArray(raw) ? raw : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveCompareList(list: CompareEntry[]) {
-  try {
-    window.localStorage.setItem(COMPARE_KEY, JSON.stringify(list));
-  } catch {
-    // localStorage unavailable (private mode, quota, etc.) — fail silently
-  }
-}
-
-function getWishlistList(): WishlistEntry[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = JSON.parse(window.localStorage.getItem(WISHLIST_KEY) ?? '[]');
-    return Array.isArray(raw) ? raw : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveWishlistList(list: WishlistEntry[]) {
-  try {
-    window.localStorage.setItem(WISHLIST_KEY, JSON.stringify(list));
-  } catch {
-    // localStorage unavailable — fail silently
-  }
-}
 
 // Shopify's standard `reviews.rating` metafield value is a JSON string:
 // {"value":"4.3","scale_min":"1","scale_max":"5"}
@@ -117,62 +78,87 @@ export function ProductCard({product, showVendor = true, loading = 'lazy'}: Prod
 
   const [isComparing, setIsComparing] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  // Shown briefly on the compare checkbox when COMPARE_MAX is hit, since
+  // silently un-checking the box with no explanation (the old behavior)
+  // left the user guessing why nothing happened.
+  const [compareLimitHit, setCompareLimitHit] = useState(false);
 
+  // Sync on mount AND whenever compare/wishlist changes from anywhere
+  // else — another card, CompareBar/WishlistBar's remove buttons, the
+  // /compare or /wishlist pages, or another tab via the native `storage`
+  // event. Previously this only ran once on mount, so toggling a product
+  // off from CompareBar (for example) left this card's checkbox showing
+  // checked until the page rerendered or navigated.
   useEffect(() => {
-    const compareList = getCompareList();
-    setIsComparing(compareList.some((entry) => entry.id === product.id));
+    setIsComparing(readCompareList().some((entry) => entry.id === product.id));
+    setIsWishlisted(readWishlist().some((entry) => entry.id === product.id));
 
-    const wishlist = getWishlistList();
-    setIsWishlisted(wishlist.some((entry) => entry.id === product.id));
+    function onCompareUpdated(e: Event) {
+      const detail = (e as CustomEvent<{items: CompareEntry[]}>).detail;
+      const list = detail?.items ?? readCompareList();
+      setIsComparing(list.some((entry) => entry.id === product.id));
+    }
+
+    function onWishlistUpdated(e: Event) {
+      const detail = (e as CustomEvent<{items: WishlistEntry[]}>).detail;
+      const list = detail?.items ?? readWishlist();
+      setIsWishlisted(list.some((entry) => entry.id === product.id));
+    }
+
+    function onStorage(e: StorageEvent) {
+      if (e.key === COMPARE_KEY) {
+        setIsComparing(readCompareList().some((entry) => entry.id === product.id));
+      }
+      if (e.key === WISHLIST_KEY) {
+        setIsWishlisted(readWishlist().some((entry) => entry.id === product.id));
+      }
+    }
+
+    document.addEventListener('compare:updated', onCompareUpdated);
+    document.addEventListener('wishlist:updated', onWishlistUpdated);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      document.removeEventListener('compare:updated', onCompareUpdated);
+      document.removeEventListener('wishlist:updated', onWishlistUpdated);
+      window.removeEventListener('storage', onStorage);
+    };
   }, [product.id]);
 
   function handleCompareChange(e: React.ChangeEvent<HTMLInputElement>) {
     const checked = e.target.checked;
-    const list = getCompareList();
-    const idx = list.findIndex((entry) => entry.id === product.id);
 
     if (checked) {
-      if (list.length >= COMPARE_MAX) {
-        e.target.checked = false;
-        return;
-      }
-      list.push({
+      const entry: CompareEntry = {
         id: product.id,
         handle: product.handle,
         title: product.title,
         image: image?.url ?? '',
         price: price ? {amount: price.amount, currencyCode: price.currencyCode} : null,
-      });
-    } else if (idx !== -1) {
-      list.splice(idx, 1);
+      };
+      const {added} = addToCompare(entry);
+      if (!added) {
+        e.target.checked = false;
+        setCompareLimitHit(true);
+        window.setTimeout(() => setCompareLimitHit(false), 2500);
+        return;
+      }
+      setIsComparing(true);
+    } else {
+      removeFromCompare(product.id);
+      setIsComparing(false);
     }
-
-    saveCompareList(list);
-    setIsComparing(checked);
-    document.dispatchEvent(
-      new CustomEvent('compare:updated', {bubbles: true, detail: {items: list}}),
-    );
   }
 
   function handleWishlistToggle() {
-    const list = getWishlistList();
-    const idx = list.findIndex((entry) => entry.id === product.id);
-    const next = !isWishlisted;
-
-    if (next) {
-      if (idx === -1) list.push({id: product.id, handle: product.handle});
-    } else if (idx !== -1) {
-      list.splice(idx, 1);
-    }
-
-    saveWishlistList(list);
-    setIsWishlisted(next);
-    document.dispatchEvent(
-      new CustomEvent('wishlist:toggle', {
-        bubbles: true,
-        detail: {productId: product.id, wishlisted: next},
-      }),
-    );
+    const entry: WishlistEntry = {
+      id: product.id,
+      handle: product.handle,
+      title: product.title,
+      image: image?.url ?? '',
+      price: price ? {amount: price.amount, currencyCode: price.currencyCode} : null,
+    };
+    const {wishlisted} = toggleWishlistEntry(entry);
+    setIsWishlisted(wishlisted);
   }
 
   const lines: Array<OptimisticCartLineInput> = variant
@@ -298,7 +284,9 @@ export function ProductCard({product, showVendor = true, loading = 'lazy'}: Prod
                 onChange={handleCompareChange}
                 aria-label={`Compare ${product.title}`}
               />
-              <span className="product-card__compare-text">Compare</span>
+              <span className="product-card__compare-text">
+                {compareLimitHit ? `Limit reached (${COMPARE_MAX})` : 'Compare'}
+              </span>
             </label>
           </div>
         )}
