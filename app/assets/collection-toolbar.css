@@ -1,4 +1,4 @@
-/* app/assets/collection-toolbar.css */
+// app/assets/collection-toolbar.css
 
 .collection-toolbar {
   display: flex;
@@ -8,6 +8,11 @@
   padding-bottom: 16px;
   border-bottom: 2px solid #0d0d0d;
   margin-bottom: 24px;
+  /* Needed now that this element is sticky (via the sticky-under-header
+     class added in CollectionToolbar.tsx) — without an opaque
+     background, the product grid scrolls up visibly underneath/through
+     it instead of being covered by it. */
+  background: #f7f6f4;
 }
 
 .tab-switcher {

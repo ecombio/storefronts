@@ -1,0 +1,43 @@
+// app/assets/sticky-header.css
+/*
+ * Pairs with app/hooks/useHeaderHeightSync.ts (called from
+ * app/sections/Header.tsx).
+ *
+ * Header.tsx already handles its own hide/show via Tailwind classes
+ * (`-translate-y-full` / `translate-y-0`) — this file does NOT style
+ * the header itself. It only provides:
+ * 1. A fallback for --header-height before the ResizeObserver runs.
+ * 2. Coordination rules for anything that sticks directly below the
+ *    header (CollectionToolbar), so it shares the same offset and
+ *    closes the gap when the header hides.
+ *
+ * CollectionToolbar.tsx measures its OWN height the same way (writing
+ * --toolbar-height instead of --header-height) so that
+ * app/assets/collection-filters.css can stick the filter panel below
+ * BOTH the header and the toolbar, not just the header. If you change
+ * this file's `top: 0` on `html.header-hidden .sticky-under-header`,
+ * update the matching `html.header-hidden` rule in
+ * collection-filters.css too — the two are meant to stay in sync.
+ */
+
+:root {
+  --header-height: 64px;
+}
+
+/* Apply this class to whatever wraps CollectionToolbar. */
+.sticky-under-header {
+  position: sticky;
+  top: var(--header-height);
+  z-index: 40;
+  transition: top 0.25s ease;
+}
+
+html.header-hidden .sticky-under-header {
+  top: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticky-under-header {
+    transition: none;
+  }
+}

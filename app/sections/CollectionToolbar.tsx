@@ -1,5 +1,6 @@
 // app/sections/CollectionToolbar.tsx
 
+import {useEffect, useRef} from 'react';
 import {Link, useLocation} from 'react-router';
 
 const TAB_PARAM_NAME = 'tab';
@@ -20,12 +21,44 @@ const TABS: {id: CollectionTab; label: string}[] = [
  * articles (from the collection's `custom.posts` metafield). Tab
  * state lives in the `?tab=` URL param, same pattern CollectionFilters
  * uses for its own params, so it's shareable and needs no client JS.
+ *
+ * `sticky-under-header` (app/assets/sticky-header.css) sticks this
+ * below the header and closes the gap when the header hides on
+ * scroll. On top of that, this component measures its OWN rendered
+ * height via ResizeObserver and writes it to `--toolbar-height` on
+ * <html> — CollectionFilters.tsx reads that var to stick itself below
+ * the toolbar rather than underneath/behind it. Without this, the
+ * filter panel and the toolbar both compute their sticky offset from
+ * only the header's height and end up overlapping once both are
+ * stuck (toolbar tabs rendering on top of the filter's "Filters"
+ * heading).
  */
 export function CollectionToolbar({activeTab}: CollectionToolbarProps) {
   const location = useLocation();
+  const toolbarRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = toolbarRef.current;
+    if (!el) return;
+
+    const resizeObserver = new ResizeObserver(([entry]) => {
+      document.documentElement.style.setProperty(
+        '--toolbar-height',
+        `${entry.contentRect.height}px`,
+      );
+    });
+    resizeObserver.observe(el);
+
+    return () => resizeObserver.disconnect();
+  }, []);
 
   return (
-    <div className="collection-toolbar" role="navigation" aria-label="Collection navigation">
+    <div
+      ref={toolbarRef}
+      className="collection-toolbar sticky-under-header"
+      role="navigation"
+      aria-label="Collection navigation"
+    >
       <div className="tab-switcher" role="tablist" aria-label="Collection view">
         {TABS.map((tab) => {
           const params = new URLSearchParams(location.search);

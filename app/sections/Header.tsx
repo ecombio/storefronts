@@ -1,3 +1,4 @@
+// app/sections/Header.tsx
 import {Suspense, useEffect, useRef, useState} from 'react';
 import {Await, Link, NavLink, useAsyncValue} from 'react-router';
 import {ShoppingBag, User} from 'lucide-react';
@@ -17,6 +18,7 @@ import {AnnouncementBar} from './AnnouncementBar';
 export {AnnouncementBar} from './AnnouncementBar';
 import type {CollectionImage} from '~/config/Header.constants';
 import wordmarkSrc from '~/assets/wordmark.svg';
+import {useHeaderHeightSync} from '~/hooks/useHeaderHeightSync';
 
 export interface HeaderProps {
   header: HeaderQuery;
@@ -40,6 +42,13 @@ export function Header({
   const {shop, menu} = header;
   const [hidden, setHidden] = useState(false);
   const lastScrollY = useRef(0);
+  const headerRef = useRef<HTMLElement>(null);
+
+  // Exposes this header's real height + hidden state to anything
+  // outside it (CollectionFilters, CollectionToolbar) via a CSS
+  // variable + class on <html>. Does not touch the scroll-direction
+  // logic below — that stays exactly as it was.
+  useHeaderHeightSync(headerRef, hidden);
 
   useEffect(() => {
     lastScrollY.current = window.scrollY;
@@ -73,7 +82,7 @@ export function Header({
     // The hide-on-scroll transform is applied to the inner wrapper
     // below instead, which is a plain in-flow child, not the sticky
     // element itself.
-    <header className="sticky top-0 z-50 w-full">
+    <header ref={headerRef} className="sticky top-0 z-50 w-full">
       <div
         className={`w-full bg-white font-sans shadow-[0_4px_20px_rgba(0,0,0,0.10)] transition-transform duration-300 ${
           hidden ? '-translate-y-full' : 'translate-y-0'

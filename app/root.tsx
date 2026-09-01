@@ -37,6 +37,7 @@ import imageCarouselStyles from '~/assets/image-carousel.css?url';
 import slideshowStyles from '~/assets/slideshow.css?url';
 import collectionFiltersStyles from '~/assets/collection-filters.css?url';
 import collectionToolbarStyles from '~/assets/collection-toolbar.css?url';
+import stickyHeaderStyles from '~/assets/sticky-header.css?url';
 import articleCardStyles from '~/assets/article-card.css?url';
 import subCollectionStyles from '~/assets/sub-collection.css?url';
 import collectionAfterItemsStyles from '~/assets/collection-after-items.css?url';
@@ -210,6 +211,7 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={slideshowStyles}></link>
         <link rel="stylesheet" href={collectionFiltersStyles}></link>
         <link rel="stylesheet" href={collectionToolbarStyles}></link>
+        <link rel="stylesheet" href={stickyHeaderStyles}></link>
         <link rel="stylesheet" href={articleCardStyles}></link>
         <link rel="stylesheet" href={subCollectionStyles}></link>
         <link rel="stylesheet" href={collectionAfterItemsStyles}></link>
