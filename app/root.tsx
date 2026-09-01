@@ -42,6 +42,7 @@ import stickyHeaderStyles from '~/assets/sticky-header.css?url';
 import articleCardStyles from '~/assets/article-card.css?url';
 import subCollectionStyles from '~/assets/sub-collection.css?url';
 import collectionAfterItemsStyles from '~/assets/collection-after-items.css?url';
+import cartDrawerStyles from '~/assets/cart-drawer.css?url';
 import tailwindCss from '~/assets/tailwind.css?url';
 import {PageLayout} from './components/PageLayout';
 
@@ -210,6 +211,7 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={articleCardStyles}></link>
         <link rel="stylesheet" href={subCollectionStyles}></link>
         <link rel="stylesheet" href={collectionAfterItemsStyles}></link>
+        <link rel="stylesheet" href={cartDrawerStyles}></link>
         <Meta />
         <Links />
       </head>

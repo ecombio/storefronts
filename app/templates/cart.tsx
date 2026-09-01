@@ -1,557 +1,125 @@
-import {Suspense, useState} from 'react';
-import {useLoaderData, Await} from 'react-router';
-import type {Route} from './+types/products.$handle';
-import {
-  Analytics,
-  getSelectedProductOptions,
-  useOptimisticVariant,
-  getProductOptions,
-  getAdjacentAndFirstAvailableVariants,
-  useSelectedOptionInUrlParam,
-} from '@shopify/hydrogen';
-import {redirectIfHandleIsLocalized} from '~/lib/redirect';
-import {
-  getYotpoReviews,
-  YOTPO_SORT_OPTIONS,
-  type YotpoSortKey,
-} from '~/lib/yotpo.server';
-import {getProductRecommendations} from '~/lib/recommendations.server';
-import {ReviewModal} from '~/snippets/ReviewModal';
-import {StarRating} from '~/snippets/StarRating';
-import {CustomerReviews} from '~/sections/CustomerReviews';
-import {ProductMedia} from '~/sections/ProductMedia';
-import {ProductCarousel} from '~/sections/ProductCarousel';
-import {ProductPrice} from '~/snippets/ProductPrice';
-import {ProductForm} from '~/sections/ProductForm';
-import {ProductDescriptionPanels} from '~/snippets/ProductDescriptionPanels';
-import {SaleBadge} from '~/snippets/SaleBadge';
-import {Breadcrumbs} from '~/snippets/Breadcrumbs';
+// app/templates/cart.tsx
 
-// Collections fetched per product for breadcrumb parent/child
-// resolution. Must cover the vendor auto-collection plus every real
-// collection; bump if a product with more collections gets an
-// incomplete breadcrumb trail.
-const BREADCRUMB_COLLECTIONS_TO_FETCH = 20;
+import {useLoaderData} from 'react-router';
+import {CartForm, type CartQueryDataReturn} from '@shopify/hydrogen';
+import {data} from 'react-router';
+import type {Route} from './+types/cart';
+import {CartMain} from '~/sections/CartMain';
 
-// This API version has no `productsCount` field, so collection size
-// is approximated by capping product ids fetched per collection.
-// Two collections both over this cap will tie and lose ranking; raise
-// if breadcrumbs pick the wrong parent/child.
-const BREADCRUMB_COLLECTION_PRODUCTS_CAP = 50;
+export const meta: Route.MetaFunction = () => {
+  return [{title: `Cart`}];
+};
 
-export const meta: Route.MetaFunction = ({data}) => {
-  return [
-    {title: `Hydrogen | ${data?.product.title ?? ''}`},
+export async function action({request, context}: Route.ActionArgs) {
+  const {cart} = context;
+
+  const formData = await request.formData();
+
+  const {action, inputs} = CartForm.getFormInput(formData);
+
+  if (!action) {
+    throw new Error('No action provided');
+  }
+
+  let status = 200;
+  let result: CartQueryDataReturn;
+
+  switch (action) {
+    case CartForm.ACTIONS.LinesAdd:
+      result = await cart.addLines(inputs.lines);
+      break;
+    case CartForm.ACTIONS.LinesUpdate:
+      result = await cart.updateLines(inputs.lines);
+      break;
+    case CartForm.ACTIONS.LinesRemove:
+      result = await cart.removeLines(inputs.lineIds);
+      break;
+    case CartForm.ACTIONS.DiscountCodesUpdate: {
+      const formDiscountCode = inputs.discountCode;
+      const discountCodes = (
+        formDiscountCode ? [formDiscountCode] : []
+      ) as string[];
+      discountCodes.push(...inputs.discountCodes);
+      result = await cart.updateDiscountCodes(discountCodes);
+      break;
+    }
+    case CartForm.ACTIONS.GiftCardCodesUpdate: {
+      const formGiftCardCode = inputs.giftCardCode;
+      const giftCardCodes = (
+        formGiftCardCode ? [formGiftCardCode] : []
+      ) as string[];
+      giftCardCodes.push(...inputs.giftCardCodes);
+      result = await cart.updateGiftCardCodes(giftCardCodes);
+      break;
+    }
+    // KNOWN LIMITATION: cart.updateGiftCardCodes() REPLACES the full
+    // set of applied gift cards and requires their plaintext codes.
+    // Once a code is applied, Shopify only ever returns a masked
+    // `lastCharacters` back — never the original code — so there is
+    // no way from this route alone to "add one more while keeping
+    // the others" correctly. This case applies ONLY the newly
+    // submitted code, which will drop any other gift card that was
+    // already applied. A correct multi-gift-card flow requires
+    // persisting the plaintext codes as they're applied (session or
+    // cookie) so they can be resubmitted here — not implemented.
+    case CartForm.ACTIONS.GiftCardCodesAdd: {
+      const formGiftCardCode = inputs.giftCardCode as string | undefined;
+      const giftCardCodes = formGiftCardCode ? [formGiftCardCode] : [];
+      result = await cart.updateGiftCardCodes(giftCardCodes);
+      break;
+    }
+    // Same limitation as above, in reverse: this clears ALL applied
+    // gift cards rather than removing only the targeted one, since
+    // the remaining codes aren't recoverable here to resubmit.
+    case CartForm.ACTIONS.GiftCardCodesRemove: {
+      result = await cart.updateGiftCardCodes([]);
+      break;
+    }
+    case CartForm.ACTIONS.BuyerIdentityUpdate: {
+      result = await cart.updateBuyerIdentity({
+        ...inputs.buyerIdentity,
+      });
+      break;
+    }
+    default:
+      throw new Error(`${action} cart action is not defined`);
+  }
+
+  const cartId = result.cart.id;
+  const headers = cart.setCartId(result.cart.id);
+  const {cart: cartResult, errors, warnings} = result;
+
+  const redirectTo = formData.get('redirectTo') ?? null;
+  if (typeof redirectTo === 'string') {
+    status = 303;
+    headers.set('Location', redirectTo);
+  }
+
+  headers.append('Set-Cookie', await context.session.commit());
+
+  return data(
     {
-      rel: 'canonical',
-      href: `/products/${data?.product.handle}`,
+      cart: cartResult,
+      errors,
+      warnings,
+      analytics: {
+        cartId,
+      },
     },
-  ];
-};
-
-export async function loader(args: Route.LoaderArgs) {
-  const criticalData = await loadCriticalData(args);
-  const deferredData = loadDeferredData(args, criticalData.product.id);
-  return {...deferredData, ...criticalData};
-}
-
-// Validates the `?sort=` URL param against real key membership rather
-// than blindly casting it. Previously, an unrecognized value (e.g.
-// `?sort=bogus`) still fell through to YOTPO_SORT_OPTIONS.top when
-// building the Yotpo request, but the *raw, unvalidated* string was
-// returned to the client as `currentSortKey` — so the UI showed
-// "Sort by: undefined", no option appeared selected, and every
-// subsequent "Load more" request carried the bogus sort forward. This
-// resolves once, and the same resolved value is used both to build
-// the Yotpo request and as the value handed to the client.
-function resolveSortKey(value: string | null): YotpoSortKey {
-  return value !== null && value in YOTPO_SORT_OPTIONS
-    ? (value as YotpoSortKey)
-    : 'top';
-}
-
-async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
-  const {handle} = params;
-  const {storefront, env} = context;
-
-  if (!handle) {
-    throw new Error('Expected product handle to be defined');
-  }
-
-  const [{product, shop, shippingPage, refundPage, warrantyPage}] =
-    await Promise.all([
-      storefront.query(PRODUCT_QUERY, {
-        variables: {
-          handle,
-          selectedOptions: getSelectedProductOptions(request),
-          breadcrumbCollectionsFirst: BREADCRUMB_COLLECTIONS_TO_FETCH,
-          breadcrumbCollectionProductsCap: BREADCRUMB_COLLECTION_PRODUCTS_CAP,
-        },
-      }),
-    ]);
-
-  if (!product?.id) {
-    throw new Response(null, {status: 404});
-  }
-
-  redirectIfHandleIsLocalized(request, {handle, data: product});
-
-  const yotpoProductId = product.id.split('/').pop()!;
-
-  // Sort selection lives in the URL (?sort=recent etc.) so it's
-  // shareable/linkable and survives a full page reload — see
-  // CustomerReviews.tsx's handleSortChange.
-  const url = new URL(request.url);
-  const sortKey = resolveSortKey(url.searchParams.get('sort'));
-  const sortConfig = YOTPO_SORT_OPTIONS[sortKey];
-
-  const yotpoReviews = env.PUBLIC_YOTPO_APP_KEY
-    ? await getYotpoReviews(env.PUBLIC_YOTPO_APP_KEY, yotpoProductId, {
-        sort: sortConfig.sort,
-        direction: sortConfig.direction,
-      })
-    : null;
-
-  const policyFields = product.policyMetafield?.reference;
-  const {parentCollection, childCollection} = getBreadcrumbCollections(product);
-
-  return {
-    product,
-    shopUrl: context.env.PUBLIC_STORE_DOMAIN,
-    parentCollection,
-    childCollection,
-    yotpoReviews,
-    currentSortKey: sortKey,
-    shippingHtml:
-      readSafeMetafieldHtml(policyFields?.shippingPolicyField) ??
-      nullIfBlank(shippingPage?.body) ??
-      nullIfBlank(shop?.shippingPolicy?.body),
-    refundHtml:
-      readSafeMetafieldHtml(policyFields?.returnsRefundsField) ??
-      nullIfBlank(refundPage?.body) ??
-      nullIfBlank(shop?.refundPolicy?.body),
-    // No shop-level equivalent for warranty — static fallback message.
-    warrantyHtml:
-      readSafeMetafieldHtml(policyFields?.warrantyPolicyField) ??
-      nullIfBlank(warrantyPage?.body) ??
-      '<p>Please contact us for warranty information.</p>',
-  };
-}
-
-// Non-critical: fired after loadCriticalData resolves (so we have the
-// product id), but NOT awaited here — the promise streams into the
-// page via <Suspense>/<Await> below so recommendations never delay
-// the critical product render (price, variant, gallery).
-function loadDeferredData({context}: Route.LoaderArgs, productId: string) {
-  return {
-    recommended: getProductRecommendations(context, productId),
-  };
-}
-
-// JS port of Liquid's `| handleize`: lowercase, collapse non-alphanumerics
-// to a single hyphen, trim edges. Doesn't transliterate accented/non-Latin
-// characters like Shopify's real handleize does.
-function handleize(value: string): string {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
-
-type BreadcrumbCollectionCandidate = {
-  handle: string;
-  title: string;
-  products?: {nodes?: {id: string}[] | null} | null;
-};
-
-// Ported from breadcrumbs.liquid: excludes the product's vendor
-// auto-collection (by handleized vendor name), then picks the largest
-// remaining collection as "parent" and the smallest as "child". Both
-// optional. "Size" is the capped product-id count from the query
-// (see BREADCRUMB_COLLECTION_PRODUCTS_CAP above), not a true total.
-function getBreadcrumbCollections(product: {
-  vendor?: string | null;
-  collections?: {nodes?: BreadcrumbCollectionCandidate[] | null} | null;
-}): {
-  parentCollection: BreadcrumbCollectionCandidate | null;
-  childCollection: BreadcrumbCollectionCandidate | null;
-} {
-  const collections = product.collections?.nodes ?? [];
-  const vendorHandle = product.vendor ? handleize(product.vendor) : '';
-  const sizeOf = (col: BreadcrumbCollectionCandidate) =>
-    col.products?.nodes?.length ?? 0;
-
-  let parentCollection: BreadcrumbCollectionCandidate | null = null;
-  let largestCount = -1;
-
-  for (const col of collections) {
-    if (col.handle === vendorHandle) continue;
-    const count = sizeOf(col);
-    if (count > largestCount) {
-      parentCollection = col;
-      largestCount = count;
-    }
-  }
-
-  let childCollection: BreadcrumbCollectionCandidate | null = null;
-  let smallestCount = Infinity;
-
-  for (const col of collections) {
-    if (col.handle === vendorHandle) continue;
-    if (col.handle === parentCollection?.handle) continue;
-    const count = sizeOf(col);
-    if (count < smallestCount) {
-      childCollection = col;
-      smallestCount = count;
-    }
-  }
-
-  return {parentCollection, childCollection};
-}
-
-function nullIfBlank(value?: string | null): string | null {
-  return value?.trim() ? value : null;
-}
-
-// Minimal HTML-escaping for text interpolated into a raw HTML string
-// before it's handed to dangerouslySetInnerHTML. The multi_line_text_field
-// branch below builds HTML by string interpolation rather than a real
-// templating layer, so unescaped `<`/`>`/`&` in the metaobject field's
-// value would be parsed as markup instead of rendered as literal text.
-// Merchant-authored content is lower risk than user input, but there's
-// no reason to build raw HTML from unescaped text when it's this cheap
-// to avoid.
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-}
-
-// Renders a metaobject field as HTML only for types safe to drop into
-// dangerouslySetInnerHTML. rich_text_field's value is Shopify's rich-text
-// JSON AST, not HTML — no parser for that here, so it's skipped rather
-// than rendered raw.
-function readSafeMetafieldHtml(
-  field?: {value: string; type: string} | null,
-): string | null {
-  if (!field || !field.value.trim()) return null;
-
-  if (field.type === 'multi_line_text_field') {
-    return field.value
-      .split('\n')
-      .map((line) => `<p>${escapeHtml(line)}</p>`)
-      .join('');
-  }
-
-  if (field.type === 'html' || field.type === 'single_line_text_field') {
-    return field.value;
-  }
-
-  return null;
-}
-
-export default function Product() {
-  const {
-    product,
-    shopUrl,
-    shippingHtml,
-    refundHtml,
-    warrantyHtml,
-    parentCollection,
-    childCollection,
-    yotpoReviews,
-    currentSortKey,
-    recommended,
-  } = useLoaderData<typeof loader>();
-
-  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-
-  const selectedVariant = useOptimisticVariant(
-    product.selectedOrFirstAvailableVariant,
-    getAdjacentAndFirstAvailableVariants(product),
+    {status, headers},
   );
+}
 
-  useSelectedOptionInUrlParam(selectedVariant.selectedOptions);
+export async function loader({context}: Route.LoaderArgs) {
+  const {cart} = context;
+  return await cart.get();
+}
 
-  const productOptions = getProductOptions({
-    ...product,
-    selectedOrFirstAvailableVariant: selectedVariant,
-  });
-
-  const {title, descriptionHtml} = product;
-  const yotpoProductId = product.id.split('/').pop();
-  const productUrl = `https://${shopUrl}/products/${product.handle}`;
-
+export default function Cart() {
+  const cart = useLoaderData<typeof loader>();
   return (
-    <div style={{display: 'flex', flexDirection: 'column', gap: '2rem'}}>
-      <Breadcrumbs
-        productTitle={title}
-        parentCollection={parentCollection}
-        childCollection={childCollection}
-      />
-      {/*
-        Was an inline `style={{display: 'grid', gridTemplateColumns: '1fr 1fr', ...}}`
-        — inline styles can't hold a media query, so this stayed a fixed
-        two-column grid at every viewport width. .product-gallery (inside
-        ProductMedia, styled in main-product.css) already collapses to a
-        stacked mobile layout under 768px, but with no matching change
-        here it was collapsing *inside* a column still stuck at
-        half-width. Moved into main-product.css as `.product-layout`,
-        which stacks to one column at the same 768px breakpoint so the
-        two stay in sync.
-      */}
-      <div className="product-layout">
-        <ProductMedia
-          images={product.images?.nodes ?? []}
-          selectedVariantImage={selectedVariant?.image}
-          productTitle={title}
-        />
-
-        {/* Inlined from ProductDetail.tsx */}
-        <div className="product-detail">
-          <SaleBadge
-            price={selectedVariant?.price}
-            compareAtPrice={selectedVariant?.compareAtPrice}
-          />
-          <h1 className="product-detail-title">{title}</h1>
-          <StarRating
-            averageScore={yotpoReviews?.bottomline.averageScore ?? 0}
-            totalReviews={yotpoReviews?.bottomline.totalReviews ?? 0}
-            onReviewsClick={() =>
-              document
-                .getElementById('reviews')
-                ?.scrollIntoView({behavior: 'smooth'})
-            }
-            onWriteReviewClick={() => setIsReviewModalOpen(true)}
-          />
-          <ProductPrice
-            price={selectedVariant?.price}
-            compareAtPrice={selectedVariant?.compareAtPrice}
-          />
-          <ProductForm
-            productOptions={productOptions}
-            selectedVariant={selectedVariant}
-          />
-          <ProductDescriptionPanels
-            panels={[
-              {id: 'description', title: 'Description', html: descriptionHtml},
-              {
-                id: 'shipping',
-                title: 'Shipping Policy',
-                html: shippingHtml ?? '',
-              },
-              {
-                id: 'refund',
-                title: 'Refund & Return Policy',
-                html: refundHtml ?? '',
-              },
-              {
-                id: 'warranty',
-                title: 'Warranty',
-                html: warrantyHtml ?? '',
-              },
-            ]}
-          />
-        </div>
-      </div>
-      <div id="reviews">
-        <CustomerReviews
-          productId={yotpoProductId ?? ''}
-          productTitle={product.title}
-          productUrl={productUrl}
-          productImageUrl={selectedVariant?.image?.url}
-          initialData={yotpoReviews}
-          currentSortKey={currentSortKey}
-          onWriteReviewClick={() => setIsReviewModalOpen(true)}
-        />
-      </div>
-      <Suspense fallback={null}>
-        <Await resolve={recommended} errorElement={null}>
-          {(items) =>
-            items.length > 0 ? (
-              <ProductCarousel title="You may also like" products={items} />
-            ) : null
-          }
-        </Await>
-      </Suspense>
-      {isReviewModalOpen && yotpoProductId && (
-        <ReviewModal
-          productId={yotpoProductId}
-          productTitle={product.title}
-          productUrl={productUrl}
-          productImageUrl={selectedVariant?.image?.url}
-          onClose={() => setIsReviewModalOpen(false)}
-        />
-      )}
-      <Analytics.ProductView
-        data={{
-          products: [
-            {
-              id: product.id,
-              title: product.title,
-              // Was `selectedVariant?.price.amount` — the `?.` stopped at
-              // selectedVariant, not price, so a variant with no price
-              // would throw here instead of falling back to '0'.
-              price: selectedVariant?.price?.amount || '0',
-              vendor: product.vendor,
-              variantId: selectedVariant?.id || '',
-              variantTitle: selectedVariant?.title || '',
-              quantity: 1,
-            },
-          ],
-        }}
-      />
+    <div className="cart">
+      <CartMain layout="page" cart={cart} />
     </div>
   );
 }
-
-const PRODUCT_VARIANT_FRAGMENT = `#graphql
-  fragment ProductVariant on ProductVariant {
-    availableForSale
-    compareAtPrice {
-      amount
-      currencyCode
-    }
-    id
-    image {
-      __typename
-      id
-      url
-      altText
-      width
-      height
-    }
-    price {
-      amount
-      currencyCode
-    }
-    product {
-      title
-      handle
-    }
-    selectedOptions {
-      name
-      value
-    }
-    sku
-    title
-    unitPrice {
-      amount
-      currencyCode
-    }
-  }
-` as const;
-
-const PRODUCT_FRAGMENT = `#graphql
-  fragment Product on Product {
-    id
-    title
-    vendor
-    handle
-    descriptionHtml
-    description
-    encodedVariantExistence
-    encodedVariantAvailability
-    images(first: 12) {
-      nodes {
-        id
-        url
-        altText
-        width
-        height
-      }
-    }
-    collections(first: $breadcrumbCollectionsFirst) {
-      nodes {
-        handle
-        title
-        products(first: $breadcrumbCollectionProductsCap) {
-          nodes {
-            id
-          }
-        }
-      }
-    }
-    options {
-      name
-      optionValues {
-        name
-        firstSelectableVariant {
-          ...ProductVariant
-        }
-        swatch {
-          color
-          image {
-            previewImage {
-              url
-            }
-          }
-        }
-      }
-    }
-    selectedOrFirstAvailableVariant(selectedOptions: $selectedOptions, ignoreUnknownOptions: true, caseInsensitiveMatch: true) {
-      ...ProductVariant
-    }
-    adjacentVariants (selectedOptions: $selectedOptions) {
-      ...ProductVariant
-    }
-    seo {
-      description
-      title
-    }
-    policyMetafield: metafield(namespace: "custom", key: "product_policy") {
-      reference {
-        ... on Metaobject {
-          shippingPolicyField: field(key: "shipping_policy") {
-            value
-            type
-          }
-          returnsRefundsField: field(key: "returns_refunds") {
-            value
-            type
-          }
-          warrantyPolicyField: field(key: "warranty_policy") {
-            value
-            type
-          }
-        }
-      }
-    }
-  }
-  ${PRODUCT_VARIANT_FRAGMENT}
-` as const;
-
-const PRODUCT_QUERY = `#graphql
-  query Product(
-    $country: CountryCode
-    $handle: String!
-    $language: LanguageCode
-    $selectedOptions: [SelectedOptionInput!]!
-    $breadcrumbCollectionsFirst: Int!
-    $breadcrumbCollectionProductsCap: Int!
-  ) @inContext(country: $country, language: $language) {
-    product(handle: $handle) {
-      ...Product
-    }
-    shop {
-      shippingPolicy {
-        body
-      }
-      refundPolicy {
-        body
-      }
-    }
-    shippingPage: page(handle: "shipping-policy") {
-      body
-    }
-    refundPage: page(handle: "refund-policy") {
-      body
-    }
-    warrantyPage: page(handle: "warranty") {
-      body
-    }
-  }
-  ${PRODUCT_FRAGMENT}
-` as const;

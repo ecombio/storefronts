@@ -57,6 +57,7 @@ export function Aside({
     <div
       aria-modal
       className={`overlay ${expanded ? 'expanded' : ''}`}
+      data-type={type}
       role="dialog"
       aria-labelledby={id}
     >

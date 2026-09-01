@@ -27,7 +27,7 @@ export function StarRating({
   totalReviews: number;
   /** Optional: scroll to / focus the reviews widget below when clicked. */
   onReviewsClick?: () => void;
-  /** Optional: separate handler for the empty-state "Write a review" button. Falls back to onReviewsClick if omitted. */
+  /** Optional: separate handler for the empty-state "Write a review" button. Fallsback to onReviewsClick if omitted. */
   onWriteReviewClick?: () => void;
 }) {
   const hasReviews = totalReviews > 0;

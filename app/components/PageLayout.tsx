@@ -1,13 +1,12 @@
-import {Await, Link} from 'react-router';
-import {Suspense, useId} from 'react';
-import type {
-  CartApiQueryFragment,
-  HeaderQuery,
-} from 'storefrontapi.generated';
+// app/components/PageLayout.tsx
+
+import {Link} from 'react-router';
+import {useId} from 'react';
+import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
 import {Aside} from '~/components/Aside';
 import {Footer, type FooterQueryData} from '~/sections/Footer';
 import {Header, HeaderMenu} from '~/sections/Header';
-import {CartMain} from '~/sections/CartMain';
+import {CartDrawer} from '~/sections/CartDrawer';
 import {
   SEARCH_ENDPOINT,
   SearchFormPredictive,
@@ -36,7 +35,7 @@ export function PageLayout({
 }: PageLayoutProps) {
   return (
     <Aside.Provider>
-      <CartAside cart={cart} />
+      <CartDrawer cart={cart} />
       <SearchAside />
       <MobileMenuAside header={header} publicStoreDomain={publicStoreDomain} />
       {header && (
@@ -55,20 +54,6 @@ export function PageLayout({
         publicStoreDomain={publicStoreDomain}
       />
     </Aside.Provider>
-  );
-}
-
-function CartAside({cart}: {cart: PageLayoutProps['cart']}) {
-  return (
-    <Aside type="cart" heading="CART">
-      <Suspense fallback={<p>Loading cart ...</p>}>
-        <Await resolve={cart}>
-          {(cart) => {
-            return <CartMain cart={cart} layout="aside" />;
-          }}
-        </Await>
-      </Suspense>
-    </Aside>
   );
 }
 
