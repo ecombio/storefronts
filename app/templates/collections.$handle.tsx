@@ -6,6 +6,7 @@ import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {CollectionHero} from '~/sections/CollectionHero';
 import {MainCollection, type CollectionTab} from '~/sections/MainCollection';
+import {PRODUCT_CARD_FRAGMENT} from '~/graphql/ProductCardFragment';
 import type {ProductFilter} from '@shopify/hydrogen/storefront-api-types';
 
 const FILTER_URL_PARAM_NAME = 'filter';
@@ -155,33 +156,6 @@ export default function Collection() {
   );
 }
 
-const PRODUCT_ITEM_FRAGMENT = `#graphql
-  fragment MoneyProductItem on MoneyV2 {
-    amount
-    currencyCode
-  }
-  fragment ProductItem on Product {
-    id
-    handle
-    title
-    featuredImage {
-      id
-      altText
-      url
-      width
-      height
-    }
-    priceRange {
-      minVariantPrice {
-        ...MoneyProductItem
-      }
-      maxVariantPrice {
-        ...MoneyProductItem
-      }
-    }
-  }
-` as const;
-
 const ARTICLE_ITEM_FRAGMENT = `#graphql
   fragment ArticleItem on Article {
     id
@@ -222,7 +196,7 @@ const SUB_COLLECTION_ITEM_FRAGMENT = `#graphql
 
 // NOTE: https://shopify.dev/docs/api/storefront/2022-04/objects/collection
 const COLLECTION_QUERY = `#graphql
-  ${PRODUCT_ITEM_FRAGMENT}
+  ${PRODUCT_CARD_FRAGMENT}
   ${ARTICLE_ITEM_FRAGMENT}
   ${SUB_COLLECTION_ITEM_FRAGMENT}
   query Collection(
@@ -286,7 +260,7 @@ const COLLECTION_QUERY = `#graphql
           }
         }
         nodes {
-          ...ProductItem
+          ...ProductCard
         }
         pageInfo {
           hasPreviousPage

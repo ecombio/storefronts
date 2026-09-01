@@ -4,11 +4,6 @@
 /* Layout                                                              */
 /* ------------------------------------------------------------------ */
 
-/* Wraps the toolbar + collection-layout together so the toolbar's
-   sticky positioning is bounded by this element's bottom edge instead
-   of by whatever wraps <MainCollection /> in the route template
-   (which would let it stay stuck well past the end of the actual
-   product/article feed, e.g. through the after-items section). */
 .main-collection {
   position: relative;
 }
@@ -21,8 +16,6 @@
   align-items: start;
 }
 
-/* Disable stickiness below desktop tier — see theme.css --bp-lg
-   (1024px). */
 @media (max-width: 1023px) {
   .collection-layout {
     grid-template-columns: 1fr;
@@ -38,14 +31,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid #0d0d0d;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
   margin-bottom: 24px;
-  /* Needed now that this element is sticky (via the sticky-under-header
-     class added in MainCollection.tsx) — without an opaque
-     background, the product grid scrolls up visibly underneath/through
-     it instead of being covered by it. */
-  background: #f7f6f4;
+  background: var(--color-surface, #ffffff);
 }
 
 .tab-switcher {
@@ -54,23 +43,22 @@
 
 .tab-switcher__tab {
   padding: 10px 4px;
-  margin-right: 20px;
+  margin-right: 24px;
   font-size: 14px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-weight: 600;
   text-decoration: none;
-  color: #8c8c89;
+  color: var(--color-ink-muted, #6b7280);
   border-bottom: 2px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
 }
 
 .tab-switcher__tab:hover {
-  color: #0d0d0d;
+  color: var(--color-ink, #111827);
 }
 
 .tab-switcher__tab--active {
-  color: #0d0d0d;
-  border-bottom-color: #0d0d0d;
+  color: var(--color-ink, #111827);
+  border-bottom-color: var(--color-ink, #111827);
 }
 
 /* ------------------------------------------------------------------ */
@@ -78,28 +66,26 @@
 /* ------------------------------------------------------------------ */
 
 #collection-filters.collection-filters {
-  --gs-black: #0d0d0d;
-  --gs-white: #ffffff;
-  --gs-bg: #f7f6f4;
-  --gs-gray: #8c8c89;
-  --gs-hairline: #e3e1dc;
+  /* Local aliases kept for readability within this file — all resolve
+     to the shared tokens in theme.css, which is the single source of
+     truth. Update colors there, not here. */
+  --gs-black: var(--color-ink, #111827);
+  --gs-white: var(--color-surface, #ffffff);
+  --gs-bg: var(--color-surface, #ffffff);
+  --gs-gray: var(--color-ink-muted, #6b7280);
+  --gs-hairline: var(--color-border, #e5e7eb);
 
   box-sizing: border-box;
   position: sticky;
-  /* Chains BOTH the header's height and the toolbar's height, not
-     just the header's. --toolbar-height is written by the
-     CollectionToolbar logic (ResizeObserver, now inlined in
-     MainCollection.tsx), same pattern as --header-height from
-     useHeaderHeightSync.ts. */
   top: calc(var(--header-height, 64px) + var(--toolbar-height, 56px) + 12px);
   width: 100%;
   max-width: 260px;
-  /* Sits below the header's z-50 but above ordinary page content. */
   z-index: 30;
   max-height: calc(100vh - var(--header-height, 64px) - var(--toolbar-height, 56px) - 24px);
   background: var(--gs-bg);
-  border-radius: 0;
-  box-shadow: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  padding: 4px;
   font-family: inherit;
   font-size: 13px;
   line-height: 1.4;
@@ -107,11 +93,6 @@
   transition: top 0.25s ease, max-height 0.25s ease;
 }
 
-/* When the header hides on scroll-down (sticky-header.css sets the
-   toolbar's own `top: 0` in this state), this panel only needs to
-   clear the toolbar — the header term drops out entirely. Keep in
-   sync with html.header-hidden .sticky-under-header in
-   sticky-header.css. */
 html.header-hidden #collection-filters.collection-filters {
   top: calc(var(--toolbar-height, 56px) + 12px);
   max-height: calc(100vh - var(--toolbar-height, 56px) - 24px);
@@ -128,6 +109,7 @@ html.header-hidden #collection-filters.collection-filters {
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
+  padding: 12px;
 }
 
 html.header-hidden #collection-filters .collection-filters__scroll {
@@ -143,23 +125,24 @@ html.header-hidden #collection-filters .collection-filters__scroll {
   justify-content: space-between;
   padding-bottom: 12px;
   background: var(--gs-bg);
-  border-bottom: 2px solid var(--gs-black);
+  border-bottom: 1px solid var(--gs-hairline);
   margin-bottom: 4px;
 }
 
 #collection-filters .collection-filters__title {
   margin: 0;
-  font-size: 16px;
-  font-weight: 800;
+  font-size: 15px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
+  color: var(--gs-black);
 }
 
 #collection-filters .collection-filters__clear {
   font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: normal;
   text-decoration: underline;
   text-underline-offset: 3px;
   color: var(--gs-gray);
@@ -192,14 +175,13 @@ html.header-hidden #collection-filters .collection-filters__scroll {
 
 #collection-filters .collection-filters__group-title {
   margin: 0;
-  font-size: 13px;
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
+  color: var(--color-ink-secondary, #374151);
 }
 
-/* Hand-drawn plus/minus, not a chevron: a horizontal bar plus a vertical
-   bar that rotates flat to read as a minus when the group is open. */
 #collection-filters .collection-filters__toggle-icon {
   position: relative;
   width: 10px;
@@ -213,7 +195,7 @@ html.header-hidden #collection-filters .collection-filters__scroll {
   position: absolute;
   top: 50%;
   left: 50%;
-  background: var(--gs-black);
+  background: var(--gs-gray);
   transform: translate(-50%, -50%);
 }
 
@@ -246,22 +228,23 @@ html.header-hidden #collection-filters .collection-filters__scroll {
   padding: 0;
 }
 
-/* Signature interaction: selecting a filter inverts the row to solid
-   black/white, rather than a checkbox + check icon. */
 #collection-filters .collection-filters__value {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 7px 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
   text-decoration: none;
   color: var(--gs-black);
   background: transparent;
   border: 1px solid transparent;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 #collection-filters .collection-filters__value:hover {
-  border-color: var(--gs-black);
+  background: var(--color-surface-hover, #f9fafb);
+  border-color: var(--gs-hairline);
 }
 
 #collection-filters .collection-filters__value--active {
@@ -271,7 +254,7 @@ html.header-hidden #collection-filters .collection-filters__scroll {
 }
 
 #collection-filters .collection-filters__value-label {
-  font-weight: 600;
+  font-weight: 500;
 }
 
 #collection-filters .collection-filters__value-count {
@@ -294,13 +277,12 @@ html.header-hidden #collection-filters .collection-filters__scroll {
 #collection-filters .collection-filters__price-input {
   box-sizing: border-box;
   width: 72px;
-  padding: 6px 4px;
-  border: none;
-  border-bottom: 1px solid var(--gs-black);
-  border-radius: 0;
+  padding: 7px 8px;
+  border: 1px solid var(--color-border-strong, #d1d5db);
+  border-radius: 8px;
   background: transparent;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--gs-black);
 }
 
@@ -311,7 +293,8 @@ html.header-hidden #collection-filters .collection-filters__scroll {
 
 #collection-filters .collection-filters__price-input:focus {
   outline: none;
-  border-bottom-width: 2px;
+  border-color: var(--gs-black);
+  box-shadow: 0 0 0 1px var(--gs-black);
 }
 
 #collection-filters .collection-filters__price-separator {
@@ -319,16 +302,17 @@ html.header-hidden #collection-filters .collection-filters__scroll {
 }
 
 #collection-filters .collection-filters__price-submit {
-  padding: 6px 14px;
+  padding: 7px 16px;
   border: 1px solid var(--gs-black);
-  border-radius: 0;
+  border-radius: 8px;
   background: var(--gs-black);
   color: var(--gs-white);
   cursor: pointer;
-  font-size: 11px;
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
 #collection-filters .collection-filters__price-submit:hover {

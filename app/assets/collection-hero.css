@@ -10,14 +10,17 @@
 #collection-hero .collection-title {
   margin: 0 0 0.75rem;
   font-size: 28px;
-  font-weight: 800;
+  font-weight: 700; /* was 800 — matches the filters panel title weight */
   line-height: 1.2;
-  color: var(--gs-black);
+  color: var(--color-ink, #111827); /* was var(--gs-black), which is undefined
+                                        here — that variable is scoped inside
+                                        #collection-filters and never reached
+                                        this element */
 }
 
 #collection-hero .collection-description {
   max-width: 60ch;
-  color: var(--gs-black);
+  color: var(--color-ink-secondary, #374151); /* was var(--gs-black), same bug */
 }
 
 #collection-hero .collection-description p {

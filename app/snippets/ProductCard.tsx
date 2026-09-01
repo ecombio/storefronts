@@ -4,6 +4,10 @@
 // no wishlist, no compare, no metafields. Once this renders correctly
 // on the homepage, move to Stage 2 (see ProductCardFragment.ts and the
 // staged rebuild plan in chat).
+//
+// Now also used by MainCollection.tsx for the collection product grid —
+// the `loading` prop exists so that usage can still eager-load the
+// first ~8 above-the-fold items for LCP, same as ProductItem did.
 
 import {Link} from 'react-router';
 import {Image, Money} from '@shopify/hydrogen';
@@ -12,12 +16,13 @@ import type {ProductCardFragment} from 'storefrontapi.generated';
 export interface ProductCardProps {
   product: ProductCardFragment;
   showVendor?: boolean;
+  loading?: 'eager' | 'lazy';
 }
 
 const IMAGE_SIZES =
   '(max-width: 480px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw';
 
-export function ProductCard({product, showVendor = true}: ProductCardProps) {
+export function ProductCard({product, showVendor = true, loading = 'lazy'}: ProductCardProps) {
   const url = `/products/${product.handle}`;
   const image = product.featuredImage;
   const price = product.priceRange.minVariantPrice;
@@ -30,7 +35,7 @@ export function ProductCard({product, showVendor = true}: ProductCardProps) {
             <Image
               data={image}
               className="product-card__img product-card__img--primary"
-              loading="lazy"
+              loading={loading}
               sizes={IMAGE_SIZES}
               alt={image.altText ?? product.title}
             />

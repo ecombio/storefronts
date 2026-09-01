@@ -5,11 +5,11 @@ import type {ComponentProps, FormEvent} from 'react';
 import {Link, useLocation, useNavigate} from 'react-router';
 import type {Filter} from '@shopify/hydrogen/storefront-api-types';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
-import {ProductItem} from '~/snippets/ProductItem';
+import {ProductCard} from '~/snippets/ProductCard';
 import {ArticleItem} from '~/snippets/ArticleItem';
 import {SubCollections} from '~/sections/SubCollections';
 import type {
-  ProductItemFragment,
+  ProductCardFragment,
   ArticleItemFragment,
   SubCollectionItemFragment,
 } from 'storefrontapi.generated';
@@ -25,7 +25,7 @@ const TABS: {id: CollectionTab; label: string}[] = [
 ];
 
 type ProductsConnection = ComponentProps<
-  typeof PaginatedResourceSection<ProductItemFragment>
+  typeof PaginatedResourceSection<ProductCardFragment>
 >['connection'];
 
 interface MainCollectionProps {
@@ -390,15 +390,16 @@ function CollectionFeed({
         hidden={activeTab !== 'products'}
       >
         <SubCollections collections={subCollections} />
-        <PaginatedResourceSection<ProductItemFragment>
+        <PaginatedResourceSection<ProductCardFragment>
           connection={products}
           resourcesClassName="products-grid"
         >
           {({node: product, index}) => (
-            <ProductItem
+            <ProductCard
               key={product.id}
               product={product}
               loading={index < 8 ? 'eager' : undefined}
+              showVendor={false}
             />
           )}
         </PaginatedResourceSection>

@@ -1,3 +1,5 @@
+/* app/assets/theme.css */
+
 :root {
   --bp-sm: 640px;
   --bp-lg: 1024px;
@@ -5,4 +7,18 @@
   --content-padding-mobile: 1rem;
   --content-padding-tablet: 1.5rem;
   --content-padding-desktop: 2rem;
+
+  /* Shared color tokens — single source of truth so sections built in
+     different files (Header.tsx via Tailwind gray-*, main-collection.css,
+     collection-hero.css, collection-after-items.css) stay visually
+     consistent instead of drifting into separate palettes. Values match
+     Tailwind's gray scale, which Header.tsx already uses directly via
+     classes like text-gray-800/900. */
+  --color-ink: #111827;            /* gray-900 — headings, primary text, active states */
+  --color-ink-secondary: #374151;  /* gray-700 — body copy, secondary labels */
+  --color-ink-muted: #6b7280;      /* gray-500 — meta text, counts, placeholders */
+  --color-border: #e5e7eb;         /* gray-200 — hairlines, dividers */
+  --color-border-strong: #d1d5db;  /* gray-300 — input borders */
+  --color-surface: #ffffff;        /* white — page/panel backgrounds */
+  --color-surface-hover: #f9fafb;  /* gray-50 — subtle hover tint */
 }
