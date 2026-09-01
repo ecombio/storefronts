@@ -146,6 +146,25 @@
   color: var(--color-text-subtle, #6b6b6b);
 }
 
+/* ---- Recommendations carousel ----
+ * .product-carousel (product-carousel.css) is unmodified — this just
+ * adds a divider/spacing when it renders inside the quickview modal's
+ * scrollable <main>, and tightens its padding since the modal is
+ * already narrower than the full-width sections it's normally used in.
+ */
+.overlay[data-type='quickview'] .product-carousel {
+  padding-top: 1.5rem;
+  padding-inline: 2rem;
+  border-top: 1px solid var(--color-border-subtle, #e5e5e5);
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 700px) {
+  .overlay[data-type='quickview'] .product-carousel {
+    padding-inline: 1.5rem;
+  }
+}
+
 /* ---- Responsive: stack on small screens, full-screen sheet ---- */
 
 @media (max-width: 700px) {

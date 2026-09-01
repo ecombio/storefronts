@@ -5,18 +5,29 @@
 // /api/quickview/:handle, and renders it inside the shared <Aside>
 // shell (type="quickview") as a centered modal (see quickview.css).
 //
+// Also renders a "You may also like" recommendations carousel below
+// the product details, using the same deferred recommended-products
+// promise + <Suspense>/<Await> pattern as products.$handle.tsx, so the
+// modal opens immediately and the carousel streams in once ready.
+// Clicking "Quick view" on a recommended product re-dispatches
+// 'quickview:open' with the new handle — the listener below is
+// already mounted, so this just swaps the modal's contents in place
+// rather than opening a second modal.
+//
 // Mount this once, globally, in PageLayout.tsx alongside the other
 // <Aside> instances (cart, search, mobile) — NOT inside ProductCard.
-import {useEffect, useRef, useState} from 'react';
-import {Link, useFetcher} from 'react-router';
+import {Suspense, useEffect, useRef, useState} from 'react';
+import {Await, Link, useFetcher} from 'react-router';
 import {Image, Money, getProductOptions} from '@shopify/hydrogen';
 import type {
   Maybe,
   ProductOptionValueSwatch,
 } from '@shopify/hydrogen/storefront-api-types';
+import type {ProductCardFragment} from 'storefrontapi.generated';
 import {Aside, useAside} from '~/components/Aside';
 import {StarRating} from '~/snippets/StarRating';
 import {AddToCartButton} from '~/snippets/AddToCartButton';
+import {ProductCarousel} from '~/sections/ProductCarousel';
 
 // Shopify's standard `reviews.rating` metafield value is a JSON string:
 // {"value":"4.3","scale_min":"1","scale_max":"5"}
@@ -39,7 +50,10 @@ function parseCount(raw?: string | null): number {
 
 export function QuickView() {
   const {type, open} = useAside();
-  const fetcher = useFetcher<{product: any}>();
+  const fetcher = useFetcher<{
+    product: any;
+    recommended: Promise<ProductCardFragment[]>;
+  }>();
   const [handle, setHandle] = useState<string | null>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
 
@@ -80,7 +94,11 @@ export function QuickView() {
           Loading…
         </div>
       ) : (
-        <QuickViewContent product={product} onSelectOption={selectOption} />
+        <QuickViewContent
+          product={product}
+          recommended={fetcher.data?.recommended}
+          onSelectOption={selectOption}
+        />
       )}
     </Aside>
   );
@@ -88,9 +106,11 @@ export function QuickView() {
 
 function QuickViewContent({
   product,
+  recommended,
   onSelectOption,
 }: {
   product: any;
+  recommended?: Promise<ProductCardFragment[]>;
   onSelectOption: (variantUriQuery: string) => void;
 }) {
   const {open, close} = useAside();
@@ -111,131 +131,145 @@ function QuickViewContent({
   const displayImage = selectedVariant?.image ?? product.images?.nodes?.[0];
 
   return (
-    <div className="quickview">
-      <div className="quickview__media">
-        {displayImage ? (
-          <Image
-            data={displayImage}
-            className="quickview__img"
-            sizes="(max-width: 768px) 90vw, 480px"
-            alt={displayImage.altText ?? product.title}
-          />
-        ) : (
-          <div className="quickview__img-placeholder" aria-hidden="true" />
-        )}
-      </div>
-
-      <div className="quickview__body">
-        {product.vendor && (
-          <span className="quickview__vendor">{product.vendor}</span>
-        )}
-        <h2 className="quickview__title">{product.title}</h2>
-
-        <div className="quickview__reviews">
-          <StarRating
-            averageScore={averageScore}
-            totalReviews={totalReviews}
-            onReviewsClick={() => {
-              close();
-              window.location.href = `/products/${product.handle}#reviews`;
-            }}
-          />
-        </div>
-
-        <div className="quickview__pricing">
-          {compareAtPrice && (
-            <span className="quickview__price quickview__price--compare">
-              <s>
-                <Money data={compareAtPrice} />
-              </s>
-            </span>
-          )}
-          {selectedVariant?.price && (
-            <span className="quickview__price quickview__price--sale">
-              <Money data={selectedVariant.price} />
-            </span>
+    <>
+      <div className="quickview">
+        <div className="quickview__media">
+          {displayImage ? (
+            <Image
+              data={displayImage}
+              className="quickview__img"
+              sizes="(max-width: 768px) 90vw, 480px"
+              alt={displayImage.altText ?? product.title}
+            />
+          ) : (
+            <div className="quickview__img-placeholder" aria-hidden="true" />
           )}
         </div>
 
-        {productOptions.map((option) => {
-          // If there is only a single value in the option values, don't display the option
-          if (option.optionValues.length === 1) return null;
+        <div className="quickview__body">
+          {product.vendor && (
+            <span className="quickview__vendor">{product.vendor}</span>
+          )}
+          <h2 className="quickview__title">{product.title}</h2>
 
-          return (
-            <div className="product-options" key={option.name}>
-              <h5>{option.name}</h5>
-              <div className="product-options-grid">
-                {option.optionValues.map((value) => {
-                  const {
-                    name,
-                    handle: valueHandle,
-                    variantUriQuery,
-                    selected,
-                    available,
-                    exists,
-                    isDifferentProduct,
-                    swatch,
-                  } = value;
+          <div className="quickview__reviews">
+            <StarRating
+              averageScore={averageScore}
+              totalReviews={totalReviews}
+              onReviewsClick={() => {
+                close();
+                window.location.href = `/products/${product.handle}#reviews`;
+              }}
+            />
+          </div>
 
-                  const optionItemClassName = `product-options-item${
-                    selected ? ' product-options-item--selected' : ''
-                  }${!available ? ' product-options-item--unavailable' : ''}`;
+          <div className="quickview__pricing">
+            {compareAtPrice && (
+              <span className="quickview__price quickview__price--compare">
+                <s>
+                  <Money data={compareAtPrice} />
+                </s>
+              </span>
+            )}
+            {selectedVariant?.price && (
+              <span className="quickview__price quickview__price--sale">
+                <Money data={selectedVariant.price} />
+              </span>
+            )}
+          </div>
 
-                  if (isDifferentProduct) {
-                    // Combined-listing child product: this option value
-                    // lives on a different product/URL, so it must route
-                    // there instead of being fetched as a variant of the
-                    // current handle.
+          {productOptions.map((option) => {
+            // If there is only a single value in the option values, don't display the option
+            if (option.optionValues.length === 1) return null;
+
+            return (
+              <div className="product-options" key={option.name}>
+                <h5>{option.name}</h5>
+                <div className="product-options-grid">
+                  {option.optionValues.map((value) => {
+                    const {
+                      name,
+                      handle: valueHandle,
+                      variantUriQuery,
+                      selected,
+                      available,
+                      exists,
+                      isDifferentProduct,
+                      swatch,
+                    } = value;
+
+                    const optionItemClassName = `product-options-item${
+                      selected ? ' product-options-item--selected' : ''
+                    }${!available ? ' product-options-item--unavailable' : ''}`;
+
+                    if (isDifferentProduct) {
+                      // Combined-listing child product: this option value
+                      // lives on a different product/URL, so it must route
+                      // there instead of being fetched as a variant of the
+                      // current handle.
+                      return (
+                        <Link
+                          key={option.name + name}
+                          to={`/products/${valueHandle}?${variantUriQuery}`}
+                          className={optionItemClassName}
+                          onClick={close}
+                        >
+                          <QuickViewSwatch swatch={swatch} name={name} />
+                        </Link>
+                      );
+                    }
+
                     return (
-                      <Link
+                      <button
+                        type="button"
                         key={option.name + name}
-                        to={`/products/${valueHandle}?${variantUriQuery}`}
-                        className={optionItemClassName}
-                        onClick={close}
+                        disabled={!exists}
+                        className={`${optionItemClassName}${
+                          exists && !selected ? ' link' : ''
+                        }`}
+                        onClick={() => {
+                          if (!selected) onSelectOption(variantUriQuery);
+                        }}
                       >
                         <QuickViewSwatch swatch={swatch} name={name} />
-                      </Link>
+                      </button>
                     );
-                  }
-
-                  return (
-                    <button
-                      type="button"
-                      key={option.name + name}
-                      disabled={!exists}
-                      className={`${optionItemClassName}${
-                        exists && !selected ? ' link' : ''
-                      }`}
-                      onClick={() => {
-                        if (!selected) onSelectOption(variantUriQuery);
-                      }}
-                    >
-                      <QuickViewSwatch swatch={swatch} name={name} />
-                    </button>
-                  );
-                })}
+                  })}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
 
-        <AddToCartButton
-          disabled={!selectedVariant || !selectedVariant.availableForSale}
-          onClick={() => open('cart')}
-          lines={lines}
-        >
-          {selectedVariant?.availableForSale ? 'Add to cart' : 'Sold out'}
-        </AddToCartButton>
+          <AddToCartButton
+            disabled={!selectedVariant || !selectedVariant.availableForSale}
+            onClick={() => open('cart')}
+            lines={lines}
+          >
+            {selectedVariant?.availableForSale ? 'Add to cart' : 'Sold out'}
+          </AddToCartButton>
 
-        <Link
-          to={`/products/${product.handle}`}
-          className="quickview__full-details-link"
-          onClick={close}
-        >
-          View full details
-        </Link>
+          <Link
+            to={`/products/${product.handle}`}
+            className="quickview__full-details-link"
+            onClick={close}
+          >
+            View full details
+          </Link>
+        </div>
       </div>
-    </div>
+
+      {recommended && (
+        <Suspense fallback={null}>
+          <Await resolve={recommended} errorElement={null}>
+            {(items) =>
+              items.length > 0 ? (
+                <ProductCarousel title="You may also like" products={items} />
+              ) : null
+            }
+          </Await>
+        </Suspense>
+      )}
+    </>
   );
 }
 
