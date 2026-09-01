@@ -1,20 +1,30 @@
-import * as React from 'react';
+// app/components/PaginatedResourceSection.tsx
+
 import {Pagination} from '@shopify/hydrogen';
+import type {ComponentProps, ReactNode} from 'react';
+
+type ConnectionInput<NodesType> = ComponentProps<
+  typeof Pagination<NodesType>
+>['connection'];
+
+interface PaginatedResourceSectionProps<NodesType> {
+  connection: ConnectionInput<NodesType>;
+  children: (props: {node: NodesType; index: number}) => ReactNode;
+  resourcesClassName?: string;
+}
 
 /**
- * <PaginatedResourceSection> encapsulates the previous and next pagination behaviors throughout your application.
+ * Renders paginated data in a grid, wrapping Hydrogen's <Pagination>
+ * render-prop component. PreviousLink/NextLink render real <a href> links
+ * (via react-router's Link under the hood), so they stay crawlable and
+ * work without JS — no JS-only "Load more" click handler, per pagination
+ * SEO best practice.
  */
 export function PaginatedResourceSection<NodesType>({
   connection,
   children,
-  ariaLabel,
   resourcesClassName,
-}: {
-  connection: React.ComponentProps<typeof Pagination<NodesType>>['connection'];
-  children: React.FunctionComponent<{node: NodesType; index: number}>;
-  ariaLabel?: string;
-  resourcesClassName?: string;
-}) {
+}: PaginatedResourceSectionProps<NodesType>) {
   return (
     <Pagination connection={connection}>
       {({nodes, isLoading, PreviousLink, NextLink}) => {
@@ -23,36 +33,22 @@ export function PaginatedResourceSection<NodesType>({
         );
 
         return (
-          <div>
-            <PreviousLink>
-              {isLoading ? (
-                'Loading...'
-              ) : (
-                <span>
-                  <span aria-hidden="true">↑</span> Load previous
-                </span>
-              )}
-            </PreviousLink>
+          <div className="paginated-resource-section">
+            <div className="paginated-resource-section__previous">
+              <PreviousLink>
+                {isLoading ? 'Loading...' : 'Load previous'}
+              </PreviousLink>
+            </div>
+
             {resourcesClassName ? (
-              <div
-                aria-label={ariaLabel}
-                className={resourcesClassName}
-                role={ariaLabel ? 'region' : undefined}
-              >
-                {resourcesMarkup}
-              </div>
+              <div className={resourcesClassName}>{resourcesMarkup}</div>
             ) : (
               resourcesMarkup
             )}
-            <NextLink>
-              {isLoading ? (
-                'Loading...'
-              ) : (
-                <span>
-                  Load more <span aria-hidden="true">↓</span>
-                </span>
-              )}
-            </NextLink>
+
+            <div className="paginated-resource-section__next">
+              <NextLink>{isLoading ? 'Loading...' : 'Load more'}</NextLink>
+            </div>
           </div>
         );
       }}

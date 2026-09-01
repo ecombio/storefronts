@@ -17,6 +17,10 @@ import type {
 const TAB_PARAM_NAME = 'tab';
 const FILTER_URL_PARAM_NAME = 'filter';
 
+// Params written by Hydrogen's getPaginationVariables/<Pagination> — see
+// https://shopify.dev/docs/api/hydrogen/utilities/getpaginationvariables
+const PAGINATION_PARAM_NAMES = ['cursor', 'direction'];
+
 export type CollectionTab = 'products' | 'articles';
 
 const TABS: {id: CollectionTab; label: string}[] = [
@@ -34,6 +38,19 @@ interface MainCollectionProps {
   products: ProductsConnection;
   subCollections: SubCollectionItemFragment[];
   articles: ArticleItemFragment[];
+}
+
+/**
+ * Strips pagination state from a set of params. Any link that changes
+ * which items are shown (a filter toggle, a tab switch) must reset
+ * pagination — a cursor is only valid for the exact query context
+ * (filters, sort, tab) it was issued under. Reusing it against a changed
+ * context can return an empty page or an error from the Storefront API.
+ */
+function resetPagination(params: URLSearchParams): URLSearchParams {
+  const next = new URLSearchParams(params);
+  PAGINATION_PARAM_NAMES.forEach((name) => next.delete(name));
+  return next;
 }
 
 export function MainCollection({
@@ -91,7 +108,7 @@ function CollectionToolbar({activeTab}: {activeTab: CollectionTab}) {
     >
       <div className="tab-switcher" role="tablist" aria-label="Collection view">
         {TABS.map((tab) => {
-          const params = new URLSearchParams(location.search);
+          const params = resetPagination(new URLSearchParams(location.search));
           params.set(TAB_PARAM_NAME, tab.id);
           const isActive = tab.id === activeTab;
 
@@ -196,7 +213,7 @@ function FilterRow({
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const isActive = params.getAll(FILTER_URL_PARAM_NAME).includes(filterInput);
-  const newParams = toggleFilterParam(filterInput, params);
+  const newParams = resetPagination(toggleFilterParam(filterInput, params));
 
   return (
     <Link
@@ -227,6 +244,15 @@ function PriceRangeFilterGroup({filter}: {filter: Filter}) {
   const [min, setMin] = useState(existingPriceFilter?.price?.min?.toString() ?? '');
   const [max, setMax] = useState(existingPriceFilter?.price?.max?.toString() ?? '');
 
+  // Keep the inputs in sync if the active price filter changes from under
+  // us — e.g. browser back/forward navigation, or a "Clear all" click —
+  // since useState's initializer only runs once, on mount.
+  useEffect(() => {
+    setMin(existingPriceFilter?.price?.min?.toString() ?? '');
+    setMax(existingPriceFilter?.price?.max?.toString() ?? '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [existingPriceFilter?.price?.min, existingPriceFilter?.price?.max]);
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -244,7 +270,9 @@ function PriceRangeFilterGroup({filter}: {filter: Filter}) {
       newParams.append(FILTER_URL_PARAM_NAME, JSON.stringify({price}));
     }
 
-    navigate(`${location.pathname}?${newParams.toString()}`, {
+    const resetParams = resetPagination(newParams);
+
+    navigate(`${location.pathname}?${resetParams.toString()}`, {
       preventScrollReset: true,
       replace: true,
     });
@@ -309,7 +337,7 @@ function ClearFiltersLink() {
     return null;
   }
 
-  const newParams = new URLSearchParams(params);
+  const newParams = resetPagination(new URLSearchParams(params));
   newParams.delete(FILTER_URL_PARAM_NAME);
 
   return (

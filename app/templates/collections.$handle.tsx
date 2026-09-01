@@ -4,6 +4,7 @@ import {redirect, useLoaderData} from 'react-router';
 import type {Route} from './+types/collections.$handle';
 import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
+import {buildSelfCanonicalUrl} from '~/lib/canonical';
 import {CollectionHero} from '~/sections/CollectionHero';
 import {MainCollection, type CollectionTab} from '~/sections/MainCollection';
 import {PRODUCT_CARD_FRAGMENT} from '~/graphql/ProductCardFragment';
@@ -12,9 +13,20 @@ import type {ProductFilter} from '@shopify/hydrogen/storefront-api-types';
 const FILTER_URL_PARAM_NAME = 'filter';
 const TAB_URL_PARAM_NAME = 'tab';
 const VALID_TABS: CollectionTab[] = ['products', 'articles'];
+const DEFAULT_TAB: CollectionTab = 'products';
 
 export const meta: Route.MetaFunction = ({data}) => {
-  return [{title: `Hydrogen | ${data?.collection.title ?? ''} Collection`}];
+  return [
+    {title: `Hydrogen | ${data?.collection.title ?? ''} Collection`},
+    // Self-referencing canonical: keeps tab/cursor/direction (they change
+    // which content is shown) but drops `filter` combinations, so the
+    // many possible filter permutations of a collection consolidate to
+    // the unfiltered collection URL instead of each being treated as a
+    // separate indexable page.
+    ...(data?.canonicalUrl
+      ? [{tagName: 'link', rel: 'canonical', href: data.canonicalUrl}]
+      : []),
+  ];
 };
 
 export async function loader(args: Route.LoaderArgs) {
@@ -40,6 +52,10 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   });
   const filters = parseFiltersFromUrl(url);
   const activeTab = parseActiveTab(url);
+  const canonicalUrl = buildSelfCanonicalUrl(request, {
+    keepParams: [TAB_URL_PARAM_NAME, 'cursor', 'direction'],
+    dropDefaultValues: {[TAB_URL_PARAM_NAME]: DEFAULT_TAB},
+  });
 
   if (!handle) {
     throw redirect('/collections');
@@ -64,6 +80,7 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   return {
     collection,
     activeTab,
+    canonicalUrl,
   };
 }
 
@@ -102,7 +119,9 @@ function parseFiltersFromUrl(url: URL): ProductFilter[] {
  */
 function parseActiveTab(url: URL): CollectionTab {
   const tab = url.searchParams.get(TAB_URL_PARAM_NAME);
-  return (VALID_TABS as string[]).includes(tab ?? '') ? (tab as CollectionTab) : 'products';
+  return (VALID_TABS as string[]).includes(tab ?? '')
+    ? (tab as CollectionTab)
+    : DEFAULT_TAB;
 }
 
 export default function Collection() {

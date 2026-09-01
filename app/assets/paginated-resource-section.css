@@ -1,0 +1,28 @@
+/* app/assets/paginated-resource-section.css */
+
+.paginated-resource-section__previous,
+.paginated-resource-section__next {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0;
+}
+
+.paginated-resource-section__previous a,
+.paginated-resource-section__next a {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 20px;
+  border: 1px solid var(--color-border-strong, #d1d5db);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--color-ink, #111827);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.paginated-resource-section__previous a:hover,
+.paginated-resource-section__next a:hover {
+  background: var(--color-surface-hover, #f9fafb);
+  border-color: var(--color-ink, #111827);
+}
