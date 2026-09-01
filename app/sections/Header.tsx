@@ -17,7 +17,7 @@ export {HeaderUtility} from '~/snippets/HeaderUtility';
 import {AnnouncementBar} from './AnnouncementBar';
 export {AnnouncementBar} from './AnnouncementBar';
 import type {CollectionImage} from '~/config/Header.constants';
-import {ACTIVE_HEADER_STYLE, type HeaderStyle} from '~/config/Header.constants';
+import {ACTIVE_HEADER_STYLE, type HeaderStyle, SHOW_WISHLIST_CTA, SHOW_COMPARE_CTA} from '~/config/Header.constants';
 import wordmarkSrc from '~/assets/wordmark.svg';
 import {useHeaderHeightSync} from '~/hooks/useHeaderHeightSync';
 import {type WishlistEntry, WISHLIST_KEY, readWishlist} from '~/lib/wishlist'; // ADDED
@@ -143,8 +143,11 @@ function HeaderCtas({
   return (
     <nav className="flex shrink-0 items-center gap-3 sm:gap-6" role="navigation">
       <HeaderAccount isLoggedIn={isLoggedIn} customer={customer} />
-      <WishlistToggle /> {/* ADDED */}
-      <CompareToggle /> {/* ADDED */}
+      {/* On standby — SHOW_WISHLIST_CTA/SHOW_COMPARE_CTA in
+          Header.constants.ts. Component, badge, and localStorage sync
+          logic below are untouched; flip the flags to re-enable. */}
+      {SHOW_WISHLIST_CTA && <WishlistToggle />}
+      {SHOW_COMPARE_CTA && <CompareToggle />}
       <CartToggle cart={cart} />
     </nav>
   );

@@ -17,6 +17,16 @@ export type HeaderStyle = 'nike' | 'backmarket' | 'gymshark';
 export const ACTIVE_HEADER_STYLE: HeaderStyle = 'backmarket';
 
 // ─────────────────────────────────────────────────────────────────────────
+// Header CTA feature flags
+// Toggles Wishlist/Compare icons in the header CTAs cluster on/off
+// without removing the underlying components, badges, and localStorage
+// sync logic (WishlistToggle/CompareToggle in Header.tsx) — flip back
+// to true whenever these are ready to ship again.
+// ─────────────────────────────────────────────────────────────────────────
+export const SHOW_WISHLIST_CTA = false;
+export const SHOW_COMPARE_CTA = false;
+
+// ─────────────────────────────────────────────────────────────────────────
 // Header menu item shape + URL resolution
 // Shared by HeaderMenu (top-level nav) and MenuDrawer (the mega-menu
 // panel), so it lives here rather than in either component file to avoid
