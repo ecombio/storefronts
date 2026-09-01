@@ -1,0 +1,1785 @@
+
+===== FILE: app\snippets\Highlight.tsx =====
+// app/snippets/Highlight.tsx
+import {NavLink} from 'react-router';
+
+export function isOnSaleItem(title: string) {
+  return title.trim().toLowerCase() === 'on sale';
+}
+
+function StarIcon({className}: {className?: string}) {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" className={className}>
+      <path
+        d="M6 0L7.854 4.146L12 6L7.854 7.854L6 12L4.146 7.854L0 6L4.146 4.146L6 0Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
+export function HighlightLink({
+  to,
+  title,
+  isActive,
+  onMouseEnter,
+  onFocus,
+}: {
+  to: string;
+  title: string;
+  isActive: boolean;
+  onMouseEnter?: () => void;
+  onFocus?: () => void;
+}) {
+  return (
+    <NavLink
+      end
+      prefetch="intent"
+      to={to}
+      onMouseEnter={onMouseEnter}
+      onFocus={onFocus}
+      aria-expanded={isActive}
+      className="nav-item nav-item--highlight shrink-0 transition"
+    >
+      {title}
+      <StarIcon className="nav-item__star nav-item__star--1" />
+      <StarIcon className="nav-item__star nav-item__star--2" />
+      <StarIcon className="nav-item__star nav-item__star--3" />
+    </NavLink>
+  );
+}
+
+===== FILE: app\lib\utils.ts =====
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+
+/**
+ * Typed wrapper for Response.json() / Request.json(). Hydrogen's Oxygen
+ * runtime types (@shopify/oxygen-workers-types) declare a global Response
+ * whose .json() returns Promise<unknown>, which merges with lib.dom.d.ts's
+ * Promise<any> and can win out — so plain `await res.json()` often
+ * resolves to `{}`/`unknown` instead of something usable. This casts
+ * to the caller-specified shape at the point of use.
+ *
+ * The parameter is typed structurally ({json(): Promise<unknown>}) rather
+ * than as `Response` specifically, so this also covers `Request.json()`
+ * (loader/action body parsing) with the same helper — both Request and
+ * Response satisfy this shape, and the underlying fix (casting the
+ * resolved value to T) applies identically to either.
+ *
+ * Note: this is a type-level assertion only, not runtime validation —
+ * same trust level as `any`, just scoped to the shape you specify.
+ */
+export async function readJson<T>(source: {json(): Promise<unknown>}): Promise<T> {
+  return source.json() as Promise<T>;
+}
+
+===== FILE: app\sections\AnnouncementBar.tsx =====
+import {useEffect, useRef, useState} from 'react';
+import {ChevronLeft, ChevronRight, X} from 'lucide-react';
+import {
+  ANNOUNCEMENT_AUTOROTATE,
+  ANNOUNCEMENT_AUTOROTATE_SPEED_MS,
+  ANNOUNCEMENT_ENABLE_CLOSE,
+  ANNOUNCEMENT_SLIDES,
+  type AnnouncementSlideConfig,
+} from '~/config/Header.constants';
+
+const DISMISS_KEY = 'announcement_bar_dismissed';
+
+export function AnnouncementBar() {
+  const slides = ANNOUNCEMENT_SLIDES;
+  const [dismissed, setDismissed] = useState(false);
+  const [index, setIndex] = useState(0);
+  const rotateTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (ANNOUNCEMENT_ENABLE_CLOSE && sessionStorage.getItem(DISMISS_KEY) === 'true') {
+      setDismissed(true);
+    }
+  }, []);
+
+  function stopAuto() {
+    if (rotateTimer.current) clearInterval(rotateTimer.current);
+  }
+
+  function startAuto() {
+    if (ANNOUNCEMENT_AUTOROTATE && slides.length > 1) {
+      rotateTimer.current = setInterval(() => {
+        setIndex((i) => (i + 1) % slides.length);
+      }, ANNOUNCEMENT_AUTOROTATE_SPEED_MS);
+    }
+  }
+
+  useEffect(() => {
+    startAuto();
+    return stopAuto;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slides.length]);
+
+  function goTo(next: number) {
+    stopAuto();
+    setIndex((next + slides.length) % slides.length);
+    startAuto();
+  }
+
+  function handleClose() {
+    stopAuto();
+    setDismissed(true);
+    if (ANNOUNCEMENT_ENABLE_CLOSE) sessionStorage.setItem(DISMISS_KEY, 'true');
+  }
+
+  if (dismissed || slides.length === 0) return null;
+
+  const slide = slides[index];
+
+  return (
+    <div className="bg-[#0b2559] text-sm text-white">
+      {/* Full width, no max-width cap — matches the header content row
+          and HeaderUtility, which were updated the same way. */}
+      <div className="relative mx-auto flex max-w-full items-center px-4 py-2">
+        {slides.length > 1 && (
+          <button
+            aria-label="Previous announcement"
+            onClick={() => goTo(index - 1)}
+            className="shrink-0 rounded p-1 hover:bg-white/10"
+          >
+            <ChevronLeft size={16} />
+          </button>
+        )}
+
+        <div className="flex flex-1 items-center justify-center gap-3 font-semibold tracking-wide">
+          <AnnouncementSlideContent slide={slide} />
+        </div>
+
+        <div className="flex shrink-0 items-center gap-1">
+          {slides.length > 1 && (
+            <button
+              aria-label="Next announcement"
+              onClick={() => goTo(index + 1)}
+              className="rounded p-1 hover:bg-white/10"
+            >
+              <ChevronRight size={16} />
+            </button>
+          )}
+          {ANNOUNCEMENT_ENABLE_CLOSE && (
+            <button aria-label="Dismiss" onClick={handleClose} className="rounded p-1 hover:bg-white/10">
+              <X size={16} />
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AnnouncementSlideContent({slide}: {slide: AnnouncementSlideConfig}) {
+  if (slide.type === 'announcement') {
+    return slide.link ? (
+      <a href={slide.link} className="border-b border-white/40 hover:border-white">
+        {slide.text}
+      </a>
+    ) : (
+      <p className="m-0">{slide.text}</p>
+    );
+  }
+  return <CountdownContent slide={slide} />;
+}
+
+function CountdownContent({
+  slide,
+}: {
+  slide: Extract<AnnouncementSlideConfig, {type: 'countdown'}>;
+}) {
+  const remainingMs = useCountdown(slide);
+
+  // FIX: previously returned `null` while remainingMs was null (true on
+  // initial SSR paint, before the client-side timer effect runs). That
+  // made the announcement bar render with an empty content row on first
+  // paint, then grow taller a moment later once the countdown populated
+  // client-side — a real layout shift right at the point where the
+  // white line was reported. Rendering an invisible placeholder of the
+  // same shape reserves the final height from the very first paint, so
+  // there's nothing for the countdown's arrival to shift.
+  if (remainingMs === null) {
+    return (
+      <span className="invisible flex items-center gap-1" aria-hidden="true">
+        {slide.label && <span>{slide.label}</span>}
+        <Unit value="00" label="d" />
+        <Sep />
+        <Unit value="00" label="h" />
+        <Sep />
+        <Unit value="00" label="m" />
+        <Sep />
+        <Unit value="00" label="s" />
+        {slide.buttonLabel && (
+          <span className="ml-1 whitespace-nowrap rounded-full border px-3.5 py-1 text-xs font-semibold">
+            {slide.buttonLabel}
+          </span>
+        )}
+      </span>
+    );
+  }
+
+  const totalSeconds = Math.max(0, Math.floor(remainingMs / 1000));
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const pad = (n: number) => String(n).padStart(2, '0');
+
+  return (
+    <>
+      {slide.label && <span>{slide.label}</span>}
+      <span className="flex items-center gap-1">
+        <Unit value={pad(days)} label="d" />
+        <Sep />
+        <Unit value={pad(hours)} label="h" />
+        <Sep />
+        <Unit value={pad(minutes)} label="m" />
+        <Sep />
+        <Unit value={pad(seconds)} label="s" />
+      </span>
+      {slide.buttonLabel && slide.buttonLink && (
+        <a
+          href={slide.buttonLink}
+          className="ml-1 whitespace-nowrap rounded-full border border-white/60 px-3.5 py-1 text-xs font-semibold hover:border-white hover:bg-white/15"
+        >
+          {slide.buttonLabel}
+        </a>
+      )}
+    </>
+  );
+}
+
+function Unit({value, label}: {value: string; label: string}) {
+  return (
+    <span>
+      {value}
+      <em className="ml-px text-[0.625rem] not-italic uppercase opacity-70">{label}</em>
+    </span>
+  );
+}
+
+function Sep() {
+  return <span className="mx-0.5 opacity-60">:</span>;
+}
+
+function useCountdown(slide: Extract<AnnouncementSlideConfig, {type: 'countdown'}>) {
+  const endMsRef = useRef<number | null>(null);
+  const [remainingMs, setRemainingMs] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (slide.countdownType === 'fixed') {
+      endMsRef.current = slide.endDate
+        ? new Date(slide.endDate.replace(/\//g, '-')).getTime()
+        : null;
+    } else {
+      const storageKey = `ann_countdown_${slide.evergreenMinutes}`;
+      const saved = sessionStorage.getItem(storageKey);
+      const endMs = saved ? parseInt(saved, 10) : Date.now() + (slide.evergreenMinutes ?? 0) * 60_000;
+      sessionStorage.setItem(storageKey, String(endMs));
+      endMsRef.current = endMs;
+    }
+
+    function tick() {
+      if (endMsRef.current === null) {
+        setRemainingMs(null);
+        return;
+      }
+      const diff = endMsRef.current - Date.now();
+      setRemainingMs(diff > 0 ? diff : null);
+    }
+
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slide.countdownType, slide.endDate, slide.evergreenMinutes]);
+
+  return remainingMs;
+}
+
+===== FILE: app\sections\BenefitGrid.tsx =====
+/**
+ * Ported from snippets/benefit-grid.liquid.
+ * Styles live in main-product.css (.benefit-grid, .benefit-item, etc.).
+ */
+
+type BenefitItem = {
+  icon?: {reference?: {image?: {url: string} | null} | null} | null;
+  title?: {value?: string | null} | null;
+  tooltip?: {value?: string | null} | null;
+  // "link" is a metaobject field of type `link`, whose value is a JSON
+  // string like {"text":"...","url":"..."} — not a plain URL string.
+  link?: {value?: string | null} | null;
+};
+
+function parseLinkValue(value?: string | null): {url: string; text?: string} | null {
+  if (!value) return null;
+  try {
+    const parsed = JSON.parse(value);
+    return parsed?.url ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+export function BenefitGrid({items}: {items?: BenefitItem[] | null}) {
+  if (!items?.length) return null;
+
+  return (
+    <div className="benefit-grid">
+      {items.map((item, index) => {
+        const title = item.title?.value;
+        if (!title) return null;
+
+        const tooltip = item.tooltip?.value || undefined;
+        const link = parseLinkValue(item.link?.value);
+        const iconUrl = item.icon?.reference?.image?.url;
+
+        const content = (
+          <>
+            {iconUrl && (
+              <div className="benefit-icon">
+                <img src={iconUrl} alt="" width={24} height={24} loading="lazy" />
+              </div>
+            )}
+            <h3 className="benefit-title">{title}</h3>
+          </>
+        );
+
+        return link ? (
+          <a
+            key={index}
+            href={link.url}
+            className="benefit-item"
+            target="_blank"
+            rel="noopener noreferrer"
+            title={tooltip}
+          >
+            {content}
+          </a>
+        ) : (
+          <div key={index} className="benefit-item" title={tooltip}>
+            {content}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+===== FILE: app\sections\FeatureGrid.tsx =====
+/**
+ * Ported from snippets/feature-grid.liquid.
+ * Styles live in main-product.css (.feature-grid, .feature-tile, etc.)
+ * — reuse the CSS file already generated for the theme version.
+ *
+ * Expects the shape produced by the featureGrid metafield query added
+ * to PRODUCT_FRAGMENT (see products.$handle.tsx below): a list of
+ * metaobject references with icon / title / label / description /
+ * subtitle / link fields.
+ */
+
+type FeatureItem = {
+  icon?: {reference?: {image?: {url: string} | null} | null} | null;
+  title?: {value?: string | null} | null;
+  label?: {value?: string | null} | null;
+  description?: {value?: string | null} | null;
+  subtitle?: {value?: string | null} | null;
+  link?: {value?: string | null} | null;
+};
+
+export function FeatureGrid({items}: {items?: FeatureItem[] | null}) {
+  if (!items?.length) return null;
+
+  return (
+    <div className="feature-grid">
+      {items.map((item, index) => {
+        const label = item.label?.value;
+        const description = item.description?.value;
+
+        // Skip entries with nothing meaningful to show.
+        if (!label && !description) return null;
+
+        const title = item.title?.value || undefined;
+        const link = item.link?.value;
+        const iconUrl = item.icon?.reference?.image?.url;
+        const iconAlt = label || title || '';
+
+        const content = (
+          <>
+            {iconUrl && (
+              <div className="feature-icon">
+                <img src={iconUrl} alt={iconAlt} width={48} height={48} loading="lazy" />
+              </div>
+            )}
+            <div className="feature-text">
+              {label && <p className="feature-uptitle">{label}</p>}
+              {description && <p className="feature-headline">{description}</p>}
+              {item.subtitle?.value && (
+                <p className="feature-subtitle">{item.subtitle.value}</p>
+              )}
+            </div>
+          </>
+        );
+
+        return link ? (
+          <a key={index} href={link} className="feature-tile" title={title}>
+            {content}
+          </a>
+        ) : (
+          <div key={index} className="feature-tile" title={title}>
+            {content}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+===== FILE: app\sections\MainCollection.tsx =====
+// app/sections/MainCollection.tsx
+
+import {useEffect, useRef, useState} from 'react';
+import type {ComponentProps, FormEvent} from 'react';
+import {Link, useLocation, useNavigate} from 'react-router';
+import type {Filter} from '@shopify/hydrogen/storefront-api-types';
+import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
+import {ProductCard} from '~/snippets/ProductCard';
+import {ArticleItem} from '~/snippets/ArticleItem';
+import type {
+  ProductCardFragment,
+  ArticleItemFragment,
+} from 'storefrontapi.generated';
+
+const TAB_PARAM_NAME = 'tab';
+const FILTER_URL_PARAM_NAME = 'filter';
+
+// `cursor`/`direction` are written by Hydrogen's getPaginationVariables/
+// <Pagination> (see https://shopify.dev/docs/api/hydrogen/utilities/getpaginationvariables).
+// `p` is PaginatedResourceSection's own display-only page-number param.
+const PAGINATION_PARAM_NAMES = ['cursor', 'direction', 'p'];
+
+export type CollectionTab = 'products' | 'articles';
+
+const TABS: {id: CollectionTab; label: string}[] = [
+  {id: 'products', label: 'Products'},
+  {id: 'articles', label: 'Expert Advice'},
+];
+
+type ProductsConnection = ComponentProps<
+  typeof PaginatedResourceSection<ProductCardFragment>
+>['connection'];
+
+interface MainCollectionProps {
+  activeTab: CollectionTab;
+  filters: Filter[];
+  products: ProductsConnection;
+  articles: ArticleItemFragment[];
+  /** Precomputed "page number -> cursor" map for numbered pagination links; see collections.$handle.tsx. */
+  pageCursors?: Record<number, string>;
+  /** How many page numbers can be linked to directly. */
+  totalKnownPages?: number;
+  /** Whether pages exist beyond `totalKnownPages` (shown as an ellipsis). */
+  hasMoreBeyondKnownPages?: boolean;
+}
+
+/**
+ * Strips pagination state from a set of params. Any link that changes
+ * which items are shown (a filter toggle, a tab switch) must reset
+ * pagination — a cursor is only valid for the exact query context
+ * (filters, sort, tab) it was issued under. Reusing it against a changed
+ * context can return an empty page or an error from the Storefront API.
+ */
+function resetPagination(params: URLSearchParams): URLSearchParams {
+  const next = new URLSearchParams(params);
+  PAGINATION_PARAM_NAMES.forEach((name) => next.delete(name));
+  return next;
+}
+
+export function MainCollection({
+  activeTab,
+  filters,
+  products,
+  articles,
+  pageCursors,
+  totalKnownPages,
+  hasMoreBeyondKnownPages,
+}: MainCollectionProps) {
+  return (
+    <div className="main-collection">
+      <CollectionToolbar activeTab={activeTab} />
+
+      <div className="collection-layout">
+        <CollectionFilters filters={filters} />
+
+        <div className="collection-feed">
+          <CollectionFeed
+            activeTab={activeTab}
+            products={products}
+            articles={articles}
+            pageCursors={pageCursors}
+            totalKnownPages={totalKnownPages}
+            hasMoreBeyondKnownPages={hasMoreBeyondKnownPages}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CollectionToolbar({activeTab}: {activeTab: CollectionTab}) {
+  const location = useLocation();
+  const toolbarRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = toolbarRef.current;
+    if (!el) return;
+
+    const resizeObserver = new ResizeObserver(([entry]) => {
+      document.documentElement.style.setProperty(
+        '--toolbar-height',
+        `${entry.contentRect.height}px`,
+      );
+    });
+    resizeObserver.observe(el);
+
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={toolbarRef}
+      className="collection-toolbar sticky-under-header"
+      role="navigation"
+      aria-label="Collection navigation"
+    >
+      <div className="tab-switcher" role="tablist" aria-label="Collection view">
+        {TABS.map((tab) => {
+          const params = resetPagination(new URLSearchParams(location.search));
+          params.set(TAB_PARAM_NAME, tab.id);
+          const isActive = tab.id === activeTab;
+
+          return (
+            <Link
+              key={tab.id}
+              to={`${location.pathname}?${params.toString()}`}
+              id={`tab-${tab.id}`}
+              role="tab"
+              aria-selected={isActive}
+              aria-controls={`panel-${tab.id}`}
+              tabIndex={isActive ? 0 : -1}
+              prefetch="intent"
+              preventScrollReset
+              replace
+              className={
+                isActive
+                  ? 'tab-switcher__tab tab-switcher__tab--active'
+                  : 'tab-switcher__tab'
+              }
+            >
+              {tab.label}
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function CollectionFilters({filters}: {filters: Filter[]}) {
+  if (!filters?.length) {
+    return null;
+  }
+
+  return (
+    <aside id="collection-filters" className="collection-filters" aria-label="Filters">
+      <div className="collection-filters__scroll">
+        <div className="collection-filters__header">
+          <h2 className="collection-filters__title">Filters</h2>
+          <ClearFiltersLink />
+        </div>
+        {filters.map((filter, index) =>
+          filter.type === 'PRICE_RANGE' ? (
+            <PriceRangeFilterGroup
+              key={filter.id}
+              filter={filter}
+              defaultOpen={index === 0}
+            />
+          ) : (
+            <FilterGroup
+              key={filter.id}
+              filter={filter}
+              defaultOpen={index === 0}
+            />
+          ),
+        )}
+      </div>
+    </aside>
+  );
+}
+
+function FilterGroup({
+  filter,
+  defaultOpen,
+}: {
+  filter: Filter;
+  defaultOpen: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <div className="collection-filters__group">
+      <button
+        type="button"
+        className="collection-filters__group-header"
+        aria-expanded={isOpen}
+        onClick={() => setIsOpen((open) => !open)}
+      >
+        <h3 className="collection-filters__group-title">{filter.label}</h3>
+        <span
+          aria-hidden="true"
+          className={
+            isOpen
+              ? 'collection-filters__toggle-icon collection-filters__toggle-icon--open'
+              : 'collection-filters__toggle-icon'
+          }
+        />
+      </button>
+      {isOpen && (
+        <ul className="collection-filters__values">
+          {filter.values.map((value) => (
+            <li key={value.id} className="collection-filters__value-item">
+              <FilterRow
+                filterInput={value.input as string}
+                label={value.label}
+                count={value.count}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function FilterRow({
+  filterInput,
+  label,
+  count,
+}: {
+  filterInput: string;
+  label: string;
+  count: number;
+}) {
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const isActive = params.getAll(FILTER_URL_PARAM_NAME).includes(filterInput);
+  const newParams = resetPagination(toggleFilterParam(filterInput, params));
+
+  return (
+    <Link
+      prefetch="intent"
+      preventScrollReset
+      replace
+      className={
+        isActive
+          ? 'collection-filters__value collection-filters__value--active'
+          : 'collection-filters__value'
+      }
+      aria-current={isActive ? 'true' : undefined}
+      to={`${location.pathname}?${newParams.toString()}`}
+    >
+      <span className="collection-filters__value-label">{label}</span>
+      <span className="collection-filters__value-count">{count}</span>
+    </Link>
+  );
+}
+
+function PriceRangeFilterGroup({
+  filter,
+  defaultOpen,
+}: {
+  filter: Filter;
+  defaultOpen: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const params = new URLSearchParams(location.search);
+  const existingPriceFilter = getExistingPriceFilter(params);
+
+  const [min, setMin] = useState(existingPriceFilter?.price?.min?.toString() ?? '');
+  const [max, setMax] = useState(existingPriceFilter?.price?.max?.toString() ?? '');
+
+  // Keep the inputs in sync if the active price filter changes from under
+  // us — e.g. browser back/forward navigation, or a "Clear all" click —
+  // since useState's initializer only runs once, on mount.
+  useEffect(() => {
+    setMin(existingPriceFilter?.price?.min?.toString() ?? '');
+    setMax(existingPriceFilter?.price?.max?.toString() ?? '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [existingPriceFilter?.price?.min, existingPriceFilter?.price?.max]);
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const newParams = new URLSearchParams(params);
+    const nonPriceFilters = newParams
+      .getAll(FILTER_URL_PARAM_NAME)
+      .filter((rawFilter) => !isPriceFilter(rawFilter));
+    newParams.delete(FILTER_URL_PARAM_NAME);
+    nonPriceFilters.forEach((rawFilter) => newParams.append(FILTER_URL_PARAM_NAME, rawFilter));
+
+    if (min || max) {
+      let minNum = min ? Number(min) : undefined;
+      let maxNum = max ? Number(max) : undefined;
+
+      // Guard against a reversed range (e.g. min=100, max=10), which the
+      // Storefront API would otherwise silently interpret as "no matches"
+      // rather than raising an error the user could act on. Swapping is
+      // the least surprising fix — it preserves both values the user
+      // typed instead of dropping one.
+      if (minNum !== undefined && maxNum !== undefined && minNum > maxNum) {
+        [minNum, maxNum] = [maxNum, minNum];
+        setMin(String(minNum));
+        setMax(String(maxNum));
+      }
+
+      const price: {min?: number; max?: number} = {};
+      if (minNum !== undefined) price.min = minNum;
+      if (maxNum !== undefined) price.max = maxNum;
+      newParams.append(FILTER_URL_PARAM_NAME, JSON.stringify({price}));
+    }
+
+    const resetParams = resetPagination(newParams);
+
+    navigate(`${location.pathname}?${resetParams.toString()}`, {
+      preventScrollReset: true,
+      replace: true,
+    });
+  }
+
+  return (
+    <div className="collection-filters__group">
+      <button
+        type="button"
+        className="collection-filters__group-header"
+        aria-expanded={isOpen}
+        onClick={() => setIsOpen((open) => !open)}
+      >
+        <h3 className="collection-filters__group-title">{filter.label}</h3>
+        <span
+          aria-hidden="true"
+          className={
+            isOpen
+              ? 'collection-filters__toggle-icon collection-filters__toggle-icon--open'
+              : 'collection-filters__toggle-icon'
+          }
+        />
+      </button>
+      {isOpen && (
+        <form className="collection-filters__price-range" onSubmit={handleSubmit}>
+          <input
+            type="number"
+            inputMode="decimal"
+            placeholder="Min"
+            aria-label={`Minimum ${filter.label}`}
+            className="collection-filters__price-input"
+            value={min}
+            onChange={(event) => setMin(event.target.value)}
+          />
+          <span aria-hidden="true" className="collection-filters__price-separator">
+            &ndash;
+          </span>
+          <input
+            type="number"
+            inputMode="decimal"
+            placeholder="Max"
+            aria-label={`Maximum ${filter.label}`}
+            className="collection-filters__price-input"
+            value={max}
+            onChange={(event) => setMax(event.target.value)}
+          />
+          <button type="submit" className="collection-filters__price-submit">
+            Go
+          </button>
+        </form>
+      )}
+    </div>
+  );
+}
+
+function ClearFiltersLink() {
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const hasActiveFilters = params.getAll(FILTER_URL_PARAM_NAME).length > 0;
+
+  if (!hasActiveFilters) {
+    return null;
+  }
+
+  const newParams = resetPagination(new URLSearchParams(params));
+  newParams.delete(FILTER_URL_PARAM_NAME);
+
+  return (
+    <Link
+      prefetch="intent"
+      preventScrollReset
+      replace
+      className="collection-filters__clear"
+      to={`${location.pathname}?${newParams.toString()}`}
+    >
+      Clear all
+    </Link>
+  );
+}
+
+function toggleFilterParam(filterInput: string, params: URLSearchParams) {
+  const newParams = new URLSearchParams(params);
+  const currentFilters = newParams.getAll(FILTER_URL_PARAM_NAME);
+
+  newParams.delete(FILTER_URL_PARAM_NAME);
+
+  if (currentFilters.includes(filterInput)) {
+    currentFilters
+      .filter((existing) => existing !== filterInput)
+      .forEach((existing) => newParams.append(FILTER_URL_PARAM_NAME, existing));
+  } else {
+    currentFilters.forEach((existing) => newParams.append(FILTER_URL_PARAM_NAME, existing));
+    newParams.append(FILTER_URL_PARAM_NAME, filterInput);
+  }
+
+  return newParams;
+}
+
+interface ParsedPriceFilter {
+  price?: {min?: number; max?: number};
+}
+
+function isPriceFilter(rawFilter: string): boolean {
+  try {
+    return Boolean((JSON.parse(rawFilter) as ParsedPriceFilter)?.price);
+  } catch {
+    return false;
+  }
+}
+
+function getExistingPriceFilter(
+  params: URLSearchParams,
+): ParsedPriceFilter | undefined {
+  return params
+    .getAll(FILTER_URL_PARAM_NAME)
+    .map((rawFilter) => {
+      try {
+        return JSON.parse(rawFilter) as ParsedPriceFilter;
+      } catch {
+        return null;
+      }
+    })
+    .find((parsed): parsed is ParsedPriceFilter => Boolean(parsed?.price));
+}
+
+function CollectionFeed({
+  activeTab,
+  products,
+  articles,
+  pageCursors,
+  totalKnownPages,
+  hasMoreBeyondKnownPages,
+}: {
+  activeTab: CollectionTab;
+  products: ProductsConnection;
+  articles: ArticleItemFragment[];
+  pageCursors?: Record<number, string>;
+  totalKnownPages?: number;
+  hasMoreBeyondKnownPages?: boolean;
+}) {
+  return (
+    <>
+      <div
+        id="panel-products"
+        role="tabpanel"
+        aria-labelledby="tab-products"
+        hidden={activeTab !== 'products'}
+      >
+        <PaginatedResourceSection<ProductCardFragment>
+          connection={products}
+          resourcesClassName="products-grid"
+          pageCursors={pageCursors}
+          totalKnownPages={totalKnownPages}
+          hasMoreBeyondKnownPages={hasMoreBeyondKnownPages}
+        >
+          {({node: product, index}) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              loading={index < 8 ? 'eager' : undefined}
+              showVendor={false}
+            />
+          )}
+        </PaginatedResourceSection>
+      </div>
+
+      <div
+        id="panel-articles"
+        role="tabpanel"
+        aria-labelledby="tab-articles"
+        hidden={activeTab !== 'articles'}
+      >
+        {articles.length ? (
+          <div className="article-feed">
+            {articles.map((article, index) => (
+              <ArticleItem
+                key={article.id}
+                article={article}
+                loading={index < 8 ? 'eager' : undefined}
+              />
+            ))}
+          </div>
+        ) : (
+          <p className="collection-empty">No articles found.</p>
+        )}
+      </div>
+    </>
+  );
+}
+
+===== FILE: app\sections\ProductForm.tsx =====
+import {Link, useNavigate} from 'react-router';
+import {type MappedProductOptions} from '@shopify/hydrogen';
+import type {
+  Maybe,
+  ProductOptionValueSwatch,
+} from '@shopify/hydrogen/storefront-api-types';
+import {AddToCartButton} from '~/snippets/AddToCartButton';
+import {useAside} from '~/components/Aside';
+import type {ProductFragment} from 'storefrontapi.generated';
+
+export function ProductForm({
+  productOptions,
+  selectedVariant,
+}: {
+  productOptions: MappedProductOptions[];
+  selectedVariant: ProductFragment['selectedOrFirstAvailableVariant'];
+}) {
+  const navigate = useNavigate();
+  const {open} = useAside();
+  return (
+    <div className="product-form">
+      {productOptions.map((option) => {
+        // If there is only a single value in the option values, don't display the option
+        if (option.optionValues.length === 1) return null;
+
+        return (
+          <div className="product-options" key={option.name}>
+            <h5>{option.name}</h5>
+            <div className="product-options-grid">
+              {option.optionValues.map((value) => {
+                const {
+                  name,
+                  handle,
+                  variantUriQuery,
+                  selected,
+                  available,
+                  exists,
+                  isDifferentProduct,
+                  swatch,
+                } = value;
+
+                const optionItemClassName = `product-options-item${
+                  selected ? ' product-options-item--selected' : ''
+                }${!available ? ' product-options-item--unavailable' : ''}`;
+
+                if (isDifferentProduct) {
+                  // SEO
+                  // When the variant is a combined listing child product
+                  // that leads to a different url, we need to render it
+                  // as an anchor tag
+                  return (
+                    <Link
+                      className={optionItemClassName}
+                      key={option.name + name}
+                      prefetch="intent"
+                      preventScrollReset
+                      replace
+                      to={`/products/${handle}?${variantUriQuery}`}
+                    >
+                      <ProductOptionSwatch swatch={swatch} name={name} />
+                    </Link>
+                  );
+                } else {
+                  // SEO
+                  // When the variant is an update to the search param,
+                  // render it as a button with javascript navigating to
+                  // the variant so that SEO bots do not index these as
+                  // duplicated links
+                  return (
+                    <button
+                      type="button"
+                      className={`${optionItemClassName}${
+                        exists && !selected ? ' link' : ''
+                      }`}
+                      key={option.name + name}
+                      disabled={!exists}
+                      onClick={() => {
+                        if (!selected) {
+                          void navigate(`?${variantUriQuery}`, {
+                            replace: true,
+                            preventScrollReset: true,
+                          });
+                        }
+                      }}
+                    >
+                      <ProductOptionSwatch swatch={swatch} name={name} />
+                    </button>
+                  );
+                }
+              })}
+            </div>
+          </div>
+        );
+      })}
+      <AddToCartButton
+        disabled={!selectedVariant || !selectedVariant.availableForSale}
+        onClick={() => {
+          open('cart');
+        }}
+        lines={
+          selectedVariant
+            ? [
+                {
+                  merchandiseId: selectedVariant.id,
+                  quantity: 1,
+                  selectedVariant,
+                },
+              ]
+            : []
+        }
+      >
+        {selectedVariant?.availableForSale ? 'Add to cart' : 'Sold out'}
+      </AddToCartButton>
+    </div>
+  );
+}
+
+function ProductOptionSwatch({
+  swatch,
+  name,
+}: {
+  swatch?: Maybe<ProductOptionValueSwatch> | undefined;
+  name: string;
+}) {
+  const image = swatch?.image?.previewImage?.url;
+  const color = swatch?.color;
+
+  if (!image && !color) return name;
+
+  return (
+    <div
+      aria-label={name}
+      className="product-option-label-swatch"
+      style={{
+        backgroundColor: color || 'transparent',
+      }}
+    >
+      {!!image && <img src={image} alt={name} />}
+    </div>
+  );
+}
+
+===== FILE: app\snippets\QuickView.tsx =====
+// app/snippets/QuickView.tsx
+//
+// Listens for the 'quickview:open' CustomEvent dispatched by
+// ProductCard.tsx, fetches full product data from
+// /api/quickview/:handle, and renders it inside the shared <Aside>
+// shell (type="quickview") as a centered modal (see quickview.css).
+//
+// Also renders a recommendations carousel below the product details,
+// split into "You may also like" (RELATED) / "Frequently bought
+// together" (COMPLEMENTARY) tabs — using the same deferred
+// recommended-products promise + <Suspense>/<Await> pattern as
+// products.$handle.tsx, so the modal opens immediately and the
+// carousel streams in once ready. If only one intent returns results,
+// falls back to a single untabbed carousel. Clicking "Quick view" on
+// a recommended product re-dispatches 'quickview:open' with the new
+// handle — the listener below is already mounted, so this just swaps
+// the modal's contents in place rather than opening a second modal.
+//
+// Mount this once, globally, in PageLayout.tsx alongside the other
+// <Aside> instances (cart, search, mobile) — NOT inside ProductCard.
+import {Suspense, useEffect, useRef, useState} from 'react';
+import {Await, Link, useFetcher} from 'react-router';
+import {Image, Money, getProductOptions} from '@shopify/hydrogen';
+import type {
+  Maybe,
+  ProductOptionValueSwatch,
+} from '@shopify/hydrogen/storefront-api-types';
+import type {ProductCardFragment} from 'storefrontapi.generated';
+import {Aside, useAside} from '~/components/Aside';
+import {StarRating} from '~/snippets/StarRating';
+import {AddToCartButton} from '~/snippets/AddToCartButton';
+import {ProductCarousel} from '~/sections/ProductCarousel';
+import type {ProductCarouselTab} from '~/sections/ProductCarousel';
+
+// Shopify's standard `reviews.rating` metafield value is a JSON string:
+// {"value":"4.3","scale_min":"1","scale_max":"5"}
+// (Same parsing logic as ProductCard.tsx — kept local to avoid a
+// cross-import; consider extracting to lib/utils.ts if used a third time.)
+function parseRating(raw?: string | null): number {
+  if (!raw) return 0;
+  try {
+    return parseFloat(JSON.parse(raw)?.value ?? '0') || 0;
+  } catch {
+    return 0;
+  }
+}
+
+function parseCount(raw?: string | null): number {
+  if (!raw) return 0;
+  const n = parseInt(raw, 10);
+  return Number.isNaN(n) ? 0 : n;
+}
+
+export function QuickView() {
+  const {type, open} = useAside();
+  const fetcher = useFetcher<{
+    product: any;
+    recommended: Promise<[ProductCardFragment[], ProductCardFragment[]]>;
+  }>();
+  const [handle, setHandle] = useState<string | null>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    function onOpen(e: Event) {
+      const detail = (e as CustomEvent<{handle: string; trigger?: HTMLElement}>)
+        .detail;
+      if (!detail?.handle) return;
+      triggerRef.current = detail.trigger ?? null;
+      setHandle(detail.handle);
+      open('quickview');
+      fetcher.load(`/api/quickview/${detail.handle}`);
+    }
+    document.addEventListener('quickview:open', onOpen);
+    return () => document.removeEventListener('quickview:open', onOpen);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Return focus to whichever "Quick view" button opened the modal
+  // once it closes (accessibility).
+  useEffect(() => {
+    if (type === 'quickview') return;
+    triggerRef.current?.focus?.();
+  }, [type]);
+
+  const product = fetcher.data?.product;
+  const isLoading = !product;
+
+  function selectOption(variantUriQuery: string) {
+    if (!handle) return;
+    fetcher.load(`/api/quickview/${handle}?${variantUriQuery}`);
+  }
+
+  return (
+    <Aside type="quickview" heading={product?.title ?? 'Quick view'}>
+      {isLoading ? (
+        <div className="quickview__loading" role="status">
+          Loading…
+        </div>
+      ) : (
+        <QuickViewContent
+          product={product}
+          recommended={fetcher.data?.recommended}
+          onSelectOption={selectOption}
+        />
+      )}
+    </Aside>
+  );
+}
+
+function QuickViewContent({
+  product,
+  recommended,
+  onSelectOption,
+}: {
+  product: any;
+  recommended?: Promise<[ProductCardFragment[], ProductCardFragment[]]>;
+  onSelectOption: (variantUriQuery: string) => void;
+}) {
+  const {open, close} = useAside();
+  const selectedVariant = product.selectedOrFirstAvailableVariant;
+  const compareAtPrice = selectedVariant?.compareAtPrice;
+  const averageScore = parseRating(product.reviewsRating?.value);
+  const totalReviews = parseCount(product.reviewsCount?.value);
+
+  const productOptions = getProductOptions({
+    ...product,
+    selectedOrFirstAvailableVariant: selectedVariant,
+  });
+
+  const lines = selectedVariant
+    ? [{merchandiseId: selectedVariant.id, quantity: 1, selectedVariant}]
+    : [];
+
+  const displayImage = selectedVariant?.image ?? product.images?.nodes?.[0];
+
+  return (
+    <>
+      <div className="quickview">
+        <div className="quickview__media">
+          {displayImage ? (
+            <Image
+              data={displayImage}
+              className="quickview__img"
+              sizes="(max-width: 768px) 90vw, 480px"
+              alt={displayImage.altText ?? product.title}
+            />
+          ) : (
+            <div className="quickview__img-placeholder" aria-hidden="true" />
+          )}
+        </div>
+
+        <div className="quickview__body">
+          {product.vendor && (
+            <span className="quickview__vendor">{product.vendor}</span>
+          )}
+          <h2 className="quickview__title">{product.title}</h2>
+
+          <div className="quickview__reviews">
+            <StarRating
+              averageScore={averageScore}
+              totalReviews={totalReviews}
+              onReviewsClick={() => {
+                close();
+                window.location.href = `/products/${product.handle}#reviews`;
+              }}
+            />
+          </div>
+
+          <div className="quickview__pricing">
+            {compareAtPrice && (
+              <span className="quickview__price quickview__price--compare">
+                <s>
+                  <Money data={compareAtPrice} />
+                </s>
+              </span>
+            )}
+            {selectedVariant?.price && (
+              <span className="quickview__price quickview__price--sale">
+                <Money data={selectedVariant.price} />
+              </span>
+            )}
+          </div>
+
+          {productOptions.map((option) => {
+            // If there is only a single value in the option values, don't display the option
+            if (option.optionValues.length === 1) return null;
+
+            return (
+              <div className="product-options" key={option.name}>
+                <h5>{option.name}</h5>
+                <div className="product-options-grid">
+                  {option.optionValues.map((value) => {
+                    const {
+                      name,
+                      handle: valueHandle,
+                      variantUriQuery,
+                      selected,
+                      available,
+                      exists,
+                      isDifferentProduct,
+                      swatch,
+                    } = value;
+
+                    const optionItemClassName = `product-options-item${
+                      selected ? ' product-options-item--selected' : ''
+                    }${!available ? ' product-options-item--unavailable' : ''}`;
+
+                    if (isDifferentProduct) {
+                      // Combined-listing child product: this option value
+                      // lives on a different product/URL, so it must route
+                      // there instead of being fetched as a variant of the
+                      // current handle.
+                      return (
+                        <Link
+                          key={option.name + name}
+                          to={`/products/${valueHandle}?${variantUriQuery}`}
+                          className={optionItemClassName}
+                          onClick={close}
+                        >
+                          <QuickViewSwatch swatch={swatch} name={name} />
+                        </Link>
+                      );
+                    }
+
+                    return (
+                      <button
+                        type="button"
+                        key={option.name + name}
+                        disabled={!exists}
+                        className={`${optionItemClassName}${
+                          exists && !selected ? ' link' : ''
+                        }`}
+                        onClick={() => {
+                          if (!selected) onSelectOption(variantUriQuery);
+                        }}
+                      >
+                        <QuickViewSwatch swatch={swatch} name={name} />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+
+          <AddToCartButton
+            disabled={!selectedVariant || !selectedVariant.availableForSale}
+            onClick={() => open('cart')}
+            lines={lines}
+          >
+            {selectedVariant?.availableForSale ? 'Add to cart' : 'Sold out'}
+          </AddToCartButton>
+
+          <Link
+            to={`/products/${product.handle}`}
+            className="quickview__full-details-link"
+            onClick={close}
+          >
+            View full details
+          </Link>
+        </div>
+      </div>
+
+      {recommended && (
+        <Suspense fallback={null}>
+          <Await resolve={recommended} errorElement={null}>
+            {([related, complementary]) => {
+              const tabs: ProductCarouselTab[] = [];
+              if (related.length > 0) {
+                tabs.push({
+                  id: 'related',
+                  label: 'You may also like',
+                  products: related,
+                });
+              }
+              if (complementary.length > 0) {
+                tabs.push({
+                  id: 'complementary',
+                  label: 'Frequently bought together',
+                  products: complementary,
+                });
+              }
+
+              if (tabs.length === 0) return null;
+
+              // Only one intent came back — a single tab would just
+              // repeat its own label with nothing to switch between,
+              // so fall back to an untabbed carousel instead.
+              if (tabs.length === 1) {
+                return (
+                  <ProductCarousel
+                    title={tabs[0].label}
+                    products={tabs[0].products}
+                  />
+                );
+              }
+
+              return (
+                <ProductCarousel title="Recommended for you" tabs={tabs} />
+              );
+            }}
+          </Await>
+        </Suspense>
+      )}
+    </>
+  );
+}
+
+function QuickViewSwatch({
+  swatch,
+  name,
+}: {
+  swatch?: Maybe<ProductOptionValueSwatch> | undefined;
+  name: string;
+}) {
+  const image = swatch?.image?.previewImage?.url;
+  const color = swatch?.color;
+
+  if (!image && !color) return name;
+
+  return (
+    <div
+      aria-label={name}
+      className="product-option-label-swatch"
+      style={{backgroundColor: color || 'transparent'}}
+    >
+      {!!image && <img src={image} alt={name} />}
+    </div>
+  );
+}
+
+===== FILE: app\templates\blogs._index.tsx =====
+import {Link, useLoaderData} from 'react-router';
+import type {Route} from './+types/blogs._index';
+import {getPaginationVariables} from '@shopify/hydrogen';
+import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
+import type {BlogsQuery} from 'storefrontapi.generated';
+
+type BlogNode = BlogsQuery['blogs']['nodes'][0];
+
+export const meta: Route.MetaFunction = () => {
+  return [{title: `Hydrogen | Blogs`}];
+};
+
+export async function loader(args: Route.LoaderArgs) {
+  // Start fetching non-critical data without blocking time to first byte
+  const deferredData = loadDeferredData(args);
+
+  // Await the critical data required to render initial state of the page
+  const criticalData = await loadCriticalData(args);
+
+  return {...deferredData, ...criticalData};
+}
+
+/**
+ * Load data necessary for rendering content above the fold. This is the critical data
+ * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
+ */
+async function loadCriticalData({context, request}: Route.LoaderArgs) {
+  const paginationVariables = getPaginationVariables(request, {
+    pageBy: 10,
+  });
+
+  const [{blogs}] = await Promise.all([
+    context.storefront.query(BLOGS_QUERY, {
+      variables: {
+        ...paginationVariables,
+      },
+    }),
+    // Add other queries here, so that they are loaded in parallel
+  ]);
+
+  return {blogs};
+}
+
+/**
+ * Load data for rendering content below the fold. This data is deferred and will be
+ * fetched after the initial page load. If it's unavailable, the page should still 200.
+ * Make sure to not throw any errors here, as it will cause the page to 500.
+ */
+function loadDeferredData({context}: Route.LoaderArgs) {
+  return {};
+}
+
+export default function Blogs() {
+  const {blogs} = useLoaderData<typeof loader>();
+
+  return (
+    <div className="blogs">
+      <h1>Blogs</h1>
+      <div className="blogs-grid">
+        <PaginatedResourceSection<BlogNode> connection={blogs}>
+          {({node: blog}) => (
+            <Link
+              className="blog"
+              key={blog.handle}
+              prefetch="intent"
+              to={`/blogs/${blog.handle}`}
+            >
+              <h2>{blog.title}</h2>
+            </Link>
+          )}
+        </PaginatedResourceSection>
+      </div>
+    </div>
+  );
+}
+
+// NOTE: https://shopify.dev/docs/api/storefront/latest/objects/blog
+const BLOGS_QUERY = `#graphql
+  query Blogs(
+    $country: CountryCode
+    $endCursor: String
+    $first: Int
+    $language: LanguageCode
+    $last: Int
+    $startCursor: String
+  ) @inContext(country: $country, language: $language) {
+    blogs(
+      first: $first,
+      last: $last,
+      before: $startCursor,
+      after: $endCursor
+    ) {
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
+      nodes {
+        title
+        handle
+        seo {
+          title
+          description
+        }
+      }
+    }
+  }
+` as const;
+
+===== FILE: app\templates\collections._index.tsx =====
+import {useLoaderData, Link} from 'react-router';
+import type {Route} from './+types/collections._index';
+import {getPaginationVariables, Image} from '@shopify/hydrogen';
+import type {CollectionFragment} from 'storefrontapi.generated';
+import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
+
+export async function loader(args: Route.LoaderArgs) {
+  // Start fetching non-critical data without blocking time to first byte
+  const deferredData = loadDeferredData(args);
+
+  // Await the critical data required to render initial state of the page
+  const criticalData = await loadCriticalData(args);
+
+  return {...deferredData, ...criticalData};
+}
+
+/**
+ * Load data necessary for rendering content above the fold. This is the critical data
+ * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
+ */
+async function loadCriticalData({context, request}: Route.LoaderArgs) {
+  const paginationVariables = getPaginationVariables(request, {
+    pageBy: 4,
+  });
+
+  const [{collections}] = await Promise.all([
+    context.storefront.query(COLLECTIONS_QUERY, {
+      variables: paginationVariables,
+    }),
+    // Add other queries here, so that they are loaded in parallel
+  ]);
+
+  return {collections};
+}
+
+/**
+ * Load data for rendering content below the fold. This data is deferred and will be
+ * fetched after the initial page load. If it's unavailable, the page should still 200.
+ * Make sure to not throw any errors here, as it will cause the page to 500.
+ */
+function loadDeferredData({context}: Route.LoaderArgs) {
+  return {};
+}
+
+export default function Collections() {
+  const {collections} = useLoaderData<typeof loader>();
+
+  return (
+    <div className="collections">
+      <h1>Collections</h1>
+      <PaginatedResourceSection<CollectionFragment>
+        connection={collections}
+        resourcesClassName="collections-grid"
+      >
+        {({node: collection, index}) => (
+          <CollectionItem
+            key={collection.id}
+            collection={collection}
+            index={index}
+          />
+        )}
+      </PaginatedResourceSection>
+    </div>
+  );
+}
+
+function CollectionItem({
+  collection,
+  index,
+}: {
+  collection: CollectionFragment;
+  index: number;
+}) {
+  return (
+    <Link
+      className="collection-item"
+      key={collection.id}
+      to={`/collections/${collection.handle}`}
+      prefetch="intent"
+    >
+      {collection?.image && (
+        <Image
+          alt={collection.image.altText || collection.title}
+          aspectRatio="1/1"
+          data={collection.image}
+          loading={index < 3 ? 'eager' : undefined}
+          sizes="(min-width: 45em) 400px, 100vw"
+        />
+      )}
+      <h5>{collection.title}</h5>
+    </Link>
+  );
+}
+
+const COLLECTIONS_QUERY = `#graphql
+  fragment Collection on Collection {
+    id
+    title
+    handle
+    image {
+      id
+      url
+      altText
+      width
+      height
+    }
+  }
+  query StoreCollections(
+    $country: CountryCode
+    $endCursor: String
+    $first: Int
+    $language: LanguageCode
+    $last: Int
+    $startCursor: String
+  ) @inContext(country: $country, language: $language) {
+    collections(
+      first: $first,
+      last: $last,
+      before: $startCursor,
+      after: $endCursor
+    ) {
+      nodes {
+        ...Collection
+      }
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
+    }
+  }
+` as const;
+
+===== FILE: app\templates\wishlist.tsx =====
+// app/templates/wishlist.tsx
+//
+// Client-rendered wishlist page. Reads the same `shopify_wishlist`
+// localStorage snapshot that ProductCard.tsx writes to and the
+// header's Wishlist icon (Header.tsx) counts — via lib/wishlist.ts, no
+// server loader, since wishlist state is local-only for now (same
+// scope note as compare.tsx: only fields cached in the snapshot are
+// shown).
+import {useEffect, useState} from 'react';
+import {Link} from 'react-router';
+import {Money} from '@shopify/hydrogen';
+import type {MetaFunction} from 'react-router';
+import {
+  type WishlistEntry,
+  WISHLIST_KEY,
+  readWishlist,
+  writeWishlist,
+  broadcastWishlistUpdate,
+} from '~/lib/wishlist';
+
+export const meta: MetaFunction = () => {
+  return [{title: 'Wishlist'}];
+};
+
+export default function Wishlist() {
+  const [items, setItems] = useState<WishlistEntry[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setItems(readWishlist());
+    setHydrated(true);
+
+    function onWishlistUpdated(e: Event) {
+      const detail = (e as CustomEvent<{items: WishlistEntry[]}>).detail;
+      setItems(detail?.items ?? readWishlist());
+    }
+    function onStorage(e: StorageEvent) {
+      if (e.key !== WISHLIST_KEY) return;
+      setItems(readWishlist());
+    }
+
+    document.addEventListener('wishlist:updated', onWishlistUpdated);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      document.removeEventListener('wishlist:updated', onWishlistUpdated);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
+
+  function removeItem(id: string) {
+    const next = items.filter((entry) => entry.id !== id);
+    writeWishlist(next);
+    broadcastWishlistUpdate(next);
+    setItems(next);
+  }
+
+  if (!hydrated) {
+    // Avoid an SSR/hydration mismatch: localStorage doesn't exist on the
+    // server, so render nothing meaningful until mounted client-side.
+    return <div className="wishlist-page" />;
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className="wishlist-page wishlist-page--empty">
+        <h1>Wishlist</h1>
+        <p>You haven&rsquo;t added any products to your wishlist yet.</p>
+        <Link to="/collections/all">Browse products</Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="wishlist-page">
+      <h1>Wishlist</h1>
+
+      <div className="wishlist-grid">
+        {items.map((entry) => (
+          <div key={entry.id} className="wishlist-grid__item">
+            <button
+              type="button"
+              className="wishlist-grid__remove"
+              aria-label={`Remove ${entry.title} from wishlist`}
+              onClick={() => removeItem(entry.id)}
+            >
+              &times;
+            </button>
+            <Link to={`/products/${entry.handle}`} className="wishlist-grid__link">
+              {entry.image ? (
+                <img
+                  src={entry.image}
+                  alt={entry.title}
+                  className="wishlist-grid__img"
+                />
+              ) : (
+                <div className="wishlist-grid__img-placeholder" aria-hidden="true" />
+              )}
+              <span className="wishlist-grid__title">{entry.title}</span>
+              {entry.price && (
+                <span className="wishlist-grid__price">
+                  <Money data={entry.price} />
+                </span>
+              )}
+            </Link>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

@@ -1,7 +1,7 @@
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import type {CartLayout} from '~/sections/CartMain';
 import {CartForm, Money, type OptimisticCart} from '@shopify/hydrogen';
-import {useEffect, useId, useRef, useState} from 'react';
+import {useId, useState} from 'react';
 import {useFetcher} from 'react-router';
 
 type CartSummaryProps = {
@@ -10,51 +10,132 @@ type CartSummaryProps = {
 };
 
 export function CartSummary({cart, layout}: CartSummaryProps) {
-  const className =
-    layout === 'page' ? 'cart-summary-page' : 'cart-summary-aside';
+  const isAside = layout === 'aside';
+  const className = isAside ? 'cart-summary-aside' : 'cart-summary-page';
   const summaryId = useId();
   const discountsHeadingId = useId();
   const discountCodeInputId = useId();
-  const giftCardHeadingId = useId();
-  const giftCardInputId = useId();
 
   return (
     <div aria-labelledby={summaryId} className={className}>
-      <h4 id={summaryId}>Totals</h4>
-      <dl role="group" className="cart-subtotal">
-        <dt>Subtotal</dt>
-        <dd>
-          {cart?.cost?.subtotalAmount?.amount ? (
-            <Money data={cart?.cost?.subtotalAmount} />
-          ) : (
-            '-'
-          )}
-        </dd>
-      </dl>
-      <CartDiscounts
-        discountCodes={cart?.discountCodes}
-        discountsHeadingId={discountsHeadingId}
-        discountCodeInputId={discountCodeInputId}
-      />
-      <CartGiftCard
-        giftCardCodes={cart?.appliedGiftCards}
-        giftCardHeadingId={giftCardHeadingId}
-        giftCardInputId={giftCardInputId}
-      />
-      <CartCheckoutActions checkoutUrl={cart?.checkoutUrl} />
+      {isAside ? (
+        <div className="cart-subtotal-row">
+          <span id={summaryId} className="cart-subtotal-label">
+            Subtotal:
+          </span>
+          <span className="cart-subtotal-value">
+            {cart?.cost?.subtotalAmount?.amount ? (
+              <Money data={cart?.cost?.subtotalAmount} />
+            ) : (
+              '-'
+            )}
+          </span>
+        </div>
+      ) : (
+        <>
+          <h4 id={summaryId}>Totals</h4>
+          <dl role="group" className="cart-subtotal">
+            <dt>Subtotal</dt>
+            <dd>
+              {cart?.cost?.subtotalAmount?.amount ? (
+                <Money data={cart?.cost?.subtotalAmount} />
+              ) : (
+                '-'
+              )}
+            </dd>
+          </dl>
+        </>
+      )}
+
+      {isAside && (
+        <p className="cart-tax-note">
+          Tax included. <a href="/policies/shipping">Shipping</a> calculated
+          at checkout.
+        </p>
+      )}
+
+      {/* Discount codes remain available on the full cart page. They're
+          intentionally hidden in the drawer to keep it focused —
+          customers can still reach them from /cart before checkout, and
+          any discount already applied (including via a ?discount= URL)
+          still carries through to checkout either way. */}
+      {!isAside && (
+        <CartDiscounts
+          discountCodes={cart?.discountCodes}
+          discountsHeadingId={discountsHeadingId}
+          discountCodeInputId={discountCodeInputId}
+        />
+      )}
+
+      <CartNote note={cart?.note} isAside={isAside} />
+
+      <CartCheckoutActions checkoutUrl={cart?.checkoutUrl} isAside={isAside} />
     </div>
   );
 }
 
-function CartCheckoutActions({checkoutUrl}: {checkoutUrl?: string}) {
+/**
+ * A toggleable note field. Collapsed to a text link by default; clicking
+ * it reveals a textarea that submits via CartForm's NoteUpdate action,
+ * matching the same fetcher pattern used for discounts.
+ */
+function CartNote({note, isAside}: {note?: string | null; isAside: boolean}) {
+  const [isEditing, setIsEditing] = useState(Boolean(note));
+  const fetcher = useFetcher({key: 'cart-note-update'});
+  const textareaId = useId();
+
+  if (!isEditing) {
+    return (
+      <button
+        type="button"
+        className="cart-note-link"
+        onClick={() => setIsEditing(true)}
+      >
+        {note ? 'Edit note' : 'Add a note to your order'}
+      </button>
+    );
+  }
+
+  return (
+    <CartForm route="/cart" action={CartForm.ACTIONS.NoteUpdate} fetcherKey="cart-note-update">
+      <div className={isAside ? 'cart-note-form-aside' : 'cart-note-form'}>
+        <label htmlFor={textareaId} className="sr-only">
+          Order note
+        </label>
+        <textarea
+          id={textareaId}
+          name="note"
+          defaultValue={note ?? ''}
+          rows={2}
+          placeholder="Add a note to your order"
+        />
+        <div className="cart-note-actions">
+          <button type="submit" disabled={fetcher.state !== 'idle'}>
+            Save
+          </button>
+          <button type="button" onClick={() => setIsEditing(false)}>
+            Cancel
+          </button>
+        </div>
+      </div>
+    </CartForm>
+  );
+}
+
+function CartCheckoutActions({
+  checkoutUrl,
+  isAside,
+}: {
+  checkoutUrl?: string;
+  isAside: boolean;
+}) {
   if (!checkoutUrl) return null;
 
   return (
-    <div>
-      <a href={checkoutUrl} target="_self">
-        <p>Continue to Checkout &rarr;</p>
+    <div className="cart-checkout-actions">
+      <a href={checkoutUrl} target="_self" className="cart-checkout-btn">
+        {isAside ? 'Check out' : 'Continue to Checkout →'}
       </a>
-      <br />
     </div>
   );
 }
@@ -133,168 +214,6 @@ function UpdateDiscountForm({
       }}
     >
       {children}
-    </CartForm>
-  );
-}
-
-function CartGiftCard({
-  giftCardCodes,
-  giftCardHeadingId,
-  giftCardInputId,
-}: {
-  giftCardCodes: CartApiQueryFragment['appliedGiftCards'] | undefined;
-  giftCardHeadingId: string;
-  giftCardInputId: string;
-}) {
-  const giftCardCodeInput = useRef<HTMLInputElement>(null);
-  const removeButtonRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
-  const previousCardIdsRef = useRef<string[]>([]);
-  const giftCardAddFetcher = useFetcher({key: 'gift-card-add'});
-  const [removedCardIndex, setRemovedCardIndex] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (giftCardAddFetcher.data) {
-      if (giftCardCodeInput.current !== null) {
-        giftCardCodeInput.current.value = '';
-      }
-    }
-  }, [giftCardAddFetcher.data]);
-
-  useEffect(() => {
-    const currentCardIds = giftCardCodes?.map((card) => card.id) || [];
-
-    if (removedCardIndex !== null && giftCardCodes) {
-      const focusTargetIndex = Math.min(
-        removedCardIndex,
-        giftCardCodes.length - 1,
-      );
-      const focusTargetCard = giftCardCodes[focusTargetIndex];
-      const focusButton = focusTargetCard
-        ? removeButtonRefs.current.get(focusTargetCard.id)
-        : null;
-
-      if (focusButton) {
-        focusButton.focus();
-      } else if (giftCardCodeInput.current) {
-        giftCardCodeInput.current.focus();
-      }
-
-      setRemovedCardIndex(null);
-    }
-
-    previousCardIdsRef.current = currentCardIds;
-  }, [giftCardCodes, removedCardIndex]);
-
-  const handleRemoveClick = (cardId: string) => {
-    const index = previousCardIdsRef.current.indexOf(cardId);
-    if (index !== -1) {
-      setRemovedCardIndex(index);
-    }
-  };
-
-  return (
-    <section aria-label="Gift cards">
-      {giftCardCodes && giftCardCodes.length > 0 && (
-        <dl>
-          <dt id={giftCardHeadingId}>Applied Gift Card(s)</dt>
-          {giftCardCodes.map((giftCard) => (
-            <dd key={giftCard.id} className="cart-discount">
-              <RemoveGiftCardForm
-                giftCardId={giftCard.id}
-                lastCharacters={giftCard.lastCharacters}
-                onRemoveClick={() => handleRemoveClick(giftCard.id)}
-                buttonRef={(el: HTMLButtonElement | null) => {
-                  if (el) {
-                    removeButtonRefs.current.set(giftCard.id, el);
-                  } else {
-                    removeButtonRefs.current.delete(giftCard.id);
-                  }
-                }}
-              >
-                <code>***{giftCard.lastCharacters}</code>
-                &nbsp;
-                <Money data={giftCard.amountUsed} />
-              </RemoveGiftCardForm>
-            </dd>
-          ))}
-        </dl>
-      )}
-
-      <AddGiftCardForm fetcherKey="gift-card-add">
-        <div>
-          <label htmlFor={giftCardInputId} className="sr-only">
-            Gift card code
-          </label>
-          <input
-            id={giftCardInputId}
-            type="text"
-            name="giftCardCode"
-            placeholder="Gift card code"
-            ref={giftCardCodeInput}
-          />
-          &nbsp;
-          <button
-            type="submit"
-            disabled={giftCardAddFetcher.state !== 'idle'}
-            aria-label="Apply gift card code"
-          >
-            Apply
-          </button>
-        </div>
-      </AddGiftCardForm>
-    </section>
-  );
-}
-
-function AddGiftCardForm({
-  fetcherKey,
-  children,
-}: {
-  fetcherKey?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <CartForm
-      fetcherKey={fetcherKey}
-      route="/cart"
-      action={CartForm.ACTIONS.GiftCardCodesAdd}
-    >
-      {children}
-    </CartForm>
-  );
-}
-
-function RemoveGiftCardForm({
-  giftCardId,
-  lastCharacters,
-  children,
-  onRemoveClick,
-  buttonRef,
-}: {
-  giftCardId: string;
-  lastCharacters: string;
-  children: React.ReactNode;
-  onRemoveClick?: () => void;
-  buttonRef?: (el: HTMLButtonElement | null) => void;
-}) {
-  return (
-    <CartForm
-      route="/cart"
-      action={CartForm.ACTIONS.GiftCardCodesRemove}
-      inputs={{
-        giftCardCodes: [giftCardId],
-      }}
-    >
-      {children}
-      &nbsp;
-      <button
-        type="submit"
-        aria-label={`Remove gift card ending in ${lastCharacters}`}
-        onClick={onRemoveClick}
-        ref={buttonRef}
-      >
-        Remove
-      </button>
     </CartForm>
   );
 }

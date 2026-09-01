@@ -34,6 +34,9 @@ export async function action({request, context}: Route.ActionArgs) {
     case CartForm.ACTIONS.LinesRemove:
       result = await cart.removeLines(inputs.lineIds);
       break;
+    case CartForm.ACTIONS.NoteUpdate:
+      result = await cart.updateNote(inputs.note);
+      break;
     case CartForm.ACTIONS.DiscountCodesUpdate: {
       const formDiscountCode = inputs.discountCode;
       const discountCodes = (

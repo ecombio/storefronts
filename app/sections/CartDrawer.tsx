@@ -6,6 +6,11 @@ import {Aside} from '~/components/Aside';
 import {CartMain} from '~/sections/CartMain';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
 
+type CartLike =
+  | Promise<CartApiQueryFragment | null>
+  | CartApiQueryFragment
+  | null;
+
 /**
  * The cart drawer (slide-out mini-cart). A thin wrapper around the
  * existing `Aside` panel and `CartMain` section — no new cart logic,
@@ -13,17 +18,17 @@ import type {CartApiQueryFragment} from 'storefrontapi.generated';
  * `AsideProvider`; `CartMain` already owns optimistic cart rendering
  * via `useOptimisticCart`.
  *
- * `cart` is typically a deferred promise from the root loader
- * (standard Hydrogen skeleton pattern) — adjust the `Await`/`Suspense`
- * wrapper below if your root loader resolves it eagerly instead.
+ * The live "Shopping cart (N)" heading is passed straight into
+ * `Aside`'s existing `heading` prop rather than rendered as a second
+ * header inside `CartMain`. `Aside` only renders one `<h3>` + one
+ * close button, and that `<h3>` is what the dialog's
+ * `aria-labelledby` points to — duplicating it would either show two
+ * close buttons or require hiding the original via CSS, which strips
+ * the dialog's accessible name for screen readers.
  */
-export function CartDrawer({
-  cart,
-}: {
-  cart: Promise<CartApiQueryFragment | null> | CartApiQueryFragment | null;
-}) {
+export function CartDrawer({cart}: {cart: CartLike}) {
   return (
-    <Aside type="cart" heading="Cart">
+    <Aside type="cart" heading={<CartAsideHeading cart={cart} />}>
       {isPromise(cart) ? (
         <Suspense fallback={<CartLoading />}>
           <Await resolve={cart}>
@@ -36,6 +41,22 @@ export function CartDrawer({
         <CartMain layout="aside" cart={cart} />
       )}
     </Aside>
+  );
+}
+
+/** Renders inside Aside's own <h3> — swaps text once the cart resolves. */
+function CartAsideHeading({cart}: {cart: CartLike}) {
+  if (!isPromise(cart)) {
+    return <>Shopping cart ({cart?.totalQuantity ?? 0})</>;
+  }
+  return (
+    <Suspense fallback={<>Cart</>}>
+      <Await resolve={cart}>
+        {(resolvedCart) => (
+          <>Shopping cart ({resolvedCart?.totalQuantity ?? 0})</>
+        )}
+      </Await>
+    </Suspense>
   );
 }
 
