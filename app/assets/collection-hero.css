@@ -1,0 +1,57 @@
+/* app/assets/collection-hero.css */
+
+#collection-hero {
+  max-width: var(--content-max-width);
+  margin-inline: auto;
+  padding-inline: var(--content-padding-mobile);
+  padding-block: 2rem 1.5rem;
+}
+
+#collection-hero .collection-title {
+  margin: 0 0 0.75rem;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--gs-black);
+}
+
+#collection-hero .collection-description {
+  max-width: 60ch;
+  color: var(--gs-black);
+}
+
+#collection-hero .collection-description p {
+  margin: 0 0 1rem;
+  line-height: 1.6;
+}
+
+#collection-hero .collection-description a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+#collection-hero .collection-description a:hover {
+  opacity: 0.7;
+}
+
+#collection-hero .collection-description > *:last-child {
+  margin-bottom: 0;
+}
+
+/* Tablet tier (640–1023px) — see theme.css --bp-sm / --bp-lg */
+@media (min-width: 640px) {
+  #collection-hero {
+    padding-inline: var(--content-padding-tablet);
+  }
+}
+
+/* Desktop tier (≥1024px) — see theme.css --bp-sm / --bp-lg */
+@media (min-width: 1024px) {
+  #collection-hero {
+    padding-inline: var(--content-padding-desktop);
+  }
+
+  #collection-hero .collection-title {
+    font-size: 34px;
+  }
+}

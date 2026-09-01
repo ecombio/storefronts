@@ -4,12 +4,8 @@ import {redirect, useLoaderData} from 'react-router';
 import type {Route} from './+types/collections.$handle';
 import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
-import {CollectionFilters} from '~/sections/CollectionFilters';
-import {CollectionFeed} from '~/sections/CollectionFeed';
-import {CollectionToolbar} from '~/sections/CollectionToolbar';
-import {CollectionArticles} from '~/sections/CollectionArticles';
-import {SubCollections} from '~/sections/SubCollections';
-import type {CollectionTab} from '~/sections/CollectionToolbar';
+import {CollectionHero} from '~/sections/CollectionHero';
+import {MainCollection, type CollectionTab} from '~/sections/MainCollection';
 import type {ProductFilter} from '@shopify/hydrogen/storefront-api-types';
 
 const FILTER_URL_PARAM_NAME = 'filter';
@@ -127,34 +123,18 @@ export default function Collection() {
 
   return (
     <div className="collection">
-      <h1>{collection.title}</h1>
-      <p className="collection-description">{collection.description}</p>
+      <CollectionHero
+        title={collection.title}
+        descriptionHtml={collection.descriptionHtml}
+      />
 
-      <CollectionToolbar activeTab={activeTab} />
-
-      <div className="collection-layout">
-        <CollectionFilters filters={collection.products.filters} />
-
-        <div className="collection-feed">
-          <div
-            id="panel-products"
-            role="tabpanel"
-            aria-labelledby="tab-products"
-            hidden={activeTab !== 'products'}
-          >
-            <SubCollections collections={subCollections} />
-            <CollectionFeed products={collection.products} />
-          </div>
-          <div
-            id="panel-articles"
-            role="tabpanel"
-            aria-labelledby="tab-articles"
-            hidden={activeTab !== 'articles'}
-          >
-            <CollectionArticles articles={articles} />
-          </div>
-        </div>
-      </div>
+      <MainCollection
+        activeTab={activeTab}
+        filters={collection.products.filters}
+        products={collection.products}
+        subCollections={subCollections}
+        articles={articles}
+      />
 
       {afterItemsPage?.body && (
         <div
@@ -259,7 +239,7 @@ const COLLECTION_QUERY = `#graphql
       id
       handle
       title
-      description
+      descriptionHtml
       postsMetafield: metafield(namespace: "custom", key: "posts") {
         references(first: 10) {
           nodes {

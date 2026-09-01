@@ -1,17 +1,165 @@
-// app/sections/CollectionFilters.tsx
+// app/sections/MainCollection.tsx
 
-import {useState} from 'react';
-import type {FormEvent} from 'react';
+import {useEffect, useRef, useState} from 'react';
+import type {ComponentProps, FormEvent} from 'react';
 import {Link, useLocation, useNavigate} from 'react-router';
 import type {Filter} from '@shopify/hydrogen/storefront-api-types';
+import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
+import {ProductItem} from '~/snippets/ProductItem';
+import {ArticleItem} from '~/snippets/ArticleItem';
+import {SubCollections} from '~/sections/SubCollections';
+import type {
+  ProductItemFragment,
+  ArticleItemFragment,
+  SubCollectionItemFragment,
+} from 'storefrontapi.generated';
 
+const TAB_PARAM_NAME = 'tab';
 const FILTER_URL_PARAM_NAME = 'filter';
 
-interface CollectionFiltersProps {
+export type CollectionTab = 'products' | 'articles';
+
+const TABS: {id: CollectionTab; label: string}[] = [
+  {id: 'products', label: 'Products'},
+  {id: 'articles', label: 'Expert Advice'},
+];
+
+type ProductsConnection = ComponentProps<
+  typeof PaginatedResourceSection<ProductItemFragment>
+>['connection'];
+
+interface MainCollectionProps {
+  activeTab: CollectionTab;
   filters: Filter[];
+  products: ProductsConnection;
+  subCollections: SubCollectionItemFragment[];
+  articles: ArticleItemFragment[];
 }
 
-export function CollectionFilters({filters}: CollectionFiltersProps) {
+/**
+ * The tab-switcher + filters + feed unit for a collection page —
+ * everything below the hero and above the after-items block.
+ *
+ * Previously split across CollectionToolbar.tsx, CollectionFilters.tsx,
+ * and CollectionFeed.tsx (each still below as an internal function) —
+ * inlined into one file since all three only ever render together, in
+ * this exact nesting, for this one page. Note: CollectionFeed was
+ * originally written generic (usable for search results or a related-
+ * products feed too) — that reusability goes away with this merge
+ * unless it's pulled back out into its own file later.
+ */
+export function MainCollection({
+  activeTab,
+  filters,
+  products,
+  subCollections,
+  articles,
+}: MainCollectionProps) {
+  return (
+    <>
+      <CollectionToolbar activeTab={activeTab} />
+
+      <div className="collection-layout">
+        <CollectionFilters filters={filters} />
+
+        <div className="collection-feed">
+          <CollectionFeed
+            activeTab={activeTab}
+            products={products}
+            subCollections={subCollections}
+            articles={articles}
+          />
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* CollectionToolbar                                                   */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Tab switcher between a collection's product grid and its linked
+ * articles (from the collection's `custom.posts` metafield). Tab
+ * state lives in the `?tab=` URL param, same pattern CollectionFilters
+ * uses for its own params, so it's shareable and needs no client JS.
+ *
+ * `sticky-under-header` (app/assets/sticky-header.css) sticks this
+ * below the header and closes the gap when the header hides on
+ * scroll. On top of that, this component measures its OWN rendered
+ * height via ResizeObserver and writes it to `--toolbar-height` on
+ * <html> — CollectionFilters reads that var to stick itself below
+ * the toolbar rather than underneath/behind it. Without this, the
+ * filter panel and the toolbar both compute their sticky offset from
+ * only the header's height and end up overlapping once both are
+ * stuck (toolbar tabs rendering on top of the filter's "Filters"
+ * heading).
+ */
+function CollectionToolbar({activeTab}: {activeTab: CollectionTab}) {
+  const location = useLocation();
+  const toolbarRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = toolbarRef.current;
+    if (!el) return;
+
+    const resizeObserver = new ResizeObserver(([entry]) => {
+      document.documentElement.style.setProperty(
+        '--toolbar-height',
+        `${entry.contentRect.height}px`,
+      );
+    });
+    resizeObserver.observe(el);
+
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={toolbarRef}
+      className="collection-toolbar sticky-under-header"
+      role="navigation"
+      aria-label="Collection navigation"
+    >
+      <div className="tab-switcher" role="tablist" aria-label="Collection view">
+        {TABS.map((tab) => {
+          const params = new URLSearchParams(location.search);
+          params.set(TAB_PARAM_NAME, tab.id);
+          const isActive = tab.id === activeTab;
+
+          return (
+            <Link
+              key={tab.id}
+              to={`${location.pathname}?${params.toString()}`}
+              id={`tab-${tab.id}`}
+              role="tab"
+              aria-selected={isActive}
+              aria-controls={`panel-${tab.id}`}
+              tabIndex={isActive ? 0 : -1}
+              prefetch="intent"
+              preventScrollReset
+              replace
+              className={
+                isActive
+                  ? 'tab-switcher__tab tab-switcher__tab--active'
+                  : 'tab-switcher__tab'
+              }
+            >
+              {tab.label}
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* CollectionFilters                                                   */
+/* ------------------------------------------------------------------ */
+
+function CollectionFilters({filters}: {filters: Filter[]}) {
   if (!filters?.length) {
     return null;
   }
@@ -246,9 +394,13 @@ function toggleFilterParam(filterInput: string, params: URLSearchParams) {
   return newParams;
 }
 
+interface ParsedPriceFilter {
+  price?: {min?: number; max?: number};
+}
+
 function isPriceFilter(rawFilter: string): boolean {
   try {
-    return Boolean(JSON.parse(rawFilter)?.price);
+    return Boolean((JSON.parse(rawFilter) as ParsedPriceFilter)?.price);
   } catch {
     return false;
   }
@@ -256,15 +408,82 @@ function isPriceFilter(rawFilter: string): boolean {
 
 function getExistingPriceFilter(
   params: URLSearchParams,
-): {price?: {min?: number; max?: number}} | undefined {
+): ParsedPriceFilter | undefined {
   return params
     .getAll(FILTER_URL_PARAM_NAME)
     .map((rawFilter) => {
       try {
-        return JSON.parse(rawFilter);
+        return JSON.parse(rawFilter) as ParsedPriceFilter;
       } catch {
         return null;
       }
     })
-    .find((parsed) => parsed?.price);
+    .find((parsed): parsed is ParsedPriceFilter => Boolean(parsed?.price));
+}
+
+/* ------------------------------------------------------------------ */
+/* CollectionFeed                                                      */
+/* ------------------------------------------------------------------ */
+
+/**
+ * The tabbed content area for a collection page: the paginated product
+ * grid (plus any sub-collections) for the "Products" tab, and the
+ * article list for the "Expert Advice" tab.
+ */
+function CollectionFeed({
+  activeTab,
+  products,
+  subCollections,
+  articles,
+}: {
+  activeTab: CollectionTab;
+  products: ProductsConnection;
+  subCollections: SubCollectionItemFragment[];
+  articles: ArticleItemFragment[];
+}) {
+  return (
+    <>
+      <div
+        id="panel-products"
+        role="tabpanel"
+        aria-labelledby="tab-products"
+        hidden={activeTab !== 'products'}
+      >
+        <SubCollections collections={subCollections} />
+        <PaginatedResourceSection<ProductItemFragment>
+          connection={products}
+          resourcesClassName="products-grid"
+        >
+          {({node: product, index}) => (
+            <ProductItem
+              key={product.id}
+              product={product}
+              loading={index < 8 ? 'eager' : undefined}
+            />
+          )}
+        </PaginatedResourceSection>
+      </div>
+
+      <div
+        id="panel-articles"
+        role="tabpanel"
+        aria-labelledby="tab-articles"
+        hidden={activeTab !== 'articles'}
+      >
+        {articles.length ? (
+          <div className="article-feed">
+            {articles.map((article, index) => (
+              <ArticleItem
+                key={article.id}
+                article={article}
+                loading={index < 8 ? 'eager' : undefined}
+              />
+            ))}
+          </div>
+        ) : (
+          <p className="collection-empty">No articles found.</p>
+        )}
+      </div>
+    </>
+  );
 }
