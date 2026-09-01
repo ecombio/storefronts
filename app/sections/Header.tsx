@@ -1,7 +1,7 @@
 // app/sections/Header.tsx
 import {Suspense, useEffect, useRef, useState} from 'react';
 import {Await, Link, NavLink, useAsyncValue} from 'react-router';
-import {ShoppingBag, User} from 'lucide-react';
+import {Heart, Scale, ShoppingBag, User} from 'lucide-react';
 import {
   type CartViewPayload,
   useAnalytics,
@@ -19,6 +19,8 @@ export {AnnouncementBar} from './AnnouncementBar';
 import type {CollectionImage} from '~/config/Header.constants';
 import wordmarkSrc from '~/assets/wordmark.svg';
 import {useHeaderHeightSync} from '~/hooks/useHeaderHeightSync';
+import {type WishlistEntry, WISHLIST_KEY, readWishlist} from '~/lib/wishlist'; // ADDED
+import {type CompareEntry, COMPARE_KEY, COMPARE_MAX, readCompareList} from '~/lib/compare'; // ADDED
 
 export interface HeaderProps {
   header: HeaderQuery;
@@ -170,6 +172,8 @@ function HeaderCtas({
   return (
     <nav className="flex shrink-0 items-center gap-3 sm:gap-6" role="navigation">
       <HeaderAccount isLoggedIn={isLoggedIn} customer={customer} />
+      <WishlistToggle /> {/* ADDED */}
+      <CompareToggle /> {/* ADDED */}
       <CartToggle cart={cart} />
     </nav>
   );
@@ -300,4 +304,127 @@ function CartBanner() {
   const originalCart = useAsyncValue() as CartApiQueryFragment | null;
   const cart = useOptimisticCart(originalCart);
   return <CartBadge count={cart?.totalQuantity ?? 0} />;
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Wishlist toggle — ADDED
+// Mirrors CartBadge/CartToggle's structure exactly (same icon size,
+// badge styling, layout classes), but the data source is different:
+// cart count comes from a server-resolved Promise via <Await>, while
+// wishlist count is client-only (localStorage via lib/wishlist.ts), so
+// it needs a hydration-safe "start at 0, sync in useEffect" pattern —
+// starting from a real count on the server render would mismatch what
+// the client has in storage. Kept in sync via the in-tab
+// `wishlist:updated` CustomEvent (fired by lib/wishlist.ts on every
+// toggle), plus the native `storage` event for cross-tab updates.
+// ─────────────────────────────────────────────────────────────────────────
+
+function WishlistBadge({count = 0}: {count?: number}) {
+  return (
+    <Link
+      to="/wishlist"
+      className="group flex items-center gap-1.5 text-sm font-medium text-gray-900 transition hover:text-gray-600"
+      aria-label={`Wishlist, ${count} item${count === 1 ? '' : 's'}`}
+    >
+      <span className="relative">
+        <Heart size={17} className="shrink-0" aria-hidden="true" />
+        <span
+          className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-gray-900 text-[9px] font-semibold leading-none text-white"
+          aria-hidden="true"
+        >
+          {count}
+        </span>
+      </span>
+      <span className="hidden sm:inline" aria-hidden="true">
+        Wishlist
+      </span>
+    </Link>
+  );
+}
+
+function WishlistToggle() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    setCount(readWishlist().length);
+
+    function onWishlistUpdated(e: Event) {
+      const detail = (e as CustomEvent<{items: WishlistEntry[]}>).detail;
+      setCount(detail?.items?.length ?? readWishlist().length);
+    }
+
+    function onStorage(e: StorageEvent) {
+      if (e.key !== WISHLIST_KEY) return;
+      setCount(readWishlist().length);
+    }
+
+    document.addEventListener('wishlist:updated', onWishlistUpdated);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      document.removeEventListener('wishlist:updated', onWishlistUpdated);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
+
+  return <WishlistBadge count={count} />;
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Compare toggle — ADDED
+// Same structure and sync strategy as WishlistToggle above (client-only
+// count, hydration-safe start-at-0, `compare:updated` + `storage` event
+// listeners), sourced from lib/compare.ts instead. The one difference:
+// compare has a hard cap (COMPARE_MAX), so the badge shows "n/max" via
+// aria-label the same way CompareBar's CTA does, giving a sense of
+// how close the list is to full without needing to open it.
+// ─────────────────────────────────────────────────────────────────────────
+
+function CompareBadge({count = 0}: {count?: number}) {
+  return (
+    <Link
+      to="/compare"
+      className="group flex items-center gap-1.5 text-sm font-medium text-gray-900 transition hover:text-gray-600"
+      aria-label={`Compare, ${count} of ${COMPARE_MAX} item${count === 1 ? '' : 's'}`}
+    >
+      <span className="relative">
+        <Scale size={17} className="shrink-0" aria-hidden="true" />
+        <span
+          className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-gray-900 text-[9px] font-semibold leading-none text-white"
+          aria-hidden="true"
+        >
+          {count}
+        </span>
+      </span>
+      <span className="hidden sm:inline" aria-hidden="true">
+        Compare
+      </span>
+    </Link>
+  );
+}
+
+function CompareToggle() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    setCount(readCompareList().length);
+
+    function onCompareUpdated(e: Event) {
+      const detail = (e as CustomEvent<{items: CompareEntry[]}>).detail;
+      setCount(detail?.items?.length ?? readCompareList().length);
+    }
+
+    function onStorage(e: StorageEvent) {
+      if (e.key !== COMPARE_KEY) return;
+      setCount(readCompareList().length);
+    }
+
+    document.addEventListener('compare:updated', onCompareUpdated);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      document.removeEventListener('compare:updated', onCompareUpdated);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
+
+  return <CompareBadge count={count} />;
 }

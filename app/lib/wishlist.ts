@@ -4,8 +4,9 @@
 // truth for the storage key and entry shape — previously this logic
 // was duplicated inline in ProductCard.tsx with a thinner {id, handle}
 // entry; centralizing it here (and upgrading the entry shape to match
-// CompareEntry) so ProductCard, WishlistBar, and the /wishlist page
-// all read/write the same thing the same way.
+// CompareEntry) so ProductCard, the header's Wishlist icon
+// (Header.tsx), and the /wishlist page all read/write the same thing
+// the same way.
 
 export const WISHLIST_KEY = 'shopify_wishlist';
 
@@ -37,8 +38,9 @@ export function writeWishlist(list: WishlistEntry[]) {
 }
 
 /** Dispatch after any write, so every mounted consumer (ProductCard
- * instances, WishlistBar, the /wishlist page) can update without each
- * one re-implementing the write + broadcast pairing. */
+ * instances, the header's Wishlist icon, the /wishlist page) can
+ * update without each one re-implementing the write + broadcast
+ * pairing. */
 export function broadcastWishlistUpdate(items: WishlistEntry[]) {
   document.dispatchEvent(
     new CustomEvent('wishlist:updated', {bubbles: true, detail: {items}}),

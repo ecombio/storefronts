@@ -84,10 +84,10 @@ export function ProductCard({product, showVendor = true, loading = 'lazy'}: Prod
   const [compareLimitHit, setCompareLimitHit] = useState(false);
 
   // Sync on mount AND whenever compare/wishlist changes from anywhere
-  // else — another card, CompareBar/WishlistBar's remove buttons, the
-  // /compare or /wishlist pages, or another tab via the native `storage`
-  // event. Previously this only ran once on mount, so toggling a product
-  // off from CompareBar (for example) left this card's checkbox showing
+  // else — another card, CompareBar's remove buttons, the /compare or
+  // /wishlist pages, or another tab via the native `storage` event.
+  // Previously this only ran once on mount, so toggling a product off
+  // from CompareBar (for example) left this card's checkbox showing
   // checked until the page rerendered or navigated.
   useEffect(() => {
     setIsComparing(readCompareList().some((entry) => entry.id === product.id));

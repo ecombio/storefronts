@@ -13,7 +13,6 @@ import {
 import {SearchResultsPredictive} from '~/snippets/SearchResultsPredictive';
 import {QuickView} from '~/snippets/QuickView'; // ADDED
 import {CompareBar} from '~/snippets/CompareBar'; // ADDED
-import {WishlistBar} from '~/snippets/WishlistBar'; // ADDED
 import type {AlgoliaConfig} from '~/lib/algolia';
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;
@@ -40,7 +39,10 @@ export function PageLayout({
       <MobileMenuAside header={header} publicStoreDomain={publicStoreDomain} />
       <QuickView /> {/* ADDED — global, one instance for all product cards */}
       <CompareBar /> {/* ADDED — global sticky-bottom compare bar */}
-      <WishlistBar /> {/* ADDED — global sticky-bottom wishlist bar */}
+      {/* WishlistBar removed — the header's Wishlist icon (Header.tsx)
+          already surfaces the count and links to /wishlist, so the
+          sticky bar was redundant. lib/wishlist.ts, ProductCard's heart
+          toggle, and the /wishlist page are all untouched. */}
       {header && (
         <Header
           header={header}

@@ -1,10 +1,11 @@
 // app/templates/wishlist.tsx
 //
 // Client-rendered wishlist page. Reads the same `shopify_wishlist`
-// localStorage snapshot that ProductCard.tsx writes to (via
-// lib/wishlist.ts) and WishlistBar.tsx mirrors — no server loader,
-// since wishlist state is local-only for now (same scope note as
-// compare.tsx: only fields cached in the snapshot are shown).
+// localStorage snapshot that ProductCard.tsx writes to and the
+// header's Wishlist icon (Header.tsx) counts — via lib/wishlist.ts, no
+// server loader, since wishlist state is local-only for now (same
+// scope note as compare.tsx: only fields cached in the snapshot are
+// shown).
 import {useEffect, useState} from 'react';
 import {Link} from 'react-router';
 import {Money} from '@shopify/hydrogen';
