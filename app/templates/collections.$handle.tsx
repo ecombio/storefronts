@@ -10,6 +10,7 @@ import {buildSelfCanonicalUrl} from '~/lib/canonical';
 import {SubCollections} from '~/sections/SubCollections';
 import {MainCollection, type CollectionTab} from '~/sections/MainCollection';
 import {PRODUCT_CARD_FRAGMENT} from '~/graphql/ProductCardFragment';
+import {ARTICLE_ITEM_FRAGMENT} from '~/graphql/ArticleItemFragment';
 import type {ProductFilter} from '@shopify/hydrogen/storefront-api-types';
 
 const FILTER_URL_PARAM_NAME = 'filter';
@@ -525,29 +526,6 @@ export default function Collection() {
     </div>
   );
 }
-
-const ARTICLE_ITEM_FRAGMENT = `#graphql
-  fragment ArticleItem on Article {
-    id
-    handle
-    title
-    excerpt
-    publishedAt
-    blog {
-      handle
-    }
-    image {
-      id
-      url
-      altText
-      width
-      height
-    }
-    readingTime: metafield(namespace: "custom", key: "reading_time") {
-      value
-    }
-  }
-` as const;
 
 const SUB_COLLECTION_ITEM_FRAGMENT = `#graphql
   fragment SubCollectionItem on Collection {

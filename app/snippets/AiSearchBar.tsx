@@ -14,16 +14,17 @@ const SIZE_CONFIG: Record<
   Size,
   {
     height: string;
-    // Full width class, including the sizing strategy: "default" fills
-    // whatever definite-width ancestor it's given (w-full, capped by
-    // max-w); "compact" carries its OWN fixed width instead of relying
-    // on w-full, because everything inside this pill is absolutely
-    // positioned (see the content row below) — a w-full child inside a
-    // shrink-to-fit/auto-width ancestor (e.g. a flex item with no
-    // explicit width, as compact sits in Header.tsx's centered row)
-    // resolves to width:auto per spec, and since no in-flow content
-    // exists to size it, the pill would collapse to 0 width. A fixed
-    // width sidesteps that entirely.
+    // Full width class, including the sizing strategy. Both variants
+    // now fill whatever definite-width ancestor they're given (w-full,
+    // "default" additionally capped by its own max-w). That ancestor
+    // MUST actually resolve to a real width — a flex-1 + min-w-0 chain
+    // up to something with real bounds (the page, a sized container),
+    // not a shrink-to-fit flex row — because everything inside this
+    // pill is absolutely positioned (see the content row below), so
+    // there's no in-flow content to size it independently. If a
+    // caller places "compact" inside a shrink-to-fit ancestor with no
+    // flex-grow, it will collapse toward 0 width; give it an explicit
+    // width wrapper at that call site instead.
     widthClass: string;
     paddingX: string;
     gap: string;
@@ -47,7 +48,13 @@ const SIZE_CONFIG: Record<
   },
   compact: {
     height: "h-[40px]",
-    widthClass: "w-[260px] shrink-0",
+    // CHANGED from a hardcoded "w-[260px] shrink-0". That fixed width
+    // permanently capped compact at 260px regardless of how much room
+    // a parent layout (e.g. HeaderLayoutBackMarket) tries to give it
+    // via flex-1. Now it fills its parent instead — see the widthClass
+    // comment above for what the parent chain needs to provide for
+    // this to actually take effect.
+    widthClass: "w-full min-w-0",
     paddingX: "px-[14px]",
     gap: "gap-[6px]",
     iconSize: 18,
@@ -324,10 +331,7 @@ export const AiSearchBar = forwardRef<HTMLDivElement, AiSearchBarProps>(
                     animated/cycling placeholder whenever this bar rendered
                     in compact mode (e.g. the single-row desktop header) —
                     that gate has been removed so the animation renders at
-                    both sizes. If "Search" + a longer cycling term overflow
-                    or wrap at compact's 260px width, widen `compact.widthClass`
-                    in SIZE_CONFIG above, or drop the static "Search" label
-                    for compact specifically. */}
+                    both sizes. */}
                 <AnimatedPlaceholder
                   index={suggestionIndex}
                   suggestions={suggestions}

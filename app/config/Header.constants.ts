@@ -1,8 +1,20 @@
-import type {HeaderProps} from './Header';
+import type {HeaderProps} from '~/sections/Header';
 
 // Wordmark asset used by the live Liquid theme.
 export const LOGO_SRC =
   '//ecombio.com/cdn/shop/files/wordmark.svg?v=1781367807&width=140';
+
+// ─────────────────────────────────────────────────────────────────────────
+// Header layout style
+// Controls which arrangement Header.tsx renders (see
+// app/sections/header-styles/HeaderLayout*.tsx). Swap this to change the
+// layout site-wide. Ideally becomes a Shopify theme setting or metafield
+// down the line so merchandising can switch it without a deploy — a
+// constant is the simplest starting point.
+// ─────────────────────────────────────────────────────────────────────────
+export type HeaderStyle = 'nike' | 'backmarket' | 'gymshark';
+
+export const ACTIVE_HEADER_STYLE: HeaderStyle = 'backmarket';
 
 // ─────────────────────────────────────────────────────────────────────────
 // Header menu item shape + URL resolution

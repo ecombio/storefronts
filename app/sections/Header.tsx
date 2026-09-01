@@ -17,10 +17,25 @@ export {HeaderUtility} from '~/snippets/HeaderUtility';
 import {AnnouncementBar} from './AnnouncementBar';
 export {AnnouncementBar} from './AnnouncementBar';
 import type {CollectionImage} from '~/config/Header.constants';
+import {ACTIVE_HEADER_STYLE, type HeaderStyle} from '~/config/Header.constants';
 import wordmarkSrc from '~/assets/wordmark.svg';
 import {useHeaderHeightSync} from '~/hooks/useHeaderHeightSync';
 import {type WishlistEntry, WISHLIST_KEY, readWishlist} from '~/lib/wishlist'; // ADDED
 import {type CompareEntry, COMPARE_KEY, COMPARE_MAX, readCompareList} from '~/lib/compare'; // ADDED
+
+import type {HeaderLayoutProps} from './header-styles/types';
+import {HeaderLayoutNike} from './header-styles/HeaderLayoutNike';
+import {HeaderLayoutBackMarket} from './header-styles/HeaderLayoutBackMarket';
+import {HeaderLayoutGymshark} from './header-styles/HeaderLayoutGymshark';
+
+// Registry of available header arrangements. Adding a new style is
+// additive: build HeaderLayoutX.tsx against HeaderLayoutProps, add it
+// here, done — nothing else in this file needs to change.
+const HEADER_LAYOUTS: Record<HeaderStyle, React.ComponentType<HeaderLayoutProps>> = {
+  nike: HeaderLayoutNike,
+  backmarket: HeaderLayoutBackMarket,
+  gymshark: HeaderLayoutGymshark,
+};
 
 export interface HeaderProps {
   header: HeaderQuery;
@@ -74,6 +89,8 @@ export function Header({
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  const Layout = HEADER_LAYOUTS[ACTIVE_HEADER_STYLE];
+
   return (
     // NOTE: `sticky` lives on this outer element and this element ONLY.
     // Do not add a `transform`/`translate` class here — combining
@@ -93,72 +110,26 @@ export function Header({
         <AnnouncementBar />
         <HeaderUtility />
 
-        {/*
-          Single row (desktop, lg+): logo — centered nav menu — compact
-          search + account/cart, mirroring Nike's header where search
-          shares a row with the primary nav instead of the menu living
-          in its own row underneath. Replaces the previous two-row
-          layout (a full-width search row, then a separate menu row).
-
-          Mobile (<lg): unchanged from before — hamburger + logo + cart
-          on top, full-width search on its own row below. The nav menu
-          itself lives in the mobile drawer (Aside), not inline here,
-          same as previously.
-        */}
-        <div data-header-row className="relative">
-          {/* Full width at every breakpoint — no max-width cap, so this
-              row always spans the full header bar (matching AnnouncementBar
-              and HeaderUtility above it, which were already uncapped).
-              `mx-auto` is a no-op with nothing to center against now, but
-              left in place in case a max-width is reintroduced later. */}
-          <div className="mx-auto flex max-w-full items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6 lg:gap-6 lg:px-8">
-            <HeaderMenuMobileToggle />
-
+        <Layout
+          logo={
             <NavLink prefetch="intent" to="/" end className="shrink-0" aria-label={`${shop.name} — home`}>
               <img src={wordmarkSrc} alt={shop.name} width={140} height={28} className="h-6 w-auto sm:h-7" />
             </NavLink>
-
-            {/*
-              [&>*]:!w-auto forces HeaderMenu's root element to shrink
-              to its content instead of stretching to fill this flex-1
-              wrapper. Without it, if HeaderMenu's own root renders with
-              a `w-full`-style class, `justify-center` has no leftover
-              space left to center within — the menu just pins to the
-              left edge and its rightmost items collide with whatever
-              sits next to it (here, the compact search pill).
-              This is a blunt override, not a root-cause fix — the
-              real fix belongs in HeaderMenu.tsx's own className. Swap
-              this out once that file's been checked/updated.
-            */}
-            <div className="hidden flex-1 justify-center lg:flex [&>*]:!w-auto">
-              <HeaderMenu
-                menu={menu}
-                viewport="desktop"
-                primaryDomainUrl={header.shop.primaryDomain.url}
-                publicStoreDomain={publicStoreDomain}
-                collectionImages={collectionImages}
-              />
-            </div>
-
-            {/* Mobile has no centered menu (it lives in the drawer via
-                HeaderMenuMobileToggle) — this spacer keeps the same
-                logo-left / ctas-right split as desktop. */}
-            <div className="flex-1 lg:hidden" />
-
-            <div className="hidden items-center gap-4 lg:flex">
-              <HeaderSearch size="compact" />
-              <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} customer={customer} />
-            </div>
-
-            <div className="lg:hidden">
-              <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} customer={customer} />
-            </div>
-          </div>
-
-          <div className="w-full py-2 lg:hidden">
-            <HeaderSearch />
-          </div>
-        </div>
+          }
+          menu={
+            <HeaderMenu
+              menu={menu}
+              viewport="desktop"
+              primaryDomainUrl={header.shop.primaryDomain.url}
+              publicStoreDomain={publicStoreDomain}
+              collectionImages={collectionImages}
+            />
+          }
+          search={<HeaderSearch size="compact" />}
+          ctas={<HeaderCtas isLoggedIn={isLoggedIn} cart={cart} customer={customer} />}
+          mobileToggle={<HeaderMenuMobileToggle />}
+          mobileSearch={<HeaderSearch />}
+        />
       </div>
     </header>
   );

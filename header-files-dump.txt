@@ -3,7 +3,7 @@
 // app/sections/Header.tsx
 import {Suspense, useEffect, useRef, useState} from 'react';
 import {Await, Link, NavLink, useAsyncValue} from 'react-router';
-import {ShoppingBag, User} from 'lucide-react';
+import {Heart, Scale, ShoppingBag, User} from 'lucide-react';
 import {
   type CartViewPayload,
   useAnalytics,
@@ -21,6 +21,8 @@ export {AnnouncementBar} from './AnnouncementBar';
 import type {CollectionImage} from '~/config/Header.constants';
 import wordmarkSrc from '~/assets/wordmark.svg';
 import {useHeaderHeightSync} from '~/hooks/useHeaderHeightSync';
+import {type WishlistEntry, WISHLIST_KEY, readWishlist} from '~/lib/wishlist'; // ADDED
+import {type CompareEntry, COMPARE_KEY, COMPARE_MAX, readCompareList} from '~/lib/compare'; // ADDED
 
 export interface HeaderProps {
   header: HeaderQuery;
@@ -172,6 +174,8 @@ function HeaderCtas({
   return (
     <nav className="flex shrink-0 items-center gap-3 sm:gap-6" role="navigation">
       <HeaderAccount isLoggedIn={isLoggedIn} customer={customer} />
+      <WishlistToggle /> {/* ADDED */}
+      <CompareToggle /> {/* ADDED */}
       <CartToggle cart={cart} />
     </nav>
   );
@@ -304,6 +308,128 @@ function CartBanner() {
   return <CartBadge count={cart?.totalQuantity ?? 0} />;
 }
 
+// ─────────────────────────────────────────────────────────────────────────
+// Wishlist toggle — ADDED
+// Mirrors CartBadge/CartToggle's structure exactly (same icon size,
+// badge styling, layout classes), but the data source is different:
+// cart count comes from a server-resolved Promise via <Await>, while
+// wishlist count is client-only (localStorage via lib/wishlist.ts), so
+// it needs a hydration-safe "start at 0, sync in useEffect" pattern —
+// starting from a real count on the server render would mismatch what
+// the client has in storage. Kept in sync via the in-tab
+// `wishlist:updated` CustomEvent (fired by lib/wishlist.ts on every
+// toggle), plus the native `storage` event for cross-tab updates.
+// ─────────────────────────────────────────────────────────────────────────
+
+function WishlistBadge({count = 0}: {count?: number}) {
+  return (
+    <Link
+      to="/wishlist"
+      className="group flex items-center gap-1.5 text-sm font-medium text-gray-900 transition hover:text-gray-600"
+      aria-label={`Wishlist, ${count} item${count === 1 ? '' : 's'}`}
+    >
+      <span className="relative">
+        <Heart size={17} className="shrink-0" aria-hidden="true" />
+        <span
+          className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-gray-900 text-[9px] font-semibold leading-none text-white"
+          aria-hidden="true"
+        >
+          {count}
+        </span>
+      </span>
+      <span className="hidden sm:inline" aria-hidden="true">
+        Wishlist
+      </span>
+    </Link>
+  );
+}
+
+function WishlistToggle() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    setCount(readWishlist().length);
+
+    function onWishlistUpdated(e: Event) {
+      const detail = (e as CustomEvent<{items: WishlistEntry[]}>).detail;
+      setCount(detail?.items?.length ?? readWishlist().length);
+    }
+
+    function onStorage(e: StorageEvent) {
+      if (e.key !== WISHLIST_KEY) return;
+      setCount(readWishlist().length);
+    }
+
+    document.addEventListener('wishlist:updated', onWishlistUpdated);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      document.removeEventListener('wishlist:updated', onWishlistUpdated);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
+
+  return <WishlistBadge count={count} />;
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Compare toggle — ADDED
+// Same structure and sync strategy as WishlistToggle above (client-only
+// count, hydration-safe start-at-0, `compare:updated` + `storage` event
+// listeners), sourced from lib/compare.ts instead. The one difference:
+// compare has a hard cap (COMPARE_MAX), so the badge shows "n/max" via
+// aria-label the same way CompareBar's CTA does, giving a sense of
+// how close the list is to full without needing to open it.
+// ─────────────────────────────────────────────────────────────────────────
+
+function CompareBadge({count = 0}: {count?: number}) {
+  return (
+    <Link
+      to="/compare"
+      className="group flex items-center gap-1.5 text-sm font-medium text-gray-900 transition hover:text-gray-600"
+      aria-label={`Compare, ${count} of ${COMPARE_MAX} item${count === 1 ? '' : 's'}`}
+    >
+      <span className="relative">
+        <Scale size={17} className="shrink-0" aria-hidden="true" />
+        <span
+          className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-gray-900 text-[9px] font-semibold leading-none text-white"
+          aria-hidden="true"
+        >
+          {count}
+        </span>
+      </span>
+      <span className="hidden sm:inline" aria-hidden="true">
+        Compare
+      </span>
+    </Link>
+  );
+}
+
+function CompareToggle() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    setCount(readCompareList().length);
+
+    function onCompareUpdated(e: Event) {
+      const detail = (e as CustomEvent<{items: CompareEntry[]}>).detail;
+      setCount(detail?.items?.length ?? readCompareList().length);
+    }
+
+    function onStorage(e: StorageEvent) {
+      if (e.key !== COMPARE_KEY) return;
+      setCount(readCompareList().length);
+    }
+
+    document.addEventListener('compare:updated', onCompareUpdated);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      document.removeEventListener('compare:updated', onCompareUpdated);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
+
+  return <CompareBadge count={count} />;
+}
 
 
 ===== app\config\Header.constants.ts =====
@@ -844,6 +970,133 @@ html.header-hidden .sticky-under-header {
    Do not re-add .menu-bar__link--highlight / .menu-item__star rules
    here; edit Highlight.css instead. */
 
+
+
+===== app\assets\search-bar.css =====
+
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500&display=swap');
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+
+
+===== app\assets\cart-drawer.css =====
+
+/* app/assets/cart-drawer.css
+ *
+ * Styles the shared Aside overlay (app/components/Aside.tsx) used by
+ * the cart, search, and mobile-menu drawers. Without this file the
+ * overlay has no positioning at all and renders inline in normal
+ * document flow, squishing the page layout instead of floating on
+ * top of it.
+ */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  visibility: hidden;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.4);
+  /* Matches the mega-menu's DrawerBackdrop (bg-black/40 backdrop-blur-[6px]
+     in MenuDrawer.tsx) so all three drawers — cart, search, mobile menu —
+     dim/blur the page behind them the same way. */
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 200ms ease, visibility 0s linear 200ms;
+}
+
+.overlay.expanded {
+  visibility: visible;
+  pointer-events: auto;
+  opacity: 1;
+  transition: opacity 200ms ease, visibility 0s linear 0s;
+}
+
+.overlay .close-outside {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.overlay aside {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: min(420px, 100vw);
+  background: var(--color-background, #fff);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 250ms ease;
+  box-shadow: -2px 0 12px rgba(0, 0, 0, 0.08);
+}
+
+.overlay.expanded aside {
+  transform: translateX(0);
+}
+
+/* Mobile menu drawer flies in from the left instead of the right. */
+.overlay[data-type='mobile'] aside {
+  right: auto;
+  left: 0;
+  width: min(320px, 85vw);
+  transform: translateX(-100%);
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
+}
+
+.overlay[data-type='mobile'].expanded aside {
+  transform: translateX(0);
+}
+
+.overlay aside > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--color-border, #e5e5e5);
+  flex-shrink: 0;
+}
+
+.overlay aside > header h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.overlay aside > header .close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  line-height: 1;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.overlay aside > main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+
+@media (max-width: 480px) {
+  .overlay aside {
+    width: 100vw;
+  }
+}
 
 
 ===== app\snippets\HeaderMenu.tsx =====
@@ -1602,286 +1855,6 @@ function ChevronDown({open}: {open: boolean}) {
 }
 
 
-===== app\components\Aside.tsx =====
-
-import {
-  createContext,
-  type ReactNode,
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
-import {useId} from 'react';
-
-// CHANGED: added 'quickview' to the union so QuickView.tsx can reuse
-// this shared overlay/dialog shell instead of building a second one.
-type AsideType = 'search' | 'cart' | 'mobile' | 'quickview' | 'closed';
-type AsideContextValue = {
-  type: AsideType;
-  open: (mode: AsideType) => void;
-  close: () => void;
-};
-
-/**
- * A side bar component with Overlay
- * @example
- * ```jsx
- * <Aside type="search" heading="SEARCH">
- *  <input type="search" />
- *  ...
- * </Aside>
- * ```
- */
-export function Aside({
-  children,
-  heading,
-  type,
-}: {
-  children?: React.ReactNode;
-  type: AsideType;
-  heading: React.ReactNode;
-}) {
-  const {type: activeType, close} = useAside();
-  const expanded = type === activeType;
-  const id = useId();
-  useEffect(() => {
-    const abortController = new AbortController();
-
-    if (expanded) {
-      document.addEventListener(
-        'keydown',
-        function handler(event: KeyboardEvent) {
-          if (event.key === 'Escape') {
-            close();
-          }
-        },
-        {signal: abortController.signal},
-      );
-    }
-    return () => abortController.abort();
-  }, [close, expanded]);
-
-  return (
-    <div
-      aria-modal
-      className={`overlay ${expanded ? 'expanded' : ''}`}
-      data-type={type}
-      role="dialog"
-      aria-labelledby={id}
-    >
-      <button className="close-outside" onClick={close} />
-      <aside>
-        <header>
-          <h3 id={id}>{heading}</h3>
-          <button className="close reset" onClick={close} aria-label="Close">
-            &times;
-          </button>
-        </header>
-        <main>{children}</main>
-      </aside>
-    </div>
-  );
-}
-
-const AsideContext = createContext<AsideContextValue | null>(null);
-
-Aside.Provider = function AsideProvider({children}: {children: ReactNode}) {
-  const [type, setType] = useState<AsideType>('closed');
-
-  return (
-    <AsideContext.Provider
-      value={{
-        type,
-        open: setType,
-        close: () => setType('closed'),
-      }}
-    >
-      {children}
-    </AsideContext.Provider>
-  );
-};
-
-export function useAside() {
-  const aside = useContext(AsideContext);
-  if (!aside) {
-    throw new Error('useAside must be used within an AsideProvider');
-  }
-  return aside;
-}
-
-
-===== app\sections\CartDrawer.tsx =====
-
-// app/sections/CartDrawer.tsx
-
-import {Await} from 'react-router';
-import {Suspense} from 'react';
-import {Aside} from '~/components/Aside';
-import {CartMain} from '~/sections/CartMain';
-import type {CartApiQueryFragment} from 'storefrontapi.generated';
-
-/**
- * The cart drawer (slide-out mini-cart). A thin wrapper around the
- * existing `Aside` panel and `CartMain` section — no new cart logic,
- * no new state management. `Aside` already owns open/close state via
- * `AsideProvider`; `CartMain` already owns optimistic cart rendering
- * via `useOptimisticCart`.
- *
- * `cart` is typically a deferred promise from the root loader
- * (standard Hydrogen skeleton pattern) — adjust the `Await`/`Suspense`
- * wrapper below if your root loader resolves it eagerly instead.
- */
-export function CartDrawer({
-  cart,
-}: {
-  cart: Promise<CartApiQueryFragment | null> | CartApiQueryFragment | null;
-}) {
-  return (
-    <Aside type="cart" heading="Cart">
-      {isPromise(cart) ? (
-        <Suspense fallback={<CartLoading />}>
-          <Await resolve={cart}>
-            {(resolvedCart) => (
-              <CartMain layout="aside" cart={resolvedCart} />
-            )}
-          </Await>
-        </Suspense>
-      ) : (
-        <CartMain layout="aside" cart={cart} />
-      )}
-    </Aside>
-  );
-}
-
-function CartLoading() {
-  return <p aria-live="polite">Loading cart…</p>;
-}
-
-function isPromise<T>(value: unknown): value is Promise<T> {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    typeof (value as Promise<T>).then === 'function'
-  );
-}
-
-
-===== app\assets\cart-drawer.css =====
-
-/* app/assets/cart-drawer.css
- *
- * Styles the shared Aside overlay (app/components/Aside.tsx) used by
- * the cart, search, and mobile-menu drawers. Without this file the
- * overlay has no positioning at all and renders inline in normal
- * document flow, squishing the page layout instead of floating on
- * top of it.
- */
-
-.overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  visibility: hidden;
-  pointer-events: none;
-  background: rgba(0, 0, 0, 0.4);
-  /* Matches the mega-menu's DrawerBackdrop (bg-black/40 backdrop-blur-[6px]
-     in MenuDrawer.tsx) so all three drawers — cart, search, mobile menu —
-     dim/blur the page behind them the same way. */
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  opacity: 0;
-  transition: opacity 200ms ease, visibility 0s linear 200ms;
-}
-
-.overlay.expanded {
-  visibility: visible;
-  pointer-events: auto;
-  opacity: 1;
-  transition: opacity 200ms ease, visibility 0s linear 0s;
-}
-
-.overlay .close-outside {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-}
-
-.overlay aside {
-  position: absolute;
-  top: 0;
-  right: 0;
-  height: 100%;
-  width: min(420px, 100vw);
-  background: var(--color-background, #fff);
-  display: flex;
-  flex-direction: column;
-  transform: translateX(100%);
-  transition: transform 250ms ease;
-  box-shadow: -2px 0 12px rgba(0, 0, 0, 0.08);
-}
-
-.overlay.expanded aside {
-  transform: translateX(0);
-}
-
-/* Mobile menu drawer flies in from the left instead of the right. */
-.overlay[data-type='mobile'] aside {
-  right: auto;
-  left: 0;
-  width: min(320px, 85vw);
-  transform: translateX(-100%);
-  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
-}
-
-.overlay[data-type='mobile'].expanded aside {
-  transform: translateX(0);
-}
-
-.overlay aside > header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid var(--color-border, #e5e5e5);
-  flex-shrink: 0;
-}
-
-.overlay aside > header h3 {
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin: 0;
-}
-
-.overlay aside > header .close {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1.5rem;
-  line-height: 1;
-  padding: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.overlay aside > main {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1.5rem;
-}
-
-@media (max-width: 480px) {
-  .overlay aside {
-    width: 100vw;
-  }
-}
-
-
 ===== app\snippets\AiSearchBar.tsx =====
 
 import { forwardRef, useState, useEffect, useRef, useCallback } from "react";
@@ -2263,6 +2236,16 @@ export const AiSearchBar = forwardRef<HTMLDivElement, AiSearchBarProps>(
     );
   },
 );
+
+
+===== app\snippets\ai-search-svg-paths.ts =====
+
+export default {
+  p20021000: "M1.76446 0.0757267C1.68512 0.0262361 1.5935 9.00731e-08 1.5 9.00731e-08C1.39566 -6.2543e-05 1.29392 0.0325406 1.20905 0.0932382C1.12417 0.153936 1.06041 0.239684 1.02671 0.338459L0.851784 0.851897L0.33901 1.02688L0.280035 1.05087C0.191154 1.0944 0.117191 1.16334 0.0675194 1.24896C0.0178475 1.33457 -0.00529696 1.43301 0.00101927 1.5318C0.00733551 1.63059 0.0428278 1.72528 0.102999 1.80387C0.163169 1.88246 0.24531 1.94142 0.33901 1.97326L0.852284 2.14824L1.02721 2.66118L1.0512 2.71967C1.09466 2.80859 1.16354 2.88261 1.2491 2.93233C1.33466 2.98206 1.43305 3.00526 1.53181 2.999C1.63056 2.99273 1.72523 2.95729 1.80383 2.89715C1.88242 2.83701 1.9414 2.75488 1.97329 2.66118L2.14822 2.14774L2.66099 1.97276L2.71996 1.94876C2.80885 1.90524 2.88281 1.8363 2.93248 1.75068C2.98215 1.66506 3.0053 1.56662 2.99898 1.46783C2.99266 1.36904 2.95717 1.27435 2.897 1.19576C2.83683 1.11717 2.75469 1.05822 2.66099 1.02638L2.14772 0.851397L1.97279 0.338459L1.9488 0.279966C1.90766 0.195978 1.8438 0.125217 1.76446 0.0757267Z",
+  p3872200: "M4.70523 0.201938C4.49366 0.0699628 4.24933 2.40195e-07 4 2.40195e-07C3.72177 -0.000166781 3.45046 0.0867751 3.22412 0.248635C2.99778 0.410495 2.82775 0.639157 2.73789 0.902558L2.27142 2.27173L0.904025 2.73834L0.746761 2.80233C0.509745 2.91839 0.31251 3.10223 0.180052 3.33055C0.0475932 3.55886 -0.0141252 3.82137 0.00271806 4.08481C0.0195614 4.34825 0.114208 4.60076 0.274663 4.81033C0.435118 5.0199 0.654159 5.17711 0.904025 5.26203L2.27276 5.72864L2.73922 7.09647L2.80319 7.25245C2.9191 7.48958 3.10278 7.68695 3.33094 7.81956C3.5591 7.95216 3.82147 8.01403 4.08482 7.99733C4.34816 7.98062 4.60062 7.88609 4.81021 7.72572C5.01979 7.56535 5.17707 7.34635 5.26211 7.09647L5.72858 5.72731L7.09597 5.2607L7.25324 5.1967C7.49025 5.08064 7.68749 4.8968 7.81995 4.66848C7.95241 4.44017 8.01412 4.17766 7.99728 3.91422C7.98044 3.65078 7.88579 3.39828 7.72534 3.1887C7.56488 2.97913 7.34584 2.82192 7.09597 2.737L5.72724 2.27039L5.26078 0.902558L5.19681 0.746577C5.0871 0.522607 4.91679 0.333913 4.70523 0.201938Z",
+  p3f87f980: "M7.47266 0C7.2069 0.657052 7.04443 1.36712 7.00781 2.11035C5.84189 2.38525 4.76406 2.97813 3.90332 3.83887C2.68433 5.05785 2 6.71164 2 8.43555L2.00781 8.75781C2.0875 10.3644 2.76051 11.8894 3.90332 13.0322C5.12231 14.2512 6.77609 14.9355 8.5 14.9355C10.2239 14.9355 11.8777 14.2512 13.0967 13.0322C14.2388 11.8901 14.9109 10.3663 14.9912 8.76074C15.708 8.59241 16.378 8.30561 16.9814 7.92188C16.9918 8.09248 17 8.26366 17 8.43555C17 10.3602 16.345 12.2159 15.1621 13.71L17.6797 16.2285C18.0702 16.619 18.0702 17.2521 17.6797 17.6426C17.2891 18.0329 16.6561 18.033 16.2656 17.6426L13.7441 15.1211C12.2552 16.289 10.4118 16.9355 8.5 16.9355C6.24566 16.9355 4.08332 16.0403 2.48926 14.4463C0.895199 12.8522 0 10.6899 0 8.43555C0 6.18121 0.895199 4.01886 2.48926 2.4248C3.83918 1.07488 5.5969 0.228312 7.47266 0Z",
+  pd9eea00: "M12.75 0.750049L0.750051 12.75M0.75 0.75L12.75 12.75",
+}
 
 
 ===== app\snippets\SearchBar.tsx =====
@@ -2722,6 +2705,810 @@ export function SearchFormPredictive({
   );
 }
 
+
+
+===== app\snippets\SearchResults.tsx =====
+
+import {Link} from 'react-router';
+import {Image, Money, Pagination} from '@shopify/hydrogen';
+import {urlWithTrackingParams, type RegularSearchReturn} from '~/lib/search';
+
+type SearchItems = RegularSearchReturn['result']['items'];
+type PartialSearchResult<ItemType extends keyof SearchItems> = Pick<
+  SearchItems,
+  ItemType
+> &
+  Pick<RegularSearchReturn, 'term'>;
+
+type SearchResultsProps = RegularSearchReturn & {
+  children: (args: SearchItems & {term: string}) => React.ReactNode;
+};
+
+export function SearchResults({
+  term,
+  result,
+  children,
+}: Omit<SearchResultsProps, 'error' | 'type'>) {
+  if (!result?.total) {
+    return null;
+  }
+
+  return children({...result.items, term});
+}
+
+SearchResults.Articles = SearchResultsArticles;
+SearchResults.Pages = SearchResultsPages;
+SearchResults.Products = SearchResultsProducts;
+SearchResults.Empty = SearchResultsEmpty;
+
+function SearchResultsArticles({
+  term,
+  articles,
+}: PartialSearchResult<'articles'>) {
+  if (!articles?.nodes.length) {
+    return null;
+  }
+
+  return (
+    <div className="search-result">
+      <h2>Articles</h2>
+      <div>
+        {articles?.nodes?.map((article) => {
+          const articleUrl = urlWithTrackingParams({
+            baseUrl: `/blogs/${article.handle}`,
+            trackingParams: article.trackingParameters,
+            term,
+          });
+
+          return (
+            <div className="search-results-item" key={article.id}>
+              <Link prefetch="intent" to={articleUrl}>
+                {article.title}
+              </Link>
+            </div>
+          );
+        })}
+      </div>
+      <br />
+    </div>
+  );
+}
+
+function SearchResultsPages({term, pages}: PartialSearchResult<'pages'>) {
+  if (!pages?.nodes.length) {
+    return null;
+  }
+
+  return (
+    <div className="search-result">
+      <h2>Pages</h2>
+      <div>
+        {pages?.nodes?.map((page) => {
+          const pageUrl = urlWithTrackingParams({
+            baseUrl: `/pages/${page.handle}`,
+            trackingParams: page.trackingParameters,
+            term,
+          });
+
+          return (
+            <div className="search-results-item" key={page.id}>
+              <Link prefetch="intent" to={pageUrl}>
+                {page.title}
+              </Link>
+            </div>
+          );
+        })}
+      </div>
+      <br />
+    </div>
+  );
+}
+
+function SearchResultsProducts({
+  term,
+  products,
+}: PartialSearchResult<'products'>) {
+  if (!products?.nodes.length) {
+    return null;
+  }
+
+  return (
+    <div className="search-result">
+      <h2>Products</h2>
+      <Pagination connection={products}>
+        {({nodes, isLoading, NextLink, PreviousLink}) => {
+          const ItemsMarkup = nodes.map((product) => {
+            const productUrl = urlWithTrackingParams({
+              baseUrl: `/products/${product.handle}`,
+              trackingParams: product.trackingParameters,
+              term,
+            });
+
+            const price = product?.selectedOrFirstAvailableVariant?.price;
+            const image = product?.selectedOrFirstAvailableVariant?.image;
+
+            return (
+              <div className="search-results-item" key={product.id}>
+                <Link prefetch="intent" to={productUrl}>
+                  {image && (
+                    <Image data={image} alt={product.title} width={50} />
+                  )}
+                  <div>
+                    <p>{product.title}</p>
+                    <small>{price && <Money data={price} />}</small>
+                  </div>
+                </Link>
+              </div>
+            );
+          });
+
+          return (
+            <div>
+              <div>
+                <PreviousLink>
+                  {isLoading ? 'Loading...' : <span>↑ Load previous</span>}
+                </PreviousLink>
+              </div>
+              <div>
+                {ItemsMarkup}
+                <br />
+              </div>
+              <div>
+                <NextLink>
+                  {isLoading ? 'Loading...' : <span>Load more ↓</span>}
+                </NextLink>
+              </div>
+            </div>
+          );
+        }}
+      </Pagination>
+      <br />
+    </div>
+  );
+}
+
+function SearchResultsEmpty() {
+  return <p>No results, try a different search.</p>;
+}
+
+
+
+===== app\snippets\SearchResultsPredictive.tsx =====
+
+import {Link, useFetcher, type Fetcher} from 'react-router';
+import {Image, Money} from '@shopify/hydrogen';
+import React, {useRef, useEffect} from 'react';
+import {
+  getEmptyPredictiveSearchResult,
+  urlWithTrackingParams,
+  type PredictiveSearchReturn,
+} from '~/lib/search';
+import {useAside} from '~/components/Aside';
+
+type PredictiveSearchItems = PredictiveSearchReturn['result']['items'];
+
+type UsePredictiveSearchReturn = {
+  term: React.MutableRefObject<string>;
+  total: number;
+  inputRef: React.MutableRefObject<HTMLInputElement | null>;
+  items: PredictiveSearchItems;
+  fetcher: Fetcher<PredictiveSearchReturn>;
+};
+
+type SearchResultsPredictiveArgs = Pick<
+  UsePredictiveSearchReturn,
+  'term' | 'total' | 'inputRef' | 'items'
+> & {
+  state: Fetcher['state'];
+  closeSearch: () => void;
+};
+
+type PartialPredictiveSearchResult<
+  ItemType extends keyof PredictiveSearchItems,
+  ExtraProps extends keyof SearchResultsPredictiveArgs = 'term' | 'closeSearch',
+> = Pick<PredictiveSearchItems, ItemType> &
+  Pick<SearchResultsPredictiveArgs, ExtraProps>;
+
+type SearchResultsPredictiveProps = {
+  children: (args: SearchResultsPredictiveArgs) => React.ReactNode;
+};
+
+/**
+ * Component that renders predictive search results
+ */
+export function SearchResultsPredictive({
+  children,
+}: SearchResultsPredictiveProps) {
+  const aside = useAside();
+  const {term, inputRef, fetcher, total, items} = usePredictiveSearch();
+
+  /*
+   * Utility that resets the search input
+   */
+  function resetInput() {
+    if (inputRef.current) {
+      inputRef.current.blur();
+      inputRef.current.value = '';
+    }
+  }
+
+  /**
+   * Utility that resets the search input and closes the search aside
+   */
+  function closeSearch() {
+    resetInput();
+    aside.close();
+  }
+
+  return children({
+    items,
+    closeSearch,
+    inputRef,
+    state: fetcher.state,
+    term,
+    total,
+  });
+}
+
+SearchResultsPredictive.Articles = SearchResultsPredictiveArticles;
+SearchResultsPredictive.Collections = SearchResultsPredictiveCollections;
+SearchResultsPredictive.Pages = SearchResultsPredictivePages;
+SearchResultsPredictive.Products = SearchResultsPredictiveProducts;
+SearchResultsPredictive.Queries = SearchResultsPredictiveQueries;
+SearchResultsPredictive.Empty = SearchResultsPredictiveEmpty;
+
+function SearchResultsPredictiveArticles({
+  term,
+  articles,
+  closeSearch,
+}: PartialPredictiveSearchResult<'articles'>) {
+  if (!articles.length) return null;
+
+  return (
+    <div className="predictive-search-result" key="articles">
+      <h5>Articles</h5>
+      <ul>
+        {articles.map((article) => {
+          const articleUrl = urlWithTrackingParams({
+            baseUrl: `/blogs/${article.blog.handle}/${article.handle}`,
+            trackingParams: article.trackingParameters,
+            term: term.current ?? '',
+          });
+
+          return (
+            <li className="predictive-search-result-item" key={article.id}>
+              <Link onClick={closeSearch} to={articleUrl}>
+                {article.image?.url && (
+                  <Image
+                    alt={article.image.altText ?? ''}
+                    src={article.image.url}
+                    width={50}
+                    height={50}
+                  />
+                )}
+                <div>
+                  <span>{article.title}</span>
+                </div>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+function SearchResultsPredictiveCollections({
+  term,
+  collections,
+  closeSearch,
+}: PartialPredictiveSearchResult<'collections'>) {
+  if (!collections.length) return null;
+
+  return (
+    <div className="predictive-search-result" key="collections">
+      <h5>Collections</h5>
+      <ul>
+        {collections.map((collection) => {
+          const collectionUrl = urlWithTrackingParams({
+            baseUrl: `/collections/${collection.handle}`,
+            trackingParams: collection.trackingParameters,
+            term: term.current,
+          });
+
+          return (
+            <li className="predictive-search-result-item" key={collection.id}>
+              <Link onClick={closeSearch} to={collectionUrl}>
+                {collection.image?.url && (
+                  <Image
+                    alt={collection.image.altText ?? ''}
+                    src={collection.image.url}
+                    width={50}
+                    height={50}
+                  />
+                )}
+                <div>
+                  <span>{collection.title}</span>
+                </div>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+function SearchResultsPredictivePages({
+  term,
+  pages,
+  closeSearch,
+}: PartialPredictiveSearchResult<'pages'>) {
+  if (!pages.length) return null;
+
+  return (
+    <div className="predictive-search-result" key="pages">
+      <h5>Pages</h5>
+      <ul>
+        {pages.map((page) => {
+          const pageUrl = urlWithTrackingParams({
+            baseUrl: `/pages/${page.handle}`,
+            trackingParams: page.trackingParameters,
+            term: term.current,
+          });
+
+          return (
+            <li className="predictive-search-result-item" key={page.id}>
+              <Link onClick={closeSearch} to={pageUrl}>
+                <div>
+                  <span>{page.title}</span>
+                </div>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+function SearchResultsPredictiveProducts({
+  term,
+  products,
+  closeSearch,
+}: PartialPredictiveSearchResult<'products'>) {
+  if (!products.length) return null;
+
+  return (
+    <div className="predictive-search-result" key="products">
+      <h5>Products</h5>
+      <ul>
+        {products.map((product) => {
+          const productUrl = urlWithTrackingParams({
+            baseUrl: `/products/${product.handle}`,
+            trackingParams: product.trackingParameters,
+            term: term.current,
+          });
+
+          const price = product?.selectedOrFirstAvailableVariant?.price;
+          const image = product?.selectedOrFirstAvailableVariant?.image;
+          return (
+            <li className="predictive-search-result-item" key={product.id}>
+              <Link to={productUrl} onClick={closeSearch}>
+                {image && (
+                  <Image
+                    alt={image.altText ?? ''}
+                    src={image.url}
+                    width={50}
+                    height={50}
+                  />
+                )}
+                <div>
+                  <p>{product.title}</p>
+                  <small>{price && <Money data={price} />}</small>
+                </div>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+function SearchResultsPredictiveQueries({
+  queries,
+  queriesDatalistId,
+}: PartialPredictiveSearchResult<'queries', never> & {
+  queriesDatalistId: string;
+}) {
+  if (!queries.length) return null;
+
+  return (
+    <datalist id={queriesDatalistId}>
+      {queries.map((suggestion) => {
+        if (!suggestion) return null;
+
+        return <option key={suggestion.text} value={suggestion.text} />;
+      })}
+    </datalist>
+  );
+}
+
+function SearchResultsPredictiveEmpty({
+  term,
+}: {
+  term: React.MutableRefObject<string>;
+}) {
+  if (!term.current) {
+    return null;
+  }
+
+  return (
+    <p>
+      No results found for <q>{term.current}</q>
+    </p>
+  );
+}
+
+/**
+ * Hook that returns the predictive search results and fetcher and input ref.
+ * @example
+ * '''ts
+ * const { items, total, inputRef, term, fetcher } = usePredictiveSearch();
+ * '''
+ **/
+function usePredictiveSearch(): UsePredictiveSearchReturn {
+  const fetcher = useFetcher<PredictiveSearchReturn>({key: 'search'});
+  const term = useRef<string>('');
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  if (fetcher?.state === 'loading') {
+    term.current = String(fetcher.formData?.get('q') || '');
+  }
+
+  // capture the search input element as a ref
+  useEffect(() => {
+    if (!inputRef.current) {
+      inputRef.current = document.querySelector('input[type="search"]');
+    }
+  }, []);
+
+  const {items, total} =
+    fetcher?.data?.result ?? getEmptyPredictiveSearchResult();
+
+  return {items, total, inputRef, term, fetcher};
+}
+
+
+
+===== app\components\Aside.tsx =====
+
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
+import {useId} from 'react';
+
+// CHANGED: added 'quickview' to the union so QuickView.tsx can reuse
+// this shared overlay/dialog shell instead of building a second one.
+type AsideType = 'search' | 'cart' | 'mobile' | 'quickview' | 'closed';
+type AsideContextValue = {
+  type: AsideType;
+  open: (mode: AsideType) => void;
+  close: () => void;
+};
+
+/**
+ * A side bar component with Overlay
+ * @example
+ * ```jsx
+ * <Aside type="search" heading="SEARCH">
+ *  <input type="search" />
+ *  ...
+ * </Aside>
+ * ```
+ */
+export function Aside({
+  children,
+  heading,
+  type,
+}: {
+  children?: React.ReactNode;
+  type: AsideType;
+  heading: React.ReactNode;
+}) {
+  const {type: activeType, close} = useAside();
+  const expanded = type === activeType;
+  const id = useId();
+  useEffect(() => {
+    const abortController = new AbortController();
+
+    if (expanded) {
+      document.addEventListener(
+        'keydown',
+        function handler(event: KeyboardEvent) {
+          if (event.key === 'Escape') {
+            close();
+          }
+        },
+        {signal: abortController.signal},
+      );
+    }
+    return () => abortController.abort();
+  }, [close, expanded]);
+
+  return (
+    <div
+      aria-modal
+      className={`overlay ${expanded ? 'expanded' : ''}`}
+      data-type={type}
+      role="dialog"
+      aria-labelledby={id}
+    >
+      <button className="close-outside" onClick={close} />
+      <aside>
+        <header>
+          <h3 id={id}>{heading}</h3>
+          <button className="close reset" onClick={close} aria-label="Close">
+            &times;
+          </button>
+        </header>
+        <main>{children}</main>
+      </aside>
+    </div>
+  );
+}
+
+const AsideContext = createContext<AsideContextValue | null>(null);
+
+Aside.Provider = function AsideProvider({children}: {children: ReactNode}) {
+  const [type, setType] = useState<AsideType>('closed');
+
+  return (
+    <AsideContext.Provider
+      value={{
+        type,
+        open: setType,
+        close: () => setType('closed'),
+      }}
+    >
+      {children}
+    </AsideContext.Provider>
+  );
+};
+
+export function useAside() {
+  const aside = useContext(AsideContext);
+  if (!aside) {
+    throw new Error('useAside must be used within an AsideProvider');
+  }
+  return aside;
+}
+
+
+===== app\components\PageLayout.tsx =====
+
+// app/components/PageLayout.tsx
+import {Link} from 'react-router';
+import {useId} from 'react';
+import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
+import {Aside} from '~/components/Aside';
+import {Footer, type FooterQueryData} from '~/sections/Footer';
+import {Header, HeaderMenu} from '~/sections/Header';
+import {CartDrawer} from '~/sections/CartDrawer';
+import {
+  SEARCH_ENDPOINT,
+  SearchFormPredictive,
+} from '~/snippets/SearchFormPredictive';
+import {SearchResultsPredictive} from '~/snippets/SearchResultsPredictive';
+import {QuickView} from '~/snippets/QuickView'; // ADDED
+import {CompareBar} from '~/snippets/CompareBar'; // ADDED
+import type {AlgoliaConfig} from '~/lib/algolia';
+interface PageLayoutProps {
+  cart: Promise<CartApiQueryFragment | null>;
+  footer: Promise<FooterQueryData | null>;
+  header: HeaderQuery;
+  isLoggedIn: Promise<boolean>;
+  publicStoreDomain: string;
+  algolia: AlgoliaConfig;
+  children?: React.ReactNode;
+}
+export function PageLayout({
+  cart,
+  children = null,
+  footer,
+  header,
+  isLoggedIn,
+  publicStoreDomain,
+  algolia,
+}: PageLayoutProps) {
+  return (
+    <Aside.Provider>
+      <CartDrawer cart={cart} />
+      <SearchAside />
+      <MobileMenuAside header={header} publicStoreDomain={publicStoreDomain} />
+      <QuickView /> {/* ADDED — global, one instance for all product cards */}
+      <CompareBar /> {/* ADDED — global sticky-bottom compare bar */}
+      {/* WishlistBar removed — the header's Wishlist icon (Header.tsx)
+          already surfaces the count and links to /wishlist, so the
+          sticky bar was redundant. lib/wishlist.ts, ProductCard's heart
+          toggle, and the /wishlist page are all untouched. */}
+      {header && (
+        <Header
+          header={header}
+          cart={cart}
+          isLoggedIn={isLoggedIn}
+          publicStoreDomain={publicStoreDomain}
+          algolia={algolia}
+        />
+      )}
+      <main>{children}</main>
+      <Footer
+        footer={footer}
+        header={header}
+        publicStoreDomain={publicStoreDomain}
+      />
+    </Aside.Provider>
+  );
+}
+function SearchAside() {
+  const queriesDatalistId = useId();
+  return (
+    <Aside type="search" heading="SEARCH">
+      <div className="predictive-search">
+        <br />
+        <SearchFormPredictive>
+          {({fetchResults, goToSearch, inputRef}) => (
+            <>
+              <input
+                name="q"
+                onChange={fetchResults}
+                onFocus={fetchResults}
+                placeholder="Search"
+                ref={inputRef}
+                type="search"
+                list={queriesDatalistId}
+              />
+              &nbsp;
+              <button onClick={goToSearch}>Search</button>
+            </>
+          )}
+        </SearchFormPredictive>
+        <SearchResultsPredictive>
+          {({items, total, term, state, closeSearch}) => {
+            const {articles, collections, pages, products, queries} = items;
+            if (state === 'loading' && term.current) {
+              return <div>Loading...</div>;
+            }
+            if (!total) {
+              return <SearchResultsPredictive.Empty term={term} />;
+            }
+            return (
+              <>
+                <SearchResultsPredictive.Queries
+                  queries={queries}
+                  queriesDatalistId={queriesDatalistId}
+                />
+                <SearchResultsPredictive.Products
+                  products={products}
+                  closeSearch={closeSearch}
+                  term={term}
+                />
+                <SearchResultsPredictive.Collections
+                  collections={collections}
+                  closeSearch={closeSearch}
+                  term={term}
+                />
+                <SearchResultsPredictive.Pages
+                  pages={pages}
+                  closeSearch={closeSearch}
+                  term={term}
+                />
+                <SearchResultsPredictive.Articles
+                  articles={articles}
+                  closeSearch={closeSearch}
+                  term={term}
+                />
+                {term.current && total ? (
+                  <Link
+                    onClick={closeSearch}
+                    to={`${SEARCH_ENDPOINT}?q=${term.current}`}
+                  >
+                    <p>
+                      View all results for <q>{term.current}</q>
+                      &nbsp; →
+                    </p>
+                  </Link>
+                ) : null}
+              </>
+            );
+          }}
+        </SearchResultsPredictive>
+      </div>
+    </Aside>
+  );
+}
+function MobileMenuAside({
+  header,
+  publicStoreDomain,
+}: {
+  header: PageLayoutProps['header'];
+  publicStoreDomain: PageLayoutProps['publicStoreDomain'];
+}) {
+  return (
+    header.menu &&
+    header.shop.primaryDomain?.url && (
+      <Aside type="mobile" heading="MENU">
+        <HeaderMenu
+          menu={header.menu}
+          viewport="mobile"
+          primaryDomainUrl={header.shop.primaryDomain.url}
+          publicStoreDomain={publicStoreDomain}
+        />
+      </Aside>
+    )
+  );
+}
+
+
+===== app\sections\CartDrawer.tsx =====
+
+// app/sections/CartDrawer.tsx
+
+import {Await} from 'react-router';
+import {Suspense} from 'react';
+import {Aside} from '~/components/Aside';
+import {CartMain} from '~/sections/CartMain';
+import type {CartApiQueryFragment} from 'storefrontapi.generated';
+
+/**
+ * The cart drawer (slide-out mini-cart). A thin wrapper around the
+ * existing `Aside` panel and `CartMain` section — no new cart logic,
+ * no new state management. `Aside` already owns open/close state via
+ * `AsideProvider`; `CartMain` already owns optimistic cart rendering
+ * via `useOptimisticCart`.
+ *
+ * `cart` is typically a deferred promise from the root loader
+ * (standard Hydrogen skeleton pattern) — adjust the `Await`/`Suspense`
+ * wrapper below if your root loader resolves it eagerly instead.
+ */
+export function CartDrawer({
+  cart,
+}: {
+  cart: Promise<CartApiQueryFragment | null> | CartApiQueryFragment | null;
+}) {
+  return (
+    <Aside type="cart" heading="Cart">
+      {isPromise(cart) ? (
+        <Suspense fallback={<CartLoading />}>
+          <Await resolve={cart}>
+            {(resolvedCart) => (
+              <CartMain layout="aside" cart={resolvedCart} />
+            )}
+          </Await>
+        </Suspense>
+      ) : (
+        <CartMain layout="aside" cart={cart} />
+      )}
+    </Aside>
+  );
+}
+
+function CartLoading() {
+  return <p aria-live="polite">Loading cart…</p>;
+}
+
+function isPromise<T>(value: unknown): value is Promise<T> {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as Promise<T>).then === 'function'
+  );
+}
 
 
 ===== app\sections\SearchPanel.tsx =====
@@ -3583,167 +4370,6 @@ function SearchResultsSkeleton() {
 }
 
 
-===== app\components\PageLayout.tsx =====
-
-// app/components/PageLayout.tsx
-import {Link} from 'react-router';
-import {useId} from 'react';
-import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
-import {Aside} from '~/components/Aside';
-import {Footer, type FooterQueryData} from '~/sections/Footer';
-import {Header, HeaderMenu} from '~/sections/Header';
-import {CartDrawer} from '~/sections/CartDrawer';
-import {
-  SEARCH_ENDPOINT,
-  SearchFormPredictive,
-} from '~/snippets/SearchFormPredictive';
-import {SearchResultsPredictive} from '~/snippets/SearchResultsPredictive';
-import {QuickView} from '~/snippets/QuickView'; // ADDED
-import {CompareBar} from '~/snippets/CompareBar'; // ADDED
-import type {AlgoliaConfig} from '~/lib/algolia';
-interface PageLayoutProps {
-  cart: Promise<CartApiQueryFragment | null>;
-  footer: Promise<FooterQueryData | null>;
-  header: HeaderQuery;
-  isLoggedIn: Promise<boolean>;
-  publicStoreDomain: string;
-  algolia: AlgoliaConfig;
-  children?: React.ReactNode;
-}
-export function PageLayout({
-  cart,
-  children = null,
-  footer,
-  header,
-  isLoggedIn,
-  publicStoreDomain,
-  algolia,
-}: PageLayoutProps) {
-  return (
-    <Aside.Provider>
-      <CartDrawer cart={cart} />
-      <SearchAside />
-      <MobileMenuAside header={header} publicStoreDomain={publicStoreDomain} />
-      <QuickView /> {/* ADDED — global, one instance for all product cards */}
-      <CompareBar /> {/* ADDED — global sticky-bottom compare bar */}
-      {header && (
-        <Header
-          header={header}
-          cart={cart}
-          isLoggedIn={isLoggedIn}
-          publicStoreDomain={publicStoreDomain}
-          algolia={algolia}
-        />
-      )}
-      <main>{children}</main>
-      <Footer
-        footer={footer}
-        header={header}
-        publicStoreDomain={publicStoreDomain}
-      />
-    </Aside.Provider>
-  );
-}
-function SearchAside() {
-  const queriesDatalistId = useId();
-  return (
-    <Aside type="search" heading="SEARCH">
-      <div className="predictive-search">
-        <br />
-        <SearchFormPredictive>
-          {({fetchResults, goToSearch, inputRef}) => (
-            <>
-              <input
-                name="q"
-                onChange={fetchResults}
-                onFocus={fetchResults}
-                placeholder="Search"
-                ref={inputRef}
-                type="search"
-                list={queriesDatalistId}
-              />
-              &nbsp;
-              <button onClick={goToSearch}>Search</button>
-            </>
-          )}
-        </SearchFormPredictive>
-        <SearchResultsPredictive>
-          {({items, total, term, state, closeSearch}) => {
-            const {articles, collections, pages, products, queries} = items;
-            if (state === 'loading' && term.current) {
-              return <div>Loading...</div>;
-            }
-            if (!total) {
-              return <SearchResultsPredictive.Empty term={term} />;
-            }
-            return (
-              <>
-                <SearchResultsPredictive.Queries
-                  queries={queries}
-                  queriesDatalistId={queriesDatalistId}
-                />
-                <SearchResultsPredictive.Products
-                  products={products}
-                  closeSearch={closeSearch}
-                  term={term}
-                />
-                <SearchResultsPredictive.Collections
-                  collections={collections}
-                  closeSearch={closeSearch}
-                  term={term}
-                />
-                <SearchResultsPredictive.Pages
-                  pages={pages}
-                  closeSearch={closeSearch}
-                  term={term}
-                />
-                <SearchResultsPredictive.Articles
-                  articles={articles}
-                  closeSearch={closeSearch}
-                  term={term}
-                />
-                {term.current && total ? (
-                  <Link
-                    onClick={closeSearch}
-                    to={`${SEARCH_ENDPOINT}?q=${term.current}`}
-                  >
-                    <p>
-                      View all results for <q>{term.current}</q>
-                      &nbsp; →
-                    </p>
-                  </Link>
-                ) : null}
-              </>
-            );
-          }}
-        </SearchResultsPredictive>
-      </div>
-    </Aside>
-  );
-}
-function MobileMenuAside({
-  header,
-  publicStoreDomain,
-}: {
-  header: PageLayoutProps['header'];
-  publicStoreDomain: PageLayoutProps['publicStoreDomain'];
-}) {
-  return (
-    header.menu &&
-    header.shop.primaryDomain?.url && (
-      <Aside type="mobile" heading="MENU">
-        <HeaderMenu
-          menu={header.menu}
-          viewport="mobile"
-          primaryDomainUrl={header.shop.primaryDomain.url}
-          publicStoreDomain={publicStoreDomain}
-        />
-      </Aside>
-    )
-  );
-}
-
-
 ===== app\sections\AnnouncementBar.tsx =====
 
 import {useEffect, useRef, useState} from 'react';
@@ -3969,6 +4595,463 @@ function useCountdown(slide: Extract<AnnouncementSlideConfig, {type: 'countdown'
   }, [slide.countdownType, slide.endDate, slide.evergreenMinutes]);
 
   return remainingMs;
+}
+
+
+===== app\lib\algolia.ts =====
+
+import {useEffect, useMemo, useState} from 'react';
+import {liteClient as algoliasearch} from 'algoliasearch/lite';
+import {createFetchRequester} from '@algolia/requester-fetch';
+
+const DEBOUNCE_MS = 150;
+
+export interface AlgoliaConfig {
+  appId: string;
+  searchKey: string;
+  indexName: string;
+}
+
+export interface AlgoliaProductHit {
+  objectID: string;
+  title: string;
+  handle: string;
+  image_url?: string;
+  price?: number;
+  compare_at_price?: number;
+}
+
+export function useAlgoliaSearch({
+  appId,
+  searchKey,
+  indexName,
+  active,
+}: AlgoliaConfig & {active: boolean}) {
+  const client = useMemo(
+    () =>
+      algoliasearch(appId, searchKey, {
+        requester: createFetchRequester(),
+      }),
+    [appId, searchKey],
+  );
+
+  const [term, setTerm] = useState('');
+  const [hits, setHits] = useState<AlgoliaProductHit[]>([]);
+  const [state, setState] = useState<'idle' | 'loading'>('idle');
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!active || !term) {
+      setHits([]);
+      setState('idle');
+      setError(null);
+      return;
+    }
+
+    setState('loading');
+    setError(null);
+
+    const timeout = setTimeout(async () => {
+      // Without this try/catch, a rejected request (bad index config,
+      // network failure, CORS, etc.) left `state` stuck on 'loading'
+      // forever — the panel would render its skeleton indefinitely with
+      // no way to recover, since nothing ever set it back to 'idle'.
+      try {
+        const {results} = await client.search([
+          {indexName, query: term, hitsPerPage: 8},
+        ]);
+        const result = results[0];
+        setHits('hits' in result ? (result.hits as AlgoliaProductHit[]) : []);
+      } catch (err) {
+        console.error('Algolia search failed:', err);
+        setHits([]);
+        setError('Something went wrong loading results. Please try again.');
+      } finally {
+        setState('idle');
+      }
+    }, DEBOUNCE_MS);
+
+    return () => clearTimeout(timeout);
+  }, [term, active, client, indexName]);
+
+  return {term, setTerm, hits, state, error};
+}
+
+export function formatMoney(amount?: number) {
+  if (amount == null) return null;
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD', // adjust to your store's currency
+  }).format(amount);
+}
+
+
+===== app\lib\search.ts =====
+
+import type {
+  PredictiveSearchQuery,
+  RegularSearchQuery,
+} from 'storefrontapi.generated';
+
+type ResultWithItems<Type extends 'predictive' | 'regular', Items> = {
+  type: Type;
+  term: string;
+  error?: string;
+  result: {total: number; items: Items};
+};
+
+export type RegularSearchReturn = ResultWithItems<
+  'regular',
+  RegularSearchQuery
+>;
+export type PredictiveSearchReturn = ResultWithItems<
+  'predictive',
+  NonNullable<PredictiveSearchQuery['predictiveSearch']>
+>;
+
+/**
+ * Returns the empty state of a predictive search result to reset the search state.
+ */
+export function getEmptyPredictiveSearchResult(): PredictiveSearchReturn['result'] {
+  return {
+    total: 0,
+    items: {
+      articles: [],
+      collections: [],
+      products: [],
+      pages: [],
+      queries: [],
+    },
+  };
+}
+
+interface UrlWithTrackingParams {
+  /** The base URL to which the tracking parameters will be appended. */
+  baseUrl: string;
+  /** The trackingParams returned by the Storefront API. */
+  trackingParams?: string | null;
+  /** Any additional query parameters to be appended to the URL. */
+  params?: Record<string, string>;
+  /** The search term to be appended to the URL. */
+  term: string;
+}
+
+/**
+ * A utility function that appends tracking parameters to a URL. Tracking parameters are
+ * used internally by Shopify to enhance search results and admin dashboards.
+ * @example
+ * ```ts
+ * const baseUrl = 'www.example.com';
+ * const trackingParams = 'utm_source=shopify&utm_medium=shopify_app&utm_campaign=storefront';
+ * const params = { foo: 'bar' };
+ * const term = 'search term';
+ * const url = urlWithTrackingParams({ baseUrl, trackingParams, params, term });
+ * console.log(url);
+ * // Output: 'https://www.example.com?foo=bar&q=search%20term&utm_source=shopify&utm_medium=shopify_app&utm_campaign=storefront'
+ * ```
+ */
+export function urlWithTrackingParams({
+  baseUrl,
+  trackingParams,
+  params: extraParams,
+  term,
+}: UrlWithTrackingParams) {
+  let search = new URLSearchParams({
+    ...extraParams,
+    q: encodeURIComponent(term),
+  }).toString();
+
+  if (trackingParams) {
+    search = `${search}&${trackingParams}`;
+  }
+
+  return `${baseUrl}?${search}`;
+}
+
+
+
+===== app\root.tsx =====
+
+// app/root.tsx
+import {Analytics, getShopAnalytics, useNonce} from '@shopify/hydrogen';
+import {
+  Outlet,
+  useRouteError,
+  isRouteErrorResponse,
+  type ShouldRevalidateFunction,
+  Links,
+  Meta,
+  Scripts,
+  ScrollRestoration,
+  useRouteLoaderData,
+} from 'react-router';
+import type {Route} from './+types/root';
+import favicon from '~/assets/favicon.svg';
+import {HEADER_QUERY} from '~/lib/fragments';
+import {FOOTER_QUERY} from '~/sections/Footer';
+import {
+  MENU_COLLECTION_IMAGES_QUERY,
+  type CollectionImage,
+} from '~/config/Header.constants';
+import resetStyles from '~/assets/reset.css?url';
+import appStyles from '~/assets/app.css?url';
+import themeStyles from '~/assets/theme.css?url';
+import highlightStyles from '~/assets/highlight.css?url';
+import mainProductStyles from '~/assets/main-product.css?url';
+import breadcrumbsStyles from '~/assets/breadcrumbs.css?url';
+import productDescriptionStyles from '~/assets/product-description.css?url';
+import customerReviewsStyles from '~/assets/customer-reviews.css?url';
+import starRatingStyles from '~/assets/star-rating.css?url';
+import productCardStyles from '~/assets/product-card.css?url';
+import productCarouselStyles from '~/assets/product-carousel.css?url';
+import collectionCardStyles from '~/assets/collection-card.css?url';
+import collectionCarouselStyles from '~/assets/collection-carousel.css?url';
+import imageCardStyles from '~/assets/image-card.css?url';
+import imageCarouselStyles from '~/assets/image-carousel.css?url';
+import slideshowStyles from '~/assets/slideshow.css?url';
+import collectionBannerStyles from '~/assets/collection-banner.css?url';
+import mainCollectionStyles from '~/assets/main-collection.css?url';
+import paginatedResourceSectionStyles from '~/assets/paginated-resource-section.css?url';
+import stickyHeaderStyles from '~/assets/sticky-header.css?url';
+import articleCardStyles from '~/assets/article-card.css?url';
+import subCollectionStyles from '~/assets/sub-collection.css?url';
+import collectionAfterItemsStyles from '~/assets/collection-after-items.css?url';
+import cartDrawerStyles from '~/assets/cart-drawer.css?url';
+import quickviewStyles from '~/assets/quickview.css?url'; // ADDED — must load after cartDrawerStyles so the [data-type='quickview'] overrides win
+import compareBarStyles from '~/assets/compare-bar.css?url'; // ADDED
+import comparePageStyles from '~/assets/compare-page.css?url'; // ADDED
+import wishlistPageStyles from '~/assets/wishlist-page.css?url'; // ADDED — /wishlist page still needs this; wishlist-bar.css removed along with WishlistBar
+import tailwindCss from '~/assets/tailwind.css?url';
+import {PageLayout} from './components/PageLayout';
+
+export type RootLoader = typeof loader;
+
+export const shouldRevalidate: ShouldRevalidateFunction = ({
+  formMethod,
+  currentUrl,
+  nextUrl,
+}) => {
+  if (formMethod && formMethod !== 'GET') return true;
+
+  if (currentUrl.toString() === nextUrl.toString()) return true;
+
+  return false;
+};
+
+export function links() {
+  return [
+    {
+      rel: 'preconnect',
+      href: 'https://cdn.shopify.com',
+    },
+    {
+      rel: 'preconnect',
+      href: 'https://shop.app',
+    },
+    {rel: 'icon', type: 'image/svg+xml', href: favicon},
+  ];
+}
+
+export async function loader(args: Route.LoaderArgs) {
+  const deferredData = loadDeferredData(args);
+
+  const criticalData = await loadCriticalData(args);
+
+  const {storefront, env} = args.context;
+
+  return {
+    ...deferredData,
+    ...criticalData,
+    publicStoreDomain: env.PUBLIC_STORE_DOMAIN,
+    algolia: {
+      appId: env.PUBLIC_ALGOLIA_APP_ID,
+      searchKey: env.PUBLIC_ALGOLIA_SEARCH_KEY,
+      indexName: env.PUBLIC_ALGOLIA_INDEX_NAME,
+    },
+    shop: getShopAnalytics({
+      storefront,
+      publicStorefrontId: env.PUBLIC_STOREFRONT_ID,
+    }),
+    consent: {
+      checkoutDomain: env.PUBLIC_CHECKOUT_DOMAIN,
+      storefrontAccessToken: env.PUBLIC_STOREFRONT_API_TOKEN,
+      withPrivacyBanner: false,
+      country: args.context.storefront.i18n.country,
+      language: args.context.storefront.i18n.language,
+    },
+  };
+}
+
+async function loadCriticalData({context}: Route.LoaderArgs) {
+  const {storefront} = context;
+
+  const header = await storefront
+    .query(HEADER_QUERY, {
+      cache: storefront.CacheLong(),
+      variables: {
+        headerMenuHandle: 'main-menu',
+      },
+    })
+    .catch((error: Error) => {
+      console.error(error);
+      return {menu: null, shop: null} as unknown as Awaited<ReturnType<typeof storefront.query<typeof HEADER_QUERY>>>;
+    });
+
+  const collectionImages = await loadMenuCollectionImages(storefront, header.menu).catch(
+    (error: Error) => {
+      console.error(error);
+      return {};
+    },
+  );
+
+  return {header, collectionImages};
+}
+
+async function loadMenuCollectionImages(
+  storefront: Route.LoaderArgs['context']['storefront'],
+  menu: Awaited<ReturnType<typeof storefront.query<typeof HEADER_QUERY>>>['menu'],
+): Promise<Record<string, CollectionImage>> {
+  if (!menu) return {};
+
+  const collectionIds = menu.items
+    .flatMap((item) => item.items ?? [])
+    .map((item) => item.resourceId)
+    .filter((id): id is string => Boolean(id) && id.includes('/Collection/'));
+
+  if (!collectionIds.length) return {};
+
+  const data = await storefront.query(MENU_COLLECTION_IMAGES_QUERY, {
+    variables: {ids: collectionIds},
+  });
+
+  return Object.fromEntries(
+    data.nodes
+      .filter(
+        (n): n is {id: string; image: CollectionImage | null} =>
+          n != null && 'image' in n,
+      )
+      .filter((n) => n.image)
+      .map((n) => [n.id, n.image as CollectionImage]),
+  );
+}
+
+function loadDeferredData({context}: Route.LoaderArgs) {
+  const {storefront, customerAccount, cart} = context;
+
+  const footer = storefront
+    .query(FOOTER_QUERY, {
+      cache: storefront.CacheLong(),
+      variables: {
+        footerMenuHandle: 'footer',
+        policiesMenuHandle: 'policies',
+      },
+    })
+    .catch((error: Error) => {
+      console.error(error);
+      return null;
+    });
+  return {
+    cart: cart.get(),
+    isLoggedIn: customerAccount.isLoggedIn(),
+    footer,
+  };
+}
+
+export function Layout({children}: {children?: React.ReactNode}) {
+  const nonce = useNonce();
+
+  return (
+    <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <link rel="stylesheet" href={tailwindCss}></link>
+        <link rel="stylesheet" href={resetStyles}></link>
+        <link rel="stylesheet" href={appStyles}></link>
+        <link rel="stylesheet" href={themeStyles}></link>
+        <link rel="stylesheet" href={highlightStyles}></link>
+        <link rel="stylesheet" href={mainProductStyles}></link>
+        <link rel="stylesheet" href={breadcrumbsStyles}></link>
+        <link rel="stylesheet" href={productDescriptionStyles}></link>
+        <link rel="stylesheet" href={customerReviewsStyles}></link>
+        <link rel="stylesheet" href={starRatingStyles}></link>
+        <link rel="stylesheet" href={productCardStyles}></link>
+        <link rel="stylesheet" href={productCarouselStyles}></link>
+        <link rel="stylesheet" href={collectionCardStyles}></link>
+        <link rel="stylesheet" href={collectionCarouselStyles}></link>
+        <link rel="stylesheet" href={imageCardStyles}></link>
+        <link rel="stylesheet" href={imageCarouselStyles}></link>
+        <link rel="stylesheet" href={slideshowStyles}></link>
+        <link rel="stylesheet" href={collectionBannerStyles}></link>
+        <link rel="stylesheet" href={mainCollectionStyles}></link>
+        <link rel="stylesheet" href={paginatedResourceSectionStyles}></link>
+        <link rel="stylesheet" href={stickyHeaderStyles}></link>
+        <link rel="stylesheet" href={articleCardStyles}></link>
+        <link rel="stylesheet" href={subCollectionStyles}></link>
+        <link rel="stylesheet" href={collectionAfterItemsStyles}></link>
+        <link rel="stylesheet" href={cartDrawerStyles}></link>
+        <link rel="stylesheet" href={quickviewStyles}></link>
+        {/* ADDED — must render after cartDrawerStyles for override specificity/order */}
+        <link rel="stylesheet" href={compareBarStyles}></link>
+        <link rel="stylesheet" href={comparePageStyles}></link>
+        {/* wishlist-bar.css link removed along with WishlistBar; the
+            /wishlist page's own stylesheet stays */}
+        <link rel="stylesheet" href={wishlistPageStyles}></link>
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        {children}
+        <ScrollRestoration nonce={nonce} />
+        <Scripts nonce={nonce} />
+      </body>
+    </html>
+  );
+}
+
+export default function App() {
+  const data = useRouteLoaderData<RootLoader>('root');
+
+  if (!data) {
+    return <Outlet />;
+  }
+
+  return (
+    <Analytics.Provider
+      cart={data.cart}
+      shop={data.shop}
+      consent={data.consent}
+    >
+      <PageLayout {...data}>
+        <Outlet />
+      </PageLayout>
+    </Analytics.Provider>
+  );
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+  let errorMessage = 'Unknown error';
+  let errorStatus = 500;
+
+  if (isRouteErrorResponse(error)) {
+    errorMessage = error?.data?.message ?? error.data ?? 'Unknown error';
+    errorStatus = error.status;
+  } else if (error instanceof Error) {
+    errorMessage = error.message;
+  }
+
+  return (
+    <div className="route-error">
+      <h1>Oops</h1>
+      <h2>{errorStatus}</h2>
+      {errorMessage && (
+        <fieldset>
+          <pre>{errorMessage}</pre>
+        </fieldset>
+      )}
+    </div>
+  );
 }
 
 
