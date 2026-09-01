@@ -37,6 +37,7 @@ import imageCarouselStyles from '~/assets/image-carousel.css?url';
 import slideshowStyles from '~/assets/slideshow.css?url';
 import collectionBannerStyles from '~/assets/collection-banner.css?url';
 import mainCollectionStyles from '~/assets/main-collection.css?url';
+import collectionSidebarStyles from '~/assets/collection-sidebar.css?url'; // ADDED — sidebar filter layout for collections.all; loads after mainCollectionStyles so it can override/extend
 import paginatedResourceSectionStyles from '~/assets/paginated-resource-section.css?url';
 import stickyHeaderStyles from '~/assets/sticky-header.css?url';
 import articleCardStyles from '~/assets/article-card.css?url';
@@ -210,6 +211,7 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={slideshowStyles}></link>
         <link rel="stylesheet" href={collectionBannerStyles}></link>
         <link rel="stylesheet" href={mainCollectionStyles}></link>
+        <link rel="stylesheet" href={collectionSidebarStyles}></link>
         <link rel="stylesheet" href={paginatedResourceSectionStyles}></link>
         <link rel="stylesheet" href={stickyHeaderStyles}></link>
         <link rel="stylesheet" href={articleCardStyles}></link>
