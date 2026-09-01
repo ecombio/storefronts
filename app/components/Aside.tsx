@@ -7,7 +7,9 @@ import {
 } from 'react';
 import {useId} from 'react';
 
-type AsideType = 'search' | 'cart' | 'mobile' | 'closed';
+// CHANGED: added 'quickview' to the union so QuickView.tsx can reuse
+// this shared overlay/dialog shell instead of building a second one.
+type AsideType = 'search' | 'cart' | 'mobile' | 'quickview' | 'closed';
 type AsideContextValue = {
   type: AsideType;
   open: (mode: AsideType) => void;

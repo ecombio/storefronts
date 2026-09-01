@@ -78,10 +78,11 @@ img {
 * components/Aside
 * --------------------------------------------------
 */
-@media (max-width: 45em) {
-  html:has(.overlay.expanded) {
-    overflow: hidden;
-  }
+/* Locks page scroll behind any open drawer (cart, search, mobile menu)
+   at every viewport size — previously scoped to @media (max-width: 45em)
+   only, so desktop could still scroll the page behind an open drawer. */
+html:has(.overlay.expanded) {
+  overflow: hidden;
 }
 
 aside {

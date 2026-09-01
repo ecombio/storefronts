@@ -14,6 +14,11 @@
   visibility: hidden;
   pointer-events: none;
   background: rgba(0, 0, 0, 0.4);
+  /* Matches the mega-menu's DrawerBackdrop (bg-black/40 backdrop-blur-[6px]
+     in MenuDrawer.tsx) so all three drawers — cart, search, mobile menu —
+     dim/blur the page behind them the same way. */
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   opacity: 0;
   transition: opacity 200ms ease, visibility 0s linear 200ms;
 }

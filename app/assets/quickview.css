@@ -1,0 +1,178 @@
+/* app/assets/quickview.css
+ *
+ * Overrides the shared Aside overlay (app/components/Aside.tsx) for
+ * type="quickview" — turns the default right-edge slide-in drawer
+ * (see cart-drawer.css) into a centered modal with an image/info
+ * two-column layout. Scoped entirely to [data-type='quickview'] so
+ * cart, search, and mobile menu are unaffected.
+ *
+ * Import this AFTER cart-drawer.css so these overrides win.
+ */
+
+.overlay[data-type='quickview'] aside {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  right: auto;
+  height: auto;
+  max-height: 90vh;
+  width: min(900px, 92vw);
+  transform: translate(-50%, -50%) scale(0.96);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  transition: transform 200ms ease, opacity 200ms ease;
+  opacity: 0;
+}
+
+.overlay[data-type='quickview'].expanded aside {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+/* Header becomes a floating close button only — the product title
+   is already rendered inside .quickview__body, so the header's <h3>
+   (kept for aria-labelledby) is visually hidden rather than removed. */
+.overlay[data-type='quickview'] aside > header {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  border-bottom: none;
+  padding: 0.75rem;
+  background: transparent;
+}
+
+.overlay[data-type='quickview'] aside > header h3 {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.overlay[data-type='quickview'] aside > header .close {
+  background: var(--color-background, #fff);
+  border-radius: 999px;
+  width: 2rem;
+  height: 2rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.overlay[data-type='quickview'] aside > main {
+  padding: 0;
+  overflow-y: auto;
+}
+
+/* ---- Content layout ---- */
+
+.quickview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100%;
+}
+
+.quickview__media {
+  position: relative;
+  background: var(--color-surface-subtle, #f5f5f5);
+}
+
+.quickview__img,
+.quickview__img-placeholder {
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  object-fit: cover;
+  display: block;
+}
+
+.quickview__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 2.5rem 2rem 2rem;
+}
+
+.quickview__vendor {
+  font-size: 0.8rem;
+  color: var(--color-text-subtle, #6b6b6b);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.quickview__title {
+  font-size: 1.375rem;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.quickview__reviews {
+  margin-bottom: 0.25rem;
+}
+
+.quickview__pricing {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.quickview__price--compare {
+  color: var(--color-text-subtle, #6b6b6b);
+  font-size: 0.95rem;
+}
+
+.quickview__price--sale {
+  color: var(--color-sale, #d3242f);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.quickview__full-details-link {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  text-decoration: underline;
+  color: var(--color-text-subtle, #6b6b6b);
+  align-self: flex-start;
+}
+
+.quickview__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+  color: var(--color-text-subtle, #6b6b6b);
+}
+
+/* ---- Responsive: stack on small screens, full-screen sheet ---- */
+
+@media (max-width: 700px) {
+  .overlay[data-type='quickview'] aside {
+    width: 100vw;
+    max-height: 100vh;
+    height: 100vh;
+    border-radius: 0;
+    top: 0;
+    left: 0;
+    transform: none;
+  }
+
+  .overlay[data-type='quickview'].expanded aside {
+    transform: none;
+  }
+
+  .quickview {
+    grid-template-columns: 1fr;
+  }
+
+  .quickview__img,
+  .quickview__img-placeholder {
+    min-height: 260px;
+  }
+
+  .quickview__body {
+    padding: 1.5rem;
+  }
+}

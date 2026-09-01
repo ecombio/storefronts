@@ -1,0 +1,2081 @@
+
+
+===== app\snippets\QuickView.tsx =====
+
+// app/snippets/QuickView.tsx
+//
+// Listens for the 'quickview:open' CustomEvent dispatched by
+// ProductCard.tsx, fetches full product data from
+// /api/quickview/:handle, and renders it inside the shared <Aside>
+// shell (type="quickview") as a centered modal (see quickview.css).
+//
+// Mount this once, globally, in PageLayout.tsx alongside the other
+// <Aside> instances (cart, search, mobile) — NOT inside ProductCard.
+import {useEffect, useRef, useState} from 'react';
+import {Link, useFetcher} from 'react-router';
+import {Image, Money, getProductOptions} from '@shopify/hydrogen';
+import type {
+  Maybe,
+  ProductOptionValueSwatch,
+} from '@shopify/hydrogen/storefront-api-types';
+import {Aside, useAside} from '~/components/Aside';
+import {StarRating} from '~/snippets/StarRating';
+import {AddToCartButton} from '~/snippets/AddToCartButton';
+
+// Shopify's standard `reviews.rating` metafield value is a JSON string:
+// {"value":"4.3","scale_min":"1","scale_max":"5"}
+// (Same parsing logic as ProductCard.tsx — kept local to avoid a
+// cross-import; consider extracting to lib/utils.ts if used a third time.)
+function parseRating(raw?: string | null): number {
+  if (!raw) return 0;
+  try {
+    return parseFloat(JSON.parse(raw)?.value ?? '0') || 0;
+  } catch {
+    return 0;
+  }
+}
+
+function parseCount(raw?: string | null): number {
+  if (!raw) return 0;
+  const n = parseInt(raw, 10);
+  return Number.isNaN(n) ? 0 : n;
+}
+
+export function QuickView() {
+  const {type, open} = useAside();
+  const fetcher = useFetcher<{product: any}>();
+  const [handle, setHandle] = useState<string | null>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    function onOpen(e: Event) {
+      const detail = (e as CustomEvent<{handle: string; trigger?: HTMLElement}>)
+        .detail;
+      if (!detail?.handle) return;
+      triggerRef.current = detail.trigger ?? null;
+      setHandle(detail.handle);
+      open('quickview');
+      fetcher.load(`/api/quickview/${detail.handle}`);
+    }
+    document.addEventListener('quickview:open', onOpen);
+    return () => document.removeEventListener('quickview:open', onOpen);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Return focus to whichever "Quick view" button opened the modal
+  // once it closes (accessibility).
+  useEffect(() => {
+    if (type === 'quickview') return;
+    triggerRef.current?.focus?.();
+  }, [type]);
+
+  const product = fetcher.data?.product;
+  const isLoading = !product;
+
+  function selectOption(variantUriQuery: string) {
+    if (!handle) return;
+    fetcher.load(`/api/quickview/${handle}?${variantUriQuery}`);
+  }
+
+  return (
+    <Aside type="quickview" heading={product?.title ?? 'Quick view'}>
+      {isLoading ? (
+        <div className="quickview__loading" role="status">
+          Loading…
+        </div>
+      ) : (
+        <QuickViewContent product={product} onSelectOption={selectOption} />
+      )}
+    </Aside>
+  );
+}
+
+function QuickViewContent({
+  product,
+  onSelectOption,
+}: {
+  product: any;
+  onSelectOption: (variantUriQuery: string) => void;
+}) {
+  const {open, close} = useAside();
+  const selectedVariant = product.selectedOrFirstAvailableVariant;
+  const compareAtPrice = selectedVariant?.compareAtPrice;
+  const averageScore = parseRating(product.reviewsRating?.value);
+  const totalReviews = parseCount(product.reviewsCount?.value);
+
+  const productOptions = getProductOptions({
+    ...product,
+    selectedOrFirstAvailableVariant: selectedVariant,
+  });
+
+  const lines = selectedVariant
+    ? [{merchandiseId: selectedVariant.id, quantity: 1, selectedVariant}]
+    : [];
+
+  const displayImage = selectedVariant?.image ?? product.images?.nodes?.[0];
+
+  return (
+    <div className="quickview">
+      <div className="quickview__media">
+        {displayImage ? (
+          <Image
+            data={displayImage}
+            className="quickview__img"
+            sizes="(max-width: 768px) 90vw, 480px"
+            alt={displayImage.altText ?? product.title}
+          />
+        ) : (
+          <div className="quickview__img-placeholder" aria-hidden="true" />
+        )}
+      </div>
+
+      <div className="quickview__body">
+        {product.vendor && (
+          <span className="quickview__vendor">{product.vendor}</span>
+        )}
+        <h2 className="quickview__title">{product.title}</h2>
+
+        <div className="quickview__reviews">
+          <StarRating
+            averageScore={averageScore}
+            totalReviews={totalReviews}
+            onReviewsClick={() => {
+              close();
+              window.location.href = `/products/${product.handle}#reviews`;
+            }}
+          />
+        </div>
+
+        <div className="quickview__pricing">
+          {compareAtPrice && (
+            <span className="quickview__price quickview__price--compare">
+              <s>
+                <Money data={compareAtPrice} />
+              </s>
+            </span>
+          )}
+          {selectedVariant?.price && (
+            <span className="quickview__price quickview__price--sale">
+              <Money data={selectedVariant.price} />
+            </span>
+          )}
+        </div>
+
+        {productOptions.map((option) => {
+          // If there is only a single value in the option values, don't display the option
+          if (option.optionValues.length === 1) return null;
+
+          return (
+            <div className="product-options" key={option.name}>
+              <h5>{option.name}</h5>
+              <div className="product-options-grid">
+                {option.optionValues.map((value) => {
+                  const {
+                    name,
+                    handle: valueHandle,
+                    variantUriQuery,
+                    selected,
+                    available,
+                    exists,
+                    isDifferentProduct,
+                    swatch,
+                  } = value;
+
+                  const optionItemClassName = `product-options-item${
+                    selected ? ' product-options-item--selected' : ''
+                  }${!available ? ' product-options-item--unavailable' : ''}`;
+
+                  if (isDifferentProduct) {
+                    // Combined-listing child product: this option value
+                    // lives on a different product/URL, so it must route
+                    // there instead of being fetched as a variant of the
+                    // current handle.
+                    return (
+                      <Link
+                        key={option.name + name}
+                        to={`/products/${valueHandle}?${variantUriQuery}`}
+                        className={optionItemClassName}
+                        onClick={close}
+                      >
+                        <QuickViewSwatch swatch={swatch} name={name} />
+                      </Link>
+                    );
+                  }
+
+                  return (
+                    <button
+                      type="button"
+                      key={option.name + name}
+                      disabled={!exists}
+                      className={`${optionItemClassName}${
+                        exists && !selected ? ' link' : ''
+                      }`}
+                      onClick={() => {
+                        if (!selected) onSelectOption(variantUriQuery);
+                      }}
+                    >
+                      <QuickViewSwatch swatch={swatch} name={name} />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+
+        <AddToCartButton
+          disabled={!selectedVariant || !selectedVariant.availableForSale}
+          onClick={() => open('cart')}
+          lines={lines}
+        >
+          {selectedVariant?.availableForSale ? 'Add to cart' : 'Sold out'}
+        </AddToCartButton>
+
+        <Link
+          to={`/products/${product.handle}`}
+          className="quickview__full-details-link"
+          onClick={close}
+        >
+          View full details
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function QuickViewSwatch({
+  swatch,
+  name,
+}: {
+  swatch?: Maybe<ProductOptionValueSwatch> | undefined;
+  name: string;
+}) {
+  const image = swatch?.image?.previewImage?.url;
+  const color = swatch?.color;
+
+  if (!image && !color) return name;
+
+  return (
+    <div
+      aria-label={name}
+      className="product-option-label-swatch"
+      style={{backgroundColor: color || 'transparent'}}
+    >
+      {!!image && <img src={image} alt={name} />}
+    </div>
+  );
+}
+
+
+===== app\templates\api.quickview.$handle.tsx =====
+
+// app/templates/api.quickview.$handle.tsx
+//
+// Resource route: GET /api/quickview/:handle
+// Returns full product JSON (options, variants, images, review
+// metafields) for the QuickView modal. Trimmed version of the
+// PRODUCT_QUERY in products.$handle.tsx — no breadcrumbs, no policy
+// metaobject, since the modal doesn't need them.
+import {type LoaderFunctionArgs} from 'react-router';
+import {getSelectedProductOptions} from '@shopify/hydrogen';
+
+export async function loader({context, params, request}: LoaderFunctionArgs) {
+  const {handle} = params;
+
+  if (!handle) {
+    throw new Response('Missing product handle', {status: 400});
+  }
+
+  const {storefront} = context;
+
+  const {product} = await storefront.query(QUICKVIEW_QUERY, {
+    variables: {
+      handle,
+      selectedOptions: getSelectedProductOptions(request),
+    },
+  });
+
+  if (!product?.id) {
+    throw new Response('Product not found', {status: 404});
+  }
+
+  return Response.json({product});
+}
+
+const QUICKVIEW_VARIANT_FRAGMENT = `#graphql
+  fragment QuickViewVariant on ProductVariant {
+    availableForSale
+    compareAtPrice {
+      amount
+      currencyCode
+    }
+    id
+    image {
+      id
+      url
+      altText
+      width
+      height
+    }
+    price {
+      amount
+      currencyCode
+    }
+    selectedOptions {
+      name
+      value
+    }
+    sku
+    title
+  }
+` as const;
+
+const QUICKVIEW_PRODUCT_FRAGMENT = `#graphql
+  fragment QuickViewProduct on Product {
+    id
+    title
+    vendor
+    handle
+    encodedVariantExistence
+    encodedVariantAvailability
+    images(first: 6) {
+      nodes {
+        id
+        url
+        altText
+        width
+        height
+      }
+    }
+    options {
+      name
+      optionValues {
+        name
+        firstSelectableVariant {
+          ...QuickViewVariant
+        }
+        swatch {
+          color
+          image {
+            previewImage {
+              url
+            }
+          }
+        }
+      }
+    }
+    selectedOrFirstAvailableVariant(selectedOptions: $selectedOptions, ignoreUnknownOptions: true, caseInsensitiveMatch: true) {
+      ...QuickViewVariant
+    }
+    adjacentVariants(selectedOptions: $selectedOptions) {
+      ...QuickViewVariant
+    }
+    reviewsRating: metafield(namespace: "reviews", key: "rating") {
+      value
+    }
+    reviewsCount: metafield(namespace: "reviews", key: "rating_count") {
+      value
+    }
+  }
+  ${QUICKVIEW_VARIANT_FRAGMENT}
+` as const;
+
+const QUICKVIEW_QUERY = `#graphql
+  query QuickView(
+    $country: CountryCode
+    $handle: String!
+    $language: LanguageCode
+    $selectedOptions: [SelectedOptionInput!]!
+  ) @inContext(country: $country, language: $language) {
+    product(handle: $handle) {
+      ...QuickViewProduct
+    }
+  }
+  ${QUICKVIEW_PRODUCT_FRAGMENT}
+` as const;
+
+
+===== app\assets\quickview.css =====
+
+/* app/assets/quickview.css
+ *
+ * Overrides the shared Aside overlay (app/components/Aside.tsx) for
+ * type="quickview" — turns the default right-edge slide-in drawer
+ * (see cart-drawer.css) into a centered modal with an image/info
+ * two-column layout. Scoped entirely to [data-type='quickview'] so
+ * cart, search, and mobile menu are unaffected.
+ *
+ * Import this AFTER cart-drawer.css so these overrides win.
+ */
+
+.overlay[data-type='quickview'] aside {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  right: auto;
+  height: auto;
+  max-height: 90vh;
+  width: min(900px, 92vw);
+  transform: translate(-50%, -50%) scale(0.96);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  transition: transform 200ms ease, opacity 200ms ease;
+  opacity: 0;
+}
+
+.overlay[data-type='quickview'].expanded aside {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+/* Header becomes a floating close button only — the product title
+   is already rendered inside .quickview__body, so the header's <h3>
+   (kept for aria-labelledby) is visually hidden rather than removed. */
+.overlay[data-type='quickview'] aside > header {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  border-bottom: none;
+  padding: 0.75rem;
+  background: transparent;
+}
+
+.overlay[data-type='quickview'] aside > header h3 {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.overlay[data-type='quickview'] aside > header .close {
+  background: var(--color-background, #fff);
+  border-radius: 999px;
+  width: 2rem;
+  height: 2rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.overlay[data-type='quickview'] aside > main {
+  padding: 0;
+  overflow-y: auto;
+}
+
+/* ---- Content layout ---- */
+
+.quickview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100%;
+}
+
+.quickview__media {
+  position: relative;
+  background: var(--color-surface-subtle, #f5f5f5);
+}
+
+.quickview__img,
+.quickview__img-placeholder {
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  object-fit: cover;
+  display: block;
+}
+
+.quickview__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 2.5rem 2rem 2rem;
+}
+
+.quickview__vendor {
+  font-size: 0.8rem;
+  color: var(--color-text-subtle, #6b6b6b);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.quickview__title {
+  font-size: 1.375rem;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.quickview__reviews {
+  margin-bottom: 0.25rem;
+}
+
+.quickview__pricing {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.quickview__price--compare {
+  color: var(--color-text-subtle, #6b6b6b);
+  font-size: 0.95rem;
+}
+
+.quickview__price--sale {
+  color: var(--color-sale, #d3242f);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.quickview__full-details-link {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  text-decoration: underline;
+  color: var(--color-text-subtle, #6b6b6b);
+  align-self: flex-start;
+}
+
+.quickview__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+  color: var(--color-text-subtle, #6b6b6b);
+}
+
+/* ---- Responsive: stack on small screens, full-screen sheet ---- */
+
+@media (max-width: 700px) {
+  .overlay[data-type='quickview'] aside {
+    width: 100vw;
+    max-height: 100vh;
+    height: 100vh;
+    border-radius: 0;
+    top: 0;
+    left: 0;
+    transform: none;
+  }
+
+  .overlay[data-type='quickview'].expanded aside {
+    transform: none;
+  }
+
+  .quickview {
+    grid-template-columns: 1fr;
+  }
+
+  .quickview__img,
+  .quickview__img-placeholder {
+    min-height: 260px;
+  }
+
+  .quickview__body {
+    padding: 1.5rem;
+  }
+}
+
+
+===== app\components\Aside.tsx =====
+
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
+import {useId} from 'react';
+
+// CHANGED: added 'quickview' to the union so QuickView.tsx can reuse
+// this shared overlay/dialog shell instead of building a second one.
+type AsideType = 'search' | 'cart' | 'mobile' | 'quickview' | 'closed';
+type AsideContextValue = {
+  type: AsideType;
+  open: (mode: AsideType) => void;
+  close: () => void;
+};
+
+/**
+ * A side bar component with Overlay
+ * @example
+ * ```jsx
+ * <Aside type="search" heading="SEARCH">
+ *  <input type="search" />
+ *  ...
+ * </Aside>
+ * ```
+ */
+export function Aside({
+  children,
+  heading,
+  type,
+}: {
+  children?: React.ReactNode;
+  type: AsideType;
+  heading: React.ReactNode;
+}) {
+  const {type: activeType, close} = useAside();
+  const expanded = type === activeType;
+  const id = useId();
+  useEffect(() => {
+    const abortController = new AbortController();
+
+    if (expanded) {
+      document.addEventListener(
+        'keydown',
+        function handler(event: KeyboardEvent) {
+          if (event.key === 'Escape') {
+            close();
+          }
+        },
+        {signal: abortController.signal},
+      );
+    }
+    return () => abortController.abort();
+  }, [close, expanded]);
+
+  return (
+    <div
+      aria-modal
+      className={`overlay ${expanded ? 'expanded' : ''}`}
+      data-type={type}
+      role="dialog"
+      aria-labelledby={id}
+    >
+      <button className="close-outside" onClick={close} />
+      <aside>
+        <header>
+          <h3 id={id}>{heading}</h3>
+          <button className="close reset" onClick={close} aria-label="Close">
+            &times;
+          </button>
+        </header>
+        <main>{children}</main>
+      </aside>
+    </div>
+  );
+}
+
+const AsideContext = createContext<AsideContextValue | null>(null);
+
+Aside.Provider = function AsideProvider({children}: {children: ReactNode}) {
+  const [type, setType] = useState<AsideType>('closed');
+
+  return (
+    <AsideContext.Provider
+      value={{
+        type,
+        open: setType,
+        close: () => setType('closed'),
+      }}
+    >
+      {children}
+    </AsideContext.Provider>
+  );
+};
+
+export function useAside() {
+  const aside = useContext(AsideContext);
+  if (!aside) {
+    throw new Error('useAside must be used within an AsideProvider');
+  }
+  return aside;
+}
+
+
+===== app\components\PageLayout.tsx =====
+
+// app/components/PageLayout.tsx
+import {Link} from 'react-router';
+import {useId} from 'react';
+import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
+import {Aside} from '~/components/Aside';
+import {Footer, type FooterQueryData} from '~/sections/Footer';
+import {Header, HeaderMenu} from '~/sections/Header';
+import {CartDrawer} from '~/sections/CartDrawer';
+import {
+  SEARCH_ENDPOINT,
+  SearchFormPredictive,
+} from '~/snippets/SearchFormPredictive';
+import {SearchResultsPredictive} from '~/snippets/SearchResultsPredictive';
+import {QuickView} from '~/snippets/QuickView'; // ADDED
+import type {AlgoliaConfig} from '~/lib/algolia';
+interface PageLayoutProps {
+  cart: Promise<CartApiQueryFragment | null>;
+  footer: Promise<FooterQueryData | null>;
+  header: HeaderQuery;
+  isLoggedIn: Promise<boolean>;
+  publicStoreDomain: string;
+  algolia: AlgoliaConfig;
+  children?: React.ReactNode;
+}
+export function PageLayout({
+  cart,
+  children = null,
+  footer,
+  header,
+  isLoggedIn,
+  publicStoreDomain,
+  algolia,
+}: PageLayoutProps) {
+  return (
+    <Aside.Provider>
+      <CartDrawer cart={cart} />
+      <SearchAside />
+      <MobileMenuAside header={header} publicStoreDomain={publicStoreDomain} />
+      <QuickView /> {/* ADDED — global, one instance for all product cards */}
+      {header && (
+        <Header
+          header={header}
+          cart={cart}
+          isLoggedIn={isLoggedIn}
+          publicStoreDomain={publicStoreDomain}
+          algolia={algolia}
+        />
+      )}
+      <main>{children}</main>
+      <Footer
+        footer={footer}
+        header={header}
+        publicStoreDomain={publicStoreDomain}
+      />
+    </Aside.Provider>
+  );
+}
+function SearchAside() {
+  const queriesDatalistId = useId();
+  return (
+    <Aside type="search" heading="SEARCH">
+      <div className="predictive-search">
+        <br />
+        <SearchFormPredictive>
+          {({fetchResults, goToSearch, inputRef}) => (
+            <>
+              <input
+                name="q"
+                onChange={fetchResults}
+                onFocus={fetchResults}
+                placeholder="Search"
+                ref={inputRef}
+                type="search"
+                list={queriesDatalistId}
+              />
+              &nbsp;
+              <button onClick={goToSearch}>Search</button>
+            </>
+          )}
+        </SearchFormPredictive>
+        <SearchResultsPredictive>
+          {({items, total, term, state, closeSearch}) => {
+            const {articles, collections, pages, products, queries} = items;
+            if (state === 'loading' && term.current) {
+              return <div>Loading...</div>;
+            }
+            if (!total) {
+              return <SearchResultsPredictive.Empty term={term} />;
+            }
+            return (
+              <>
+                <SearchResultsPredictive.Queries
+                  queries={queries}
+                  queriesDatalistId={queriesDatalistId}
+                />
+                <SearchResultsPredictive.Products
+                  products={products}
+                  closeSearch={closeSearch}
+                  term={term}
+                />
+                <SearchResultsPredictive.Collections
+                  collections={collections}
+                  closeSearch={closeSearch}
+                  term={term}
+                />
+                <SearchResultsPredictive.Pages
+                  pages={pages}
+                  closeSearch={closeSearch}
+                  term={term}
+                />
+                <SearchResultsPredictive.Articles
+                  articles={articles}
+                  closeSearch={closeSearch}
+                  term={term}
+                />
+                {term.current && total ? (
+                  <Link
+                    onClick={closeSearch}
+                    to={`${SEARCH_ENDPOINT}?q=${term.current}`}
+                  >
+                    <p>
+                      View all results for <q>{term.current}</q>
+                      &nbsp; →
+                    </p>
+                  </Link>
+                ) : null}
+              </>
+            );
+          }}
+        </SearchResultsPredictive>
+      </div>
+    </Aside>
+  );
+}
+function MobileMenuAside({
+  header,
+  publicStoreDomain,
+}: {
+  header: PageLayoutProps['header'];
+  publicStoreDomain: PageLayoutProps['publicStoreDomain'];
+}) {
+  return (
+    header.menu &&
+    header.shop.primaryDomain?.url && (
+      <Aside type="mobile" heading="MENU">
+        <HeaderMenu
+          menu={header.menu}
+          viewport="mobile"
+          primaryDomainUrl={header.shop.primaryDomain.url}
+          publicStoreDomain={publicStoreDomain}
+        />
+      </Aside>
+    )
+  );
+}
+
+
+===== app\root.tsx =====
+
+// app/root.tsx
+import {Analytics, getShopAnalytics, useNonce} from '@shopify/hydrogen';
+import {
+  Outlet,
+  useRouteError,
+  isRouteErrorResponse,
+  type ShouldRevalidateFunction,
+  Links,
+  Meta,
+  Scripts,
+  ScrollRestoration,
+  useRouteLoaderData,
+} from 'react-router';
+import type {Route} from './+types/root';
+import favicon from '~/assets/favicon.svg';
+import {HEADER_QUERY} from '~/lib/fragments';
+import {FOOTER_QUERY} from '~/sections/Footer';
+import {
+  MENU_COLLECTION_IMAGES_QUERY,
+  type CollectionImage,
+} from '~/config/Header.constants';
+import resetStyles from '~/assets/reset.css?url';
+import appStyles from '~/assets/app.css?url';
+import themeStyles from '~/assets/theme.css?url';
+import highlightStyles from '~/assets/highlight.css?url';
+import mainProductStyles from '~/assets/main-product.css?url';
+import breadcrumbsStyles from '~/assets/breadcrumbs.css?url';
+import productDescriptionStyles from '~/assets/product-description.css?url';
+import customerReviewsStyles from '~/assets/customer-reviews.css?url';
+import starRatingStyles from '~/assets/star-rating.css?url';
+import productCardStyles from '~/assets/product-card.css?url';
+import productCarouselStyles from '~/assets/product-carousel.css?url';
+import collectionCardStyles from '~/assets/collection-card.css?url';
+import collectionCarouselStyles from '~/assets/collection-carousel.css?url';
+import imageCardStyles from '~/assets/image-card.css?url';
+import imageCarouselStyles from '~/assets/image-carousel.css?url';
+import slideshowStyles from '~/assets/slideshow.css?url';
+import collectionBannerStyles from '~/assets/collection-banner.css?url';
+import mainCollectionStyles from '~/assets/main-collection.css?url';
+import paginatedResourceSectionStyles from '~/assets/paginated-resource-section.css?url';
+import stickyHeaderStyles from '~/assets/sticky-header.css?url';
+import articleCardStyles from '~/assets/article-card.css?url';
+import subCollectionStyles from '~/assets/sub-collection.css?url';
+import collectionAfterItemsStyles from '~/assets/collection-after-items.css?url';
+import cartDrawerStyles from '~/assets/cart-drawer.css?url';
+import quickviewStyles from '~/assets/quickview.css?url'; // ADDED — must load after cartDrawerStyles so the [data-type='quickview'] overrides win
+import tailwindCss from '~/assets/tailwind.css?url';
+import {PageLayout} from './components/PageLayout';
+
+export type RootLoader = typeof loader;
+
+export const shouldRevalidate: ShouldRevalidateFunction = ({
+  formMethod,
+  currentUrl,
+  nextUrl,
+}) => {
+  if (formMethod && formMethod !== 'GET') return true;
+
+  if (currentUrl.toString() === nextUrl.toString()) return true;
+
+  return false;
+};
+
+export function links() {
+  return [
+    {
+      rel: 'preconnect',
+      href: 'https://cdn.shopify.com',
+    },
+    {
+      rel: 'preconnect',
+      href: 'https://shop.app',
+    },
+    {rel: 'icon', type: 'image/svg+xml', href: favicon},
+  ];
+}
+
+export async function loader(args: Route.LoaderArgs) {
+  const deferredData = loadDeferredData(args);
+
+  const criticalData = await loadCriticalData(args);
+
+  const {storefront, env} = args.context;
+
+  return {
+    ...deferredData,
+    ...criticalData,
+    publicStoreDomain: env.PUBLIC_STORE_DOMAIN,
+    algolia: {
+      appId: env.PUBLIC_ALGOLIA_APP_ID,
+      searchKey: env.PUBLIC_ALGOLIA_SEARCH_KEY,
+      indexName: env.PUBLIC_ALGOLIA_INDEX_NAME,
+    },
+    shop: getShopAnalytics({
+      storefront,
+      publicStorefrontId: env.PUBLIC_STOREFRONT_ID,
+    }),
+    consent: {
+      checkoutDomain: env.PUBLIC_CHECKOUT_DOMAIN,
+      storefrontAccessToken: env.PUBLIC_STOREFRONT_API_TOKEN,
+      withPrivacyBanner: false,
+      country: args.context.storefront.i18n.country,
+      language: args.context.storefront.i18n.language,
+    },
+  };
+}
+
+async function loadCriticalData({context}: Route.LoaderArgs) {
+  const {storefront} = context;
+
+  const header = await storefront
+    .query(HEADER_QUERY, {
+      cache: storefront.CacheLong(),
+      variables: {
+        headerMenuHandle: 'main-menu',
+      },
+    })
+    .catch((error: Error) => {
+      console.error(error);
+      return {menu: null, shop: null} as unknown as Awaited<ReturnType<typeof storefront.query<typeof HEADER_QUERY>>>;
+    });
+
+  const collectionImages = await loadMenuCollectionImages(storefront, header.menu).catch(
+    (error: Error) => {
+      console.error(error);
+      return {};
+    },
+  );
+
+  return {header, collectionImages};
+}
+
+async function loadMenuCollectionImages(
+  storefront: Route.LoaderArgs['context']['storefront'],
+  menu: Awaited<ReturnType<typeof storefront.query<typeof HEADER_QUERY>>>['menu'],
+): Promise<Record<string, CollectionImage>> {
+  if (!menu) return {};
+
+  const collectionIds = menu.items
+    .flatMap((item) => item.items ?? [])
+    .map((item) => item.resourceId)
+    .filter((id): id is string => Boolean(id) && id.includes('/Collection/'));
+
+  if (!collectionIds.length) return {};
+
+  const data = await storefront.query(MENU_COLLECTION_IMAGES_QUERY, {
+    variables: {ids: collectionIds},
+  });
+
+  return Object.fromEntries(
+    data.nodes
+      .filter(
+        (n): n is {id: string; image: CollectionImage | null} =>
+          n != null && 'image' in n,
+      )
+      .filter((n) => n.image)
+      .map((n) => [n.id, n.image as CollectionImage]),
+  );
+}
+
+function loadDeferredData({context}: Route.LoaderArgs) {
+  const {storefront, customerAccount, cart} = context;
+
+  const footer = storefront
+    .query(FOOTER_QUERY, {
+      cache: storefront.CacheLong(),
+      variables: {
+        footerMenuHandle: 'footer',
+        policiesMenuHandle: 'policies',
+      },
+    })
+    .catch((error: Error) => {
+      console.error(error);
+      return null;
+    });
+  return {
+    cart: cart.get(),
+    isLoggedIn: customerAccount.isLoggedIn(),
+    footer,
+  };
+}
+
+export function Layout({children}: {children?: React.ReactNode}) {
+  const nonce = useNonce();
+
+  return (
+    <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <link rel="stylesheet" href={tailwindCss}></link>
+        <link rel="stylesheet" href={resetStyles}></link>
+        <link rel="stylesheet" href={appStyles}></link>
+        <link rel="stylesheet" href={themeStyles}></link>
+        <link rel="stylesheet" href={highlightStyles}></link>
+        <link rel="stylesheet" href={mainProductStyles}></link>
+        <link rel="stylesheet" href={breadcrumbsStyles}></link>
+        <link rel="stylesheet" href={productDescriptionStyles}></link>
+        <link rel="stylesheet" href={customerReviewsStyles}></link>
+        <link rel="stylesheet" href={starRatingStyles}></link>
+        <link rel="stylesheet" href={productCardStyles}></link>
+        <link rel="stylesheet" href={productCarouselStyles}></link>
+        <link rel="stylesheet" href={collectionCardStyles}></link>
+        <link rel="stylesheet" href={collectionCarouselStyles}></link>
+        <link rel="stylesheet" href={imageCardStyles}></link>
+        <link rel="stylesheet" href={imageCarouselStyles}></link>
+        <link rel="stylesheet" href={slideshowStyles}></link>
+        <link rel="stylesheet" href={collectionBannerStyles}></link>
+        <link rel="stylesheet" href={mainCollectionStyles}></link>
+        <link rel="stylesheet" href={paginatedResourceSectionStyles}></link>
+        <link rel="stylesheet" href={stickyHeaderStyles}></link>
+        <link rel="stylesheet" href={articleCardStyles}></link>
+        <link rel="stylesheet" href={subCollectionStyles}></link>
+        <link rel="stylesheet" href={collectionAfterItemsStyles}></link>
+        <link rel="stylesheet" href={cartDrawerStyles}></link>
+        <link rel="stylesheet" href={quickviewStyles}></link>
+        {/* ADDED — must render after cartDrawerStyles for override specificity/order */}
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        {children}
+        <ScrollRestoration nonce={nonce} />
+        <Scripts nonce={nonce} />
+      </body>
+    </html>
+  );
+}
+
+export default function App() {
+  const data = useRouteLoaderData<RootLoader>('root');
+
+  if (!data) {
+    return <Outlet />;
+  }
+
+  return (
+    <Analytics.Provider
+      cart={data.cart}
+      shop={data.shop}
+      consent={data.consent}
+    >
+      <PageLayout {...data}>
+        <Outlet />
+      </PageLayout>
+    </Analytics.Provider>
+  );
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+  let errorMessage = 'Unknown error';
+  let errorStatus = 500;
+
+  if (isRouteErrorResponse(error)) {
+    errorMessage = error?.data?.message ?? error.data ?? 'Unknown error';
+    errorStatus = error.status;
+  } else if (error instanceof Error) {
+    errorMessage = error.message;
+  }
+
+  return (
+    <div className="route-error">
+      <h1>Oops</h1>
+      <h2>{errorStatus}</h2>
+      {errorMessage && (
+        <fieldset>
+          <pre>{errorMessage}</pre>
+        </fieldset>
+      )}
+    </div>
+  );
+}
+
+
+===== app\snippets\ProductCard.tsx =====
+
+// app/snippets/ProductCard.tsx
+
+import {useEffect, useState} from 'react';
+import {Link, useNavigate} from 'react-router';
+import {Image, Money, CartForm, type OptimisticCartLineInput} from '@shopify/hydrogen';
+import type {FetcherWithComponents} from 'react-router';
+import type {ProductCardFragment} from 'storefrontapi.generated';
+import {SaleBadge} from '~/snippets/SaleBadge';
+import {StarRating} from '~/snippets/StarRating';
+import {useAside} from '~/components/Aside';
+
+export interface ProductCardProps {
+  product: ProductCardFragment;
+  showVendor?: boolean;
+  loading?: 'eager' | 'lazy';
+}
+
+const IMAGE_SIZES =
+  '(max-width: 480px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw';
+
+const COMPARE_KEY = 'shopify_compare';
+const COMPARE_MAX = 5;
+const WISHLIST_KEY = 'shopify_wishlist';
+
+interface CompareEntry {
+  id: string;
+  handle: string;
+  title: string;
+  image: string;
+  price: string;
+}
+
+interface WishlistEntry {
+  id: string;
+  handle: string;
+}
+
+function getCompareList(): CompareEntry[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = JSON.parse(window.localStorage.getItem(COMPARE_KEY) ?? '[]');
+    return Array.isArray(raw) ? raw : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveCompareList(list: CompareEntry[]) {
+  try {
+    window.localStorage.setItem(COMPARE_KEY, JSON.stringify(list));
+  } catch {
+    // localStorage unavailable (private mode, quota, etc.) — fail silently
+  }
+}
+
+function getWishlistList(): WishlistEntry[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = JSON.parse(window.localStorage.getItem(WISHLIST_KEY) ?? '[]');
+    return Array.isArray(raw) ? raw : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveWishlistList(list: WishlistEntry[]) {
+  try {
+    window.localStorage.setItem(WISHLIST_KEY, JSON.stringify(list));
+  } catch {
+    // localStorage unavailable — fail silently
+  }
+}
+
+// Shopify's standard `reviews.rating` metafield value is a JSON string:
+// {"value":"4.3","scale_min":"1","scale_max":"5"}
+function parseRating(raw?: string | null): number {
+  if (!raw) return 0;
+  try {
+    const parsed = JSON.parse(raw);
+    return parseFloat(parsed?.value ?? '0') || 0;
+  } catch {
+    return 0;
+  }
+}
+
+function parseCount(raw?: string | null): number {
+  if (!raw) return 0;
+  const n = parseInt(raw, 10);
+  return Number.isNaN(n) ? 0 : n;
+}
+
+function handleQuickViewClick(
+  e: React.MouseEvent<HTMLButtonElement>,
+  handle: string,
+) {
+  document.dispatchEvent(
+    new CustomEvent('quickview:open', {
+      bubbles: true,
+      detail: {handle, trigger: e.currentTarget},
+    }),
+  );
+}
+
+export function ProductCard({product, showVendor = true, loading = 'lazy'}: ProductCardProps) {
+  const url = `/products/${product.handle}`;
+  const image = product.featuredImage;
+  const price = product.priceRange.minVariantPrice;
+  const compareAtPrice = product.compareAtPriceRange?.minVariantPrice;
+  const variant = product.selectedOrFirstAvailableVariant;
+  const navigate = useNavigate();
+  const {open: openAside} = useAside();
+
+  const etaText = product.etaText?.value;
+  const isSponsored = product.sponsored?.value === 'true';
+  const averageScore = parseRating(product.reviewsRating?.value);
+  const totalReviews = parseCount(product.reviewsCount?.value);
+
+  const [isComparing, setIsComparing] = useState(false);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+
+  useEffect(() => {
+    const compareList = getCompareList();
+    setIsComparing(compareList.some((entry) => entry.id === product.id));
+
+    const wishlist = getWishlistList();
+    setIsWishlisted(wishlist.some((entry) => entry.id === product.id));
+  }, [product.id]);
+
+  function handleCompareChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const checked = e.target.checked;
+    const list = getCompareList();
+    const idx = list.findIndex((entry) => entry.id === product.id);
+
+    if (checked) {
+      if (list.length >= COMPARE_MAX) {
+        e.target.checked = false;
+        return;
+      }
+      list.push({
+        id: product.id,
+        handle: product.handle,
+        title: product.title,
+        image: image?.url ?? '',
+        price: price ? `${price.amount} ${price.currencyCode}` : '',
+      });
+    } else if (idx !== -1) {
+      list.splice(idx, 1);
+    }
+
+    saveCompareList(list);
+    setIsComparing(checked);
+    document.dispatchEvent(
+      new CustomEvent('compare:updated', {bubbles: true, detail: {items: list}}),
+    );
+  }
+
+  function handleWishlistToggle() {
+    const list = getWishlistList();
+    const idx = list.findIndex((entry) => entry.id === product.id);
+    const next = !isWishlisted;
+
+    if (next) {
+      if (idx === -1) list.push({id: product.id, handle: product.handle});
+    } else if (idx !== -1) {
+      list.splice(idx, 1);
+    }
+
+    saveWishlistList(list);
+    setIsWishlisted(next);
+    document.dispatchEvent(
+      new CustomEvent('wishlist:toggle', {
+        bubbles: true,
+        detail: {productId: product.id, wishlisted: next},
+      }),
+    );
+  }
+
+  const lines: Array<OptimisticCartLineInput> = variant
+    ? [{merchandiseId: variant.id, quantity: 1}]
+    : [];
+
+  return (
+    <div className="product-card" data-product-id={product.id} data-product-handle={product.handle}>
+      <div className="product-card__img-zone">
+        {isSponsored && (
+          <span className="product-card__sponsored-label">Sponsored</span>
+        )}
+
+        <Link to={url} className="product-card__image-wrapper" aria-label={product.title}>
+          {image ? (
+            <Image
+              data={image}
+              className="product-card__img product-card__img--primary"
+              loading={loading}
+              sizes={IMAGE_SIZES}
+              alt={image.altText ?? product.title}
+            />
+          ) : (
+            <div className="product-card__img-placeholder" aria-hidden="true" />
+          )}
+        </Link>
+
+        <span className="product-card__badge-slot">
+          <SaleBadge price={price} compareAtPrice={compareAtPrice} />
+        </span>
+
+        <button
+          type="button"
+          className="product-card__wishlist-btn"
+          aria-label={isWishlisted ? `Remove ${product.title} from wishlist` : `Add ${product.title} to wishlist`}
+          aria-pressed={isWishlisted}
+          data-wishlist-btn
+          onClick={handleWishlistToggle}
+        >
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <path
+              className="product-card__wishlist-path"
+              d="M9 15.5S2 11 2 6a4 4 0 0 1 7-2.65A4 4 0 0 1 16 6c0 5-7 9.5-7 9.5z"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+
+        <button
+          type="button"
+          className="product-card__quickview-btn"
+          aria-label={`Quick view ${product.title}`}
+          data-quickview-btn
+          data-product-handle={product.handle}
+          onClick={(e) => handleQuickViewClick(e, product.handle)}
+        >
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+            <ellipse cx="7.5" cy="7.5" rx="6" ry="4.5" stroke="currentColor" strokeWidth="1.4" />
+            <circle cx="7.5" cy="7.5" r="2" stroke="currentColor" strokeWidth="1.4" />
+          </svg>
+          Quick view
+        </button>
+      </div>
+
+      <div className="product-card__body">
+        {showVendor && product.vendor && (
+          <span className="product-card__vendor">{product.vendor}</span>
+        )}
+
+        <Link to={url} className="product-card__title" title={product.title}>
+          {product.title}
+        </Link>
+
+        <div className="product-card__reviews">
+          <StarRating
+            averageScore={averageScore}
+            totalReviews={totalReviews}
+            onReviewsClick={() => navigate(`${url}#reviews`)}
+          />
+        </div>
+
+        <div className="product-card__pricing">
+          {compareAtPrice && (
+            <span className="product-card__price product-card__price--compare">
+              <s><Money data={compareAtPrice} /></s>
+            </span>
+          )}
+          <span className="product-card__price product-card__price--sale">
+            <Money data={price} />
+          </span>
+        </div>
+
+        {etaText && (
+          <div className="product-card__eta" aria-label="Estimated delivery">
+            <span>{etaText}</span>
+          </div>
+        )}
+
+        {variant && (
+          <div className="product-card__bottom-row">
+            <CartForm route="/cart" inputs={{lines}} action={CartForm.ACTIONS.LinesAdd}>
+              {(fetcher: FetcherWithComponents<any>) => (
+                <button
+                  type="submit"
+                  className="product-card__atc-btn"
+                  disabled={!variant.availableForSale || fetcher.state !== 'idle'}
+                  onClick={() => {
+                    if (variant.availableForSale) openAside('cart');
+                  }}
+                >
+                  {variant.availableForSale ? 'Add to cart' : 'Sold out'}
+                </button>
+              )}
+            </CartForm>
+
+            <label className="product-card__compare-label">
+              <input
+                type="checkbox"
+                className="product-card__compare-checkbox"
+                checked={isComparing}
+                onChange={handleCompareChange}
+                aria-label={`Compare ${product.title}`}
+              />
+              <span className="product-card__compare-text">Compare</span>
+            </label>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
+
+===== app\snippets\StarRating.tsx =====
+
+// app/snippets/StarRating.tsx
+
+import {useId} from 'react';
+
+/**
+ * Renders a 5-star rating display from a plain average score + review
+ * count. Replaces Yotpo's on-site Star Rating widget (instance 1332841),
+ * which was returning empty despite the product having published
+ * reviews — see app/lib/yotpo.server.ts for why. Data comes from
+ * Yotpo's Bottomline API, fetched server-side in the product loader.
+ *
+ * Styled to match Yotpo's own widget output (gold stars, score, divider,
+ * review count) so it's visually consistent with the reviews widget
+ * below it on the page. Static styling lives in
+ * app/assets/star-rating.css (linked globally in app/root.tsx, matching
+ * how customer-reviews.css and every other section/snippet stylesheet
+ * is loaded); only genuinely dynamic values — the per-star gradient
+ * fill and the trigger's conditional cursor — stay inline here.
+ */
+export function StarRating({
+  averageScore,
+  totalReviews,
+  onReviewsClick,
+  onWriteReviewClick,
+}: {
+  averageScore: number;
+  totalReviews: number;
+  /** Optional: scroll to / focus the reviews widget below when clicked. */
+  onReviewsClick?: () => void;
+  /** Optional: separate handler for the empty-state "Write a review" button. Fallsback to onReviewsClick if omitted. */
+  onWriteReviewClick?: () => void;
+}) {
+  const hasReviews = totalReviews > 0;
+
+  // Scopes this instance's star gradient ids so multiple StarRating
+  // instances on the same page (e.g. a future collection grid showing
+  // per-product ratings) don't collide. useId() also keeps the id
+  // stable between server- and client-render, avoiding a hydration
+  // mismatch, which is the same reason index-only ids were originally
+  // chosen over Math.random() — see the Star component comment below.
+  // Colons in useId()'s output are valid in HTML ids but need escaping
+  // inside a CSS url(#...) reference, so they're stripped here rather
+  // than handled at every usage site.
+  const uid = useId().replace(/:/g, '');
+
+  return (
+    <div className="star-rating-root">
+      <button
+        type="button"
+        onClick={onReviewsClick}
+        className="star-rating star-rating-trigger"
+        style={{cursor: onReviewsClick ? 'pointer' : 'default'}}
+        aria-label={
+          hasReviews
+            ? `${averageScore.toFixed(1)} out of 5 stars rating in total ${totalReviews} review${totalReviews === 1 ? '' : 's'}. Jump to reviews.`
+            : '0 out of 5 stars rating in total 0 reviews. Jump to reviews.'
+        }
+      >
+        <span aria-hidden="true" className="star-rating-stars">
+          {Array.from({length: 5}).map((_, i) => (
+            <Star
+              key={i}
+              index={i}
+              uid={uid}
+              fillPercent={hasReviews ? getFillPercent(averageScore, i) : 0}
+            />
+          ))}
+        </span>
+
+        {hasReviews && (
+          <span className="star-rating-score">{averageScore.toFixed(1)}</span>
+        )}
+
+        {hasReviews && <span aria-hidden="true" className="star-rating-divider" />}
+
+        <span className="star-rating-count">
+          {totalReviews} {totalReviews === 1 ? 'Review' : 'Reviews'}
+        </span>
+      </button>
+
+      {!hasReviews && (
+        <button
+          type="button"
+          onClick={onWriteReviewClick ?? onReviewsClick}
+          className="star-rating-write-btn"
+        >
+          Write a review
+        </button>
+      )}
+    </div>
+  );
+}
+
+// Returns 0–100: how much of star index `i` (0-based) should be filled,
+// so a score like 4.3 renders star 5 as ~30% filled rather than snapping
+// to whole stars only.
+function getFillPercent(score: number, starIndex: number): number {
+  const diff = score - starIndex;
+  if (diff >= 1) return 100;
+  if (diff <= 0) return 0;
+  return Math.round(diff * 100);
+}
+
+// Mirrors Yotpo's own star SVG path/viewBox/gradient-fill approach.
+// Gradient id incorporates the parent StarRating instance's `uid` (from
+// useId(), passed down) plus this star's position (0-4) — not
+// Math.random(). A random id changes on every render, which is both
+// wasteful (defeats any memoization) and unsafe for SSR: the id
+// generated on the server won't match the one generated during client
+// hydration, causing a hydration mismatch. `uid` is what keeps this
+// safe for SSR (stable per component instance across server/client),
+// and combining it with `index` is what keeps ids unique when more
+// than one StarRating instance renders on the same page — index alone
+// was only unique within a single instance.
+//
+// fillPercent (the gradient <stop> offsets) is the one piece of this
+// component's visual output that's genuinely per-render dynamic, so
+// it's the one piece that stays as an inline SVG attribute rather than
+// moving into star-rating.css — there's no static class that could
+// express it.
+function Star({fillPercent, index, uid}: {fillPercent: number; index: number; uid: string}) {
+  const id = `star-fill-${uid}-${index}`;
+
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 18 18"
+      xmlns="http://www.w3.org/2000/svg"
+      width="15"
+      height="15"
+      className="star-rating-star"
+    >
+      <defs>
+        <linearGradient id={id}>
+          <stop offset={`${fillPercent}%`} stopColor="#FFE000" />
+          <stop offset={`${fillPercent}%`} stopColor="#FFFFFF" stopOpacity={1} />
+        </linearGradient>
+      </defs>
+      <path
+        style={{pointerEvents: 'none'}}
+        d="M9 14.118L14.562 17.475L13.086 11.148L18 6.891L11.529 6.342L9 0.375L6.471 6.342L0 6.891L4.914 11.148L3.438 17.475L9 14.118Z"
+        stroke="#FFE000"
+        fill={`url(#${id})`}
+      />
+    </svg>
+  );
+}
+
+
+===== app\snippets\AddToCartButton.tsx =====
+
+import {type FetcherWithComponents} from 'react-router';
+import {CartForm, type OptimisticCartLineInput} from '@shopify/hydrogen';
+
+export function AddToCartButton({
+  analytics,
+  children,
+  disabled,
+  lines,
+  onClick,
+}: {
+  analytics?: unknown;
+  children: React.ReactNode;
+  disabled?: boolean;
+  lines: Array<OptimisticCartLineInput>;
+  onClick?: () => void;
+}) {
+  return (
+    <CartForm route="/cart" inputs={{lines}} action={CartForm.ACTIONS.LinesAdd}>
+      {(fetcher: FetcherWithComponents<any>) => (
+        <>
+          <input
+            name="analytics"
+            type="hidden"
+            value={JSON.stringify(analytics)}
+          />
+          <button
+            type="submit"
+            onClick={onClick}
+            disabled={disabled || fetcher.state !== 'idle'}
+          >
+            {children}
+          </button>
+        </>
+      )}
+    </CartForm>
+  );
+}
+
+
+
+===== app\assets\main-product.css =====
+
+/* ==========================================================================
+   Main Product — app/sections/MainProduct.tsx and its children
+   (ProductMedia, ProductForm, SaleBadge, ProductPrice)
+
+   Breakpoints follow theme.css tokens exactly — no invented values:
+     --bp-sm : 640px  (mobile / tablet boundary)
+     --bp-lg : 1024px (tablet / desktop boundary, matches Header's nav switch)
+   See docs/theme.md "Design Tokens & Breakpoints" for the full rationale.
+   ========================================================================== */
+
+/* ==========================================================================
+   Page layout — two-column grid wrapping ProductMedia and .product-detail
+   ========================================================================== */
+
+.product-layout {
+  /* Mobile tier (< 640px) — see theme.css --bp-sm / --bp-lg */
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  align-items: start;
+  max-width: var(--content-max-width, 1200px);
+  margin-inline: auto;
+  padding-inline: 1rem; /* matches Header's px-4 */
+}
+
+/* Tablet tier (640–1023px) — see theme.css --bp-sm / --bp-lg */
+@media (min-width: 640px) {
+  .product-layout {
+    gap: 2rem;
+    padding-inline: 1.5rem; /* matches Header's sm:px-6 */
+  }
+}
+
+/* Desktop tier (>= 1024px) — see theme.css --bp-sm / --bp-lg.
+   Structural column switch is keyed to --bp-lg so it lines up with
+   Header's own nav switch, per theme.md rule 4. */
+@media (min-width: 1024px) {
+  .product-layout {
+    grid-template-columns: 1fr 1fr;
+    padding-inline: 2rem; /* matches Header's lg:px-8 */
+  }
+}
+
+/* ==========================================================================
+   Product gallery — app/sections/ProductMedia.tsx
+   ========================================================================== */
+
+.product-gallery {
+  /* Mobile/tablet tier (< 1024px): stacked, static (no sticky) */
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  position: static;
+  max-height: none;
+}
+
+/* Desktop tier (>= 1024px) — see theme.css --bp-sm / --bp-lg.
+   Two-column layout has room for the sticky side-by-side gallery. */
+@media (min-width: 1024px) {
+  .product-gallery {
+    flex-direction: row;
+    gap: 1.5rem;
+
+    /* Pin the gallery as the (usually taller) product-detail column
+       scrolls past it. `top` matches the fixed header height above
+       the grid — adjust if header height changes. `max-height` keeps
+       it from overlapping the footer on short viewports. */
+    position: sticky;
+    top: 1rem;
+    align-self: flex-start;
+    max-height: calc(100vh - 2rem);
+  }
+}
+
+/* --- Thumbnails ---
+   Mobile/tablet tier (< 1024px): horizontal scrollable row above the
+   main image — a horizontal swipe is the natural touch gesture, and
+   there's no hover to drive scroll-arrow reveal at these widths. */
+.product-thumbnails {
+  position: relative;
+  flex: 0 0 auto;
+  width: 100%;
+  height: auto;
+}
+
+.thumbnail-container {
+  display: flex;
+  flex-direction: row;
+  gap: 0.75rem;
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-width: none; /* Firefox */
+}
+
+.thumbnail-container::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+.thumbnail-item {
+  display: block;
+  flex: 0 0 72px;
+  width: 72px;
+  height: 72px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  background: none;
+  transition: border-color 0.15s ease;
+}
+
+/* Tablet tier (640–1023px) — see theme.css --bp-sm / --bp-lg.
+   Slightly roomier thumbnails; still the horizontal row. */
+@media (min-width: 640px) {
+  .thumbnail-item {
+    flex-basis: 84px;
+    width: 84px;
+    height: 84px;
+  }
+}
+
+/* Desktop tier (>= 1024px) — see theme.css --bp-sm / --bp-lg.
+   Rail becomes a fixed-width vertical column on the left, height
+   synced to the main image via --gallery-height (set in ProductMedia's
+   ResizeObserver). Positioned relative so scroll arrows can sit on it. */
+@media (min-width: 1024px) {
+  .product-thumbnails {
+    flex: 0 0 96px;
+    height: var(--gallery-height, auto);
+  }
+
+  .thumbnail-container {
+    flex-direction: column;
+    gap: 1rem;
+    height: 100%;
+    overflow-x: visible;
+    overflow-y: auto;
+  }
+
+  .thumbnail-item {
+    flex: 0 0 96px;
+    width: 96px;
+    height: 96px;
+  }
+}
+
+.thumbnail-item:hover {
+  border-color: #ccc;
+}
+
+.thumbnail-item.active {
+  border-color: #000;
+}
+
+.thumbnail-wrapper {
+  width: 100%;
+  height: 100%;
+}
+
+.thumbnail-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+/* --- Scroll arrows ---
+   Mobile/tablet tier (< 1024px): always visible, no hover to rely on
+   (theme.md rule 3 — touch-first tiers get the permanent affordance,
+   never a hover-only one). */
+.thumbnail-scroll-arrow {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid #e5e5e5;
+  border-radius: 50%;
+  background: #fff;
+  color: #333;
+  cursor: pointer;
+  opacity: 1;
+  visibility: visible;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.thumbnail-scroll-arrow:hover {
+  background: #f5f5f5;
+}
+
+/* Horizontal row (mobile/tablet): left/right arrows, vertically centered */
+.thumbnail-scroll-arrow--up {
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.thumbnail-scroll-arrow--down {
+  right: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Desktop tier (>= 1024px) — see theme.css --bp-sm / --bp-lg.
+   Vertical rail: arrows move to top/bottom, centered horizontally,
+   and become hover-reveal — this is the one interaction in this file
+   allowed to be hover-gated, per theme.md rule 3. */
+@media (min-width: 1024px) {
+  .thumbnail-scroll-arrow {
+    left: 50%;
+    right: auto;
+    top: auto;
+    transform: translateX(-50%);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s ease, visibility 0.15s ease;
+  }
+
+  .product-thumbnails:hover .thumbnail-scroll-arrow {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .thumbnail-scroll-arrow--up {
+    top: -8px;
+    bottom: auto;
+    transform: translateX(-50%);
+  }
+
+  .thumbnail-scroll-arrow--down {
+    bottom: -8px;
+    top: auto;
+    transform: translateX(-50%);
+  }
+}
+
+/* --- Main image --- */
+
+.product-gallery-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.gallery-viewer {
+  width: 100%;
+}
+
+.main-image-container {
+  width: 100%;
+}
+
+.main-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* ==========================================================================
+   Right-hand PDP column — app/sections/ProductForm.tsx,
+   app/snippets/ProductDescription.tsx
+   ========================================================================== */
+
+.product-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Tablet tier (640–1023px) — see theme.css --bp-sm / --bp-lg */
+@media (min-width: 640px) {
+  .product-detail {
+    gap: 1.5rem;
+  }
+}
+
+.product-detail-title {
+  font-size: 1.625rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+/* Tablet tier (640–1023px) — see theme.css --bp-sm / --bp-lg */
+@media (min-width: 640px) {
+  .product-detail-title {
+    font-size: 1.75rem;
+  }
+}
+
+/* Desktop tier (>= 1024px) — see theme.css --bp-sm / --bp-lg */
+@media (min-width: 1024px) {
+  .product-detail-title {
+    font-size: 1.875rem;
+  }
+}
+
+/* --- Sale badge --- */
+
+.sale-badge {
+  display: inline-block;
+  align-self: flex-start;
+  background: #e11d2e;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0.35rem 0.6rem;
+  border-radius: 4px;
+  letter-spacing: 0.01em;
+}
+
+/* --- Price --- */
+
+.product-price {
+  font-size: 1.375rem;
+  font-weight: 700;
+}
+
+/* Tablet tier (640–1023px) — see theme.css --bp-sm / --bp-lg */
+@media (min-width: 640px) {
+  .product-price {
+    font-size: 1.5rem;
+  }
+}
+
+.product-price-on-sale {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.product-price-on-sale s {
+  font-size: 1.125rem;
+  font-weight: 400;
+  color: #999;
+}
+
+/* --- Variant selectors --- */
+
+.product-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.product-options h5 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #666;
+  margin: 0 0 0.5rem;
+}
+
+.product-options-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.product-options-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.1rem;
+  border-radius: 999px;
+  border: 1px solid #ddd;
+  font-size: 0.9rem;
+  font-weight: 500;
+  background: #fff;
+  color: #111;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease,
+    opacity 0.15s ease;
+}
+
+/* Hover is a harmless enhancement here, not a reveal mechanism — the
+   pill's selected/unavailable states are always visible at every
+   tier via their own classes below, so no gating needed (theme.md
+   rule 3 only restricts hover-*reveal*, i.e. content invisible
+   without hover). */
+.product-options-item:hover {
+  border-color: #999;
+}
+
+.product-options-item--selected {
+  border-color: #000;
+  background: #000;
+  color: #fff;
+}
+
+.product-options-item--selected:hover {
+  border-color: #000;
+}
+
+.product-options-item--unavailable {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.product-option-label-swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-option-label-swatch img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* --- Add to cart CTA --- */
+
+.product-form button[type='submit'] {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  background: #111;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.product-form button[type='submit']:hover:not(:disabled) {
+  background: #333;
+}
+
+.product-form button[type='submit']:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* Description / Shipping / Refund / Warranty panel styles live in
+   assets/product-description.css — see that file's header comment
+   for the wiring this needs in root.tsx. */

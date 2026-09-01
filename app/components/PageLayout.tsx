@@ -1,5 +1,4 @@
 // app/components/PageLayout.tsx
-
 import {Link} from 'react-router';
 import {useId} from 'react';
 import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
@@ -12,8 +11,8 @@ import {
   SearchFormPredictive,
 } from '~/snippets/SearchFormPredictive';
 import {SearchResultsPredictive} from '~/snippets/SearchResultsPredictive';
+import {QuickView} from '~/snippets/QuickView'; // ADDED
 import type {AlgoliaConfig} from '~/lib/algolia';
-
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;
   footer: Promise<FooterQueryData | null>;
@@ -23,7 +22,6 @@ interface PageLayoutProps {
   algolia: AlgoliaConfig;
   children?: React.ReactNode;
 }
-
 export function PageLayout({
   cart,
   children = null,
@@ -38,6 +36,7 @@ export function PageLayout({
       <CartDrawer cart={cart} />
       <SearchAside />
       <MobileMenuAside header={header} publicStoreDomain={publicStoreDomain} />
+      <QuickView /> {/* ADDED — global, one instance for all product cards */}
       {header && (
         <Header
           header={header}
@@ -56,7 +55,6 @@ export function PageLayout({
     </Aside.Provider>
   );
 }
-
 function SearchAside() {
   const queriesDatalistId = useId();
   return (
@@ -80,19 +78,15 @@ function SearchAside() {
             </>
           )}
         </SearchFormPredictive>
-
         <SearchResultsPredictive>
           {({items, total, term, state, closeSearch}) => {
             const {articles, collections, pages, products, queries} = items;
-
             if (state === 'loading' && term.current) {
               return <div>Loading...</div>;
             }
-
             if (!total) {
               return <SearchResultsPredictive.Empty term={term} />;
             }
-
             return (
               <>
                 <SearchResultsPredictive.Queries
@@ -138,7 +132,6 @@ function SearchAside() {
     </Aside>
   );
 }
-
 function MobileMenuAside({
   header,
   publicStoreDomain,
