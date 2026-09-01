@@ -3,12 +3,6 @@ import {useFetcher, Link} from 'react-router';
 import {Image, Money} from '@shopify/hydrogen';
 import type {ProductCardFragment} from 'storefrontapi.generated';
 
-/**
- * ASSUMPTION FLAG: I haven't seen ProductCardFragment.tsx, so `featuredImage`
- * and `priceRange.minVariantPrice` below are guesses based on typical
- * Hydrogen skeleton conventions. If your fragment uses different field
- * names, paste ProductCardFragment.tsx and I'll correct this.
- */
 export function CartRecommendations({
   productId,
 }: {
@@ -83,7 +77,7 @@ export function CartRecommendations({
           {image && (
             <Image
               data={image}
-              aspectRatio="1/1"
+              aspectRatio="14/17"
               width={112}
               height={136}
               loading="lazy"

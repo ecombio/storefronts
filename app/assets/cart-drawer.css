@@ -74,6 +74,15 @@
   padding: 1.25rem 1.5rem;
   border-bottom: 1px solid var(--color-border, #e5e5e5);
   flex-shrink: 0;
+  /* Defensive reset: a bare `header { height: var(--header-height) }`
+   * rule elsewhere (sticky-header.css) targets every <header> tag on
+   * the page, including this shared drawer header used by the cart,
+   * search, and mobile-menu overlays. Pin it back to content height
+   * here so none of the three drawers inherit the site header's
+   * height. */
+  height: auto;
+  min-height: 0;
+  flex-basis: auto;
 }
 
 .overlay aside > header h3 {
@@ -329,6 +338,13 @@
   cursor: not-allowed;
 }
 
+.cart-line-low-stock {
+  font-size: 0.71875rem;
+  font-weight: 600;
+  color: #b5651d;
+  margin: 0.25rem 0 0;
+}
+
 /* Cross-sell */
 .cart-recommendations {
   padding: 1.125rem 0 0.375rem;
@@ -458,6 +474,55 @@
 
 .cart-tax-note a {
   color: var(--cart-muted);
+}
+
+.cart-savings {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--cart-green);
+  margin: 0 0 0.625rem;
+}
+
+.cart-shipping-time {
+  font-size: 0.75rem;
+  color: var(--cart-muted);
+  margin: 0 0 0.5rem;
+}
+
+.cart-urgency-note {
+  font-size: 0.75rem;
+  color: var(--cart-muted);
+  font-style: italic;
+  margin: 0 0 0.875rem;
+}
+
+.cart-gift-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--cart-ink);
+  margin-bottom: 1rem;
+}
+
+.cart-gift-wrap input {
+  margin: 0;
+}
+
+.cart-trust-signals {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  font-size: 0.71875rem;
+  color: var(--cart-muted);
+}
+
+.cart-trust-signals li::before {
+  content: '✓ ';
+  color: var(--cart-green);
 }
 
 .cart-note-link {

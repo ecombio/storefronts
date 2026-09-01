@@ -9,12 +9,19 @@ type CartSummaryProps = {
   layout: CartLayout;
 };
 
+// TODO: replace with the real gift-wrapping product variant GID
+// (Settings > Products, or `shopify product list` in the CLI).
+// Until this is a real variant ID, the checkbox will submit but
+// Shopify will reject the LinesAdd with a "variant not found" error.
+const GIFT_WRAP_VARIANT_ID = 'gid://shopify/ProductVariant/REPLACE_ME';
+
 export function CartSummary({cart, layout}: CartSummaryProps) {
   const isAside = layout === 'aside';
   const className = isAside ? 'cart-summary-aside' : 'cart-summary-page';
   const summaryId = useId();
   const discountsHeadingId = useId();
   const discountCodeInputId = useId();
+  const savings = getTotalSavings(cart);
 
   return (
     <div aria-labelledby={summaryId} className={className}>
@@ -47,12 +54,24 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
         </>
       )}
 
+      {savings && (
+        <p className="cart-savings">
+          You&rsquo;re saving <Money data={savings} />
+        </p>
+      )}
+
       {isAside && (
         <p className="cart-tax-note">
           Tax included. <a href="/policies/shipping">Shipping</a> calculated
           at checkout.
         </p>
       )}
+
+      <p className="cart-shipping-time">Ships within 2-3 business days</p>
+
+      <p className="cart-urgency-note">
+        Items in your cart aren&rsquo;t reserved — complete checkout soon.
+      </p>
 
       {/* Discount codes remain available on the full cart page. They're
           intentionally hidden in the drawer to keep it focused —
@@ -67,10 +86,111 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
         />
       )}
 
+      <CartGiftWrap cart={cart} />
+
       <CartNote note={cart?.note} isAside={isAside} />
+
+      <CartTrustSignals />
 
       <CartCheckoutActions checkoutUrl={cart?.checkoutUrl} isAside={isAside} />
     </div>
+  );
+}
+
+/**
+ * Sums per-line savings from compareAtAmountPerQuantity vs amountPerQuantity.
+ *
+ * REQUIRES: your cart line GraphQL fragment (likely app/lib/fragments.ts)
+ * to select these fields on each line's `cost`:
+ *
+ *   cost {
+ *     amountPerQuantity { amount currencyCode }
+ *     compareAtAmountPerQuantity { amount currencyCode }
+ *     subtotalAmount { amount currencyCode }
+ *     totalAmount { amount currencyCode }
+ *   }
+ *
+ * If `compareAtAmountPerQuantity` isn't in the fragment yet, this
+ * silently returns null and the savings line just won't render —
+ * nothing will break, but add the field above to turn it on.
+ */
+function getTotalSavings(cart: OptimisticCart<CartApiQueryFragment | null>) {
+  const lines = cart?.lines?.nodes ?? [];
+  let total = 0;
+  let currencyCode: string | null = null;
+
+  for (const line of lines) {
+    const cost = line?.cost as
+      | {
+          amountPerQuantity?: {amount: string; currencyCode: string};
+          compareAtAmountPerQuantity?: {amount: string; currencyCode: string};
+        }
+      | undefined;
+    const compareAt = cost?.compareAtAmountPerQuantity;
+    const amount = cost?.amountPerQuantity;
+    if (!compareAt?.amount || !amount?.amount) continue;
+
+    const diff = (Number(compareAt.amount) - Number(amount.amount)) * line.quantity;
+    if (diff > 0) {
+      total += diff;
+      currencyCode = compareAt.currencyCode;
+    }
+  }
+
+  return total > 0 && currencyCode
+    ? {amount: total.toFixed(2), currencyCode}
+    : null;
+}
+
+/**
+ * Gift wrapping toggle. Adds/removes a single line for a fixed
+ * gift-wrap product variant. Needs GIFT_WRAP_VARIANT_ID above set to
+ * a real variant GID before this will work end to end.
+ */
+function CartGiftWrap({
+  cart,
+}: {
+  cart: OptimisticCart<CartApiQueryFragment | null>;
+}) {
+  const fetcher = useFetcher({key: 'cart-gift-wrap'});
+  const giftWrapLine = cart?.lines?.nodes?.find(
+    (line) => line.merchandise?.id === GIFT_WRAP_VARIANT_ID,
+  );
+  const checked = Boolean(giftWrapLine);
+  const checkboxId = useId();
+
+  return (
+    <CartForm
+      route="/cart"
+      fetcherKey="cart-gift-wrap"
+      action={checked ? CartForm.ACTIONS.LinesRemove : CartForm.ACTIONS.LinesAdd}
+      inputs={
+        checked
+          ? {lineIds: [giftWrapLine!.id]}
+          : {lines: [{merchandiseId: GIFT_WRAP_VARIANT_ID, quantity: 1}]}
+      }
+    >
+      <div className="cart-gift-wrap">
+        <input
+          id={checkboxId}
+          type="checkbox"
+          checked={checked}
+          disabled={fetcher.state !== 'idle'}
+          onChange={(event) => event.currentTarget.form?.requestSubmit()}
+        />
+        <label htmlFor={checkboxId}>Add gift wrapping</label>
+      </div>
+    </CartForm>
+  );
+}
+
+/** Small reassurance row shown just above the checkout button. */
+function CartTrustSignals() {
+  return (
+    <ul className="cart-trust-signals">
+      <li>Secure checkout</li>
+      <li>Free returns within 30 days</li>
+    </ul>
   );
 }
 

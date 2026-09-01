@@ -12,6 +12,8 @@ import type {
 
 export type CartLine = OptimisticCartLine<CartApiQueryFragment>;
 
+const LOW_STOCK_THRESHOLD = 5;
+
 /**
  * A single line item in the cart. It displays the product image, title, price.
  * It also provides controls to update the quantity or remove the line item.
@@ -33,6 +35,22 @@ export function CartLineItem({
   const {close} = useAside();
   const lineItemChildren = childrenMap[id];
   const childrenLabelId = `cart-line-children-${id}`;
+
+  // REQUIRES: your cart line fragment to select `quantityAvailable` on
+  // the merchandise variant, e.g.:
+  //   merchandise {
+  //     ... on ProductVariant {
+  //       quantityAvailable
+  //     }
+  //   }
+  // Until that's added, quantityAvailable is undefined and this badge
+  // just stays hidden — nothing breaks.
+  const quantityAvailable = (merchandise as {quantityAvailable?: number})
+    .quantityAvailable;
+  const isLowStock =
+    typeof quantityAvailable === 'number' &&
+    quantityAvailable > 0 &&
+    quantityAvailable <= LOW_STOCK_THRESHOLD;
 
   return (
     <li key={id} className="cart-line">
@@ -80,6 +98,12 @@ export function CartLineItem({
             )}
 
             <ProductPrice price={line?.cost?.totalAmount} />
+
+            {isLowStock && (
+              <p className="cart-line-low-stock" role="status">
+                Only {quantityAvailable} left in stock
+              </p>
+            )}
           </div>
 
           <div className="cart-line-actions">

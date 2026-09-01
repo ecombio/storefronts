@@ -1,0 +1,630 @@
+
+
+===== C:\Users\Admin\Shopify\Storefronts\Headless\app\lib\recommendations.server.ts =====
+
+// app/lib/recommendations.server.ts
+
+import {CacheShort} from '@shopify/hydrogen';
+import {PRODUCT_CARD_FRAGMENT} from '~/graphql/ProductCardFragment';
+import type {HydrogenContext} from '~/lib/context';
+import type {
+  ProductCardFragment,
+  ProductRecommendationsQuery,
+  ProductRecommendationIntent,
+} from 'storefrontapi.generated';
+
+const PRODUCT_RECOMMENDATIONS_QUERY = `#graphql
+  query ProductRecommendations(
+    $productId: ID!
+    $intent: ProductRecommendationIntent
+    $country: CountryCode
+    $language: LanguageCode
+  ) @inContext(country: $country, language: $language) {
+    productRecommendations(productId: $productId, intent: $intent) {
+      ...ProductCard
+    }
+  }
+  ${PRODUCT_CARD_FRAGMENT}
+` as const;
+
+export interface GetProductRecommendationsOptions {
+  intent?: ProductRecommendationIntent;
+}
+
+export function getProductRecommendations(
+  context: HydrogenContext,
+  productId: string,
+  {intent = 'RELATED'}: GetProductRecommendationsOptions = {},
+): Promise<ProductCardFragment[]> {
+  return context.storefront
+    .query(PRODUCT_RECOMMENDATIONS_QUERY, {
+      variables: {productId, intent},
+      cache: CacheShort(),
+    })
+    .then((data: ProductRecommendationsQuery) =>
+      (data.productRecommendations ?? []).filter(
+        (product) => product.id !== productId,
+      ),
+    )
+    .catch((error: Error) => {
+      console.error(
+        `[recommendations] ${intent} lookup failed for product ${productId}:`,
+        error,
+      );
+      return [];
+    });
+}
+
+
+===== C:\Users\Admin\Shopify\Storefronts\Headless\app\assets\quickview.css =====
+
+/* app/assets/quickview.css
+ *
+ * Overrides the shared Aside overlay (app/components/Aside.tsx) for
+ * type="quickview" — turns the default right-edge slide-in drawer
+ * (see cart-drawer.css) into a centered modal with an image/info
+ * two-column layout. Scoped entirely to [data-type='quickview'] so
+ * cart, search, and mobile menu are unaffected.
+ *
+ * Import this AFTER cart-drawer.css so these overrides win.
+ */
+
+.overlay[data-type='quickview'] aside {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  right: auto;
+  height: auto;
+  max-height: 90vh;
+  width: min(900px, 92vw);
+  transform: translate(-50%, -50%) scale(0.96);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  transition: transform 200ms ease, opacity 200ms ease;
+  opacity: 0;
+}
+
+.overlay[data-type='quickview'].expanded aside {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+/* Header becomes a floating close button only — the product title
+   is already rendered inside .quickview__body, so the header's <h3>
+   (kept for aria-labelledby) is visually hidden rather than removed. */
+.overlay[data-type='quickview'] aside > header {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  border-bottom: none;
+  padding: 0.75rem;
+  background: transparent;
+}
+
+.overlay[data-type='quickview'] aside > header h3 {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.overlay[data-type='quickview'] aside > header .close {
+  background: var(--color-background, #fff);
+  border-radius: 999px;
+  width: 2rem;
+  height: 2rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.overlay[data-type='quickview'] aside > main {
+  padding: 0;
+  overflow-y: auto;
+}
+
+/* ---- Content layout ---- */
+
+.quickview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100%;
+}
+
+.quickview__media {
+  position: relative;
+  background: var(--color-surface-subtle, #f5f5f5);
+}
+
+.quickview__img,
+.quickview__img-placeholder {
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  object-fit: cover;
+  display: block;
+}
+
+.quickview__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 2.5rem 2rem 2rem;
+}
+
+.quickview__vendor {
+  font-size: 0.8rem;
+  color: var(--color-text-subtle, #6b6b6b);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.quickview__title {
+  font-size: 1.375rem;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.quickview__reviews {
+  margin-bottom: 0.25rem;
+}
+
+.quickview__pricing {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.quickview__price--compare {
+  color: var(--color-text-subtle, #6b6b6b);
+  font-size: 0.95rem;
+}
+
+.quickview__price--sale {
+  color: var(--color-sale, #d3242f);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.quickview__full-details-link {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  text-decoration: underline;
+  color: var(--color-text-subtle, #6b6b6b);
+  align-self: flex-start;
+}
+
+.quickview__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+  color: var(--color-text-subtle, #6b6b6b);
+}
+
+/* ---- Recommendations carousel ----
+ * .product-carousel (product-carousel.css) is unmodified — this just
+ * adds a divider/spacing when it renders inside the quickview modal's
+ * scrollable <main>, and tightens its padding since the modal is
+ * already narrower than the full-width sections it's normally used in.
+ */
+.overlay[data-type='quickview'] .product-carousel {
+  padding-top: 1.5rem;
+  padding-inline: 2rem;
+  border-top: 1px solid var(--color-border-subtle, #e5e5e5);
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 700px) {
+  .overlay[data-type='quickview'] .product-carousel {
+    padding-inline: 1.5rem;
+  }
+}
+
+/* When the RELATED/COMPLEMENTARY split gives QuickView.tsx two tabs
+   to show, the carousel's own <h2> title ("Recommended for you") is
+   redundant next to the tab row — visually hidden but kept in the DOM
+   so .product-carousel__tabs' aria-controls reference still resolves.
+   :has() scopes this to the tabbed case only, so the single-carousel
+   fallback (one intent came back empty) keeps its visible title. */
+.overlay[data-type='quickview']
+  .product-carousel:has(.product-carousel__tabs)
+  .product-carousel__title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Underline tab style, matching the Description/Features/Sizing/
+   Reviews tab pattern used elsewhere on the PDP — replaces
+   product-carousel.css's default pill tabs for this instance only. */
+.overlay[data-type='quickview'] .product-carousel__tabs {
+  gap: 1.5rem;
+  border-bottom: 1px solid var(--color-border-subtle, #e5e5e5);
+}
+
+.overlay[data-type='quickview'] .product-carousel__tab {
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0 0 0.75rem;
+  margin-bottom: -1px; /* sits flush on the row's own border-bottom */
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-text-subtle, #6b6b6b);
+  border-bottom: 2px solid transparent;
+}
+
+.overlay[data-type='quickview'] .product-carousel__tab.is-active {
+  color: var(--color-text, #111);
+  font-weight: 700;
+  border-bottom-color: var(--color-text, #111);
+}
+
+/* ---- Responsive: stack on small screens, full-screen sheet ---- */
+
+@media (max-width: 700px) {
+  .overlay[data-type='quickview'] aside {
+    width: 100vw;
+    max-height: 100vh;
+    height: 100vh;
+    border-radius: 0;
+    top: 0;
+    left: 0;
+    transform: none;
+  }
+
+  .overlay[data-type='quickview'].expanded aside {
+    transform: none;
+  }
+
+  .quickview {
+    grid-template-columns: 1fr;
+  }
+
+  .quickview__img,
+  .quickview__img-placeholder {
+    min-height: 260px;
+  }
+
+  .quickview__body {
+    padding: 1.5rem;
+  }
+}
+
+
+===== C:\Users\Admin\Shopify\Storefronts\Headless\app\assets\compare-bar.css =====
+
+/* app/assets/compare-bar.css */
+
+.compare-bar,
+.compare-bar *,
+.compare-bar *::before,
+.compare-bar *::after {
+  box-sizing: border-box;
+}
+
+.compare-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  background: #ffffff;
+  border-top: 1px solid #E5E7EB;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.06);
+}
+
+.compare-bar__list {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.compare-bar__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  max-width: 160px;
+  padding: 4px 8px 4px 4px;
+  border: 1px solid #E5E7EB;
+  border-radius: 20px;
+  background: #F9FAFB;
+}
+
+.compare-bar__thumb {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.compare-bar__thumb--placeholder {
+  background: #E5E7EB;
+}
+
+.compare-bar__title {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.compare-bar__remove {
+  order: 2;
+  width: 16px;
+  height: 16px;
+  border: none;
+  border-radius: 50%;
+  background: #E5E7EB;
+  color: #374151;
+  font-size: 0.7rem;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.compare-bar__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.compare-bar__clear {
+  background: none;
+  border: none;
+  font-size: 0.78rem;
+  color: #6B7280;
+  cursor: pointer;
+  text-decoration: underline;
+  white-space: nowrap;
+}
+
+.compare-bar__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 20px;
+  background: #111827;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.compare-bar__cta:hover {
+  background: #1F2937;
+}
+
+@media (max-width: 639px) {
+  .compare-bar__item {
+    max-width: 110px;
+  }
+  .compare-bar__title {
+    display: none; /* icon-only on very small screens to save space */
+  }
+}
+
+
+===== C:\Users\Admin\Shopify\Storefronts\Headless\app\assets\compare-page.css =====
+
+/* app/assets/compare-page.css */
+
+.compare-page {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 24px 16px 80px; /* bottom padding clears the fixed compare-bar if still visible */
+}
+
+.compare-page--empty {
+  text-align: center;
+  padding-top: 80px;
+}
+
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+}
+
+.compare-table th,
+.compare-table td {
+  border: 1px solid #E5E7EB;
+  padding: 12px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.compare-table th[scope='row'] {
+  text-align: left;
+  background: #F9FAFB;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.compare-table__row-label {
+  border: none;
+}
+
+.compare-table__remove {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: #E5E7EB;
+  color: #374151;
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.compare-table__img {
+  width: 90px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin: 0 auto;
+  display: block;
+}
+
+.compare-table__img-placeholder {
+  width: 90px;
+  height: 90px;
+  background: #F3F4F6;
+  border-radius: 6px;
+  margin: 0 auto;
+}
+
+
+===== C:\Users\Admin\Shopify\Storefronts\Headless\app\assets\wishlist-page.css =====
+
+/* app/assets/wishlist-page.css
+ *
+ * NOTE: written fresh — compare-page.css's content wasn't available to
+ * adapt from directly. This uses a browsable grid (rather than
+ * compare's side-by-side table, which doesn't fit a wishlist's
+ * open-ended item count) but reuses product-card.css's token names
+ * and radii so it reads as the same design language.
+ */
+
+.wishlist-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px var(--content-padding-mobile, 16px) 64px;
+}
+
+@media (min-width: 640px) {
+  .wishlist-page {
+    padding-inline: var(--content-padding-tablet, 24px);
+  }
+}
+
+@media (min-width: 1024px) {
+  .wishlist-page {
+    padding-inline: var(--content-padding-desktop, 32px);
+  }
+}
+
+.wishlist-page h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+.wishlist-page--empty {
+  text-align: center;
+  padding-top: 64px;
+  padding-bottom: 64px;
+}
+
+.wishlist-page--empty p {
+  color: var(--color-ink-muted, #6b7280);
+  margin-bottom: 16px;
+}
+
+.wishlist-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .wishlist-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .wishlist-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+}
+
+.wishlist-grid__item {
+  position: relative;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--color-surface, #ffffff);
+}
+
+.wishlist-grid__remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(4px);
+  color: var(--color-ink-muted, #6b7280);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wishlist-grid__remove:hover {
+  background: #fff;
+  color: #ef4444;
+}
+
+.wishlist-grid__link {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+}
+
+.wishlist-grid__img,
+.wishlist-grid__img-placeholder {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  background: #f9fafb;
+  display: block;
+}
+
+.wishlist-grid__title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-ink, #111827);
+  padding: 10px 12px 2px;
+  line-height: 1.35;
+}
+
+.wishlist-grid__price {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-ink, #111827);
+  padding: 0 12px 12px;
+}
