@@ -165,6 +165,49 @@
   }
 }
 
+/* When the RELATED/COMPLEMENTARY split gives QuickView.tsx two tabs
+   to show, the carousel's own <h2> title ("Recommended for you") is
+   redundant next to the tab row — visually hidden but kept in the DOM
+   so .product-carousel__tabs' aria-controls reference still resolves.
+   :has() scopes this to the tabbed case only, so the single-carousel
+   fallback (one intent came back empty) keeps its visible title. */
+.overlay[data-type='quickview']
+  .product-carousel:has(.product-carousel__tabs)
+  .product-carousel__title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Underline tab style, matching the Description/Features/Sizing/
+   Reviews tab pattern used elsewhere on the PDP — replaces
+   product-carousel.css's default pill tabs for this instance only. */
+.overlay[data-type='quickview'] .product-carousel__tabs {
+  gap: 1.5rem;
+  border-bottom: 1px solid var(--color-border-subtle, #e5e5e5);
+}
+
+.overlay[data-type='quickview'] .product-carousel__tab {
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0 0 0.75rem;
+  margin-bottom: -1px; /* sits flush on the row's own border-bottom */
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-text-subtle, #6b6b6b);
+  border-bottom: 2px solid transparent;
+}
+
+.overlay[data-type='quickview'] .product-carousel__tab.is-active {
+  color: var(--color-text, #111);
+  font-weight: 700;
+  border-bottom-color: var(--color-text, #111);
+}
+
 /* ---- Responsive: stack on small screens, full-screen sheet ---- */
 
 @media (max-width: 700px) {

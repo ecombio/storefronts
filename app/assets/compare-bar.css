@@ -1,0 +1,127 @@
+/* app/assets/compare-bar.css */
+
+.compare-bar,
+.compare-bar *,
+.compare-bar *::before,
+.compare-bar *::after {
+  box-sizing: border-box;
+}
+
+.compare-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  background: #ffffff;
+  border-top: 1px solid #E5E7EB;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.06);
+}
+
+.compare-bar__list {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.compare-bar__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  max-width: 160px;
+  padding: 4px 8px 4px 4px;
+  border: 1px solid #E5E7EB;
+  border-radius: 20px;
+  background: #F9FAFB;
+}
+
+.compare-bar__thumb {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.compare-bar__thumb--placeholder {
+  background: #E5E7EB;
+}
+
+.compare-bar__title {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.compare-bar__remove {
+  order: 2;
+  width: 16px;
+  height: 16px;
+  border: none;
+  border-radius: 50%;
+  background: #E5E7EB;
+  color: #374151;
+  font-size: 0.7rem;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.compare-bar__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.compare-bar__clear {
+  background: none;
+  border: none;
+  font-size: 0.78rem;
+  color: #6B7280;
+  cursor: pointer;
+  text-decoration: underline;
+  white-space: nowrap;
+}
+
+.compare-bar__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 20px;
+  background: #111827;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.compare-bar__cta:hover {
+  background: #1F2937;
+}
+
+@media (max-width: 639px) {
+  .compare-bar__item {
+    max-width: 110px;
+  }
+  .compare-bar__title {
+    display: none; /* icon-only on very small screens to save space */
+  }
+}

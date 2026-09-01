@@ -5,14 +5,16 @@
 // /api/quickview/:handle, and renders it inside the shared <Aside>
 // shell (type="quickview") as a centered modal (see quickview.css).
 //
-// Also renders a "You may also like" recommendations carousel below
-// the product details, using the same deferred recommended-products
-// promise + <Suspense>/<Await> pattern as products.$handle.tsx, so the
-// modal opens immediately and the carousel streams in once ready.
-// Clicking "Quick view" on a recommended product re-dispatches
-// 'quickview:open' with the new handle — the listener below is
-// already mounted, so this just swaps the modal's contents in place
-// rather than opening a second modal.
+// Also renders a recommendations carousel below the product details,
+// split into "You may also like" (RELATED) / "Frequently bought
+// together" (COMPLEMENTARY) tabs — using the same deferred
+// recommended-products promise + <Suspense>/<Await> pattern as
+// products.$handle.tsx, so the modal opens immediately and the
+// carousel streams in once ready. If only one intent returns results,
+// falls back to a single untabbed carousel. Clicking "Quick view" on
+// a recommended product re-dispatches 'quickview:open' with the new
+// handle — the listener below is already mounted, so this just swaps
+// the modal's contents in place rather than opening a second modal.
 //
 // Mount this once, globally, in PageLayout.tsx alongside the other
 // <Aside> instances (cart, search, mobile) — NOT inside ProductCard.
@@ -28,6 +30,7 @@ import {Aside, useAside} from '~/components/Aside';
 import {StarRating} from '~/snippets/StarRating';
 import {AddToCartButton} from '~/snippets/AddToCartButton';
 import {ProductCarousel} from '~/sections/ProductCarousel';
+import type {ProductCarouselTab} from '~/sections/ProductCarousel';
 
 // Shopify's standard `reviews.rating` metafield value is a JSON string:
 // {"value":"4.3","scale_min":"1","scale_max":"5"}
@@ -52,7 +55,7 @@ export function QuickView() {
   const {type, open} = useAside();
   const fetcher = useFetcher<{
     product: any;
-    recommended: Promise<ProductCardFragment[]>;
+    recommended: Promise<[ProductCardFragment[], ProductCardFragment[]]>;
   }>();
   const [handle, setHandle] = useState<string | null>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
@@ -110,7 +113,7 @@ function QuickViewContent({
   onSelectOption,
 }: {
   product: any;
-  recommended?: Promise<ProductCardFragment[]>;
+  recommended?: Promise<[ProductCardFragment[], ProductCardFragment[]]>;
   onSelectOption: (variantUriQuery: string) => void;
 }) {
   const {open, close} = useAside();
@@ -261,11 +264,41 @@ function QuickViewContent({
       {recommended && (
         <Suspense fallback={null}>
           <Await resolve={recommended} errorElement={null}>
-            {(items) =>
-              items.length > 0 ? (
-                <ProductCarousel title="You may also like" products={items} />
-              ) : null
-            }
+            {([related, complementary]) => {
+              const tabs: ProductCarouselTab[] = [];
+              if (related.length > 0) {
+                tabs.push({
+                  id: 'related',
+                  label: 'You may also like',
+                  products: related,
+                });
+              }
+              if (complementary.length > 0) {
+                tabs.push({
+                  id: 'complementary',
+                  label: 'Frequently bought together',
+                  products: complementary,
+                });
+              }
+
+              if (tabs.length === 0) return null;
+
+              // Only one intent came back — a single tab would just
+              // repeat its own label with nothing to switch between,
+              // so fall back to an untabbed carousel instead.
+              if (tabs.length === 1) {
+                return (
+                  <ProductCarousel
+                    title={tabs[0].label}
+                    products={tabs[0].products}
+                  />
+                );
+              }
+
+              return (
+                <ProductCarousel title="Recommended for you" tabs={tabs} />
+              );
+            }}
           </Await>
         </Suspense>
       )}

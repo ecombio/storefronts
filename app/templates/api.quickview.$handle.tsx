@@ -31,16 +31,25 @@ export async function loader({context, params, request}: LoaderFunctionArgs) {
     throw new Response('Product not found', {status: 404});
   }
 
-  // NOTE: not wrapped in Response.json() — returning a plain object
-  // (with `recommended` as an unawaited promise) lets React Router's
-  // single-fetch/turbo-stream transport stream it to the fetcher, the
-  // same way products.$handle.tsx streams its own `recommended` field.
-  // Wrapping in Response.json() would force it to serialize eagerly,
-  // which means awaiting it here and blocking the modal on it.
-  return {
-    product,
-    recommended: getProductRecommendations(context, product.id),
-  };
+  // Fetches both of Shopify's recommendation intents in parallel so
+  // QuickView.tsx can offer them as separate tabs ("You may also
+  // like" / "Frequently bought together") rather than a single mixed
+  // list — Promise.all here is not awaited, so the pair still streams
+  // in together once both resolve.
+  const recommended = Promise.all([
+    getProductRecommendations(context, product.id, {intent: 'RELATED'}),
+    getProductRecommendations(context, product.id, {intent: 'COMPLEMENTARY'}),
+  ]);
+
+  // TEMP DEBUG — remove once tabs are confirmed working. Logs how
+  // many products each intent returned for this handle.
+  recommended.then(([related, complementary]) => {
+    console.log(
+      `[quickview] ${handle} — RELATED: ${related.length}, COMPLEMENTARY: ${complementary.length}`,
+    );
+  });
+
+  return {product, recommended};
 }
 
 const QUICKVIEW_VARIANT_FRAGMENT = `#graphql

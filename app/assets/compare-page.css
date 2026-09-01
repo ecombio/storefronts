@@ -1,0 +1,67 @@
+/* app/assets/compare-page.css */
+
+.compare-page {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 24px 16px 80px; /* bottom padding clears the fixed compare-bar if still visible */
+}
+
+.compare-page--empty {
+  text-align: center;
+  padding-top: 80px;
+}
+
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+}
+
+.compare-table th,
+.compare-table td {
+  border: 1px solid #E5E7EB;
+  padding: 12px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.compare-table th[scope='row'] {
+  text-align: left;
+  background: #F9FAFB;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.compare-table__row-label {
+  border: none;
+}
+
+.compare-table__remove {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: #E5E7EB;
+  color: #374151;
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.compare-table__img {
+  width: 90px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin: 0 auto;
+  display: block;
+}
+
+.compare-table__img-placeholder {
+  width: 90px;
+  height: 90px;
+  background: #F3F4F6;
+  border-radius: 6px;
+  margin: 0 auto;
+}

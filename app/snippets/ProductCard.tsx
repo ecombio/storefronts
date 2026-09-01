@@ -27,7 +27,7 @@ interface CompareEntry {
   handle: string;
   title: string;
   image: string;
-  price: string;
+  price: {amount: string; currencyCode: string} | null;
 }
 
 interface WishlistEntry {
@@ -141,7 +141,7 @@ export function ProductCard({product, showVendor = true, loading = 'lazy'}: Prod
         handle: product.handle,
         title: product.title,
         image: image?.url ?? '',
-        price: price ? `${price.amount} ${price.currencyCode}` : '',
+        price: price ? {amount: price.amount, currencyCode: price.currencyCode} : null,
       });
     } else if (idx !== -1) {
       list.splice(idx, 1);
