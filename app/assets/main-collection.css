@@ -6,6 +6,25 @@
 
 .main-collection {
   position: relative;
+  /* Matches the header's px-4 sm:px-6 lg:px-8 scale (16/24/32px) at the
+     same breakpoints (theme.css --bp-sm/--bp-lg) — previously this had
+     no horizontal padding of its own, so it depended on whatever
+     wrapped it, unlike collection-hero.css which had a separate,
+     narrower centered container. Both now share the same full-width +
+     padding treatment as the header. */
+  padding-inline: var(--content-padding-mobile);
+}
+
+@media (min-width: 640px) {
+  .main-collection {
+    padding-inline: var(--content-padding-tablet);
+  }
+}
+
+@media (min-width: 1024px) {
+  .main-collection {
+    padding-inline: var(--content-padding-desktop);
+  }
 }
 
 .collection-layout {

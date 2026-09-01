@@ -1,8 +1,9 @@
 /* app/assets/collection-hero.css */
 
 #collection-hero {
-  max-width: var(--content-max-width);
-  margin-inline: auto;
+  /* Full-width, matching the header (which has no max-width cap) —
+     padding alone creates the "content column" look now, rather than
+     a centered fixed-width container. */
   padding-inline: var(--content-padding-mobile);
   padding-block: 2rem 1.5rem;
 }
@@ -10,7 +11,7 @@
 #collection-hero .collection-title {
   margin: 0 0 0.75rem;
   font-size: 28px;
-  font-weight: 700; /* was 800 — matches the filters panel title weight */
+  font-weight: 700; /* was 800 — matchesthe filters panel title weight */
   line-height: 1.2;
   color: var(--color-ink, #111827); /* was var(--gs-black), which is undefined
                                         here — that variable is scoped inside
@@ -18,26 +19,26 @@
                                         this element */
 }
 
-#collection-hero .collection-description {
+#collection-hero .collection-description{
   max-width: 60ch;
   color: var(--color-ink-secondary, #374151); /* was var(--gs-black), same bug */
 }
 
-#collection-hero .collection-description p {
+#collection-hero .collection-descriptionp {
   margin: 0 0 1rem;
   line-height: 1.6;
 }
 
-#collection-hero .collection-description a {
+#collection-hero .collection-descriptiona {
   color: inherit;
   text-decoration: underline;
 }
 
-#collection-hero .collection-description a:hover {
+#collection-hero .collection-descriptiona:hover {
   opacity: 0.7;
 }
 
-#collection-hero .collection-description > *:last-child {
+#collection-hero .collection-description> *:last-child {
   margin-bottom: 0;
 }
 
