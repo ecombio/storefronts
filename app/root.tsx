@@ -91,11 +91,6 @@ export async function loader(args: Route.LoaderArgs) {
     ...deferredData,
     ...criticalData,
     publicStoreDomain: env.PUBLIC_STORE_DOMAIN,
-    algolia: {
-      appId: env.PUBLIC_ALGOLIA_APP_ID,
-      searchKey: env.PUBLIC_ALGOLIA_SEARCH_KEY,
-      indexName: env.PUBLIC_ALGOLIA_INDEX_NAME,
-    },
     shop: getShopAnalytics({
       storefront,
       publicStorefrontId: env.PUBLIC_STOREFRONT_ID,

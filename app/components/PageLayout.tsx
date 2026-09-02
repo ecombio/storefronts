@@ -13,7 +13,6 @@ import {
 import {SearchResultsPredictive} from '~/snippets/SearchResultsPredictive';
 import {QuickView} from '~/snippets/QuickView'; // ADDED
 import {CompareBar} from '~/snippets/CompareBar'; // ADDED
-import type {AlgoliaConfig} from '~/lib/algolia';
 import type {CollectionImage} from '~/config/Header.constants'; // ADDED — for collectionImages prop typing
 
 interface PageLayoutProps {
@@ -22,7 +21,6 @@ interface PageLayoutProps {
   header: HeaderQuery;
   isLoggedIn: Promise<boolean>;
   publicStoreDomain: string;
-  algolia: AlgoliaConfig;
   collectionImages?: Record<string, CollectionImage>; // ADDED — was silently dropped before, never reached Header
   children?: React.ReactNode;
 }
@@ -34,7 +32,6 @@ export function PageLayout({
   header,
   isLoggedIn,
   publicStoreDomain,
-  algolia,
   collectionImages, // ADDED
 }: PageLayoutProps) {
   return (
@@ -54,7 +51,6 @@ export function PageLayout({
           cart={cart}
           isLoggedIn={isLoggedIn}
           publicStoreDomain={publicStoreDomain}
-          algolia={algolia}
           collectionImages={collectionImages} // ADDED — this was the missing link
         />
       )}

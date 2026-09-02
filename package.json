@@ -14,11 +14,9 @@
   },
   "prettier": "@shopify/prettier-config",
   "dependencies": {
-    "@algolia/requester-fetch": "^5.57.0",
     "@base-ui/react": "^1.7.0",
     "@fontsource-variable/inter": "^5.3.0",
     "@shopify/hydrogen": "2026.4.5",
-    "algoliasearch": "^5.57.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "graphql": "^16.10.0",
