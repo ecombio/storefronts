@@ -7,7 +7,6 @@ import {
   resolveUrl,
   SHOWCASE_SEE_ALL,
   SHOWCASE_TIPS,
-  SUBMENU_IMAGES,
   type CollectionImage,
   type MenuItem,
 } from '~/config/Header.constants';
@@ -135,7 +134,12 @@ function DrawerPanel({
                 if (!sub.url) return null;
                 const url = resolveUrl(sub.url, publicStoreDomain, primaryDomainUrl);
                 const liveImage = sub.resourceId ? collectionImages?.[sub.resourceId] : undefined;
-                const imageSrc = liveImage?.url ?? SUBMENU_IMAGES[sub.title];
+                // Live Shopify CDN image only — no static/hardcoded
+                // fallback URL. If a collection has no image set in
+                // Admin, or resourceId isn't a Collection, we fall
+                // through to the generic <Bike> icon below instead of
+                // a second, independently-stale URL source.
+                const imageSrc = liveImage?.url;
                 const imageAlt = liveImage?.altText ?? sub.title;
                 return (
                   <NavLink
