@@ -7,7 +7,7 @@
 import {useLoaderData} from 'react-router';
 import type {Route} from './+types/blogs.$blogHandle.$articleHandle';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
-import {extractShoppableProductIds, injectShoppableProducts} from '~/lib/shoppable-embeds';
+import {extractShoppableProductIds, injectShoppableProducts} from '~/components/blogs/ProductGallery';
 import {Article} from '~/sections/Article';
 import {ARTICLE_QUERY, SHOPPABLE_PRODUCTS_QUERY} from '~/graphql/blog/ArticleQuery';
 import type {ProductCardFragment} from 'storefrontapi.generated';

@@ -10,7 +10,7 @@ import {useEffect, useRef, useState} from 'react';
 import {createPortal} from 'react-dom';
 import {Image} from '@shopify/hydrogen';
 import {ProductCard} from '~/snippets/ProductCard';
-import {Solo, Duo, Trio} from '~/snippets/RowSnippets';
+import {Solo, Duo, Trio} from '~/components/blogs/ProductGallery';
 import type {ProductCardFragment} from 'storefrontapi.generated';
 
 // Describes one shoppable-embed slot found in the rendered article
