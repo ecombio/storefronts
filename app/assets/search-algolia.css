@@ -1,0 +1,89 @@
+/* Algolia InstantSearch — /search page layout
+   None of the existing CSS files (search-bar.css etc.) style these classes
+   since they're new, introduced by AlgoliaInstantSearch.client.tsx and
+   search.tsx. This is a minimal, functional starting point — adjust to
+   match your theme's design system. */
+
+.search-page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.search-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .search-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.search-facets h3 {
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 1.5rem 0 0.5rem;
+}
+
+.search-facets h3:first-child {
+  margin-top: 0;
+}
+
+.search-results {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* react-instantsearch's <Hits> renders a <ul class="ais-Hits-list"> of
+   <li class="ais-Hits-item"> — targeting those directly since ProductHit
+   itself renders a bare <Link>, not a wrapping element. */
+.ais-Hits-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.product-hit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.product-hit img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 4px;
+  background: #f2f2f2;
+}
+
+.product-hit h3 {
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.product-hit-vendor {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.product-hit-price {
+  font-weight: 600;
+}
+
+.search-loading {
+  padding: 2rem 0;
+  color: #666;
+  font-size: 0.9rem;
+}

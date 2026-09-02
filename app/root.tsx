@@ -49,6 +49,7 @@ import quickviewStyles from '~/assets/quickview.css?url'; // ADDED — must load
 import compareBarStyles from '~/assets/compare-bar.css?url'; // ADDED
 import comparePageStyles from '~/assets/compare-page.css?url'; // ADDED
 import wishlistPageStyles from '~/assets/wishlist-page.css?url'; // ADDED — /wishlist page still needs this; wishlist-bar.css removed along with WishlistBar
+import searchAlgoliaStyles from '~/assets/search-algolia.css?url'; // ADDED — styles the /search page's Algolia InstantSearch layout (search-page, search-layout, search-facets, product-hit, etc.)
 import tailwindCss from '~/assets/tailwind.css?url';
 import {PageLayout} from './components/PageLayout';
 
@@ -91,6 +92,11 @@ export async function loader(args: Route.LoaderArgs) {
     ...deferredData,
     ...criticalData,
     publicStoreDomain: env.PUBLIC_STORE_DOMAIN,
+    algolia: {
+      appId: env.PUBLIC_ALGOLIA_APP_ID,
+      searchKey: env.PUBLIC_ALGOLIA_SEARCH_KEY,
+      indexName: env.PUBLIC_ALGOLIA_INDEX_NAME,
+    },
     shop: getShopAnalytics({
       storefront,
       publicStorefrontId: env.PUBLIC_STOREFRONT_ID,
@@ -228,6 +234,8 @@ export function Layout({children}: {children?: React.ReactNode}) {
         {/* wishlist-bar.css link removed along with WishlistBar; the
             /wishlist page's own stylesheet stays */}
         <link rel="stylesheet" href={wishlistPageStyles}></link>
+        {/* ADDED — /search page's Algolia InstantSearch layout styles */}
+        <link rel="stylesheet" href={searchAlgoliaStyles}></link>
         <Meta />
         <Links />
       </head>
