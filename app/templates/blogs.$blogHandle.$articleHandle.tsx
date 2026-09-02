@@ -6,6 +6,7 @@ import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {extractShoppableProductIds, injectShoppableProducts} from '~/lib/shoppable-embeds';
 import {Article} from '~/sections/Article';
 import {ARTICLE_QUERY, SHOPPABLE_PRODUCTS_QUERY} from '~/graphql/blog/ArticleQuery';
+import type {ProductCardFragment} from 'storefrontapi.generated';
 import articleStyles from '~/assets/article.css?url';
 
 export function links() {
@@ -62,21 +63,44 @@ async function loadCriticalData({context, request, params}: Route.LoaderArgs) {
 
   const article = blog.articleByHandle;
 
-  // Resolve any inline `data-shoppable-product` markers in the article body
+  // Resolve any inline `data-shoppable-product`/`data-solo`/`data-duo`/
+  // `data-trio` markers in the article body.
   const productIds = extractShoppableProductIds(article.contentHtml);
   let contentHtml = article.contentHtml;
 
+  // Keyed by the same numeric IDs used in the article markup — extract,
+  // inject, ProductRow/StaticProductRow, and Article.tsx's hydration
+  // effect all key their lookups on the numeric ID, not the GID.
+  // shoppableProducts is passed down as entries (not a Map — loader data
+  // must be JSON-serializable) for Article.tsx to rebuild on the client.
+  let shoppableProducts: [string, ProductCardFragment][] = [];
+
   if (productIds.length > 0) {
+    // The Storefront API's nodes(ids: $ids) requires full GIDs, not the
+    // plain numeric IDs pulled from the article's data-* markers.
+    const gids = productIds.map((id) => `gid://shopify/Product/${id}`);
+
     const {nodes} = await context.storefront.query(SHOPPABLE_PRODUCTS_QUERY, {
-      variables: {ids: productIds},
+      variables: {ids: gids},
     });
+
+    // nodes() preserves input order, so zip back to the numeric IDs
+    // rather than trusting node.id (which comes back as a GID) — this
+    // keeps the numeric ID as the join key end-to-end.
     const productsById = new Map(
-      (nodes ?? []).filter(Boolean).map((p: any) => [p.id, p]),
+      productIds
+        .map((id, i) => [id, nodes?.[i]] as const)
+        .filter(
+          (entry): entry is [string, ProductCardFragment] =>
+            Boolean(entry[1]),
+        ),
     );
+
     contentHtml = injectShoppableProducts(article.contentHtml, productsById);
+    shoppableProducts = [...productsById.entries()];
   }
 
-  return {article: {...article, contentHtml}};
+  return {article: {...article, contentHtml}, shoppableProducts};
 }
 
 /**
@@ -89,6 +113,6 @@ function loadDeferredData({context}: Route.LoaderArgs) {
 }
 
 export default function ArticleTemplate() {
-  const {article} = useLoaderData<typeof loader>();
-  return <Article article={article} />;
+  const {article, shoppableProducts} = useLoaderData<typeof loader>();
+  return <Article article={article} shoppableProducts={shoppableProducts} />;
 }

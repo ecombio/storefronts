@@ -1,9 +1,8 @@
 // app/templates/_index.tsx
-import {Await, useLoaderData, Link} from 'react-router';
+import {Await, useLoaderData} from 'react-router';
 import type {Route} from './+types/_index';
 import {Suspense} from 'react';
-import {Image} from '@shopify/hydrogen';
-import type {FeaturedCollectionFragment, ProductCardFragment} from 'storefrontapi.generated';
+import type {ProductCardFragment} from 'storefrontapi.generated';
 import {ProductCarousel} from '~/sections/ProductCarousel';
 import {ImageCarousel, type ImageCarouselItem} from '~/sections/ImageCarousel';
 import {CollectionCarousel, type CollectionCarouselItem} from '~/sections/CollectionCarousel';
@@ -24,14 +23,12 @@ export async function loader(args: Route.LoaderArgs) {
 }
 
 async function loadCriticalData({context}: Route.LoaderArgs) {
-  const [{collections}, {collections: shopByCategory}] = await Promise.all([
-    context.storefront.query(FEATURED_COLLECTION_QUERY),
-    context.storefront.query(SHOP_BY_CATEGORY_QUERY),
-  ]);
+  const {collections: shopByCategory} = await context.storefront.query(
+    SHOP_BY_CATEGORY_QUERY,
+  );
 
   return {
     isShopLinked: Boolean(context.env.PUBLIC_STORE_DOMAIN),
-    featuredCollection: collections.nodes[0],
     shopByCategory: shopByCategory.nodes,
   };
 }
@@ -117,7 +114,6 @@ export default function Homepage() {
   return (
     <div className="home">
       <SlideShow slides={HERO_SLIDES} />
-      <FeaturedCollection collection={data.featuredCollection} />
       <CollectionCarousel
         title="Shop by Category"
         items={SHOP_BY_CATEGORY_PLACEHOLDER}
@@ -126,32 +122,6 @@ export default function Homepage() {
       <RecommendedProducts products={data.recommendedProducts} />
       <ImageCarousel title="Shop the Look" items={SHOP_THE_LOOK_ITEMS} />
     </div>
-  );
-}
-
-function FeaturedCollection({
-  collection,
-}: {
-  collection: FeaturedCollectionFragment;
-}) {
-  if (!collection) return null;
-  const image = collection?.image;
-  return (
-    <Link
-      className="featured-collection"
-      to={`/collections/${collection.handle}`}
-    >
-      {image && (
-        <div className="featured-collection-image">
-          <Image
-            data={image}
-            sizes="100vw"
-            alt={image.altText || collection.title}
-          />
-        </div>
-      )}
-      <h1>{collection.title}</h1>
-    </Link>
   );
 }
 
@@ -172,29 +142,6 @@ function RecommendedProducts({
     </Suspense>
   );
 }
-
-const FEATURED_COLLECTION_QUERY = `#graphql
-  fragment FeaturedCollection on Collection {
-    id
-    title
-    image {
-      id
-      url
-      altText
-      width
-      height
-    }
-    handle
-  }
-  query FeaturedCollection($country: CountryCode, $language: LanguageCode)
-    @inContext(country: $country, language: $language) {
-    collections(first: 1, sortKey: UPDATED_AT, reverse: true) {
-      nodes {
-        ...FeaturedCollection
-      }
-    }
-  }
-` as const;
 
 const SHOP_BY_CATEGORY_QUERY = `#graphql
   ${COLLECTION_CARD_FRAGMENT}

@@ -17,13 +17,17 @@ the site fills in the rest.
 <div data-shoppable-product="9448490696918"></div>
 ```
 
+You're not limited to single cards — you can also drop in a row of 2 or
+3 products side by side (see [Multi-product rows](#multi-product-rows-solo--duo--trio)
+below).
+
 No manual pricing, no copy-pasting product images, nothing to keep in
 sync by hand. If the price changes or the product photo updates, the
 article reflects it automatically on the next page load.
 
 ---
 
-## Adding a product to an article
+## Adding a single product to an article
 
 **1. Find the numeric product ID.**
 In Shopify admin, open the product — the ID is in the URL:
@@ -49,20 +53,59 @@ no performance cost to adding more.
 
 ---
 
+## Multi-product rows: Solo / Duo / Trio
+
+Beyond a single card, three more marker types lay products out in a row:
+
+| Marker | IDs | Layout |
+|---|---|---|
+| `data-solo` | 1 | Single product, shown as a full-width row (different visual treatment from `data-shoppable-product`) |
+| `data-duo` | 2 | Two products side by side |
+| `data-trio` | 3 | Three products side by side |
+
+```html
+<!-- One product, full-width row style -->
+<div data-solo="9448490696918"></div>
+
+<!-- Two products side by side -->
+<div data-duo="9448490696918,9448490729686"></div>
+
+<!-- Three products side by side -->
+<div data-trio="9448490696918,9448490729686,9448490762454"></div>
+```
+
+IDs are comma-separated, in the order you want them to appear left to
+right. Use the same numeric product ID format as the single-product
+marker — no spaces, no GIDs.
+
+**If one product in a row is bad or unavailable:** that product is
+dropped and the rest of the row still renders (a Duo with one bad ID
+becomes a single card; a Trio with one bad ID becomes a Duo). If *every*
+ID in the row fails to resolve, nothing renders — same silent-fail
+behavior as a single-product marker. See
+[What happens if a product ID is wrong or the product is gone](#what-happens-if-a-product-id-is-wrong-or-the-product-is-gone).
+
+---
+
 ## Marker syntax — get this exact
 
-The marker is matched by a strict pattern. If it doesn't match exactly,
-it silently fails — no error, the div just renders empty and nothing
-shows up.
+All four marker types (`data-shoppable-product`, `data-solo`, `data-duo`,
+`data-trio`) are matched by a strict pattern. If a marker doesn't match
+exactly, it silently fails — no error, the div just renders empty and
+nothing shows up.
 
 **Must be:**
 - An empty, self-closing-style `<div>` — no text or nested elements inside
-- Exactly the attribute name `data-shoppable-product`
-- The value must be digits only (the numeric product ID, not the full GID)
+- Exactly the correct attribute name for what you want (`data-shoppable-product`, `data-solo`, `data-duo`, or `data-trio`)
+- The value must be digits only, comma-separated for multi-product markers, with **no spaces** anywhere in the value
+- The right number of IDs for the marker: 1 for `data-shoppable-product`/`data-solo`, 2 for `data-duo`, 3 for `data-trio` — the wrong count fails to match, same as a malformed marker
 
 ✅ Correct:
 ```html
 <div data-shoppable-product="9448490696918"></div>
+<div data-solo="9448490696918"></div>
+<div data-duo="9448490696918,9448490729686"></div>
+<div data-trio="9448490696918,9448490729686,9448490762454"></div>
 ```
 
 ❌ Will NOT work:
@@ -70,20 +113,28 @@ shows up.
 <div data-shoppable-product="9448490696918">Level 4 REC</div>   <!-- has content -->
 <div data-shoppable-product="gid://shopify/Product/9448490696918"></div>  <!-- full GID, not just the number -->
 <div data-shoppable-product ="9448490696918"></div>   <!-- extra space breaks it, be careful copy-pasting -->
+<div data-duo="9448490696918, 9448490729686"></div>   <!-- space after the comma breaks it -->
+<div data-duo="9448490696918"></div>   <!-- data-duo needs exactly 2 IDs, not 1 -->
+<div data-trio="9448490696918,9448490729686"></div>   <!-- data-trio needs exactly 3 IDs, not 2 -->
 ```
 
 **If you're not sure it worked:** preview/publish and check the live page.
-A missing card with no visible error usually means either a bad ID (see
-below) or a malformed marker.
+A missing card with no visible error usually means either a bad ID, the
+wrong ID count for that marker type, or a malformed marker.
 
 ---
 
 ## What happens if a product ID is wrong or the product is gone
 
 If the ID doesn't resolve to a real, available product — deleted,
-unpublished, typo'd — the marker is dropped silently. No broken image,
+unpublished, typo'd — that product is dropped silently. No broken image,
 no dead link, no error on the page. The rest of the article renders
 normally around it.
+
+For `data-shoppable-product` and `data-solo` (single-ID markers), a bad
+ID means the whole marker renders nothing. For `data-duo` and
+`data-trio`, only the bad ID is dropped — the row still renders with
+whichever IDs resolved (so a Trio with one bad ID shows as a Duo).
 
 This is good for safety (nothing ever looks broken to a customer) but bad
 for catching mistakes — always spot-check a new article after publishing
@@ -141,8 +192,10 @@ an otherwise plain blog).
 
 **Quick visual check (no dev help needed):** publish as a draft or
 unlisted first, open the preview link, and confirm:
-- Every product card shows the correct image, title, and price
+- Every product card (and every product in a Solo/Duo/Trio row) shows
+  the correct image, title, and price
 - No products for the same article show duplicate cards unless intended
+- Duo/Trio rows show products in the order you listed the IDs
 - FAQ items expand/collapse correctly
 - Any `#anchor` links jump to and open the right FAQ item
 
@@ -151,6 +204,8 @@ unlisted first, open the preview link, and confirm:
 |---|---|
 | Product card missing entirely | Bad/deleted product ID, or malformed marker (see syntax section) |
 | Product card shows wrong product | Wrong numeric ID — double check against the admin product URL |
+| Duo/Trio row shows fewer products than expected | One or more IDs in the list didn't resolve — the row still renders with whichever IDs are valid |
+| Duo/Trio row missing entirely | None of the IDs resolved, or the ID count doesn't match the marker (2 for Duo, 3 for Trio) |
 | FAQ won't expand from a link | Mismatched `id` between the `<details id="...">` and the `#anchor` link |
 | Whole article looks unstyled/broken | Content pasted outside the HTML view (rich text editor may have escaped the tags) — re-paste using "Show HTML" / code view |
 
@@ -159,7 +214,10 @@ unlisted first, open the preview link, and confirm:
 ## Reference: this guide in one paragraph
 
 Write the article, paste it into the admin HTML view, drop a
-`<div data-shoppable-product="ID"></div>` wherever a product should
-appear, get the ID from the product's admin URL, and publish. Nothing
-else needs to change. Bad IDs fail silently rather than breaking the
-page, so always preview before publishing something you're unsure about.
+`<div data-shoppable-product="ID"></div>` wherever a single product
+should appear — or `data-solo`/`data-duo`/`data-trio` with 1, 2, or 3
+comma-separated IDs for a row of products — get each ID from the
+product's admin URL, and publish. Nothing else needs to change. Bad IDs
+fail silently rather than breaking the page (a bad ID in a Duo/Trio just
+drops that one product), so always preview before publishing something
+you're unsure about.

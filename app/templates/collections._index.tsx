@@ -4,14 +4,7 @@ import type {Route} from './+types/collections._index';
 import {getPaginationVariables, Image} from '@shopify/hydrogen';
 import type {CollectionFragment} from 'storefrontapi.generated';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
-import {
-  FeaturedCollection,
-  FEATURED_COLLECTION_QUERY,
-} from '~/sections/FeaturedCollection';
 import {CollectionCarousel} from '~/sections/CollectionCarousel';
-
-// TODO: swap for the real collection handle you want spotlighted here
-const FEATURED_COLLECTION_HANDLE = 'featured';
 
 export async function loader(args: Route.LoaderArgs) {
   // Start fetching non-critical data without blocking time to first byte
@@ -32,17 +25,11 @@ async function loadCriticalData({context, request}: Route.LoaderArgs) {
     pageBy: 4,
   });
 
-  const [{collections}, {collection: featuredCollection}] = await Promise.all([
-    context.storefront.query(COLLECTIONS_QUERY, {
-      variables: paginationVariables,
-    }),
-    context.storefront.query(FEATURED_COLLECTION_QUERY, {
-      variables: {handle: FEATURED_COLLECTION_HANDLE},
-    }),
-    // Add other queries here, so that they are loaded in parallel
-  ]);
+  const {collections} = await context.storefront.query(COLLECTIONS_QUERY, {
+    variables: paginationVariables,
+  });
 
-  return {collections, featuredCollection};
+  return {collections};
 }
 
 /**
@@ -55,7 +42,7 @@ function loadDeferredData({context}: Route.LoaderArgs) {
 }
 
 export default function Collections() {
-  const {collections, featuredCollection} = useLoaderData<typeof loader>();
+  const {collections} = useLoaderData<typeof loader>();
 
   // Reuses the same paginated collections list already fetched above —
   // no extra query needed. CollectionFragment's `image` shape matches
@@ -74,10 +61,6 @@ export default function Collections() {
         items={carouselItems}
         viewAllUrl="/collections"
       />
-
-      {featuredCollection && (
-        <FeaturedCollection collection={featuredCollection} />
-      )}
 
       <h1>Collections</h1>
       <PaginatedResourceSection<CollectionFragment>

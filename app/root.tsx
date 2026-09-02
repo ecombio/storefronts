@@ -29,10 +29,10 @@ import productDescriptionStyles from '~/assets/product-description.css?url';
 import customerReviewsStyles from '~/assets/customer-reviews.css?url';
 import starRatingStyles from '~/assets/star-rating.css?url';
 import productCardStyles from '~/assets/product-card.css?url';
+import productRowStyles from '~/assets/product-row.css?url'; // ADDED — grid layout for Solo/Duo/Trio shoppable rows; loads after productCardStyles so its [data-columns] rules can lay out the cards it styles
 import productCarouselStyles from '~/assets/product-carousel.css?url';
 import collectionCardStyles from '~/assets/collection-card.css?url';
 import collectionCarouselStyles from '~/assets/collection-carousel.css?url';
-import featuredCollectionStyles from '~/assets/featured-collection.css?url'; // ADDED — no shared class names with product-card/product-carousel, so load order relative to those doesn't matter; grouped here with the other collection-display styles for readability
 import imageCardStyles from '~/assets/image-card.css?url';
 import imageCarouselStyles from '~/assets/image-carousel.css?url';
 import slideshowStyles from '~/assets/slideshow.css?url';
@@ -204,10 +204,10 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={customerReviewsStyles}></link>
         <link rel="stylesheet" href={starRatingStyles}></link>
         <link rel="stylesheet" href={productCardStyles}></link>
+        <link rel="stylesheet" href={productRowStyles}></link>
         <link rel="stylesheet" href={productCarouselStyles}></link>
         <link rel="stylesheet" href={collectionCardStyles}></link>
         <link rel="stylesheet" href={collectionCarouselStyles}></link>
-        <link rel="stylesheet" href={featuredCollectionStyles}></link>
         <link rel="stylesheet" href={imageCardStyles}></link>
         <link rel="stylesheet" href={imageCarouselStyles}></link>
         <link rel="stylesheet" href={slideshowStyles}></link>
