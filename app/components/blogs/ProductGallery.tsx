@@ -1,32 +1,32 @@
 // app/components/blogs/ProductGallery.tsx
 //
-// Consolidated shoppable-product-embed system for blog articles:
-// merges what were previously ~/snippets/RowSnippets.tsx,
-// ~/snippets/StaticRowSnippets.tsx, ~/snippets/ProductRow.tsx, and
-// ~/lib/shoppable-embeds.tsx into a single file.
+// Consolidated shoppable-product-embed system for blog articles: merges
+// what were previously ~/snippets/RowSnippets.tsx,
+// ~/snippets/StaticRowSnippets.tsx, ~/snippets/ProductRow.tsx,
+// ~/lib/shoppable-embeds.tsx, ~/snippets/StaticProductCard.tsx, and
+// ~/snippets/StaticProductRow.tsx into a single file.
 //
 // NOTE: kept as .tsx, not .ts — contains JSX
 // (renderToStaticMarkup(<StaticProductCard .../>) etc.) and won't
 // compile as .ts.
 //
-// Three layers live here:
+// Four layers live here:
 //   1. Interactive components (Solo/Duo/Trio, ProductRow) — real,
 //      hook-driven rows used client-side and portaled into hydrated
 //      slots by Article.tsx.
-//   2. Static components (StaticSolo/Duo/Trio) — hook-free SSR twins
-//      used only for the renderToStaticMarkup pass below. They still
-//      delegate to StaticProductRow (~/snippets/StaticProductRow),
-//      which is NOT merged here — same as StaticProductCard, kept
-//      separate since those aren't part of this consolidation.
-//   3. Marker extract/inject logic — scans article HTML for
+//   2. StaticProductCard — hook-free, server-safe twin of ProductCard
+//      (~/snippets/ProductCard). Used ONLY by the renderToStaticMarkup
+//      pass below — ProductCard itself can't render there because it
+//      calls useNavigate(), useAside(), and CartForm's internal
+//      fetcher hook, none of which have a provider available inside
+//      the article loader's SSR string-injection pass, and would
+//      throw.
+//   3. StaticProductRow / StaticSolo/Duo/Trio — hook-free twins of
+//      ProductRow/Solo/Duo/Trio, built on StaticProductCard, used only
+//      for the same SSR pass.
+//   4. Marker extract/inject logic — scans article HTML for
 //      data-shoppable-product / data-solo / data-duo / data-trio
 //      markers and resolves them against fetched product data.
-//
-// Rendering in the static pass uses the Static* twins instead of the
-// real, interactive components: the real ones call useNavigate(),
-// useAside(), and CartForm's internal fetcher hook — none of which
-// have a provider available during this SSR string-injection pass,
-// and would throw.
 //
 // Each rendered slot is wrapped in a `[data-shoppable-slot]` container
 // carrying what's needed to re-render it as the real, interactive
@@ -45,8 +45,6 @@
 
 import {renderToStaticMarkup} from 'react-dom/server';
 import {ProductCard} from '~/snippets/ProductCard';
-import {StaticProductCard} from '~/snippets/StaticProductCard';
-import {StaticProductRow} from '~/snippets/StaticProductRow';
 import type {ProductCardFragment} from 'storefrontapi.generated';
 
 // ---------------------------------------------------------------------------
@@ -58,12 +56,6 @@ import type {ProductCardFragment} from 'storefrontapi.generated';
 // what makes Solo/Duo/Trio's (and StaticSolo/Duo/Trio's) props require
 // exactly 1/2/3 product IDs at the type level rather than just "an
 // array of strings".
-//
-// Previously duplicated between RowSnippets.tsx and
-// StaticRowSnippets.tsx on purpose, to keep those files import-free of
-// each other. Now that both live in this one file, one shared
-// definition is sufficient — the isolation concern was about avoiding
-// a cross-file import, not about the type itself.
 type FixedArray<T, N extends number> = N extends 1
   ? [T]
   : N extends 2
@@ -126,9 +118,165 @@ export function Trio({productIds, productsById}: RowProps<3>) {
 }
 
 // ---------------------------------------------------------------------------
-// Static components (SSR-only; no hooks, no context — used below by
+// StaticProductCard — hook-free, server-safe twin of ProductCard
+// ---------------------------------------------------------------------------
+//
+// Renders the same classes/markup as ProductCard so the page looks
+// correct immediately. Article.tsx's hydration effect then swaps each
+// rendered slot for the real, interactive ProductCard on the client -
+// mirrors the same "static now, upgrade after mount" pattern already
+// used there for FAQ deep-linking.
+//
+// Deliberately omits: wishlist button, quick view button, compare
+// checkbox, and the CartForm add-to-cart button - all of them need JS to
+// do anything, so nothing is lost by leaving them out of pre-hydration
+// markup. The add-to-cart slot becomes a plain link to the product page
+// instead, so it's still a usable affordance even if hydration is slow
+// or fails outright.
+//
+// The reviews block (product-card__reviews) IS kept, as an empty
+// placeholder, even though StarRating itself needs no hooks and could
+// render live data here. product-card.css gives that div a fixed
+// min-height and it sits in normal flow above the pricing block - if the
+// static pass skipped it entirely, hydration would insert it after
+// mount and shove the price down by ~18px+, a visible layout jump on
+// every article page load. Kept empty (not populated with live rating
+// data) rather than duplicating ProductCard's rating-parsing logic here;
+// the visual gap is blank until hydration fills it in, which is a much
+// smaller cost than the reflow.
+
+interface StaticProductCardProps {
+  product: ProductCardFragment;
+  showVendor?: boolean;
+}
+
+function formatMoney(amount: string, currencyCode: string): string {
+  try {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currencyCode,
+    }).format(parseFloat(amount));
+  } catch {
+    return `${amount} ${currencyCode}`;
+  }
+}
+
+function StaticProductCard({
+  product,
+  showVendor = true,
+}: StaticProductCardProps) {
+  const url = `/products/${product.handle}`;
+  const image = product.featuredImage;
+  const price = product.priceRange.minVariantPrice;
+  const compareAtPrice = product.compareAtPriceRange?.minVariantPrice;
+  const variant = product.selectedOrFirstAvailableVariant;
+  const etaText = product.etaText?.value;
+  const isSponsored = product.sponsored?.value === 'true';
+  const onSale =
+    !!compareAtPrice &&
+    parseFloat(compareAtPrice.amount) > parseFloat(price.amount);
+
+  return (
+    <div
+      className="product-card"
+      data-product-id={product.id}
+      data-product-handle={product.handle}
+    >
+      <div className="product-card__img-zone">
+        {isSponsored && (
+          <span className="product-card__sponsored-label">Sponsored</span>
+        )}
+
+        <a
+          href={url}
+          className="product-card__image-wrapper"
+          aria-label={product.title}
+        >
+          {image ? (
+            <img
+              src={image.url}
+              alt={image.altText ?? product.title}
+              className="product-card__img product-card__img--primary"
+              loading="lazy"
+            />
+          ) : (
+            <div className="product-card__img-placeholder" aria-hidden="true" />
+          )}
+        </a>
+
+        {onSale && (
+          <span className="product-card__badge-slot">
+            <span className="sale-badge">Sale</span>
+          </span>
+        )}
+      </div>
+
+      <div className="product-card__body">
+        {showVendor && product.vendor && (
+          <span className="product-card__vendor">{product.vendor}</span>
+        )}
+
+        <a href={url} className="product-card__title" title={product.title}>
+          {product.title}
+        </a>
+
+        {/* Empty placeholder — see comment above StaticProductCard.
+            Prevents a layout shift when hydration mounts the real
+            ProductCard's StarRating. */}
+        <div className="product-card__reviews" aria-hidden="true" />
+
+        <div className="product-card__pricing">
+          {onSale && compareAtPrice && (
+            <span className="product-card__price product-card__price--compare">
+              <s>{formatMoney(compareAtPrice.amount, compareAtPrice.currencyCode)}</s>
+            </span>
+          )}
+          <span className="product-card__price product-card__price--sale">
+            {formatMoney(price.amount, price.currencyCode)}
+          </span>
+        </div>
+
+        {etaText && (
+          <div className="product-card__eta" aria-label="Estimated delivery">
+            <span>{etaText}</span>
+          </div>
+        )}
+
+        {variant && (
+          <div className="product-card__bottom-row">
+            <a href={url} className="product-card__atc-btn">
+              {variant.availableForSale ? 'View product' : 'Sold out'}
+            </a>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Static row components (SSR-only; no hooks, no context — used below by
 // injectShoppableProducts via renderToStaticMarkup)
 // ---------------------------------------------------------------------------
+
+// Hook-free twin of ProductRow. Same resolve-and-drop contract: an ID
+// with no match (deleted/unpublished product, typo) is dropped, not
+// rendered as a broken card.
+function StaticProductRow({productIds, productsById}: ProductRowProps) {
+  const products = productIds
+    .map((id) => productsById.get(id))
+    .filter((p): p is ProductCardFragment => Boolean(p));
+
+  if (products.length === 0) return null;
+
+  return (
+    <div className="product-row" data-columns={products.length}>
+      {products.map((product) => (
+        <StaticProductCard key={product.id} product={product} />
+      ))}
+    </div>
+  );
+}
 
 // Static 1-product row — renders via StaticProductRow, no hooks.
 function StaticSolo({productIds, productsById}: RowProps<1>) {
