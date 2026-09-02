@@ -82,6 +82,10 @@ export default async function handleRequest(
       // replace these placeholders.
       'https://picsum.photos',
       'https://fastly.picsum.photos',
+      // Mega-menu fallback collection images (Header.constants.ts
+      // SUBMENU_IMAGES) served from ecombio.com's CDN.
+      'http://ecombio.com',
+      'https://ecombio.com',
     ],
   });
 
