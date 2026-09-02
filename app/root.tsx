@@ -135,6 +135,9 @@ async function loadCriticalData({context}: Route.LoaderArgs) {
     },
   );
 
+  // TEMP DEBUG — remove once the menu/collectionImages issue is confirmed fixed
+  console.log('COLLECTION IMAGES DEBUG:', JSON.stringify(collectionImages, null, 2));
+
   return {header, collectionImages};
 }
 
