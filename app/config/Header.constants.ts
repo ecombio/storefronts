@@ -14,7 +14,7 @@ export const LOGO_SRC =
 // ─────────────────────────────────────────────────────────────────────────
 export type HeaderStyle = 'launchpad' | 'storefront' | 'marketplace';
 
-export const ACTIVE_HEADER_STYLE: HeaderStyle = 'marketplace';
+export const ACTIVE_HEADER_STYLE: HeaderStyle = 'storefront';
 
 // ─────────────────────────────────────────────────────────────────────────
 // Header CTA feature flags

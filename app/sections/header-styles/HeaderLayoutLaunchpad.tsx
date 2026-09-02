@@ -24,7 +24,7 @@ export function HeaderLayoutLaunchpad({
 }: HeaderLayoutProps) {
   return (
     <div data-header-row className="relative">
-      <div className="mx-auto flex max-w-full items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6 lg:gap-6 lg:px-8">
+      <div className="mx-auto flex max-w-[var(--content-max-width)] items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6 lg:gap-6 lg:px-8">
         {mobileToggle}
         {logo}
 

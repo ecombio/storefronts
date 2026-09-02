@@ -33,7 +33,7 @@ export function HeaderLayoutStorefront({
 }: HeaderLayoutProps) {
   return (
     <div data-header-row className="relative">
-      <div className="mx-auto flex max-w-full items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6 lg:gap-6 lg:px-8">
+      <div className="mx-auto flex max-w-[var(--content-max-width)] items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6 lg:gap-6 lg:px-8">
         {mobileToggle}
         {logo}
 
@@ -59,7 +59,7 @@ export function HeaderLayoutStorefront({
       </div>
 
       <div data-header-menu-row className="hidden border-t border-gray-100 lg:block">
-        <div className="mx-auto flex max-w-full items-center justify-center px-4 py-2.5 lg:px-8 [&>*]:!w-auto">
+        <div className="mx-auto flex max-w-[var(--content-max-width)] items-center justify-center px-4 py-2.5 lg:px-8 [&>*]:!w-auto">
           {menu}
         </div>
       </div>
