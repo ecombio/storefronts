@@ -9,3 +9,5 @@ node_modules
 .react-router
 
 app-dump.txt
+
+tsconfig.tsbuildinfo
