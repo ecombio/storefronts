@@ -1,4 +1,10 @@
 // app/sections/Article.tsx
+//
+// Renders a full blog article: title, meta, hero image, and the
+// article body HTML. The body is server-rendered rich-text HTML that
+// may contain "shoppable embed" slots (single/solo/duo/trio product
+// callouts) — this component finds those slots after mount and portals
+// live, interactive product components into them.
 
 import {useEffect, useRef, useState} from 'react';
 import {createPortal} from 'react-dom';
@@ -7,6 +13,9 @@ import {ProductCard} from '~/snippets/ProductCard';
 import {Solo, Duo, Trio} from '~/snippets/RowSnippets';
 import type {ProductCardFragment} from 'storefrontapi.generated';
 
+// Describes one shoppable-embed slot found in the rendered article
+// body: the DOM node to portal into, what layout it wants (single /
+// solo / duo / trio), and which product IDs it references.
 type ShoppableSlot = {
   el: HTMLElement;
   kind: string;
@@ -28,9 +37,16 @@ export function Article({
   shoppableProducts?: [string, ProductCardFragment][];
 }) {
   const {title, image, contentHtml, author} = article;
+
+  // Ref to the container the raw article HTML is injected into, so we
+  // can scan its actual DOM for shoppable slots after render.
   const bodyRef = useRef<HTMLDivElement>(null);
+
+  // The shoppable slots discovered in the DOM (populated by the effect
+  // below), used to know what to portal and where.
   const [slots, setSlots] = useState<ShoppableSlot[]>([]);
 
+  // Human-readable published date, e.g. "September 2, 2026".
   const publishedDate = new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
     month: 'long',
@@ -47,6 +63,9 @@ export function Article({
   const isHub = article.blog?.handle === 'category';
   const layoutVariant = article.layoutVariant?.value; // e.g. "feature" | undefined
 
+  // Build the wrapper class list: base class, hub/spoke variant, and
+  // an optional extra variant class — falsy entries filtered out so
+  // there's never a stray "article--" or "article--null" in the DOM.
   const articleClassName = [
     'article',
     isHub ? 'article--hub' : 'article--spoke',
@@ -87,13 +106,20 @@ export function Article({
     if (!container) return;
 
     const found: ShoppableSlot[] = [];
+
+    // Look for every element the server marked as a shoppable slot.
     container
       .querySelectorAll<HTMLElement>('[data-shoppable-slot]')
       .forEach((el) => {
+        // `data-shoppable-slot` holds the layout kind: single/solo/duo/trio.
         const kind = el.getAttribute('data-shoppable-slot');
+        // `data-product-ids` holds a comma-separated list of numeric
+        // product IDs for this slot; split and drop empty entries.
         const ids = (el.getAttribute('data-product-ids') ?? '')
           .split(',')
           .filter(Boolean);
+
+        // Skip malformed slots (missing kind, or no product IDs).
         if (!kind || ids.length === 0) return;
 
         // Clear the static server-rendered markup - the portal below
@@ -118,6 +144,7 @@ export function Article({
         <address>{author?.name}</address>
       </div>
 
+      {/* Hero image, eagerly loaded since it's above the fold. */}
       {image && (
         <Image
           data={image}
@@ -127,26 +154,38 @@ export function Article({
           loading="eager"
         />
       )}
+
+      {/* Raw article HTML from Shopify, with shoppable-embed markers
+          already resolved by the loader (see loadCriticalData in the
+          route file). bodyRef lets the effects above scan this DOM
+          subtree once it's mounted. */}
       <div
         ref={bodyRef}
         dangerouslySetInnerHTML={{__html: contentHtml}}
         className="article-body"
       />
+
+      {/* For each discovered slot, build the appropriate interactive
+          component and portal it into that slot's DOM node — replacing
+          the static SSR markup that was cleared above. */}
       {slots.map(({el, kind, ids}) => {
         let node: React.ReactNode = null;
 
         switch (kind) {
           case 'single': {
+            // A single standalone product card.
             const product = productsById.get(ids[0]);
             node = product ? <ProductCard product={product} /> : null;
             break;
           }
           case 'solo':
+            // Single-product row layout (distinct styling from 'single').
             node = (
               <Solo productIds={[ids[0]]} productsById={productsById} />
             );
             break;
           case 'duo':
+            // Two-product row layout.
             node = (
               <Duo
                 productIds={[ids[0], ids[1]]}
@@ -155,6 +194,7 @@ export function Article({
             );
             break;
           case 'trio':
+            // Three-product row layout.
             node = (
               <Trio
                 productIds={[ids[0], ids[1], ids[2]]}
@@ -164,7 +204,14 @@ export function Article({
             break;
         }
 
+        // Nothing resolved for this slot (unknown kind, or the
+        // product(s) weren't found) — render nothing rather than an
+        // empty portal.
         if (!node) return null;
+
+        // Portal the live component into the slot's DOM node. A
+        // unique key (kind + ids) keeps portals stable across
+        // re-renders of `slots`.
         return createPortal(node, el, `${kind}-${ids.join('-')}`);
       })}
     </div>

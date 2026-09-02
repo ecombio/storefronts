@@ -637,3 +637,14 @@ button.reset:hover:not(:has(> *)) {
   gap: 0.75rem;
   flex-wrap: wrap;
 }
+.search-bar {
+  /* spacing/layout for the input + Cancel row */
+}
+
+.search-title {
+  padding-bottom: 12px; /* space below the "Popular Search Terms" label */
+}
+
+.search-terms {
+  gap: 12px; /* space between the pills — currently also set via gap-3 utility */
+}

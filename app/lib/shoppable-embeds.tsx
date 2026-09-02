@@ -40,10 +40,18 @@ import {
 } from '~/snippets/StaticRowSnippets';
 import type {ProductCardFragment} from 'storefrontapi.generated';
 
+// The four marker "kinds" this module understands. Mirrors the `kind`
+// value that later gets written into `data-shoppable-slot` on the
+// rendered wrapper, and read back by Article.tsx's hydration effect.
 type MarkerKind = 'single' | 'solo' | 'duo' | 'trio';
 
+// Describes one marker type: which HTML attribute identifies it, how
+// many comma-separated IDs it expects, and its resolved "kind" name.
 type MarkerSpec = {attr: string; count: number; kind: MarkerKind};
 
+// The full set of recognized markers. To add a new layout (say, a
+// 4-product grid), this is the single place a new spec would be added
+// — extract/inject both iterate this list generically.
 const MARKERS: MarkerSpec[] = [
   {attr: 'data-shoppable-product', count: 1, kind: 'single'},
   {attr: 'data-solo', count: 1, kind: 'solo'},
@@ -56,7 +64,11 @@ const MARKERS: MarkerSpec[] = [
 // around `=`. e.g. for {attr: 'data-duo', count: 2}:
 //   <div data-duo="(\d+,\d+)"></div>
 function markerRegex({attr, count}: MarkerSpec): RegExp {
+  // Repeat `\d+` `count` times, joined by literal commas, e.g.
+  // count=3 -> "\d+,\d+,\d+" for a trio marker.
   const value = Array(count).fill(String.raw`\d+`).join(',');
+  // Global flag so callers can find every occurrence in the document,
+  // not just the first.
   return new RegExp(String.raw`<div ${attr}="(${value})"></div>`, 'g');
 }
 
@@ -67,12 +79,19 @@ function markerRegex({attr, count}: MarkerSpec): RegExp {
  * before rendering.
  */
 export function extractShoppableProductIds(html: string): string[] {
+  // Set dedupes automatically and preserves insertion order in JS,
+  // which is what "first-seen order" relies on here.
   const seen = new Set<string>();
 
   for (const spec of MARKERS) {
     const regex = markerRegex(spec);
     let match: RegExpExecArray | null;
+    // exec() with a /g regex is stateful — repeated calls advance
+    // lastIndex, walking through every match in the string until none
+    // remain (loop exits when exec returns null).
     while ((match = regex.exec(html)) !== null) {
+      // match[1] is the captured ID-list group, e.g. "123,456" for a
+      // duo marker — split it into individual IDs.
       for (const id of match[1].split(',')) seen.add(id);
     }
   }
@@ -97,6 +116,8 @@ export function injectShoppableProducts(
 ): string {
   let result = html;
 
+  // Run each marker type's regex over the (progressively rewritten)
+  // HTML string, replacing every match with its rendered markup.
   for (const spec of MARKERS) {
     const regex = markerRegex(spec);
     result = result.replace(regex, (_full, idList: string) =>
@@ -107,12 +128,17 @@ export function injectShoppableProducts(
   return result;
 }
 
+// Renders one marker's replacement HTML: the inner product markup plus
+// the outer data-shoppable-slot wrapper the client hydrates against.
 function renderMarker(
   kind: MarkerKind,
   ids: string[],
   productsById: Map<string, ProductCardFragment>,
 ): string {
   const inner = renderInner(kind, ids, productsById);
+  // If nothing could be rendered (e.g. a lone unresolved product ID
+  // for a `single` marker), drop the marker entirely rather than
+  // emitting an empty wrapper div.
   if (!inner) return '';
 
   // The wrapper carries the full original ID list (not just the ones
@@ -122,6 +148,9 @@ function renderMarker(
   return `<div data-shoppable-slot="${kind}" data-product-ids="${ids.join(',')}">${inner}</div>`;
 }
 
+// Renders the actual product markup for a marker, using the hook-free
+// Static* components so this works during a plain string-rendering
+// pass with no React context available.
 function renderInner(
   kind: MarkerKind,
   ids: string[],
@@ -130,6 +159,7 @@ function renderInner(
   switch (kind) {
     case 'single': {
       const product = productsById.get(ids[0]);
+      // No product resolved (deleted/inaccessible) -> render nothing.
       return product
         ? renderToStaticMarkup(<StaticProductCard product={product} />)
         : '';

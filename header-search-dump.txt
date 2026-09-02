@@ -1,0 +1,4584 @@
+===== assets\search-algolia.css =====
+/* Algolia InstantSearch — /search page layout & widget styling.
+   react-instantsearch renders its own class names on every widget
+   (all prefixed `ais-`) — this file styles those directly rather than
+   wrapping them in custom markup, since the widgets don't accept
+   arbitrary children. */
+
+.search-page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.search-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* --- Facets sidebar --- */
+
+.search-facets h3 {
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 1.5rem 0 0.5rem;
+}
+
+.search-facets h3:first-of-type {
+  margin-top: 0;
+}
+
+.search-facets-header {
+  display: none; /* only shown in the mobile drawer, see below */
+}
+
+.search-facets-toggle {
+  display: none; /* only shown on mobile, see below */
+}
+
+.ais-HierarchicalMenu-list,
+.ais-RefinementList-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ais-HierarchicalMenu-item,
+.ais-RefinementList-item {
+  margin: 0.25rem 0;
+}
+
+.ais-HierarchicalMenu-link,
+.ais-RefinementList-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ais-HierarchicalMenu-count,
+.ais-RefinementList-count {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.ais-HierarchicalMenu-list--child {
+  padding-left: 1rem;
+  margin-top: 0.25rem;
+}
+
+/* --- Results toolbar (search box + sort) --- */
+
+.search-results-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.ais-SearchBox-form {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+}
+
+.ais-SearchBox-input {
+  width: 100%;
+  padding: 0.6rem 2.25rem 0.6rem 0.9rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.95rem;
+}
+
+.ais-SearchBox-submit,
+.ais-SearchBox-reset {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.ais-SearchBox-submit {
+  right: 0.6rem;
+}
+
+.ais-SearchBox-reset {
+  right: 2rem;
+}
+
+.ais-SortBy-select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+/* --- Results grid --- */
+
+.search-results {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ais-Hits-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.product-hit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.product-hit img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 4px;
+  background: #f2f2f2;
+}
+
+.product-hit h3 {
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.product-hit-vendor {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.product-hit-price {
+  font-weight: 600;
+}
+
+/* --- Pagination --- */
+
+.ais-Pagination-list {
+  display: flex;
+  gap: 0.4rem;
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0 0;
+  justify-content: center;
+}
+
+.ais-Pagination-item a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0.4rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  color: inherit;
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+
+.ais-Pagination-item--selected a {
+  border-color: #111;
+  font-weight: 600;
+}
+
+.ais-Pagination-item--disabled a {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* --- Loading / empty states --- */
+
+.search-status {
+  padding: 2rem 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.search-empty {
+  padding: 3rem 0;
+  text-align: center;
+}
+
+.search-empty-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+.search-empty-hint {
+  color: #666;
+  margin: 0;
+}
+
+.search-loading {
+  padding: 2rem 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* --- Mobile: collapse the sidebar into a slide-out drawer --- */
+
+@media (max-width: 768px) {
+  .search-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .search-facets-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #fff;
+    font-size: 0.9rem;
+    width: fit-content;
+  }
+
+  .search-facets {
+    position: fixed;
+    inset: 0 20% 0 auto;
+    z-index: 50;
+    background: #fff;
+    padding: 1.5rem;
+    overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform 0.2s ease-out;
+    box-shadow: -2px 0 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .search-facets[data-open='true'] {
+    transform: translateX(0);
+  }
+
+  .search-facets-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+
+  .search-facets-close {
+    border: none;
+    background: transparent;
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+}
+
+===== assets\search-bar.css =====
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500&display=swap');
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+
+===== assets\sticky-header.css =====
+/*
+ * Pairs with app/hooks/useHeaderHeightSync.ts (called from
+ * app/sections/Header.tsx).
+ *
+ * Header.tsx already handles its own hide/show via Tailwind classes
+ * (`-translate-y-full` / `translate-y-0`) — this file does NOT style
+ * the header itself. It only provides:
+ * 1. A fallback for --header-height before the ResizeObserver runs.
+ * 2. Coordination rules for anything that sticks directly below the
+ *    header (CollectionToolbar), so it shares the same offset and
+ *    closes the gap when the header hides.
+ *
+ * CollectionToolbar.tsx measures its OWN height the same way (writing
+ * --toolbar-height instead of --header-height) so that
+ * app/assets/collection-filters.css can stick the filter panel below
+ * BOTH the header and the toolbar, not just the header. If you change
+ * this file's `top: 0` on `html.header-hidden .sticky-under-header`,
+ * update the matching `html.header-hidden` rule in
+ * collection-filters.css too — the two are meant to stay in sync.
+ */
+
+:root {
+  --header-height: 64px;
+}
+
+/* Apply this class to whatever wraps CollectionToolbar. */
+.sticky-under-header {
+  position: sticky;
+  top: var(--header-height);
+  z-index: 40;
+  transition: top 0.25s ease;
+}
+
+html.header-hidden .sticky-under-header {
+  top: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticky-under-header {
+    transition: none;
+  }
+}
+
+===== config\Header.constants.ts =====
+import type {HeaderProps} from '~/sections/Header';
+
+// Wordmark asset used by the live Liquid theme.
+export const LOGO_SRC =
+  '//ecombio.com/cdn/shop/files/wordmark.svg?v=1781367807&width=140';
+
+// ─────────────────────────────────────────────────────────────────────────
+// Header layout style
+// Controls which arrangement Header.tsx renders (see
+// app/sections/header-styles/HeaderLayout*.tsx). Swap this to change the
+// layout site-wide. Ideally becomes a Shopify theme setting or metafield
+// down the line so merchandising can switch it without a deploy — a
+// constant is the simplest starting point.
+// ─────────────────────────────────────────────────────────────────────────
+export type HeaderStyle = 'launchpad' | 'storefront' | 'marketplace';
+
+export const ACTIVE_HEADER_STYLE: HeaderStyle = 'storefront';
+
+// ─────────────────────────────────────────────────────────────────────────
+// Header CTA feature flags
+// Toggles Wishlist/Compare icons in the header CTAs cluster on/off
+// without removing the underlying components, badges, and localStorage
+// sync logic (WishlistToggle/CompareToggle in Header.tsx) — flip back
+// to true whenever these are ready to ship again.
+// ─────────────────────────────────────────────────────────────────────────
+export const SHOW_WISHLIST_CTA = false;
+export const SHOW_COMPARE_CTA = false;
+
+// ─────────────────────────────────────────────────────────────────────────
+// Header menu item shape + URL resolution
+// Shared by HeaderMenu (top-level nav) and MenuDrawer (the mega-menu
+// panel), so it lives here rather than in either component file to avoid
+// a circular import between the two.
+// ─────────────────────────────────────────────────────────────────────────
+export type MenuItem = HeaderProps['header']['menu'] extends {items: (infer T)[]}
+  ? T
+  : never;
+
+export function resolveUrl(url: string, publicStoreDomain: string, primaryDomainUrl: string) {
+  return url.includes('myshopify.com') ||
+    url.includes(publicStoreDomain) ||
+    url.includes(primaryDomainUrl)
+    ? new URL(url).pathname
+    : url;
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Announcement bar
+// Stand-in for sections/announcement-bar.liquid's ann_1..ann_5 settings.
+// Swap for a metaobject/Storefront API query if merchants need to edit
+// this without a deploy.
+// ─────────────────────────────────────────────────────────────────────────
+export type AnnouncementSlideConfig =
+  | {type: 'announcement'; text: string; link?: string}
+  | {
+      type: 'countdown';
+      label?: string;
+      countdownType: 'fixed' | 'evergreen';
+      endDate?: string; // 'YYYY/MM/DD HH:MM', fixed only
+      evergreenMinutes?: number; // evergreen only
+      buttonLabel?: string;
+      buttonLink?: string;
+    };
+
+// Order matches the live site: countdown first (with its "Countdown timer"
+// label), then the shipping-promo message.
+export const ANNOUNCEMENT_SLIDES: AnnouncementSlideConfig[] = [
+  {
+    type: 'countdown',
+    label: 'Countdown timer',
+    countdownType: 'evergreen',
+    evergreenMinutes: 720,
+  },
+  {
+    type: 'announcement',
+    text: '✌️ Free Express Shipping on orders $500!',
+  },
+];
+
+export const ANNOUNCEMENT_ENABLE_CLOSE = true;
+export const ANNOUNCEMENT_AUTOROTATE = true;
+export const ANNOUNCEMENT_AUTOROTATE_SPEED_MS = 5000;
+
+// ─────────────────────────────────────────────────────────────────────────
+// Utility bar
+// Stand-in for sections/utility-bar.liquid's link_1..link_3 settings.
+// ─────────────────────────────────────────────────────────────────────────
+export interface UtilityLink {
+  label: string;
+  url: string;
+  icon?: string;
+}
+
+export const UTILITY_LINKS: UtilityLink[] = [
+  {label: 'Track Order', url: '/apps/track'},
+  {label: 'Store Locator', url: '/pages/stores'},
+  ];
+
+// ─────────────────────────────────────────────────────────────────────────
+// Region / language picker
+// Stand-in for `localization.available_countries` / `.available_languages`.
+// Replace with a real Storefront API / root-loader query when wiring this
+// up to Hydrogen's actual localization flow.
+// ─────────────────────────────────────────────────────────────────────────
+export interface Country {
+  name: string;
+  isoCode: string;
+}
+
+export const CURRENT_COUNTRY = 'US';
+export const CURRENT_LANGUAGE = 'English';
+
+export const COUNTRIES: Country[] = [
+  {name: 'United States', isoCode: 'US'},
+  {name: 'Australia', isoCode: 'AU'},
+  {name: 'Austria', isoCode: 'AT'},
+  {name: 'Belgium', isoCode: 'BE'},
+  {name: 'Canada', isoCode: 'CA'},
+  {name: 'Czechia', isoCode: 'CZ'},
+  {name: 'Denmark', isoCode: 'DK'},
+  {name: 'Finland', isoCode: 'FI'},
+  {name: 'France', isoCode: 'FR'},
+  {name: 'Germany', isoCode: 'DE'},
+  {name: 'Ireland', isoCode: 'IE'},
+  {name: 'Italy', isoCode: 'IT'},
+  {name: 'Japan', isoCode: 'JP'},
+  {name: 'Mexico', isoCode: 'MX'},
+  {name: 'Netherlands', isoCode: 'NL'},
+  {name: 'New Zealand', isoCode: 'NZ'},
+  {name: 'Norway', isoCode: 'NO'},
+  {name: 'Poland', isoCode: 'PL'},
+  {name: 'Portugal', isoCode: 'PT'},
+  {name: 'Spain', isoCode: 'ES'},
+  {name: 'Sweden', isoCode: 'SE'},
+  {name: 'Switzerland', isoCode: 'CH'},
+  {name: 'United Kingdom', isoCode: 'GB'},
+];
+
+// Animated search placeholder — cycles through these like the live site's typewriter.
+export const TRENDING_SEARCH_TERMS = [
+  'electric scooters',
+  'electric bikes',
+  'electric skateboards',
+  'electric cargo bikes',
+  'electric city bikes',
+  'electric fat bikes',
+  'electric folding bikes',
+  'electric mountain bikes',
+  'commuter electric scooters',
+  'off-road electric scooters',
+  'performance electric scooters',
+  'youth electric scooters',
+];
+
+// How long to wait before closing the mega menu after the pointer leaves,
+// so moving diagonally from the link down into the panel doesn't close it.
+export const MEGA_MENU_CLOSE_DELAY = 150;
+
+// ─────────────────────────────────────────────────────────────────────────
+// Submenu images — real collection images, fetched by resourceId
+// ─────────────────────────────────────────────────────────────────────────
+// Menu items already carry a `resourceId` (see the `PAGE` entry in
+// FALLBACK_HEADER_MENU below) whenever the Shopify Admin menu editor links
+// them directly to a resource — a Collection, in the "Electric Bikes"
+// submenu's case. Query those collections' real images by id in the root
+// loader (alongside the header menu query) and pass the result down as the
+// `collectionImages` prop threaded through Header -> HeaderMenu. That's now
+// the primary image source for the showcase panel's category cards.
+//
+// Example root loader wiring:
+//
+//   const collectionIds = menu.items
+//     .flatMap((item) => item.items ?? [])
+//     .map((item) => item.resourceId)
+//     .filter((id): id is string => Boolean(id) && id.includes('/Collection/'));
+//
+//   const collectionImages = collectionIds.length
+//     ? await context.storefront
+//         .query(MENU_COLLECTION_IMAGES_QUERY, {variables: {ids: collectionIds}})
+//         .then((data) =>
+//           Object.fromEntries(
+//             data.nodes
+//               .filter((n): n is {id: string; image: CollectionImage | null} => n != null && 'image' in n)
+//               .filter((n) => n.image)
+//               .map((n) => [n.id, n.image as CollectionImage]),
+//           ),
+//         )
+//     : {};
+//
+// Then: <Header ... collectionImages={collectionImages} />
+export const MENU_COLLECTION_IMAGES_QUERY = `#graphql
+  query MenuCollectionImages($ids: [ID!]!, $country: CountryCode, $language: LanguageCode)
+    @inContext(country: $country, language: $language) {
+    nodes(ids: $ids) {
+      ... on Collection {
+        id
+        image {
+          url
+          altText
+        }
+      }
+    }
+  }
+` as const;
+
+export interface CollectionImage {
+  url: string;
+  altText: string | null;
+}
+
+// Static fallback, keyed by menu item title — used only when a submenu
+// item doesn't resolve to a live collection image (a custom link, a page,
+// or a collection with no image set in the Admin).
+export const SUBMENU_IMAGES: Record<string, string> = {
+  'Electric Cargo Bikes':
+    '//ecombio.com/cdn/shop/collections/fiido-t3-two-people-riding_1.webp?v=1784397522&width=300',
+  'Electric City Bikes':
+    '//ecombio.com/cdn/shop/collections/i.shgcdn_76ba479e-f743-477d-8a9f-eb9a6e6b73f2.webp?v=1784397588&width=300',
+  'Electric Fat Bikes':
+    '//ecombio.com/cdn/shop/collections/alpine-fat-tire-ebike-8093206.webp?v=1784397812&width=300',
+  'Electric Folding Bikes':
+    '//ecombio.com/cdn/shop/collections/Brompton-P-Line-D.webp?v=1784397680&width=300',
+  'Electric Mountain Bikes':
+    '//ecombio.com/cdn/shop/collections/electric-mountain-bikes_s.jpg?v=1784397360&width=300',
+  'Commuter Electric Scooters':
+    '//ecombio.com/cdn/shop/collections/Commuter_E-Scooters.png?v=1780540373&width=300',
+  'Off-Road Electric Scooters':
+    '//ecombio.com/cdn/shop/collections/Off-Road_E-Scooters.png?v=1780540359&width=300',
+  'Performance Electric Scooters':
+    '//ecombio.com/cdn/shop/collections/Performance_E-Scooters.png?v=1780540346&width=300',
+  'Electric Scooter for Kids':
+    '//ecombio.com/cdn/shop/collections/Youth_E-Scooters.png?v=1780540329&width=300',
+};
+
+// "Good to know" sidebar tips shown in a showcase panel, keyed by the
+// top-level menu item title. Mirrors sections/showcase-block.liquid's
+// tip_1..tip_3 (icon/heading/body) settings.
+export interface ShowcaseTip {
+  icon?: string; // 'truck' | 'shield' | 'gift' | 'clock' | 'return' | 'tag' | ...
+  heading: string;
+  body?: string;
+}
+
+export const SHOWCASE_TIPS: Record<string, ShowcaseTip[]> = {
+  'Electric Scooters': [
+    {
+      icon: 'tag',
+      heading: 'Trade-in',
+      body: 'Get up to $700 for your old device',
+    },
+  ],
+};
+
+// Optional "See all" link override per top-level item, keyed by title.
+// Falls back to the item's own resolved url + a generic "See all" label
+// when not set here, mirroring showcase-block.liquid's see_all_link /
+// see_all_label settings.
+export const SHOWCASE_SEE_ALL: Record<string, {label?: string; link?: string}> = {};
+
+export const FALLBACK_HEADER_MENU = {
+  id: 'gid://shopify/Menu/199655587896',
+  items: [
+    {
+      id: 'gid://shopify/MenuItem/461609500001',
+      resourceId: null,
+      tags: [],
+      title: 'Single Link',
+      type: 'HTTP',
+      url: '/pages/electric-bikes#',
+      items: [],
+    },
+    {
+      id: 'gid://shopify/MenuItem/461609500728',
+      resourceId: null,
+      tags: [],
+      title: 'Electric Bicycles',
+      type: 'HTTP',
+      url: '/pages/electric-bikes',
+      items: [
+        {
+          id: 'gid://shopify/MenuItem/461609500728-1',
+          resourceId: null,
+          tags: [],
+          title: 'Electric Cargo Bikes',
+          type: 'HTTP',
+          url: '/collections/electric-cargo-bikes',
+          items: [],
+        },
+        {
+          id: 'gid://shopify/MenuItem/461609500728-2',
+          resourceId: null,
+          tags: [],
+          title: 'Electric City Bikes',
+          type: 'HTTP',
+          url: '/collections/electric-city-bikes',
+          items: [],
+        },
+        {
+          id: 'gid://shopify/MenuItem/461609500728-3',
+          resourceId: null,
+          tags: [],
+          title: 'Electric Fat Bikes',
+          type: 'HTTP',
+          url: '/collections/electric-fat-bikes',
+          items: [],
+        },
+        {
+          id: 'gid://shopify/MenuItem/461609500728-4',
+          resourceId: null,
+          tags: [],
+          title: 'Electric Folding Bikes',
+          type: 'HTTP',
+          url: '/collections/electric-folding-bikes',
+          items: [],
+        },
+        {
+          id: 'gid://shopify/MenuItem/461609500728-5',
+          resourceId: null,
+          tags: [],
+          title: 'Electric Mountain Bikes',
+          type: 'HTTP',
+          url: '/collections/electric-mountain-bikes',
+          items: [],
+        },
+      ],
+    },
+    {
+      id: 'gid://shopify/MenuItem/461609533496',
+      resourceId: null,
+      tags: [],
+      title: 'Electric Scooters',
+      type: 'HTTP',
+      url: '/pages/electric-scooters',
+      items: [
+        {
+          id: 'gid://shopify/MenuItem/461609533496-1',
+          resourceId: null,
+          tags: [],
+          title: 'Commuter Electric Scooters',
+          type: 'HTTP',
+          url: '/collections/commuter-electric-scooters',
+          items: [],
+        },
+        {
+          id: 'gid://shopify/MenuItem/461609533496-2',
+          resourceId: null,
+          tags: [],
+          title: 'Off-Road Electric Scooters',
+          type: 'HTTP',
+          url: '/collections/off-road-electric-scooters',
+          items: [],
+        },
+        {
+          id: 'gid://shopify/MenuItem/461609533496-3',
+          resourceId: null,
+          tags: [],
+          title: 'Performance Electric Scooters',
+          type: 'HTTP',
+          url: '/collections/performance-electric-scooters',
+          items: [],
+        },
+        {
+          id: 'gid://shopify/MenuItem/461609533496-4',
+          resourceId: null,
+          tags: [],
+          title: 'Electric Scooter for Kids',
+          type: 'HTTP',
+          url: '/collections/electric-scooter-for-kids',
+          items: [],
+        },
+      ],
+    },
+    {
+      id: 'gid://shopify/MenuItem/461609566264',
+      resourceId: null,
+      tags: [],
+      title: 'Electric Skateboards',
+      type: 'HTTP',
+      url: '/pages/electric-skateboards',
+      items: [],
+    },
+    {
+      id: 'gid://shopify/MenuItem/461609599032',
+      resourceId: 'gid://shopify/Page/92591030328',
+      tags: [],
+      title: 'Accessories & Parts',
+      type: 'PAGE',
+      url: '/collections/accessories',
+      items: [],
+    },
+    {
+      id: 'gid://shopify/MenuItem/461609599033',
+      resourceId: null,
+      tags: [],
+      title: 'More',
+      type: 'HTTP',
+      url: '/pages/electric-bikes#',
+      items: [],
+    },
+  ],
+};
+
+
+
+===== hooks\useHeaderHeightSync.ts =====
+// app/hooks/useHeaderHeightSync.ts
+import {useEffect} from 'react';
+import type {RefObject} from 'react';
+
+/**
+ * useHeaderHeightSync
+ *
+ * Header.tsx already owns scroll-direction detection (its `hidden`
+ * state) — this hook does NOT duplicate that. It only:
+ *
+ * 1. Measures the header's real rendered height via ResizeObserver and
+ *    writes it to `--header-height` on <html>, so anything below the
+ *    header (CollectionFilters, CollectionToolbar) can position itself
+ *    against it without the height being threaded through props.
+ * 2. Mirrors Header's `hidden` boolean onto a `header-hidden` class on
+ *    <html>. CollectionFilters/CollectionToolbar are rendered by route
+ *    templates, not by Header — a class on <html> is the simplest way
+ *    to reach them without lifting state across that boundary.
+ *
+ * Usage in Header.tsx:
+ *   const headerRef = useRef<HTMLElement>(null);
+ *   useHeaderHeightSync(headerRef, hidden);
+ *   return <header ref={headerRef} ...>
+ */
+export function useHeaderHeightSync(
+  ref: RefObject<HTMLElement | null>,
+  hidden: boolean,
+) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const resizeObserver = new ResizeObserver(([entry]) => {
+      document.documentElement.style.setProperty(
+        '--header-height',
+        `${entry.contentRect.height}px`,
+      );
+    });
+    resizeObserver.observe(el);
+
+    return () => resizeObserver.disconnect();
+  }, [ref]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('header-hidden', hidden);
+  }, [hidden]);
+}
+
+===== lib\search.ts =====
+import type {
+  PredictiveSearchQuery,
+  RegularSearchQuery,
+} from 'storefrontapi.generated';
+
+type ResultWithItems<Type extends 'predictive' | 'regular', Items> = {
+  type: Type;
+  term: string;
+  error?: string;
+  result: {total: number; items: Items};
+};
+
+export type RegularSearchReturn = ResultWithItems<
+  'regular',
+  RegularSearchQuery
+>;
+export type PredictiveSearchReturn = ResultWithItems<
+  'predictive',
+  NonNullable<PredictiveSearchQuery['predictiveSearch']>
+>;
+
+/**
+ * Returns the empty state of a predictive search result to reset the search state.
+ */
+export function getEmptyPredictiveSearchResult(): PredictiveSearchReturn['result'] {
+  return {
+    total: 0,
+    items: {
+      articles: [],
+      collections: [],
+      products: [],
+      pages: [],
+      queries: [],
+    },
+  };
+}
+
+interface UrlWithTrackingParams {
+  /** The base URL to which the tracking parameters will be appended. */
+  baseUrl: string;
+  /** The trackingParams returned by the Storefront API. */
+  trackingParams?: string | null;
+  /** Any additional query parameters to be appended to the URL. */
+  params?: Record<string, string>;
+  /** The search term to be appended to the URL. */
+  term: string;
+}
+
+/**
+ * A utility function that appends tracking parameters to a URL. Tracking parameters are
+ * used internally by Shopify to enhance search results and admin dashboards.
+ * @example
+ * ```ts
+ * const baseUrl = 'www.example.com';
+ * const trackingParams = 'utm_source=shopify&utm_medium=shopify_app&utm_campaign=storefront';
+ * const params = { foo: 'bar' };
+ * const term = 'search term';
+ * const url = urlWithTrackingParams({ baseUrl, trackingParams, params, term });
+ * console.log(url);
+ * // Output: 'https://www.example.com?foo=bar&q=search%20term&utm_source=shopify&utm_medium=shopify_app&utm_campaign=storefront'
+ * ```
+ */
+export function urlWithTrackingParams({
+  baseUrl,
+  trackingParams,
+  params: extraParams,
+  term,
+}: UrlWithTrackingParams) {
+  let search = new URLSearchParams({
+    ...extraParams,
+    q: encodeURIComponent(term),
+  }).toString();
+
+  if (trackingParams) {
+    search = `${search}&${trackingParams}`;
+  }
+
+  return `${baseUrl}?${search}`;
+}
+
+
+===== sections\Header.tsx =====
+// app/sections/Header.tsx
+import {Suspense, useEffect, useRef, useState} from 'react';
+import {Await, Link, NavLink, useAsyncValue} from 'react-router';
+import {Heart, Scale, ShoppingBag, User} from 'lucide-react';
+import {
+  type CartViewPayload,
+  useAnalytics,
+  useOptimisticCart,
+} from '@shopify/hydrogen';
+import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
+import {useAside} from '~/components/Aside';
+import {HeaderSearch} from '~/snippets/HeaderSearch';
+import {HeaderMenu} from '~/snippets/HeaderMenu';
+export {HeaderMenu} from '~/snippets/HeaderMenu';
+import {HeaderUtility} from '~/snippets/HeaderUtility';
+export {HeaderUtility} from '~/snippets/HeaderUtility';
+import {AnnouncementBar} from './AnnouncementBar';
+export {AnnouncementBar} from './AnnouncementBar';
+import type {CollectionImage} from '~/config/Header.constants';
+import {ACTIVE_HEADER_STYLE, type HeaderStyle, SHOW_WISHLIST_CTA, SHOW_COMPARE_CTA} from '~/config/Header.constants';
+import wordmarkSrc from '~/assets/wordmark.svg';
+import {useHeaderHeightSync} from '~/hooks/useHeaderHeightSync';
+import {type WishlistEntry, WISHLIST_KEY, readWishlist} from '~/lib/wishlist'; // ADDED
+import {type CompareEntry, COMPARE_KEY, COMPARE_MAX, readCompareList} from '~/lib/compare'; // ADDED
+
+import type {HeaderLayoutProps} from './header-styles/types';
+import {HeaderLayoutLaunchpad} from './header-styles/HeaderLayoutLaunchpad';
+import {HeaderLayoutStorefront} from './header-styles/HeaderLayoutStorefront';
+import {HeaderLayoutMarketplace} from './header-styles/HeaderLayoutMarketplace';
+
+// Registry of available header arrangements. Adding a new style is
+// additive: build HeaderLayoutX.tsx against HeaderLayoutProps, add it
+// here, done — nothing else in this file needs to change.
+const HEADER_LAYOUTS: Record<HeaderStyle, React.ComponentType<HeaderLayoutProps>> = {
+  launchpad: HeaderLayoutLaunchpad,
+  storefront: HeaderLayoutStorefront,
+  marketplace: HeaderLayoutMarketplace,
+};
+
+export interface HeaderProps {
+  header: HeaderQuery;
+  cart: Promise<CartApiQueryFragment | null>;
+  isLoggedIn: Promise<boolean>;
+  publicStoreDomain: string;
+  collectionImages?: Record<string, CollectionImage>;
+  customer?: Promise<{firstName: string | null} | null>;
+}
+
+export type Viewport = 'desktop' | 'mobile';
+
+export function Header({
+  header,
+  isLoggedIn,
+  cart,
+  publicStoreDomain,
+  collectionImages,
+  customer,
+}: HeaderProps) {
+  const {shop, menu} = header;
+  const [hidden, setHidden] = useState(false);
+  const lastScrollY = useRef(0);
+  const headerRef = useRef<HTMLElement>(null);
+
+  // Exposes this header's real height + hidden state to anything
+  // outside it (CollectionFilters, CollectionToolbar) via a CSS
+  // variable + class on <html>. Does not touch the scroll-direction
+  // logic below — that stays exactly as it was.
+  useHeaderHeightSync(headerRef, hidden);
+
+  useEffect(() => {
+    lastScrollY.current = window.scrollY;
+
+    function onScroll() {
+      const currentY = window.scrollY;
+      const delta = currentY - lastScrollY.current;
+
+      if (currentY < 80) {
+        setHidden(false);
+      } else if (delta > 5) {
+        setHidden(true);
+      } else if (delta < -5) {
+        setHidden(false);
+      }
+
+      lastScrollY.current = currentY;
+    }
+
+    window.addEventListener('scroll', onScroll, {passive: true});
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const Layout = HEADER_LAYOUTS[ACTIVE_HEADER_STYLE];
+
+  return (
+    // NOTE: `sticky` lives on this outer element and this element ONLY.
+    // Do not add a `transform`/`translate` class here — combining
+    // `position: sticky` with `transform` on the same element forces a
+    // compositor layer that can rasterize with a sub-pixel gap at the
+    // top edge on non-integer DPI/zoom (Chrome/Safari). That gap shows
+    // up as a thin white line above the header at some zoom levels.
+    // The hide-on-scroll transform is applied to the inner wrapper
+    // below instead, which is a plain in-flow child, not the sticky
+    // element itself.
+    <header ref={headerRef} className="sticky top-0 z-50 w-full">
+      <div
+        className={`w-full bg-white font-sans shadow-[0_4px_20px_rgba(0,0,0,0.10)] transition-transform duration-300 ${
+          hidden ? '-translate-y-full' : 'translate-y-0'
+        }`}
+      >
+        <AnnouncementBar />
+        <HeaderUtility />
+
+        <Layout
+          logo={
+            <NavLink prefetch="intent" to="/" end className="shrink-0" aria-label={`${shop.name} — home`}>
+              <img src={wordmarkSrc} alt={shop.name} width={140} height={28} className="h-8 w-auto sm:h-9" />
+            </NavLink>
+          }
+          menu={
+            <HeaderMenu
+              menu={menu}
+              viewport="desktop"
+              primaryDomainUrl={header.shop.primaryDomain.url}
+              publicStoreDomain={publicStoreDomain}
+              collectionImages={collectionImages}
+            />
+          }
+          search={<HeaderSearch size="compact" />}
+          ctas={<HeaderCtas isLoggedIn={isLoggedIn} cart={cart} customer={customer} />}
+          mobileToggle={<HeaderMenuMobileToggle />}
+          mobileSearch={<HeaderSearch />}
+        />
+      </div>
+    </header>
+  );
+}
+
+function HeaderCtas({
+  isLoggedIn,
+  cart,
+  customer,
+}: Pick<HeaderProps, 'isLoggedIn' | 'cart' | 'customer'>) {
+  return (
+    <nav className="flex shrink-0 items-center gap-3 sm:gap-6" role="navigation">
+      <HeaderAccount isLoggedIn={isLoggedIn} customer={customer} />
+      {/* On standby — SHOW_WISHLIST_CTA/SHOW_COMPARE_CTA in
+          Header.constants.ts. Component, badge, and localStorage sync
+          logic below are untouched; flip the flags to re-enable. */}
+      {SHOW_WISHLIST_CTA && <WishlistToggle />}
+      {SHOW_COMPARE_CTA && <CompareToggle />}
+      <CartToggle cart={cart} />
+    </nav>
+  );
+}
+
+function HeaderMenuMobileToggle() {
+  const {open} = useAside();
+  return (
+    <button
+      aria-label="Open menu"
+      className="shrink-0 rounded p-1 text-gray-800 hover:text-gray-950 lg:hidden"
+      onClick={() => open('mobile')}
+    >
+      <span className="text-lg">☰</span>
+    </button>
+  );
+}
+
+function HeaderAccount({
+  isLoggedIn,
+  customer,
+}: {
+  isLoggedIn: Promise<boolean>;
+  customer?: Promise<{firstName: string | null} | null>;
+}) {
+  return (
+    <NavLink
+      prefetch="intent"
+      to="/account"
+      className="flex items-center gap-1.5 text-sm font-medium text-gray-800 hover:text-gray-950" aria-label="Account"
+    >
+      <Suspense fallback={<AccountContent label="Sign in/ Register" />}>
+        <Await
+          resolve={isLoggedIn}
+          errorElement={<AccountContent label="Sign in/ Register" />}
+        >
+          {(loggedIn) => {
+            if (!loggedIn) {
+              return <AccountContent label="Sign in/ Register" />;
+            }
+            if (!customer) {
+              return <AccountContent label="Account" />;
+            }
+            return (
+              <Suspense fallback={<AccountContent label="Account" />}>
+                <Await
+                  resolve={customer}
+                  errorElement={<AccountContent label="Account" />}
+                >
+                  {(customerData) => (
+                    <AccountContent
+                      label={
+                        customerData?.firstName
+                          ? `Hi, ${customerData.firstName}`
+                          : 'Account'
+                      }
+                    />
+                  )}
+                </Await>
+              </Suspense>
+            );
+          }}
+        </Await>
+      </Suspense>
+    </NavLink>
+  );
+}
+
+// Text label hidden below `sm` (mobile — icon only, to save space
+// next to the hamburger/logo/cart row) and visible at `sm` and up
+// (tablet/desktop, where there's room for it).
+function AccountContent({label}: {label: string}) {
+  return (
+    <>
+      <User size={28} aria-hidden="true" />
+      
+    </>
+  );
+}
+
+function CartBadge({count = 0}: {count?: number}) {
+  const {open} = useAside();
+  const {publish, shop, cart, prevCart} = useAnalytics();
+
+  return (
+    <Link
+      to="/cart"
+      onClick={(e) => {
+        e.preventDefault();
+        open('cart');
+        publish('cart_viewed', {
+          cart,
+          prevCart,
+          shop,
+          url: window.location.href || '',
+        } as CartViewPayload);
+      }}
+      className="group flex items-center gap-1.5 text-sm font-medium text-gray-900 transition hover:text-gray-600"
+      aria-label={`Cart, ${count} item${count === 1 ? '' : 's'}`}
+    >
+      <span className="relative">
+        <ShoppingBag size={28} className="shrink-0" aria-hidden="true" />
+        {count > 0 && (
+          <span
+            className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-gray-900 text-[9px] font-semibold leading-none text-white"
+            aria-hidden="true"
+          >
+            {count}
+          </span>
+        )}
+      </span>
+      </Link>
+  );
+}
+
+function CartToggle({cart}: Pick<HeaderProps, 'cart'>) {
+  return (
+    <Suspense fallback={<CartBadge count={0} />}>
+      <Await resolve={cart}>
+        <CartBanner />
+      </Await>
+    </Suspense>
+  );
+}
+
+function CartBanner() {
+  const originalCart = useAsyncValue() as CartApiQueryFragment | null;
+  const cart = useOptimisticCart(originalCart);
+  return <CartBadge count={cart?.totalQuantity ?? 0} />;
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Wishlist toggle — ADDED
+// Mirrors CartBadge/CartToggle's structure exactly (same icon size,
+// badge styling, layout classes), but the data source is different:
+// cart count comes from a server-resolved Promise via <Await>, while
+// wishlist count is client-only (localStorage via lib/wishlist.ts), so
+// it needs a hydration-safe "start at 0, sync in useEffect" pattern —
+// starting from a real count on the server render would mismatch what
+// the client has in storage. Kept in sync via the in-tab
+// `wishlist:updated` CustomEvent (fired by lib/wishlist.ts on every
+// toggle), plus the native `storage` event for cross-tab updates.
+// ─────────────────────────────────────────────────────────────────────────
+
+function WishlistBadge({count = 0}: {count?: number}) {
+  return (
+    <Link
+      to="/wishlist"
+      className="group flex items-center gap-1.5 text-sm font-medium text-gray-900 transition hover:text-gray-600"
+      aria-label={`Wishlist, ${count} item${count === 1 ? '' : 's'}`}
+    >
+      <span className="relative">
+        <Heart size={17} className="shrink-0" aria-hidden="true" />
+        {count > 0 && (
+          <span
+            className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-gray-900 text-[9px] font-semibold leading-none text-white"
+            aria-hidden="true"
+          >
+            {count}
+          </span>
+        )}
+      </span>
+      <span className="hidden sm:inline" aria-hidden="true">
+        Wishlist
+      </span>
+    </Link>
+  );
+}
+
+function WishlistToggle() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    setCount(readWishlist().length);
+
+    function onWishlistUpdated(e: Event) {
+      const detail = (e as CustomEvent<{items: WishlistEntry[]}>).detail;
+      setCount(detail?.items?.length ?? readWishlist().length);
+    }
+
+    function onStorage(e: StorageEvent) {
+      if (e.key !== WISHLIST_KEY) return;
+      setCount(readWishlist().length);
+    }
+
+    document.addEventListener('wishlist:updated', onWishlistUpdated);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      document.removeEventListener('wishlist:updated', onWishlistUpdated);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
+
+  return <WishlistBadge count={count} />;
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Compare toggle — ADDED
+// Same structure and sync strategy as WishlistToggle above (client-only
+// count, hydration-safe start-at-0, `compare:updated` + `storage` event
+// listeners), sourced from lib/compare.ts instead. The one difference:
+// compare has a hard cap (COMPARE_MAX), so the badge shows "n/max" via
+// aria-label the same way CompareBar's CTA does, giving a sense of
+// how close the list is to full without needing to open it.
+// ─────────────────────────────────────────────────────────────────────────
+
+function CompareBadge({count = 0}: {count?: number}) {
+  return (
+    <Link
+      to="/compare"
+      className="group flex items-center gap-1.5 text-sm font-medium text-gray-900 transition hover:text-gray-600"
+      aria-label={`Compare, ${count} of ${COMPARE_MAX} item${count === 1 ? '' : 's'}`}
+    >
+      <span className="relative">
+        <Scale size={17} className="shrink-0" aria-hidden="true" />
+        {count > 0 && (
+          <span
+            className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-gray-900 text-[9px] font-semibold leading-none text-white"
+            aria-hidden="true"
+          >
+            {count}
+          </span>
+        )}
+      </span>
+      <span className="hidden sm:inline" aria-hidden="true">
+        Compare
+      </span>
+    </Link>
+  );
+}
+
+function CompareToggle() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    setCount(readCompareList().length);
+
+    function onCompareUpdated(e: Event) {
+      const detail = (e as CustomEvent<{items: CompareEntry[]}>).detail;
+      setCount(detail?.items?.length ?? readCompareList().length);
+    }
+
+    function onStorage(e: StorageEvent) {
+      if (e.key !== COMPARE_KEY) return;
+      setCount(readCompareList().length);
+    }
+
+    document.addEventListener('compare:updated', onCompareUpdated);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      document.removeEventListener('compare:updated', onCompareUpdated);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
+
+  return <CompareBadge count={count} />;
+}
+
+
+===== sections\SearchPanel.tsx =====
+// app/sections/SearchPanel.tsx
+
+import {useEffect, useRef, useState, useCallback} from 'react';
+import {createPortal} from 'react-dom';
+import {Link, useFetcher} from 'react-router';
+import {
+  X,
+  RotateCcw,
+  Search,
+  Tag,
+  LayoutGrid,
+  Info,
+  Heart,
+  ArrowUpLeft,
+  ImageOff,
+} from 'lucide-react';
+import {TRENDING_SEARCH_TERMS} from '~/config/Header.constants';
+import {SearchBar} from '~/snippets/SearchBar';
+
+// Matches the shape returned by the /api/predictive-search route loader
+// (app/routes/api.predictive-search.tsx), which wraps Shopify's
+// Storefront API predictiveSearch query.
+type PredictiveSearchHit = {
+  objectID: string;
+  title: string;
+  handle: string;
+  image_url: string | null;
+  price: number | null;
+  compare_at_price: number | null;
+  is_eco: boolean;
+  /**
+   * Per-product vendor, shown as the small "BRAND" label above the
+   * title. Optional/nullable because it requires api.predictive-search.tsx
+   * to include `vendor` on each hit — see the patch note alongside this
+   * file if it isn't wired up yet.
+   */
+  vendor?: string | null;
+};
+
+type PredictiveCollection = {
+  id: string;
+  title: string;
+  handle: string;
+  image_url: string | null;
+};
+
+type PredictiveArticle = {
+  id: string;
+  title: string;
+  handle: string;
+  blog_handle: string;
+  image_url: string | null;
+  published_at: string;
+};
+
+type PredictivePage = {
+  id: string;
+  title: string;
+  handle: string;
+};
+
+type PredictiveSearchResponse = {
+  hits: PredictiveSearchHit[];
+  querySuggestions: string[];
+  vendors: string[];
+  collections: PredictiveCollection[];
+  articles: PredictiveArticle[];
+  pages: PredictivePage[];
+  error?: string;
+};
+
+const RECENT_SEARCHES_KEY = 'ecombio:recent-searches';
+export const MAX_RECENT_SEARCHES = 5;
+
+function formatMoney(amount: number | null | undefined): string | null {
+  if (amount == null) return null;
+  // TODO: swap 'USD' for the shop's actual currency (e.g. from context)
+  // if you sell in multiple currencies/locales.
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(amount);
+}
+
+function formatArticleDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', {
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+/**
+ * Bolds the first occurrence of `query` inside `text` (case-insensitive).
+ * Mirrors the reference design's match-highlighting in the suggestions
+ * rail so it's visually obvious why a given suggestion surfaced.
+ */
+function HighlightedText({text, query}: {text: string; query: string}) {
+  const q = query.trim();
+  if (!q) return <span>{text}</span>;
+
+  const idx = text.toLowerCase().indexOf(q.toLowerCase());
+  if (idx === -1) return <span>{text}</span>;
+
+  const before = text.slice(0, idx);
+  const match = text.slice(idx, idx + q.length);
+  const after = text.slice(idx + q.length);
+
+  return (
+    <span>
+      {before}
+      <span className="font-bold text-gray-950">{match}</span>
+      {after}
+    </span>
+  );
+}
+
+// Exported so HeaderSearch (which now owns the "commit a search" flow)
+// can read/write the same localStorage-backed recent-searches list
+// without duplicating this logic in two files.
+export function readRecentSearches(): string[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = window.localStorage.getItem(RECENT_SEARCHES_KEY);
+    return raw ? (JSON.parse(raw) as string[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function writeRecentSearches(terms: string[]) {
+  try {
+    window.localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(terms));
+  } catch {
+    // Storage can fail (private browsing, quota) — recent searches are a
+    // nice-to-have, so just skip persisting rather than throwing.
+  }
+}
+
+export function SearchPanel({
+  open,
+  onClose,
+  triggerRef,
+  term,
+  onTermChange,
+  onNavigate,
+}: {
+  open: boolean;
+  onClose: () => void;
+  // AiSearchBar forwards a ref to its root <div>, not a <button> — this
+  // is only used for "is the click/focus still inside the trigger"
+  // checks below, so any element ref works.
+  triggerRef: React.RefObject<HTMLElement>;
+  /** Current search term — now owned by HeaderSearch via AiSearchBar. */
+  term: string;
+  /** Called when a suggestion/recent-search chip is clicked. */
+  onTermChange: (value: string) => void;
+  /** Called to commit a search (Enter, "See all results", a chip). */
+  onNavigate: (value: string) => void;
+}) {
+  const fetcher = useFetcher<PredictiveSearchResponse>();
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (open) setRecentSearches(readRecentSearches());
+  }, [open]);
+
+  // Debounce: wait 250ms after the user stops typing before hitting the
+  // predictive-search route. Clearing the timeout on every keystroke
+  // means only the last keystroke in a burst actually fires a request.
+  useEffect(() => {
+    if (!term) return;
+    const timeout = setTimeout(() => {
+      fetcher.load(`/api/predictive-search?q=${encodeURIComponent(term)}`);
+    }, 250);
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [term]);
+
+  const hits: PredictiveSearchHit[] = term ? fetcher.data?.hits ?? [] : [];
+  const querySuggestions = term ? fetcher.data?.querySuggestions ?? [] : [];
+  const vendors = term ? fetcher.data?.vendors ?? [] : [];
+  const collections = term ? fetcher.data?.collections ?? [] : [];
+  const articles = term ? fetcher.data?.articles ?? [] : [];
+  const pages = term ? fetcher.data?.pages ?? [] : [];
+  const error = fetcher.data?.error ?? null;
+  const state: 'idle' | 'loading' =
+    term && (fetcher.state === 'loading' || fetcher.state === 'submitting')
+      ? 'loading'
+      : 'idle';
+
+  const matchingRecent = term
+    ? recentSearches.filter((r) =>
+        r.toLowerCase().includes(term.toLowerCase()),
+      )
+    : [];
+
+  const hasSuggestions =
+    matchingRecent.length > 0 ||
+    querySuggestions.length > 0 ||
+    vendors.length > 0 ||
+    collections.length > 0 ||
+    pages.length > 0;
+
+  // Primary matched collection, shown inline next to the "Products"
+  // label (e.g. "Products In Gloves") the way the reference design
+  // shows the active category next to the section header.
+  const primaryCollection = collections[0] ?? null;
+
+  const panelRef = useRef<HTMLDivElement>(null);
+  // The panel's own copy of the search input. This is the visible bar
+  // while the panel is open — the header's SearchBar (in HeaderSearch)
+  // sits underneath the panel and is hidden once it slides over it, so
+  // this is what the user actually sees and types into. Both instances
+  // are fully controlled from HeaderSearch via the same `term` state,
+  // so they always stay in sync.
+  const panelInputRef = useRef<HTMLInputElement>(null);
+
+  // Portaled to <body> below (same reasoning as MenuDrawer's
+  // DrawerBackdrop) so this always renders above everything else on the
+  // page, regardless of any stacking context an ancestor might introduce.
+  // `document` doesn't exist during SSR, so wait for the client mount
+  // before portaling — same guard DrawerBackdrop uses.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  // Focus the panel's own input whenever the panel opens, so the user
+  // can keep typing right where the (now-hidden) header pill left off.
+  useEffect(() => {
+    if (open) panelInputRef.current?.focus();
+  }, [open]);
+
+  function closeSearch() {
+    // Clearing `term` is enough — the derived values above all fall back
+    // to `[]` once term is empty, so stale fetcher.data from the last
+    // query is simply ignored without needing to touch fetcher state.
+    onTermChange('');
+    onClose();
+  }
+
+  function applySuggestion(value: string) {
+    onTermChange(value);
+    // Refocus the panel's own input so the user can keep typing/editing
+    // right after picking a suggestion, instead of losing focus.
+    panelInputRef.current?.focus();
+  }
+
+  useEffect(() => {
+    if (!open) return;
+
+    function onClickOutside(e: MouseEvent) {
+      const target = e.target as Node;
+      if (
+        panelRef.current &&
+        !panelRef.current.contains(target) &&
+        !triggerRef.current?.contains(target)
+      ) {
+        onClose();
+      }
+    }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    }
+
+    document.addEventListener('mousedown', onClickOutside);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onClickOutside);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [open, onClose, triggerRef]);
+
+  // Close the panel when the user scrolls the page behind it. The
+  // 'scroll' event doesn't bubble from the panel's own internal
+  // scrollable results div up to window, so this only fires for page-
+  // level scrolling (e.g. scrolling the page via a trackpad/wheel while
+  // the panel is open), not for scrolling within the results themselves.
+  useEffect(() => {
+    if (!open) return;
+
+    function onScroll() {
+      onClose();
+    }
+
+    window.addEventListener('scroll', onScroll, {passive: true});
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [open, onClose]);
+
+  const total = hits.length;
+
+  // Panel always covers the entire viewport starting from the very top
+  // (y: 0) — including AnnouncementBar and HeaderUtility above the header
+  // row — rather than starting just below it.
+  const topOffset = 0;
+
+  if (!mounted) return null;
+
+  return createPortal(
+    <>
+      <div
+        aria-hidden="true"
+        onClick={onClose}
+        style={{top: topOffset}}
+        className={`fixed inset-x-0 bottom-0 z-[900] bg-black/40 backdrop-blur-[6px] transition-opacity duration-200 ease-out ${
+          open ? 'opacity-100' : 'pointer-events-none opacity-0'
+        }`}
+      />
+
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Search"
+        style={{top: topOffset}}
+        className={`fixed inset-x-0 z-[901] grid max-h-[calc(100vh-var(--sp-top,0px))] border-b border-gray-200 bg-white shadow-2xl transition-[grid-template-rows] duration-300 ease-out ${
+          open ? 'grid-rows-[1fr]' : 'pointer-events-none grid-rows-[0fr]'
+        }`}
+      >
+        <div className="overflow-hidden">
+          <div className="mx-auto max-h-[80vh] max-w-[1080px] overflow-y-auto px-6 py-7">
+            {/* The panel's own visible search bar + close button. This
+                is what the user sees/types into while the panel is
+                open — it's the same controlled `term`/`onTermChange`
+                that HeaderSearch passes to the header's own SearchBar,
+                so the two never drift out of sync. */}
+            <div className="flex items-center gap-3">
+              <SearchBar
+                inputRef={panelInputRef}
+                className="flex-1"
+                value={term}
+                onQueryChange={onTermChange}
+                onSearch={onNavigate}
+              />
+              <button
+                type="button"
+                onClick={closeSearch}
+                aria-label="Close search"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600 transition hover:bg-gray-200 hover:text-gray-950"
+              >
+                <X size={18} aria-hidden="true" />
+              </button>
+            </div>
+
+            <div className="mt-7">
+              {!term ? (
+                <PopularSearches
+                  terms={TRENDING_SEARCH_TERMS}
+                  onSelect={onTermChange}
+                />
+              ) : state === 'loading' ? (
+                <SearchResultsSkeleton />
+              ) : error ? (
+                <div>
+                  <p className="text-sm text-red-600">{error}</p>
+                  <div className="mt-7">
+                    <PopularSearches
+                      terms={TRENDING_SEARCH_TERMS}
+                      onSelect={onTermChange}
+                    />
+                  </div>
+                </div>
+              ) : !total && !hasSuggestions ? (
+                <div>
+                  <p className="text-sm text-gray-500">
+                    No results found for <q>{term}</q>
+                  </p>
+                  <div className="mt-7">
+                    <PopularSearches
+                      terms={TRENDING_SEARCH_TERMS}
+                      onSelect={onTermChange}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-8 md:grid-cols-[260px_1fr]">
+                  {hasSuggestions && (
+                    <SuggestionsRail
+                      term={term}
+                      recent={matchingRecent}
+                      queries={querySuggestions}
+                      vendors={vendors}
+                      collections={collections}
+                      pages={pages}
+                      onSelectTerm={applySuggestion}
+                    />
+                  )}
+
+                  <div className="min-w-0">
+                    {total > 0 && (
+                      <div>
+                        <p className="mb-4 text-sm text-gray-400">
+                          Products
+                          {primaryCollection && (
+                            <span className="ml-1.5 font-semibold text-gray-800">
+                              In {primaryCollection.title}
+                            </span>
+                          )}
+                        </p>
+                        <ProductHitsCarousel hits={hits} onNavigate={closeSearch} />
+
+                        <div className="mt-6 flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onNavigate(term);
+                              onClose();
+                            }}
+                            className="inline-flex items-center justify-center rounded-sm bg-gray-950 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-gray-800"
+                          >
+                            See all results for &ldquo;{term}&rdquo;
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {articles.length > 0 && (
+                      <div className={total > 0 ? 'mt-8' : ''}>
+                        <div className="mb-4 flex items-center justify-between">
+                          <p className="text-sm text-gray-400">Articles</p>
+                          <Link
+                            to={`/search?q=${encodeURIComponent(term)}&type=article`}
+                            onClick={closeSearch}
+                            className="text-sm font-semibold text-gray-900 underline decoration-gray-300 underline-offset-4 hover:decoration-gray-900"
+                          >
+                            See all
+                          </Link>
+                        </div>
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                          {articles.slice(0, 2).map((article) => (
+                            <Link
+                              key={article.id}
+                              to={`/blogs/${article.blog_handle}/${article.handle}`}
+                              onClick={closeSearch}
+                              className="group flex items-center gap-3 rounded-xl border border-gray-100 p-2.5 transition hover:border-gray-200 hover:bg-gray-50"
+                            >
+                              <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-gray-100">
+                                {article.image_url ? (
+                                  <img
+                                    src={article.image_url}
+                                    alt={article.title}
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="flex h-full w-full items-center justify-center">
+                                    <ImageOff size={16} className="text-gray-300" aria-hidden="true" />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="line-clamp-2 text-sm font-semibold leading-snug text-gray-900 group-hover:text-gray-950">
+                                  {article.title}
+                                </p>
+                                <p className="mt-1 text-xs text-gray-500">
+                                  Published{' '}
+                                  {formatArticleDate(article.published_at)}
+                                </p>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>,
+    document.body,
+  );
+}
+
+const MAX_SUGGESTIONS = 8;
+
+/**
+ * Left-hand "Suggestions" rail — blends recent searches the user has
+ * already typed with live matches from Shopify: query text suggestions,
+ * vendors (derived from matched products), collections, and pages.
+ * Each row uses a distinct icon so the source of the suggestion stays
+ * legible at a glance, matching the reference pattern.
+ *
+ * Capped at MAX_SUGGESTIONS total (not per-source) so a broad term
+ * doesn't dump 20+ rows into the rail — recent searches take priority,
+ * then queries, then vendors, then collections, then pages, filling
+ * remaining slots in that order.
+ */
+function SuggestionsRail({
+  term,
+  recent,
+  queries,
+  vendors,
+  collections,
+  pages,
+  onSelectTerm,
+}: {
+  term: string;
+  recent: string[];
+  queries: string[];
+  vendors: string[];
+  collections: PredictiveCollection[];
+  pages: PredictivePage[];
+  onSelectTerm: (term: string) => void;
+}) {
+  let remaining = MAX_SUGGESTIONS;
+
+  const take = <T,>(items: T[]): T[] => {
+    if (remaining <= 0) return [];
+    const slice = items.slice(0, remaining);
+    remaining -= slice.length;
+    return slice;
+  };
+
+  const shownRecent = take(recent);
+  const shownQueries = take(queries);
+  const shownVendors = take(vendors);
+  const shownCollections = take(collections);
+  const shownPages = take(pages);
+
+  return (
+    <div className="border-b border-gray-100 pb-6 md:border-b-0 md:border-r md:border-gray-100 md:pb-0 md:pr-6">
+      <p className="mb-4 text-sm text-gray-400">Suggestions</p>
+      <div className="flex flex-col gap-1.5">
+        {shownRecent.map((value) => (
+          <SuggestionRow
+            key={`recent-${value}`}
+            icon={<RotateCcw size={15} aria-hidden="true" />}
+            label={value}
+            query={term}
+            onClick={() => onSelectTerm(value)}
+          />
+        ))}
+        {shownQueries.map((value) => (
+          <SuggestionRow
+            key={`query-${value}`}
+            icon={<Search size={15} aria-hidden="true" />}
+            label={value}
+            query={term}
+            onClick={() => onSelectTerm(value)}
+          />
+        ))}
+        {shownVendors.map((value) => (
+          <SuggestionRow
+            key={`vendor-${value}`}
+            icon={<Tag size={15} aria-hidden="true" />}
+            label={value}
+            query={term}
+            onClick={() => onSelectTerm(value)}
+          />
+        ))}
+        {shownCollections.map((collection) => (
+          <Link
+            key={collection.id}
+            to={`/collections/${collection.handle}`}
+            className="group flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm text-gray-800 transition hover:bg-gray-50"
+          >
+            <span className="text-gray-400">
+              <LayoutGrid size={15} aria-hidden="true" />
+            </span>
+            <span className="min-w-0 flex-1 leading-snug">
+              <HighlightedText text={collection.title} query={term} />
+            </span>
+          </Link>
+        ))}
+        {shownPages.map((page) => (
+          <Link
+            key={page.id}
+            to={`/pages/${page.handle}`}
+            className="group flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm text-gray-800 transition hover:bg-gray-50"
+          >
+            <span className="text-gray-400">
+              <Info size={15} aria-hidden="true" />
+            </span>
+            <span className="min-w-0 flex-1 leading-snug">
+              <HighlightedText text={page.title} query={term} />
+            </span>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SuggestionRow({
+  icon,
+  label,
+  query,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  query: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm text-gray-800 transition hover:bg-gray-50"
+    >
+      <span className="text-gray-400">{icon}</span>
+      <span className="min-w-0 flex-1 leading-snug">
+        <HighlightedText text={label} query={query} />
+      </span>
+      <span className="shrink-0 text-gray-300 opacity-0 transition group-hover:opacity-100">
+        <ArrowUpLeft size={14} aria-hidden="true" />
+      </span>
+    </button>
+  );
+}
+
+/**
+ * Horizontal scrolling carousel for predictive-search product hits.
+ * Replaces the previous CSS-grid layout so results scroll sideways
+ * instead of wrapping into rows — mirrors the scroll/arrow logic used
+ * by sections/ProductCarousel.tsx elsewhere in the app.
+ */
+function ProductHitsCarousel({
+  hits,
+  onNavigate,
+}: {
+  hits: PredictiveSearchHit[];
+  onNavigate: () => void;
+}) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
+
+  const updateScrollState = useCallback(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    setCanScrollPrev(el.scrollLeft > 1);
+    setCanScrollNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
+  }, []);
+
+  useEffect(() => {
+    updateScrollState();
+    const el = trackRef.current;
+    if (!el) return;
+
+    el.addEventListener('scroll', updateScrollState, {passive: true});
+    const ro = new ResizeObserver(updateScrollState);
+    ro.observe(el);
+
+    return () => {
+      el.removeEventListener('scroll', updateScrollState);
+      ro.disconnect();
+    };
+  }, [updateScrollState, hits.length]);
+
+  function scrollByDirection(direction: 1 | -1) {
+    const el = trackRef.current;
+    if (!el) return;
+    const card = el.querySelector<HTMLElement>('[data-carousel-item]');
+    const styles = card ? getComputedStyle(el) : null;
+    const gap = styles ? parseFloat(styles.columnGap || styles.gap || '0') : 0;
+    const step = card ? card.offsetWidth + gap : el.clientWidth * 0.8;
+    el.scrollBy({left: step * direction, behavior: 'smooth'});
+  }
+
+  if (!hits.length) return null;
+
+  return (
+    <div className="relative">
+      <div
+        ref={trackRef}
+        role="group"
+        aria-label="Product results"
+        className="flex gap-5 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {hits.map((hit) => (
+          <div
+            key={hit.objectID}
+            data-carousel-item
+            className="w-[45%] shrink-0 snap-start sm:w-[31%] lg:w-[23%]"
+          >
+            <ProductHit hit={hit} onNavigate={onNavigate} />
+          </div>
+        ))}
+      </div>
+
+      {canScrollPrev && (
+        <button
+          type="button"
+          onClick={() => scrollByDirection(-1)}
+          aria-label="Scroll to previous products"
+          className="absolute left-0 top-1/2 hidden -translate-x-3 -translate-y-1/2 items-center justify-center rounded-full bg-white p-2 text-gray-700 shadow-md ring-1 ring-gray-200 transition hover:bg-gray-50 sm:flex"
+        >
+          <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <path
+              d="M11 4.5 6.5 9l4.5 4.5"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      )}
+      {canScrollNext && (
+        <button
+          type="button"
+          onClick={() => scrollByDirection(1)}
+          aria-label="Scroll to next products"
+          className="absolute right-0 top-1/2 hidden translate-x-3 -translate-y-1/2 items-center justify-center rounded-full bg-white p-2 text-gray-700 shadow-md ring-1 ring-gray-200 transition hover:bg-gray-50 sm:flex"
+        >
+          <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <path
+              d="M7 4.5 11.5 9 7 13.5"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      )}
+    </div>
+  );
+}
+
+function ProductHit({
+  hit,
+  onNavigate,
+}: {
+  hit: PredictiveSearchHit;
+  onNavigate: () => void;
+}) {
+  const price = formatMoney(hit.price);
+  const compareAtPrice = formatMoney(hit.compare_at_price);
+  const onSale =
+    hit.compare_at_price != null &&
+    hit.price != null &&
+    hit.compare_at_price > hit.price;
+  const percentOff =
+    onSale && hit.price != null && hit.compare_at_price != null
+      ? Math.round((1 - hit.price / hit.compare_at_price) * 100)
+      : null;
+
+  return (
+    <div className="group relative">
+      <Link to={`/products/${hit.handle}`} onClick={onNavigate}>
+        <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-gray-100 ring-1 ring-transparent transition group-hover:ring-gray-200">
+          {hit.image_url ? (
+            <img
+              src={hit.image_url}
+              alt={hit.title}
+              className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.04]"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              <ImageOff size={22} className="text-gray-300" aria-hidden="true" />
+            </div>
+          )}
+          <div className="absolute left-2 top-2 flex flex-col items-start gap-1">
+            {hit.is_eco && (
+              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">
+                ECO
+              </span>
+            )}
+            {percentOff !== null && percentOff > 0 && (
+              <span className="rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-semibold text-white">
+                -{percentOff}% OFF
+              </span>
+            )}
+          </div>
+        </div>
+        {hit.vendor && (
+          <p className="mt-2.5 text-[10px] font-medium uppercase tracking-wider text-gray-400">
+            {hit.vendor}
+          </p>
+        )}
+        <p className="mt-1 line-clamp-2 text-[15px] leading-snug text-gray-900 group-hover:text-gray-950">
+          {hit.title}
+        </p>
+        <div className="mt-1.5 flex items-baseline gap-2">
+          {price && (
+            <span className="text-[15px] font-semibold text-gray-900">
+              {price}
+            </span>
+          )}
+          {onSale && compareAtPrice && (
+            <span className="text-[13px] text-gray-400 line-through">
+              {compareAtPrice}
+            </span>
+          )}
+        </div>
+      </Link>
+
+      {/*
+        Wishlist affordance only — not wired to persistence yet. Shopify
+        doesn't have a built-in wishlist; hook this up to whatever you
+        use (customer metafields, a wishlist app's API, local storage,
+        etc.) before shipping. Left as a visible, non-functional stub
+        rather than a fake "saved" state.
+      */}
+      <button
+        type="button"
+        aria-label={`Add ${hit.title} to wishlist`}
+        onClick={(e) => e.preventDefault()}
+        className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow transition hover:bg-white"
+      >
+        <Heart size={14} aria-hidden="true" />
+      </button>
+    </div>
+  );
+}
+
+/**
+ * Flex-wrapped pill/chip list — matches the reference "Popular Search
+ * Terms" row instead of the old vertical rail-with-border layout.
+ */
+function PopularSearches({
+  terms,
+  onSelect,
+}: {
+  terms: string[];
+  onSelect: (term: string) => void;
+}) {
+  if (!terms.length) return null;
+
+  return (
+    <div>
+      <p className="mb-4 text-sm text-gray-400">Popular searches</p>
+      <div className="flex flex-wrap gap-2.5">
+        {terms.map((term) => (
+          <button
+            key={term}
+            type="button"
+            onClick={() => onSelect(term)}
+            className="rounded-full bg-gray-100 px-4 py-2 text-sm font-medium text-gray-800 transition hover:bg-gray-200"
+          >
+            {term}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SearchResultsSkeleton() {
+  return (
+    <div className="grid grid-cols-2 gap-5 sm:grid-cols-3">
+      {Array.from({length: 6}).map((_, i) => (
+        <div key={i} className="animate-pulse">
+          <div className="aspect-square w-full rounded-xl bg-gray-100" />
+          <div className="mt-2.5 h-3.5 w-4/5 rounded bg-gray-100" />
+          <div className="mt-2 h-3.5 w-1/3 rounded bg-gray-100" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+===== sections\header-styles\HeaderLayoutLaunchpad.tsx =====
+// app/sections/header-styles/HeaderLayoutLaunchpad.tsx
+//
+// Single row (desktop, lg+): logo — centered nav menu — compact
+// search + account/cart, mirroring Nike's header where search shares
+// a row with the primary nav instead of the menu living in its own
+// row underneath.
+//
+// Mobile (<lg): hamburger + logo + cart on top, full-width search on
+// its own row below. Nav menu lives in the mobile drawer, not inline.
+//
+// No data-header-menu-row here — there's no second row to anchor a
+// mega-menu backdrop to, so HeaderMenu's updatePanelTop() will just
+// fall back to its default top offset for this layout.
+
+import type {HeaderLayoutProps} from './types';
+
+export function HeaderLayoutLaunchpad({
+  logo,
+  menu,
+  search,
+  ctas,
+  mobileToggle,
+  mobileSearch,
+}: HeaderLayoutProps) {
+  return (
+    <div data-header-row className="relative">
+      <div className="mx-auto flex max-w-[var(--content-max-width)] items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6 lg:gap-6 lg:px-8">
+        {mobileToggle}
+        {logo}
+
+        {/* [&>*]:!w-auto forces the menu's root element to shrink to
+            its content instead of stretching to fill this flex-1
+            wrapper, so justify-center has room to actually center it. */}
+        <div className="hidden flex-1 justify-center lg:flex [&>*]:!w-auto">
+          {menu}
+        </div>
+
+        {/* Mobile has no centered menu (it lives in the drawer) — this
+            spacer keeps the same logo-left / ctas-right split. */}
+        <div className="flex-1 lg:hidden" />
+
+        <div className="hidden items-center gap-4 lg:flex">
+          {search}
+          {ctas}
+        </div>
+
+        <div className="lg:hidden">{ctas}</div>
+      </div>
+
+      {mobileSearch && <div className="w-full py-2 lg:hidden">{mobileSearch}</div>}
+    </div>
+  );
+}
+
+
+===== sections\header-styles\HeaderLayoutMarketplace.tsx =====
+// app/sections/header-styles/HeaderLayoutMarketplace.tsx
+//
+// Single row (desktop, lg+): logo + nav menu inline together on the
+// left, search + account/cart cluster pinned right — denser, more
+// left-weighted than the Nike layout's centered menu.
+//
+// Mobile (<lg): unchanged — hamburger + logo + cart on top, full-width
+// search on its own row below. Nav menu lives in the mobile drawer.
+//
+// No data-header-menu-row here, same reasoning as the Nike layout —
+// menu and logo share row 1, there's no second row to anchor to.
+//
+// NOTE: this is a structural starting point (left-aligned logo+menu,
+// right-aligned search+ctas). It hasn't been checked against a real
+// Gymshark screenshot — swap in their actual spacing/typography once
+// you've got a reference to match against.
+
+import type {HeaderLayoutProps} from './types';
+
+export function HeaderLayoutMarketplace({
+  logo,
+  menu,
+  search,
+  ctas,
+  mobileToggle,
+  mobileSearch,
+}: HeaderLayoutProps) {
+  return (
+    <div data-header-row className="relative">
+      <div className="mx-auto flex max-w-[var(--content-max-width)] items-center gap-6 px-4 py-3 sm:gap-4 sm:px-6 lg:gap-8 lg:px-8">
+        {mobileToggle}
+        {logo}
+
+        <div className="hidden lg:flex [&>*]:!w-auto">{menu}</div>
+
+        <div className="flex-1" />
+
+        <div className="hidden items-center gap-4 lg:flex">
+          {search}
+          {ctas}
+        </div>
+
+        <div className="lg:hidden">{ctas}</div>
+      </div>
+
+      {mobileSearch && <div className="w-full py-2 lg:hidden">{mobileSearch}</div>}
+    </div>
+  );
+}
+
+
+===== sections\header-styles\HeaderLayoutStorefront.tsx =====
+// app/sections/header-styles/HeaderLayoutStorefront.tsx
+//
+// Single row (desktop, lg+): logo — centered nav menu — search +
+// account/cart cluster on the right. Merged from the previous two-row
+// layout (nav menu used to sit on its own row below, separated by a
+// hairline border) into one row, with the menu centered between logo
+// and the search/ctas cluster — mirrors HeaderLayoutLaunchpad's
+// arrangement.
+//
+// Mobile (<lg): unchanged — hamburger + logo + cart on top, full-width
+// search on its own row below. Nav menu lives in the mobile drawer.
+//
+// No data-header-menu-row here anymore — there's no second row to
+// anchor a mega-menu backdrop to, so HeaderMenu's updatePanelTop()
+// will just fall back to its default top offset, same as Launchpad.
+
+import type {HeaderLayoutProps} from './types';
+
+export function HeaderLayoutStorefront({
+  logo,
+  menu,
+  search,
+  ctas,
+  mobileToggle,
+  mobileSearch,
+}: HeaderLayoutProps) {
+  return (
+    <div data-header-row className="relative">
+      <div className="mx-auto flex max-w-[var(--content-max-width)] items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6 lg:gap-6 lg:px-8">
+        {mobileToggle}
+        {logo}
+
+        {/* [&>*]:!w-auto forces the menu's root element to shrink to
+            its content instead of stretching to fill this flex-1
+            wrapper, so justify-center has room to actually center it. */}
+        <div className="hidden flex-1 justify-center lg:flex [&>*]:!w-auto">
+          {menu}
+        </div>
+
+        {/* Mobile has no centered menu (it lives in the drawer) — this
+            spacer keeps the same logo-left / ctas-right split. */}
+        <div className="flex-1 lg:hidden" />
+
+        <div className="hidden items-center gap-4 lg:flex">
+          <div className="w-[160px] shrink-0">{search}</div>
+          {ctas}
+        </div>
+
+        <div className="lg:hidden">{ctas}</div>
+      </div>
+
+      {mobileSearch && <div className="w-full py-2 lg:hidden">{mobileSearch}</div>}
+    </div>
+  );
+}
+
+
+===== snippets\ai-search-svg-paths.ts =====
+export default {
+  p20021000: "M1.76446 0.0757267C1.68512 0.0262361 1.5935 9.00731e-08 1.5 9.00731e-08C1.39566 -6.2543e-05 1.29392 0.0325406 1.20905 0.0932382C1.12417 0.153936 1.06041 0.239684 1.02671 0.338459L0.851784 0.851897L0.33901 1.02688L0.280035 1.05087C0.191154 1.0944 0.117191 1.16334 0.0675194 1.24896C0.0178475 1.33457 -0.00529696 1.43301 0.00101927 1.5318C0.00733551 1.63059 0.0428278 1.72528 0.102999 1.80387C0.163169 1.88246 0.24531 1.94142 0.33901 1.97326L0.852284 2.14824L1.02721 2.66118L1.0512 2.71967C1.09466 2.80859 1.16354 2.88261 1.2491 2.93233C1.33466 2.98206 1.43305 3.00526 1.53181 2.999C1.63056 2.99273 1.72523 2.95729 1.80383 2.89715C1.88242 2.83701 1.9414 2.75488 1.97329 2.66118L2.14822 2.14774L2.66099 1.97276L2.71996 1.94876C2.80885 1.90524 2.88281 1.8363 2.93248 1.75068C2.98215 1.66506 3.0053 1.56662 2.99898 1.46783C2.99266 1.36904 2.95717 1.27435 2.897 1.19576C2.83683 1.11717 2.75469 1.05822 2.66099 1.02638L2.14772 0.851397L1.97279 0.338459L1.9488 0.279966C1.90766 0.195978 1.8438 0.125217 1.76446 0.0757267Z",
+  p3872200: "M4.70523 0.201938C4.49366 0.0699628 4.24933 2.40195e-07 4 2.40195e-07C3.72177 -0.000166781 3.45046 0.0867751 3.22412 0.248635C2.99778 0.410495 2.82775 0.639157 2.73789 0.902558L2.27142 2.27173L0.904025 2.73834L0.746761 2.80233C0.509745 2.91839 0.31251 3.10223 0.180052 3.33055C0.0475932 3.55886 -0.0141252 3.82137 0.00271806 4.08481C0.0195614 4.34825 0.114208 4.60076 0.274663 4.81033C0.435118 5.0199 0.654159 5.17711 0.904025 5.26203L2.27276 5.72864L2.73922 7.09647L2.80319 7.25245C2.9191 7.48958 3.10278 7.68695 3.33094 7.81956C3.5591 7.95216 3.82147 8.01403 4.08482 7.99733C4.34816 7.98062 4.60062 7.88609 4.81021 7.72572C5.01979 7.56535 5.17707 7.34635 5.26211 7.09647L5.72858 5.72731L7.09597 5.2607L7.25324 5.1967C7.49025 5.08064 7.68749 4.8968 7.81995 4.66848C7.95241 4.44017 8.01412 4.17766 7.99728 3.91422C7.98044 3.65078 7.88579 3.39828 7.72534 3.1887C7.56488 2.97913 7.34584 2.82192 7.09597 2.737L5.72724 2.27039L5.26078 0.902558L5.19681 0.746577C5.0871 0.522607 4.91679 0.333913 4.70523 0.201938Z",
+  p3f87f980: "M7.47266 0C7.2069 0.657052 7.04443 1.36712 7.00781 2.11035C5.84189 2.38525 4.76406 2.97813 3.90332 3.83887C2.68433 5.05785 2 6.71164 2 8.43555L2.00781 8.75781C2.0875 10.3644 2.76051 11.8894 3.90332 13.0322C5.12231 14.2512 6.77609 14.9355 8.5 14.9355C10.2239 14.9355 11.8777 14.2512 13.0967 13.0322C14.2388 11.8901 14.9109 10.3663 14.9912 8.76074C15.708 8.59241 16.378 8.30561 16.9814 7.92188C16.9918 8.09248 17 8.26366 17 8.43555C17 10.3602 16.345 12.2159 15.1621 13.71L17.6797 16.2285C18.0702 16.619 18.0702 17.2521 17.6797 17.6426C17.2891 18.0329 16.6561 18.033 16.2656 17.6426L13.7441 15.1211C12.2552 16.289 10.4118 16.9355 8.5 16.9355C6.24566 16.9355 4.08332 16.0403 2.48926 14.4463C0.895199 12.8522 0 10.6899 0 8.43555C0 6.18121 0.895199 4.01886 2.48926 2.4248C3.83918 1.07488 5.5969 0.228312 7.47266 0Z",
+  pd9eea00: "M12.75 0.750049L0.750051 12.75M0.75 0.75L12.75 12.75",
+}
+
+===== snippets\AiSearchBar.tsx =====
+import { forwardRef, useState, useEffect, useRef, useCallback } from "react";
+// Icon path data lives alongside this file in snippets/.
+import svgPaths from "./ai-search-svg-paths";
+
+const DEFAULT_SUGGESTIONS = ["anything with AI", "iPhone 17", "Robot Vacuum", "LG Qned AI"];
+
+type Size = "default" | "compact";
+
+// Per-size tuning. "default" is the original full pill (centerpiece of
+// its own row). "compact" is sized to sit inline next to nav links and
+// icons, mirroring Nike's header where search shares a row with the
+// primary nav instead of owning the whole row.
+const SIZE_CONFIG: Record<
+  Size,
+  {
+    height: string;
+    // Full width class, including the sizing strategy. Both variants
+    // now fill whatever definite-width ancestor they're given (w-full,
+    // "default" additionally capped by its own max-w). That ancestor
+    // MUST actually resolve to a real width — a flex-1 + min-w-0 chain
+    // up to something with real bounds (the page, a sized container),
+    // not a shrink-to-fit flex row — because everything inside this
+    // pill is absolutely positioned (see the content row below), so
+    // there's no in-flow content to size it independently. If a
+    // caller places "compact" inside a shrink-to-fit ancestor with no
+    // flex-grow, it will collapse toward 0 width; give it an explicit
+    // width wrapper at that call site instead.
+    widthClass: string;
+    paddingX: string;
+    gap: string;
+    iconSize: number;
+    itemHeight: number;
+    fontSize: number;
+    lineHeight: string;
+    clearSize: number;
+  }
+> = {
+  default: {
+    height: "h-[64px]",
+    widthClass: "w-full max-w-[620px]",
+    paddingX: "px-[28px]",
+    gap: "gap-[8px]",
+    iconSize: 24,
+    itemHeight: 22,
+    fontSize: 16,
+    lineHeight: "18px",
+    clearSize: 24,
+  },
+  compact: {
+    height: "h-[40px]",
+    // CHANGED from a hardcoded "w-[260px] shrink-0". That fixed width
+    // permanently capped compact at 260px regardless of how much room
+    // a parent layout (e.g. HeaderLayoutBackMarket) tries to give it
+    // via flex-1. Now it fills its parent instead — see the widthClass
+    // comment above for what the parent chain needs to provide for
+    // this to actually take effect.
+    widthClass: "w-full min-w-0",
+    paddingX: "px-[14px]",
+    gap: "gap-[6px]",
+    iconSize: 18,
+    itemHeight: 17,
+    fontSize: 13,
+    lineHeight: "16px",
+    clearSize: 16,
+  },
+};
+
+function AISearchIcon({ size }: { size: number }) {
+  return (
+    <div className="overflow-clip relative shrink-0" style={{ width: size, height: size }}>
+      <div className="absolute inset-[12.77%_12.61%_12.5%_12.5%]">
+        <svg
+          className="absolute block inset-0 size-full"
+          fill="none"
+          preserveAspectRatio="none"
+          viewBox="0 0 17.9726 17.9354"
+        >
+          <path d={svgPaths.p3f87f980} fill="#666F7F" />
+        </svg>
+      </div>
+      <div className="absolute inset-[4.17%_8.33%_83.33%_79.17%]">
+        <svg
+          className="absolute block inset-0 size-full"
+          fill="none"
+          preserveAspectRatio="none"
+          viewBox="0 0 3 3"
+        >
+          <path d={svgPaths.p20021000} fill="#666F7F" />
+        </svg>
+      </div>
+      <div
+        className="absolute bottom-[58.33%] flex items-center justify-center left-1/2 right-[16.67%] top-[8.33%]"
+        style={{ containerType: "size" }}
+      >
+        <div className="flex-none h-[100cqh] rotate-180 w-[100cqw]">
+          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 8 8">
+            <path d={svgPaths.p3872200} fill="#666F7F" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CloseIconSvg() {
+  return (
+    <svg
+      className="block size-full"
+      fill="none"
+      preserveAspectRatio="none"
+      viewBox="0 0 13.5 13.5"
+    >
+      <path
+        d={svgPaths.pd9eea00}
+        stroke="#666F7F"
+        strokeLinecap="round"
+        strokeWidth="1.5"
+      />
+    </svg>
+  );
+}
+
+function BlinkingCursor({ compact }: { compact: boolean }) {
+  return (
+    <span
+      className={`inline-block shrink-0 rounded-[1px] bg-[#559bf1] ${
+        compact ? "w-[1.5px] h-[14px]" : "w-[2px] h-[18px]"
+      }`}
+      style={{ animation: "blink 1s step-end infinite" }}
+    />
+  );
+}
+
+function AnimatedPlaceholder({
+  index,
+  suggestions,
+  itemHeight,
+  fontSize,
+  lineHeight,
+}: {
+  index: number;
+  suggestions: string[];
+  itemHeight: number;
+  fontSize: number;
+  lineHeight: string;
+}) {
+  return (
+    // Was `shrink-0`, which told flexbox to never shrink this below its
+    // natural content width — so a suggestion wider than the available
+    // pill space (compact mode especially) just bled out past the pill
+    // edge instead of being constrained. `min-w-0 flex-1` lets it take
+    // only the space actually left after the "Search" label, and
+    // `overflow-hidden` + each item's `text-ellipsis` below then clip
+    // anything still too long, with "…" instead of a hard cutoff.
+    <div className="overflow-hidden min-w-0 flex-1" style={{ height: itemHeight }}>
+      <div
+        className="transition-transform duration-500 ease-in-out"
+        style={{ transform: `translateY(-${index * itemHeight}px)` }}
+      >
+        {suggestions.map((s) => (
+          <div
+            key={s}
+            className="flex items-center overflow-hidden whitespace-nowrap text-ellipsis"
+            style={{
+              height: itemHeight,
+              fontFamily: "'Rubik', sans-serif",
+              fontSize,
+              lineHeight,
+              color: "#7f8999",
+              fontWeight: 400,
+            }}
+          >
+            {s}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const pillBg = {
+  backgroundImage:
+    "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 620 64' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0'height='100%' width='100%' fill='url(%23grad)' opacity='0.11999999731779099'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse'cx='0' cy='0' r='10' gradientTransform='matrix(36.141 -3.4171e-14 8.2601e-14 12.373 310 32)'><stop stop-color='rgba(255,255,255,0)' offset='0.45'/><stop stop-color='rgba(255,255,255,1)' offset='1'/></radialGradient></defs></svg>\"), linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.2) 100%), linear-gradient(180deg, rgba(0, 0, 0, 0.053) 0%, rgba(188, 182, 237, 0.22) 100%)",
+};
+
+interface AiSearchBarProps {
+  /** Controlled input value — lift this to the same state SearchPanel reads as `term`. */
+  value: string;
+  /** Called on every keystroke. Wire this to the same setter you pass SearchPanel as `onTermChange`. */
+  onQueryChange: (value: string) => void;
+  /** Called when the user submits a search query (Enter key). Wire this to what you pass SearchPanel as `onNavigate`. */
+  onSearch: (query: string) => void;
+  /** Optional — fires when the input gains focus. Use this to open SearchPanel. */
+  onFocus?: () => void;
+  /** Optional external ref for imperative focus (e.g. SearchPanel's own copy of the bar). */
+  inputRef?: React.RefObject<HTMLInputElement>;
+  /** Placeholder suggestions to cycle through */
+  suggestions?: string[];
+  className?: string;
+  /**
+   * "default" — full pill, the centerpiece of its own row.
+   * "compact" — sized to sit inline next to nav links/icons, e.g. in a
+   * single Nike-style header row. Defaults to "default" so existing
+   * standalone usage (mobile row, SearchPanel's own input) is untouched.
+   */
+  size?: Size;
+}
+
+/**
+ * Forwards a ref to the root div (not the inner <input>) so a parent
+ * (HeaderSearch) can use it for click-outside detection via
+ * SearchPanel's `triggerRef` prop — mirrors SearchBar's forwardRef.
+ */
+export const AiSearchBar = forwardRef<HTMLDivElement, AiSearchBarProps>(
+  function AiSearchBar(
+    {
+      value,
+      onQueryChange,
+      onSearch,
+      onFocus,
+      inputRef: externalInputRef,
+      suggestions = DEFAULT_SUGGESTIONS,
+      className = "",
+      size = "default",
+    },
+    ref,
+  ) {
+    const [focused, setFocused] = useState(false);
+    const [suggestionIndex, setSuggestionIndex] = useState(0);
+    const internalInputRef = useRef<HTMLInputElement>(null);
+    const inputRef = externalInputRef ?? internalInputRef;
+    const cfg = SIZE_CONFIG[size];
+    const compact = size === "compact";
+
+    useEffect(() => {
+      if (value.length > 0) return;
+      const id = setInterval(() => {
+        setSuggestionIndex((i) => (i + 1) % suggestions.length);
+      }, 2200);
+      return () => clearInterval(id);
+    }, [value, suggestions.length]);
+
+    const handleClear = useCallback(
+      (e: React.MouseEvent) => {
+        e.preventDefault();
+        onQueryChange("");
+        inputRef.current?.focus();
+      },
+      [inputRef, onQueryChange],
+    );
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter" && value.trim()) {
+        onSearch(value.trim());
+      }
+      if (e.key === "Escape") {
+        onQueryChange("");
+        inputRef.current?.blur();
+      }
+    };
+
+    const isTyping = value.length > 0;
+    const showX = focused || isTyping;
+
+    return (
+      <div
+        ref={ref}
+        className={`relative cursor-text ${cfg.height} ${cfg.widthClass} ${className}`}
+        onClick={() => inputRef.current?.focus()}
+      >
+        {/* Pill background layers */}
+        <div className="absolute inset-0 rounded-[999px]" style={pillBg} />
+        <div
+          aria-hidden
+          className="absolute border-2 border-[rgba(193,193,193,0.6)] border-solid inset-0 rounded-[999px]"
+          style={{
+            boxShadow: compact
+              ? "0px 2px 6px 0px rgba(16,24,40,0.06)"
+              : "0px 7px 15px 0px rgba(176,194,250,0.2), 0px 4px 10.3px 0px rgba(0,0,0,0.03), 0px 17px 25.8px 0px rgba(0,0,0,0.06), 0px 4px 6px 0px rgba(255,255,255,0.32)",
+          }}
+        />
+        <div
+          className="absolute inset-0 rounded-[999px]"
+          style={{
+            boxShadow:
+              "inset 0px -1px 18px 0px rgba(255,255,255,0.4), inset 0px -1px 14px 0px rgba(255,255,255,0.56), inset 0px 0px 16px 0px rgba(0,0,0,0.02), inset 0px -4px 8px 0px rgba(0,0,0,0.03), inset 0px -1px 2px 0px rgba(0,0,0,0.02), inset 0px -0.5px 0.5px 0px rgba(0,0,0,0.04), inset 0px 10px 12px 0px rgba(0,0,0,0.04)",
+          }}
+        />
+
+        {/* Content row */}
+        <div className={`absolute inset-0 flex items-center ${cfg.paddingX} ${cfg.gap}`}>
+          <AISearchIcon size={cfg.iconSize} />
+
+          {/* Text zone */}
+          <div className="relative flex-1 flex items-center min-w-0 gap-[1px]">
+            {isTyping ? (
+              <>
+                <span
+                  className="whitespace-nowrap shrink-0"
+                  style={{
+                    fontFamily: "'Rubik', sans-serif",
+                    fontSize: cfg.fontSize,
+                    lineHeight: cfg.lineHeight,
+                    color: "#0b0c0e",
+                    fontWeight: 400,
+                  }}
+                >
+                  {value}
+                </span>
+                {focused && <BlinkingCursor compact={compact} />}
+              </>
+            ) : (
+              <>
+                {focused ? (
+                  <BlinkingCursor compact={compact} />
+                ) : (
+                  <span
+                    className="whitespace-nowrap shrink-0 mr-[4px]"
+                    style={{
+                      fontFamily: "'Rubik', sans-serif",
+                      fontSize: cfg.fontSize,
+                      lineHeight: cfg.lineHeight,
+                      color: "#7f8999",
+                      fontWeight: 400,
+                    }}
+                  >
+                    Search
+                  </span>
+                )}
+                {/* Was gated behind `!compact`, which silently disabled the
+                    animated/cycling placeholder whenever this bar rendered
+                    in compact mode (e.g. the single-row desktop header) —
+                    that gate has been removed so the animation renders at
+                    both sizes. */}
+                {/* Typewriter temporarily disabled — was <AnimatedPlaceholder .../> here */}
+              </>
+            )}
+
+            {/* Real input (invisible, captures keyboard) */}
+            <input
+              ref={inputRef}
+              type="text"
+              value={value}
+              onChange={(e) => onQueryChange(e.target.value)}
+              onFocus={() => {
+                setFocused(true);
+                onFocus?.();
+              }}
+              onBlur={() => setFocused(false)}
+              onKeyDown={handleKeyDown}
+              aria-label="AI Search"
+              className="absolute inset-0 opacity-0 cursor-text w-full bg-transparent"
+              style={{ caretColor: "transparent" }}
+            />
+          </div>
+
+          {/* Clear button */}
+          <button
+            className={`relative shrink-0 cursor-pointer overflow-hidden transition-opacity duration-150 ${
+              showX ? "opacity-100" : "opacity-0 pointer-events-none"
+            }`}
+            style={{ width: cfg.clearSize, height: cfg.clearSize }}
+            onMouseDown={handleClear}
+            aria-label="Clear search"
+            tabIndex={showX ? 0 : -1}
+          >
+            <div className="absolute inset-1/4">
+              <div className="absolute inset-[-6.25%]">
+                <CloseIconSvg />
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+    );
+  },
+);
+
+
+===== snippets\AlgoliaInstantSearch.client.tsx =====
+import {useState} from 'react';
+import {
+  InstantSearch,
+  SearchBox,
+  Hits,
+  HierarchicalMenu,
+  RefinementList,
+  Pagination,
+  SortBy,
+  useInstantSearch,
+} from 'react-instantsearch';
+import {createAlgoliaClient, type AlgoliaConfig} from '~/lib/algolia';
+import {ProductHit} from '~/snippets/AlgoliaProductHit';
+
+interface AlgoliaInstantSearchProps {
+  algolia: AlgoliaConfig;
+  term: string;
+}
+
+export default function AlgoliaInstantSearch({
+  algolia,
+  term,
+}: AlgoliaInstantSearchProps) {
+  const searchClient = createAlgoliaClient(algolia);
+  const [facetsOpen, setFacetsOpen] = useState(false);
+
+  return (
+    <InstantSearch
+      searchClient={searchClient}
+      indexName={algolia.indexName}
+      initialUiState={{
+        [algolia.indexName]: {
+          query: term,
+        },
+      }}
+    >
+      <div className="search-layout">
+        <button
+          type="button"
+          className="search-facets-toggle"
+          onClick={() => setFacetsOpen((open) => !open)}
+          aria-expanded={facetsOpen}
+        >
+          Filters
+        </button>
+
+        <aside
+          className="search-facets"
+          data-open={facetsOpen ? 'true' : 'false'}
+        >
+          <div className="search-facets-header">
+            <span>Filters</span>
+            <button
+              type="button"
+              className="search-facets-close"
+              onClick={() => setFacetsOpen(false)}
+              aria-label="Close filters"
+            >
+              ×
+            </button>
+          </div>
+          <h3>Category</h3>
+          <HierarchicalMenu
+            attributes={[
+              'category.lvl0',
+              'category.lvl1',
+              'category.lvl2',
+              'category.lvl3',
+              'category.lvl4',
+              'category.lvl5',
+            ]}
+          />
+          <h3>Price</h3>
+          <RefinementList attribute="price_range" />
+          <h3>Brand</h3>
+          <RefinementList attribute="vendor" />
+        </aside>
+
+        <main className="search-results">
+          <div className="search-results-toolbar">
+            <SearchBox />
+            <SortBy items={[{label: 'Relevance', value: algolia.indexName}]} />
+          </div>
+          <SearchResultsBody />
+        </main>
+      </div>
+    </InstantSearch>
+  );
+}
+
+/**
+ * Separate component (rather than inline in the tree above) so it can call
+ * useInstantSearch() — that hook needs to be a descendant of <InstantSearch>,
+ * it can't be called in the same component that renders the provider.
+ *
+ * Handles three states explicitly instead of letting <Hits> silently render
+ * nothing for all of them:
+ *  - stalled/loading: a lightweight loading line (search is genuinely slow,
+ *    not stuck)
+ *  - zero results: an actual "no results" message instead of blank space
+ *  - results: the normal <Hits> grid
+ */
+function SearchResultsBody() {
+  const {results, status} = useInstantSearch();
+  const nbHits = results?.nbHits ?? 0;
+  const isSearching = status === 'stalled' || status === 'loading';
+
+  if (isSearching && nbHits === 0) {
+    return <p className="search-status">Searching…</p>;
+  }
+
+  if (!isSearching && nbHits === 0) {
+    return (
+      <div className="search-empty">
+        <p className="search-empty-title">
+          No results for &ldquo;{results?.query}&rdquo;
+        </p>
+        <p className="search-empty-hint">
+          Try a different search term, or check the spelling.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <Hits hitComponent={ProductHit} />
+      <Pagination />
+    </>
+  );
+}
+
+===== snippets\HeaderMenu.tsx =====
+// app/snippets/HeaderMenu.tsx
+import {useEffect, useRef, useState} from 'react';
+import {NavLink} from 'react-router';
+import {useAside} from '~/components/Aside';
+import type {HeaderProps, Viewport} from '~/sections/Header';
+import {FALLBACK_HEADER_MENU, MEGA_MENU_CLOSE_DELAY, resolveUrl} from '~/config/Header.constants';
+import {MenuDrawer} from './MenuDrawer';
+import {HighlightLink, isOnSaleItem} from './Highlight';
+
+function navLinkClass({isActive, isPending}: {isActive: boolean; isPending: boolean}) {
+  return [
+    'text-gray-800 hover:text-gray-950',
+    isActive ? 'font-semibold text-gray-950' : '',
+    isPending ? 'text-gray-400' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+}
+
+export function HeaderMenu({
+  menu,
+  primaryDomainUrl,
+  viewport,
+  publicStoreDomain,
+  collectionImages,
+}: {
+  menu: HeaderProps['header']['menu'];
+  primaryDomainUrl: HeaderProps['header']['shop']['primaryDomain']['url'];
+  viewport: Viewport;
+  publicStoreDomain: HeaderProps['publicStoreDomain'];
+  collectionImages?: HeaderProps['collectionImages'];
+}) {
+  const {close} = useAside();
+  const [activeItemId, setActiveItemId] = useState<string | null>(null);
+  const [panelTop, setPanelTop] = useState(0);
+  const closeTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const navWrapRef = useRef<HTMLElement>(null);
+
+  const [hasScrollLeft, setHasScrollLeft] = useState(false);
+  const [hasScrollRight, setHasScrollRight] = useState(false);
+
+  const items = (menu || FALLBACK_HEADER_MENU).items;
+  const activeItem = items.find((item) => item.id === activeItemId);
+
+  function scheduleClose() {
+    closeTimeout.current = setTimeout(() => setActiveItemId(null), MEGA_MENU_CLOSE_DELAY);
+  }
+
+  function cancelClose() {
+    if (closeTimeout.current) clearTimeout(closeTimeout.current);
+  }
+
+  function updateScrollEdges() {
+    const el = navWrapRef.current;
+    if (!el) return;
+    setHasScrollLeft(el.scrollLeft > 0);
+    setHasScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
+  }
+
+  useEffect(() => {
+    updateScrollEdges();
+    window.addEventListener('resize', updateScrollEdges);
+    return () => window.removeEventListener('resize', updateScrollEdges);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items.length]);
+
+  useEffect(() => {
+    if (!activeItemId) return;
+
+    function updatePanelTop() {
+      const row = navWrapRef.current?.closest<HTMLElement>('[data-header-menu-row]');
+      if (row) setPanelTop(row.getBoundingClientRect().bottom);
+    }
+    updatePanelTop();
+
+    function onScroll() {
+      setActiveItemId(null);
+    }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setActiveItemId(null);
+    }
+
+    window.addEventListener('scroll', onScroll, {passive: true});
+    window.addEventListener('resize', updatePanelTop);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', updatePanelTop);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [activeItemId]);
+
+  if (viewport === 'mobile') {
+    return (
+      <nav className="flex flex-col gap-3 p-4" role="navigation">
+        <NavLink end onClick={close} prefetch="intent" to="/" className={navLinkClass}>
+          Home
+        </NavLink>
+        {items.map((item) => {
+          if (!item.url) return null;
+          const url = resolveUrl(item.url, publicStoreDomain, primaryDomainUrl);
+          return (
+            <NavLink
+              key={item.id}
+              end
+              onClick={close}
+              prefetch="intent"
+              to={url}
+              className={navLinkClass}
+            >
+              {item.title}
+            </NavLink>
+          );
+        })}
+      </nav>
+    );
+  }
+
+  return (
+    <div onMouseEnter={cancelClose} onMouseLeave={scheduleClose}>
+      <div className="relative min-w-0 max-w-full">
+        <nav
+          ref={navWrapRef}
+          onScroll={updateScrollEdges}
+          className="flex min-w-0 items-center gap-6 overflow-x-auto text-sm font-medium [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          role="navigation"
+        >
+          {items.map((item) => {
+            if (!item.url) return null;
+            const url = resolveUrl(item.url, publicStoreDomain, primaryDomainUrl);
+            const isActive = item.id === activeItemId;
+
+            if (isOnSaleItem(item.title)) {
+              return (
+                <HighlightLink
+                  key={item.id}
+                  to={url}
+                  title={item.title}
+                  isActive={isActive}
+                  onMouseEnter={() => setActiveItemId(item.id)}
+                  onFocus={() => setActiveItemId(item.id)}
+                />
+              );
+            }
+
+            return (
+              <NavLink
+                key={item.id}
+                end
+                prefetch="intent"
+                to={url}
+                onMouseEnter={() => setActiveItemId(item.id)}
+                onFocus={() => setActiveItemId(item.id)}
+                aria-expanded={isActive}
+                className={[
+                  'nav-item shrink-0 transition-colors',
+                  isActive ? 'text-gray-400' : 'text-[#1c2b4a] hover:text-gray-950',
+                ].join(' ')}
+              >
+                {item.title}
+              </NavLink>
+            );
+          })}
+        </nav>
+
+        <div
+          aria-hidden="true"
+          className={`pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-white to-transparent transition-opacity duration-200 ${
+            hasScrollLeft ? 'opacity-100' : 'opacity-0'
+          }`}
+        />
+        <div
+          aria-hidden="true"
+          className={`pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-white to-transparent transition-opacity duration-200 ${
+            hasScrollRight ? 'opacity-100' : 'opacity-0'
+          }`}
+        />
+      </div>
+
+      <MenuDrawer
+        item={activeItem}
+        top={panelTop}
+        publicStoreDomain={publicStoreDomain}
+        primaryDomainUrl={primaryDomainUrl}
+        collectionImages={collectionImages}
+        onClose={() => setActiveItemId(null)}
+      />
+    </div>
+  );
+}
+
+
+===== snippets\HeaderSearch.tsx =====
+import {useRef, useState} from 'react';
+import {useNavigate} from 'react-router';
+import {AiSearchBar} from '~/snippets/AiSearchBar';
+import {TRENDING_SEARCH_TERMS} from '~/config/Header.constants';
+import '~/assets/search-bar.css';
+import {
+  SearchPanel,
+  readRecentSearches,
+  writeRecentSearches,
+  MAX_RECENT_SEARCHES,
+} from '~/sections/SearchPanel';
+
+export function HeaderSearch({
+  size = 'default',
+}: {
+  /**
+   * "default" — full-width pill, its own row (mobile row below the
+   * header, or any standalone placement).
+   * "compact" — sized to sit inline next to nav links/icons. Still
+   * flex-growable now (see wrapper below) — the parent layout decides
+   * how much room it actually gets; "compact" just means it's allowed
+   * to sit next to other inline elements instead of forcing its own
+   * row, not that it's pinned to a small fixed width.
+   */
+  size?: 'default' | 'compact';
+}) {
+  const [open, setOpen] = useState(false);
+  const [term, setTerm] = useState('');
+  const containerRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+
+  function recordRecentSearch(value: string) {
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    const existing = readRecentSearches();
+    const next = [
+      trimmed,
+      ...existing.filter((t) => t.toLowerCase() !== trimmed.toLowerCase()),
+    ].slice(0, MAX_RECENT_SEARCHES);
+    writeRecentSearches(next);
+  }
+
+  function commitSearch(value: string) {
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    recordRecentSearch(trimmed);
+    navigate(`/search?q=${encodeURIComponent(trimmed)}`);
+    setOpen(false);
+  }
+
+  return (
+    // CHANGED: was `size === 'compact' ? 'shrink-0' : 'w-full'`, which
+    // actively blocked compact from ever growing — shrink-0 fights a
+    // flex-1 parent instead of cooperating with it. Now both variants
+    // flex-grow to fill whatever their parent gives them (min-w-0 is
+    // required alongside flex-1, or the browser's default
+    // min-width: auto stops it from shrinking/growing past its
+    // content's intrinsic width). A parent that wants it to stay
+    // small can still do that by not giving it flex-1 room in the
+    // first place — the constraint belongs at the layout level now,
+    // not hardcoded here.
+    <div className="search-trigger flex min-w-0 flex-1 items-center">
+      {/* AiSearchBar still receives `size` for internal padding/icon-size
+          differences, but its ROOT width now needs to be w-full so it
+          fills this wrapper instead of using a fixed width per size.
+          See AiSearchBar.tsx — that's the other half of this fix. */}
+      <AiSearchBar
+        ref={containerRef}
+        size={size}
+        value={term}
+        onQueryChange={setTerm}
+        onFocus={() => setOpen(true)}
+        onSearch={commitSearch}
+        suggestions={TRENDING_SEARCH_TERMS}
+      />
+
+      <SearchPanel
+        open={open}
+        onClose={() => setOpen(false)}
+        triggerRef={containerRef}
+        term={term}
+        onTermChange={setTerm}
+        onNavigate={commitSearch}
+      />
+    </div>
+  );
+}
+
+===== snippets\HeaderUtility.tsx =====
+import {NavLink} from 'react-router';
+import {UTILITY_LINKS} from '~/config/Header.constants';
+import {RegionPicker} from '~/snippets/RegionPicker';
+
+// Maps 1:1 to sections/utility-bar.liquid + snippets/utility-links.liquid.
+//
+// Currency and language <select> switchers from the Liquid version are
+// intentionally omitted here: they work by submitting a {% form %} that
+// POSTs and reloads the page against Shopify's classic localization
+// endpoint, which doesn't map onto Hydrogen's SPA routing. Wiring the
+// real equivalent (a fetcher POST to a resource route that sets the
+// locale cookie and redirects) is a separate pass, not a copy of the
+// theme's vanilla JS. RegionPicker below is UI-complete but its
+// selection callback is a stub for the same reason — see RegionPicker.tsx.
+export function HeaderUtility() {
+  const links = UTILITY_LINKS.filter((link) => link.label && link.url);
+
+  return (
+    <div className="hidden sm:block">
+      {/* Full width, no max-width cap — matches the header content row
+          and AnnouncementBar, which were updated the same way. */}
+      <div className="mx-auto flex max-w-[var(--content-max-width)] items-center justify-between px-6 pt-2 pb-2 text-sm text-gray-700 lg:px-8 lg:pt-2.5 lg:pb-2.5">
+        <nav className="flex items-center" role="list">
+          {links.map((link, i) => (
+            <NavLink
+              key={`${link.label}-${i}`}
+              to={link.url}
+              className={`flex h-8 items-center px-2.5 hover:text-gray-950 sm:px-3.5 ${i === 0 ? 'pl-0' : ''}`}
+            >
+              {link.label}
+            </NavLink>
+          ))}
+        </nav>
+
+        <RegionPicker />
+      </div>
+    </div>
+  );
+}
+
+
+===== snippets\SearchBar.tsx =====
+import {forwardRef, useState, useRef, useCallback} from "react";
+// Icon path data now lives alongside this file in snippets/ (moved out
+// of components/ai-search/, which no longer exists).
+import svgPaths from "./ai-search-svg-paths";
+
+/**
+ * A plain search pill, styled to match AiSearchBar (same pill
+ * background, shadows, icon, blinking cursor, clear button) but
+ * without the AI-search framing or the cycling/typewriter placeholder
+ * suggestions — this always shows a static "Search" label when empty.
+ *
+ * AiSearchBar itself is left untouched/parked for now; this is a
+ * separate component so the two can diverge independently.
+ */
+
+function SearchIcon() {
+  return (
+    <div className="overflow-clip relative size-[22px] shrink-0">
+      <div className="absolute inset-[12.77%_12.61%_12.5%_12.5%]">
+        <svg
+          className="absolute block inset-0 size-full"
+          fill="none"
+          height="17.9354"
+          preserveAspectRatio="none"
+          viewBox="0 0 17.9726 17.9354"
+          width="17.9726"
+        >
+          <path d={svgPaths.p3f87f980} fill="#666F7F" />
+        </svg>
+      </div>
+      <div className="absolute inset-[4.17%_8.33%_83.33%_79.17%]">
+        <svg
+          className="absolute block inset-0 size-full"
+          fill="none"
+          height="3"
+          preserveAspectRatio="none"
+          viewBox="0 0 3 3"
+          width="3"
+        >
+          <path d={svgPaths.p20021000} fill="#666F7F" />
+        </svg>
+      </div>
+      <div
+        className="absolute bottom-[58.33%] flex items-center justify-center left-1/2 right-[16.67%] top-[8.33%]"
+        style={{ containerType: "size" }}
+      >
+        <div className="flex-none h-[100cqh] rotate-180 w-[100cqw]">
+          <svg
+            className="block size-full"
+            fill="none"
+            height="8"
+            preserveAspectRatio="none"
+            viewBox="0 0 8 8"
+            width="8"
+          >
+            <path d={svgPaths.p3872200} fill="#666F7F" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CloseIconSvg() {
+  return (
+    <svg
+      className="block size-full"
+      fill="none"
+      height="13.5"
+      preserveAspectRatio="none"
+      viewBox="0 0 13.5 13.5"
+      width="13.5"
+    >
+      <path
+        d={svgPaths.pd9eea00}
+        stroke="#666F7F"
+        strokeLinecap="round"
+        strokeWidth="1.5"
+      />
+    </svg>
+  );
+}
+
+function BlinkingCursor() {
+  return (
+    <span
+      className="inline-block w-[1.5px] h-[13px] bg-[#559bf1] shrink-0 rounded-[1px]"
+      style={{ animation: "blink 1s step-end infinite" }}
+    />
+  );
+}
+
+const pillBg = {
+  backgroundImage:
+    "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 620 64' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0'height='100%' width='100%' fill='url(%23grad)' opacity='0.11999999731779099'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse'cx='0' cy='0' r='10' gradientTransform='matrix(36.141 -3.4171e-14 8.2601e-14 12.373 310 32)'><stop stop-color='rgba(255,255,255,0)' offset='0.45'/><stop stop-color='rgba(255,255,255,1)' offset='1'/></radialGradient></defs></svg>\"), linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.2) 100%), linear-gradient(180deg, rgba(0, 0, 0, 0.053) 0%, rgba(188, 182, 237, 0.22) 100%)",
+};
+
+// Same tuned focus shadow as AiSearchBar — a soft, tight, low-opacity
+// glow so the pill reads as raised only once it's actually focused.
+const focusedShadow =
+  "0px 2px 4px 0px rgba(16,24,40,0.06), 0px 4px 10px 0px rgba(85,155,241,0.12)";
+
+/**
+ * Combines multiple refs (callback or object) into a single ref callback,
+ * so a single DOM node can be wired up to more than one ref at once
+ * (e.g. this component's own internal input ref, plus a ref a parent
+ * passes in via `inputRef`).
+ */
+function mergeRefs<T>(
+  ...refs: Array<React.Ref<T> | undefined>
+): (node: T | null) => void {
+  return (node: T | null) => {
+    for (const ref of refs) {
+      if (!ref) continue;
+      if (typeof ref === "function") {
+        ref(node);
+      } else {
+        (ref as React.MutableRefObject<T | null>).current = node;
+      }
+    }
+  };
+}
+
+export interface SearchBarProps {
+  /** Controlled input value. */
+  value: string;
+  /** Fired on every keystroke (and on clear) with the new value. */
+  onQueryChange: (value: string) => void;
+  /** Fired when the user submits a search query (Enter key). */
+  onSearch?: (query: string) => void;
+  /** Fired when the input receives focus — wire this to opening a results panel. */
+  onFocus?: () => void;
+  className?: string;
+  /**
+   * Ref to the underlying <input>, for callers that need to imperatively
+   * focus it — e.g. SearchPanel focusing its own copy of the bar when it
+   * opens. Separate from the forwarded root-div ref (below), which is
+   * used for click-outside detection instead.
+   */
+  inputRef?: React.Ref<HTMLInputElement>;
+  /** Autofocus the input on mount — used by SearchPanel's copy of the bar. */
+  autoFocus?: boolean;
+}
+
+/**
+ * Forwards a ref to the root div (not the inner <input>) so a parent can
+ * use it for click-outside detection on an accompanying results panel.
+ * Use the separate `inputRef` prop if you need to focus the input itself.
+ *
+ * No max-width is set here by default — width (including any max-width
+ * cap) is entirely the caller's responsibility via `className`. This
+ * used to hardcode `max-w-[260px]` into the base className alongside
+ * `w-full`, which meant a caller passing e.g. `max-w-2xl` was fighting
+ * an equal-specificity Tailwind utility baked in here; which one won
+ * was decided by Tailwind's compiled stylesheet order, not by anything
+ * in this component's control. `w-full` alone lets the bar fill
+ * whatever box the caller gives it, capped by whatever max-width (if
+ * any) the caller's className specifies.
+ */
+export const SearchBar = forwardRef<HTMLDivElement, SearchBarProps>(
+  function SearchBar(
+    {
+      value,
+      onQueryChange,
+      onSearch,
+      onFocus,
+      className = "",
+      inputRef,
+      autoFocus,
+    },
+    ref,
+  ) {
+    const [focused, setFocused] = useState(false);
+    const internalInputRef = useRef<HTMLInputElement>(null);
+
+    const handleClear = useCallback(
+      (e: React.MouseEvent) => {
+        e.preventDefault();
+        onQueryChange("");
+        internalInputRef.current?.focus();
+      },
+      [onQueryChange],
+    );
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter" && value.trim()) {
+        onSearch?.(value.trim());
+      }
+      if (e.key === "Escape") {
+        onQueryChange("");
+        internalInputRef.current?.blur();
+      }
+    };
+
+    const isTyping = value.length > 0;
+    const showX = focused || isTyping;
+
+    return (
+      <div
+        ref={ref}
+        className={`relative h-[36px] w-full cursor-text ${className}`}
+        onClick={() => internalInputRef.current?.focus()}
+      >
+        {/* Pill background layers */}
+        <div className="absolute inset-0 rounded-[999px]" style={pillBg} />
+        <div
+          aria-hidden
+          className="absolute border-2 border-[rgba(193,193,193,0.6)] border-solid inset-0 rounded-[999px] transition-shadow duration-150"
+          style={{
+            // No shadow at rest — the border ring alone is enough there.
+            // The soft glow only appears on focus.
+            boxShadow: focused ? focusedShadow : 'none',
+          }}
+        />
+        <div
+          className="absolute inset-0 rounded-[999px]"
+          style={{
+            boxShadow:
+              "inset 0px -1px 18px 0px rgba(255,255,255,0.4), inset 0px -1px 14px 0px rgba(255,255,255,0.56), inset 0px 0px 16px 0px rgba(0,0,0,0.02), inset 0px -4px 8px 0px rgba(0,0,0,0.03), inset 0px -1px 2px 0px rgba(0,0,0,0.02), inset 0px -0.5px 0.5px 0px rgba(0,0,0,0.04), inset 0px 10px 12px 0px rgba(0,0,0,0.04)",
+          }}
+        />
+
+        {/* Content row */}
+        <div className="absolute inset-0 flex items-center px-[12px] gap-[6px]">
+          <SearchIcon />
+
+          {/* Text zone */}
+          <div className="relative flex-1 flex items-center min-w-0 gap-[1px]">
+            {isTyping ? (
+              <>
+                <span
+                  className="whitespace-nowrap shrink-0"
+                  style={{
+                    fontFamily: "'Rubik', sans-serif",
+                    fontSize: 13,
+                    lineHeight: "16px",
+                    color: "#0b0c0e",
+                    fontWeight: 400,
+                  }}
+                >
+                  {value}
+                </span>
+                {focused && <BlinkingCursor />}
+              </>
+            ) : focused ? (
+              <BlinkingCursor />
+            ) : (
+              // Static "Search" label — no cycling/typewriter suggestions.
+              <span
+                className="whitespace-nowrap shrink-0"
+                style={{
+                  fontFamily: "'Rubik', sans-serif",
+                  fontSize: 13,
+                  lineHeight: "16px",
+                  color: "#7f8999",
+                  fontWeight: 400,
+                }}
+              >
+                Search
+              </span>
+            )}
+
+            {/* Real input (invisible, captures keyboard) */}
+            <input
+              ref={mergeRefs(internalInputRef, inputRef)}
+              autoFocus={autoFocus}
+              type="text"
+              value={value}
+              onChange={(e) => onQueryChange(e.target.value)}
+              onFocus={() => {
+                setFocused(true);
+                onFocus?.();
+              }}
+              onBlur={() => setFocused(false)}
+              onKeyDown={handleKeyDown}
+              aria-label="Search"
+              className="absolute inset-0 opacity-0 cursor-text w-full bg-transparent"
+              style={{ caretColor: "transparent" }}
+            />
+          </div>
+
+          {/* Clear button */}
+          <button
+            className={`relative shrink-0 size-[15px] cursor-pointer overflow-hidden transition-opacity duration-150 ${
+              showX ? "opacity-100" : "opacity-0 pointer-events-none"
+            }`}
+            onMouseDown={handleClear}
+            aria-label="Clear search"
+            tabIndex={showX ? 0 : -1}
+          >
+            <div className="absolute inset-1/4">
+              <div className="absolute inset-[-6.25%]">
+                <CloseIconSvg />
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+    );
+  },
+);
+
+===== snippets\SearchForm.tsx =====
+import {useRef, useEffect} from 'react';
+import {Form, type FormProps} from 'react-router';
+
+type SearchFormProps = Omit<FormProps, 'children'> & {
+  children: (args: {
+    inputRef: React.RefObject<HTMLInputElement>;
+  }) => React.ReactNode;
+};
+
+/**
+ * Search form component that sends search requests to the `/search` route.
+ * @example
+ * ```tsx
+ * <SearchForm>
+ *  {({inputRef}) => (
+ *    <>
+ *      <input
+ *        ref={inputRef}
+ *        type="search"
+ *        defaultValue={term}
+ *        name="q"
+ *        placeholder="Search…"
+ *      />
+ *      <button type="submit">Search</button>
+ *   </>
+ *  )}
+ *  </SearchForm>
+ */
+export function SearchForm({children, ...props}: SearchFormProps) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useFocusOnCmdK(inputRef);
+
+  if (typeof children !== 'function') {
+    return null;
+  }
+
+  return (
+    <Form method="get" {...props}>
+      {children({inputRef})}
+    </Form>
+  );
+}
+
+/**
+ * Focuses the input when cmd+k is pressed
+ */
+function useFocusOnCmdK(inputRef: React.RefObject<HTMLInputElement>) {
+  // focus the input when cmd+k is pressed
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'k' && event.metaKey) {
+        event.preventDefault();
+        inputRef.current?.focus();
+      }
+
+      if (event.key === 'Escape') {
+        inputRef.current?.blur();
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [inputRef]);
+}
+
+
+===== snippets\SearchFormPredictive.tsx =====
+import {
+  useFetcher,
+  useNavigate,
+  type FormProps,
+  type Fetcher,
+} from 'react-router';
+import React, {useRef, useEffect} from 'react';
+import type {PredictiveSearchReturn} from '~/lib/search';
+import {useAside} from '~/components/Aside';
+
+type SearchFormPredictiveChildren = (args: {
+  fetchResults: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  goToSearch: () => void;
+  inputRef: React.MutableRefObject<HTMLInputElement | null>;
+  fetcher: Fetcher<PredictiveSearchReturn>;
+}) => React.ReactNode;
+
+type SearchFormPredictiveProps = Omit<FormProps, 'children'> & {
+  children: SearchFormPredictiveChildren | null;
+};
+
+export const SEARCH_ENDPOINT = '/search';
+
+/**
+ *  Search form component that sends search requests to the `/search` route
+ **/
+export function SearchFormPredictive({
+  children,
+  className = 'predictive-search-form',
+  ...props
+}: SearchFormPredictiveProps) {
+  const fetcher = useFetcher<PredictiveSearchReturn>({key: 'search'});
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const navigate = useNavigate();
+  const aside = useAside();
+
+  /** Reset the input value and blur the input */
+  function resetInput(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (inputRef?.current?.value) {
+      inputRef.current.blur();
+    }
+  }
+
+  /** Navigate to the search page with the current input value */
+  function goToSearch() {
+    const term = inputRef?.current?.value;
+    void navigate(SEARCH_ENDPOINT + (term ? `?q=${term}` : ''));
+    aside.close();
+  }
+
+  /** Fetch search results based on the input value */
+  function fetchResults(event: React.ChangeEvent<HTMLInputElement>) {
+    void fetcher.submit(
+      {q: event.target.value || '', limit: 5, predictive: true},
+      {method: 'GET', action: SEARCH_ENDPOINT},
+    );
+  }
+
+  // ensure the passed input has a type of search, because SearchResults
+  // will select the element based on the input
+  useEffect(() => {
+    inputRef?.current?.setAttribute('type', 'search');
+  }, []);
+
+  if (typeof children !== 'function') {
+    return null;
+  }
+
+  return (
+    <fetcher.Form {...props} className={className} onSubmit={resetInput}>
+      {children({inputRef, fetcher, fetchResults, goToSearch})}
+    </fetcher.Form>
+  );
+}
+
+
+===== snippets\SearchResults.tsx =====
+import {Link} from 'react-router';
+import {Image, Money, Pagination} from '@shopify/hydrogen';
+import {urlWithTrackingParams, type RegularSearchReturn} from '~/lib/search';
+
+type SearchItems = RegularSearchReturn['result']['items'];
+type PartialSearchResult<ItemType extends keyof SearchItems> = Pick<
+  SearchItems,
+  ItemType
+> &
+  Pick<RegularSearchReturn, 'term'>;
+
+type SearchResultsProps = RegularSearchReturn & {
+  children: (args: SearchItems & {term: string}) => React.ReactNode;
+};
+
+export function SearchResults({
+  term,
+  result,
+  children,
+}: Omit<SearchResultsProps, 'error' | 'type'>) {
+  if (!result?.total) {
+    return null;
+  }
+
+  return children({...result.items, term});
+}
+
+SearchResults.Articles = SearchResultsArticles;
+SearchResults.Pages = SearchResultsPages;
+SearchResults.Products = SearchResultsProducts;
+SearchResults.Empty = SearchResultsEmpty;
+
+function SearchResultsArticles({
+  term,
+  articles,
+}: PartialSearchResult<'articles'>) {
+  if (!articles?.nodes.length) {
+    return null;
+  }
+
+  return (
+    <div className="search-result">
+      <h2>Articles</h2>
+      <div>
+        {articles?.nodes?.map((article) => {
+          const articleUrl = urlWithTrackingParams({
+            baseUrl: `/blogs/${article.handle}`,
+            trackingParams: article.trackingParameters,
+            term,
+          });
+
+          return (
+            <div className="search-results-item" key={article.id}>
+              <Link prefetch="intent" to={articleUrl}>
+                {article.title}
+              </Link>
+            </div>
+          );
+        })}
+      </div>
+      <br />
+    </div>
+  );
+}
+
+function SearchResultsPages({term, pages}: PartialSearchResult<'pages'>) {
+  if (!pages?.nodes.length) {
+    return null;
+  }
+
+  return (
+    <div className="search-result">
+      <h2>Pages</h2>
+      <div>
+        {pages?.nodes?.map((page) => {
+          const pageUrl = urlWithTrackingParams({
+            baseUrl: `/pages/${page.handle}`,
+            trackingParams: page.trackingParameters,
+            term,
+          });
+
+          return (
+            <div className="search-results-item" key={page.id}>
+              <Link prefetch="intent" to={pageUrl}>
+                {page.title}
+              </Link>
+            </div>
+          );
+        })}
+      </div>
+      <br />
+    </div>
+  );
+}
+
+function SearchResultsProducts({
+  term,
+  products,
+}: PartialSearchResult<'products'>) {
+  if (!products?.nodes.length) {
+    return null;
+  }
+
+  return (
+    <div className="search-result">
+      <h2>Products</h2>
+      <Pagination connection={products}>
+        {({nodes, isLoading, NextLink, PreviousLink}) => {
+          const ItemsMarkup = nodes.map((product) => {
+            const productUrl = urlWithTrackingParams({
+              baseUrl: `/products/${product.handle}`,
+              trackingParams: product.trackingParameters,
+              term,
+            });
+
+            const price = product?.selectedOrFirstAvailableVariant?.price;
+            const image = product?.selectedOrFirstAvailableVariant?.image;
+
+            return (
+              <div className="search-results-item" key={product.id}>
+                <Link prefetch="intent" to={productUrl}>
+                  {image && (
+                    <Image data={image} alt={product.title} width={50} />
+                  )}
+                  <div>
+                    <p>{product.title}</p>
+                    <small>{price && <Money data={price} />}</small>
+                  </div>
+                </Link>
+              </div>
+            );
+          });
+
+          return (
+            <div>
+              <div>
+                <PreviousLink>
+                  {isLoading ? 'Loading...' : <span>↑ Load previous</span>}
+                </PreviousLink>
+              </div>
+              <div>
+                {ItemsMarkup}
+                <br />
+              </div>
+              <div>
+                <NextLink>
+                  {isLoading ? 'Loading...' : <span>Load more ↓</span>}
+                </NextLink>
+              </div>
+            </div>
+          );
+        }}
+      </Pagination>
+      <br />
+    </div>
+  );
+}
+
+function SearchResultsEmpty() {
+  return <p>No results, try a different search.</p>;
+}
+
+
+===== snippets\SearchResultsPredictive.tsx =====
+import {Link, useFetcher, type Fetcher} from 'react-router';
+import {Image, Money} from '@shopify/hydrogen';
+import React, {useRef, useEffect} from 'react';
+import {
+  getEmptyPredictiveSearchResult,
+  urlWithTrackingParams,
+  type PredictiveSearchReturn,
+} from '~/lib/search';
+import {useAside} from '~/components/Aside';
+
+type PredictiveSearchItems = PredictiveSearchReturn['result']['items'];
+
+type UsePredictiveSearchReturn = {
+  term: React.MutableRefObject<string>;
+  total: number;
+  inputRef: React.MutableRefObject<HTMLInputElement | null>;
+  items: PredictiveSearchItems;
+  fetcher: Fetcher<PredictiveSearchReturn>;
+};
+
+type SearchResultsPredictiveArgs = Pick<
+  UsePredictiveSearchReturn,
+  'term' | 'total' | 'inputRef' | 'items'
+> & {
+  state: Fetcher['state'];
+  closeSearch: () => void;
+};
+
+type PartialPredictiveSearchResult<
+  ItemType extends keyof PredictiveSearchItems,
+  ExtraProps extends keyof SearchResultsPredictiveArgs = 'term' | 'closeSearch',
+> = Pick<PredictiveSearchItems, ItemType> &
+  Pick<SearchResultsPredictiveArgs, ExtraProps>;
+
+type SearchResultsPredictiveProps = {
+  children: (args: SearchResultsPredictiveArgs) => React.ReactNode;
+};
+
+/**
+ * Component that renders predictive search results
+ */
+export function SearchResultsPredictive({
+  children,
+}: SearchResultsPredictiveProps) {
+  const aside = useAside();
+  const {term, inputRef, fetcher, total, items} = usePredictiveSearch();
+
+  /*
+   * Utility that resets the search input
+   */
+  function resetInput() {
+    if (inputRef.current) {
+      inputRef.current.blur();
+      inputRef.current.value = '';
+    }
+  }
+
+  /**
+   * Utility that resets the search input and closes the search aside
+   */
+  function closeSearch() {
+    resetInput();
+    aside.close();
+  }
+
+  return children({
+    items,
+    closeSearch,
+    inputRef,
+    state: fetcher.state,
+    term,
+    total,
+  });
+}
+
+SearchResultsPredictive.Articles = SearchResultsPredictiveArticles;
+SearchResultsPredictive.Collections = SearchResultsPredictiveCollections;
+SearchResultsPredictive.Pages = SearchResultsPredictivePages;
+SearchResultsPredictive.Products = SearchResultsPredictiveProducts;
+SearchResultsPredictive.Queries = SearchResultsPredictiveQueries;
+SearchResultsPredictive.Empty = SearchResultsPredictiveEmpty;
+
+function SearchResultsPredictiveArticles({
+  term,
+  articles,
+  closeSearch,
+}: PartialPredictiveSearchResult<'articles'>) {
+  if (!articles.length) return null;
+
+  return (
+    <div className="predictive-search-result" key="articles">
+      <h5>Articles</h5>
+      <ul>
+        {articles.map((article) => {
+          const articleUrl = urlWithTrackingParams({
+            baseUrl: `/blogs/${article.blog.handle}/${article.handle}`,
+            trackingParams: article.trackingParameters,
+            term: term.current ?? '',
+          });
+
+          return (
+            <li className="predictive-search-result-item" key={article.id}>
+              <Link onClick={closeSearch} to={articleUrl}>
+                {article.image?.url && (
+                  <Image
+                    alt={article.image.altText ?? ''}
+                    src={article.image.url}
+                    width={50}
+                    height={50}
+                  />
+                )}
+                <div>
+                  <span>{article.title}</span>
+                </div>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+function SearchResultsPredictiveCollections({
+  term,
+  collections,
+  closeSearch,
+}: PartialPredictiveSearchResult<'collections'>) {
+  if (!collections.length) return null;
+
+  return (
+    <div className="predictive-search-result" key="collections">
+      <h5>Collections</h5>
+      <ul>
+        {collections.map((collection) => {
+          const collectionUrl = urlWithTrackingParams({
+            baseUrl: `/collections/${collection.handle}`,
+            trackingParams: collection.trackingParameters,
+            term: term.current,
+          });
+
+          return (
+            <li className="predictive-search-result-item" key={collection.id}>
+              <Link onClick={closeSearch} to={collectionUrl}>
+                {collection.image?.url && (
+                  <Image
+                    alt={collection.image.altText ?? ''}
+                    src={collection.image.url}
+                    width={50}
+                    height={50}
+                  />
+                )}
+                <div>
+                  <span>{collection.title}</span>
+                </div>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+function SearchResultsPredictivePages({
+  term,
+  pages,
+  closeSearch,
+}: PartialPredictiveSearchResult<'pages'>) {
+  if (!pages.length) return null;
+
+  return (
+    <div className="predictive-search-result" key="pages">
+      <h5>Pages</h5>
+      <ul>
+        {pages.map((page) => {
+          const pageUrl = urlWithTrackingParams({
+            baseUrl: `/pages/${page.handle}`,
+            trackingParams: page.trackingParameters,
+            term: term.current,
+          });
+
+          return (
+            <li className="predictive-search-result-item" key={page.id}>
+              <Link onClick={closeSearch} to={pageUrl}>
+                <div>
+                  <span>{page.title}</span>
+                </div>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+function SearchResultsPredictiveProducts({
+  term,
+  products,
+  closeSearch,
+}: PartialPredictiveSearchResult<'products'>) {
+  if (!products.length) return null;
+
+  return (
+    <div className="predictive-search-result" key="products">
+      <h5>Products</h5>
+      <ul>
+        {products.map((product) => {
+          const productUrl = urlWithTrackingParams({
+            baseUrl: `/products/${product.handle}`,
+            trackingParams: product.trackingParameters,
+            term: term.current,
+          });
+
+          const price = product?.selectedOrFirstAvailableVariant?.price;
+          const image = product?.selectedOrFirstAvailableVariant?.image;
+          return (
+            <li className="predictive-search-result-item" key={product.id}>
+              <Link to={productUrl} onClick={closeSearch}>
+                {image && (
+                  <Image
+                    alt={image.altText ?? ''}
+                    src={image.url}
+                    width={50}
+                    height={50}
+                  />
+                )}
+                <div>
+                  <p>{product.title}</p>
+                  <small>{price && <Money data={price} />}</small>
+                </div>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+function SearchResultsPredictiveQueries({
+  queries,
+  queriesDatalistId,
+}: PartialPredictiveSearchResult<'queries', never> & {
+  queriesDatalistId: string;
+}) {
+  if (!queries.length) return null;
+
+  return (
+    <datalist id={queriesDatalistId}>
+      {queries.map((suggestion) => {
+        if (!suggestion) return null;
+
+        return <option key={suggestion.text} value={suggestion.text} />;
+      })}
+    </datalist>
+  );
+}
+
+function SearchResultsPredictiveEmpty({
+  term,
+}: {
+  term: React.MutableRefObject<string>;
+}) {
+  if (!term.current) {
+    return null;
+  }
+
+  return (
+    <p>
+      No results found for <q>{term.current}</q>
+    </p>
+  );
+}
+
+/**
+ * Hook that returns the predictive search results and fetcher and input ref.
+ * @example
+ * '''ts
+ * const { items, total, inputRef, term, fetcher } = usePredictiveSearch();
+ * '''
+ **/
+function usePredictiveSearch(): UsePredictiveSearchReturn {
+  const fetcher = useFetcher<PredictiveSearchReturn>({key: 'search'});
+  const term = useRef<string>('');
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  if (fetcher?.state === 'loading') {
+    term.current = String(fetcher.formData?.get('q') || '');
+  }
+
+  // capture the search input element as a ref
+  useEffect(() => {
+    if (!inputRef.current) {
+      inputRef.current = document.querySelector('input[type="search"]');
+    }
+  }, []);
+
+  const {items, total} =
+    fetcher?.data?.result ?? getEmptyPredictiveSearchResult();
+
+  return {items, total, inputRef, term, fetcher};
+}
+
+
+===== templates\api.predictive-search.tsx =====
+import type {LoaderFunctionArgs} from 'react-router';
+
+// Requests every predictiveSearch type we use in the panel:
+// - QUERY: text suggestions ("adidas trainers", "adidas gazelle"...)
+// - PRODUCT: product cards in the results grid (vendor + productType +
+//   tags included so the panel can render a "BRAND / TYPE" line and
+//   derive brand suggestions and an "ECO" badge from real merchant
+//   data, not fabricated fields)
+// - COLLECTION: category suggestions (e.g. "Sneakers")
+// - ARTICLE: blog posts for the Articles row
+// - PAGE: static pages (e.g. shipping policy) for the Suggestions rail
+const PREDICTIVE_SEARCH_QUERY = `#graphql
+  query PredictiveSearchInstant(
+    $country: CountryCode
+    $language: LanguageCode
+    $limit: Int!
+    $limitScope: PredictiveSearchLimitScope!
+    $query: String!
+    $types: [PredictiveSearchType!]
+  ) @inContext(country: $country, language: $language) {
+    predictiveSearch(
+      limit: $limit
+      limitScope: $limitScope
+      query: $query
+      types: $types
+    ) {
+      queries {
+        text
+      }
+      products {
+        id
+        title
+        handle
+        vendor
+        productType
+        tags
+        selectedOrFirstAvailableVariant(
+          ignoreUnknownOptions: true
+          caseInsensitiveMatch: true
+        ) {
+          image {
+            url
+            altText
+          }
+          price {
+            amount
+            currencyCode
+          }
+          compareAtPrice {
+            amount
+            currencyCode
+          }
+        }
+      }
+      collections {
+        id
+        title
+        handle
+        image {
+          url
+          altText
+        }
+      }
+      articles {
+        id
+        title
+        handle
+        publishedAt
+        image {
+          url
+          altText
+        }
+        blog {
+          handle
+        }
+      }
+      pages {
+        id
+        title
+        handle
+      }
+    }
+  }
+`;
+
+export type PredictiveSearchHit = {
+  objectID: string;
+  title: string;
+  handle: string;
+  image_url: string | null;
+  price: number | null;
+  compare_at_price: number | null;
+  is_eco: boolean;
+  /** Shown as the small "BRAND" label above the title in SearchPanel.tsx. */
+  vendor: string | null;
+  /** Shown as the small "/ TYPE" label above the title in SearchPanel.tsx. */
+  product_type: string | null;
+};
+
+export type PredictiveCollection = {
+  id: string;
+  title: string;
+  handle: string;
+  image_url: string | null;
+};
+
+export type PredictiveArticle = {
+  id: string;
+  title: string;
+  handle: string;
+  blog_handle: string;
+  image_url: string | null;
+  published_at: string;
+};
+
+export type PredictivePage = {
+  id: string;
+  title: string;
+  handle: string;
+};
+
+export async function loader({request, context}: LoaderFunctionArgs) {
+  const url = new URL(request.url);
+  const searchTerm = url.searchParams.get('q')?.trim() ?? '';
+
+  if (!searchTerm) {
+    return Response.json({
+      hits: [],
+      querySuggestions: [],
+      vendors: [],
+      collections: [],
+      articles: [],
+      pages: [],
+    });
+  }
+
+  try {
+    const {predictiveSearch} = await context.storefront.query(
+      PREDICTIVE_SEARCH_QUERY,
+      {
+        variables: {
+          query: searchTerm,
+          limit: 6,
+          limitScope: 'EACH',
+          types: ['QUERY', 'PRODUCT', 'COLLECTION', 'ARTICLE', 'PAGE'],
+        },
+      },
+    );
+
+    const hits: PredictiveSearchHit[] = (
+      predictiveSearch?.products ?? []
+    ).map((product: any) => {
+      const variant = product.selectedOrFirstAvailableVariant;
+      return {
+        objectID: product.id,
+        title: product.title,
+        handle: product.handle,
+        image_url: variant?.image?.url ?? null,
+        price: variant?.price?.amount
+          ? Number(variant.price.amount)
+          : null,
+        compare_at_price: variant?.compareAtPrice?.amount
+          ? Number(variant.compareAtPrice.amount)
+          : null,
+        // Real merchant data: true only if the product is actually
+        // tagged "eco" in Shopify admin — never inferred/guessed.
+        is_eco: (product.tags ?? []).some(
+          (tag: string) => tag.toLowerCase() === 'eco',
+        ),
+        vendor: product.vendor ?? null,
+        product_type: product.productType || null,
+      };
+    });
+
+    // Deduped, real vendor names pulled from the matched products —
+    // this is how "Adidas" shows up as a brand-style suggestion without
+    // a separate vendor/brand API call.
+    const vendors = Array.from(
+      new Set(
+        (predictiveSearch?.products ?? [])
+          .map((product: any) => product.vendor)
+          .filter(Boolean),
+      ),
+    ).slice(0, 4) as string[];
+
+    const querySuggestions: string[] = (predictiveSearch?.queries ?? [])
+      .map((q: any) => q.text)
+      .filter(Boolean);
+
+    const collections: PredictiveCollection[] = (
+      predictiveSearch?.collections ?? []
+    ).map((collection: any) => ({
+      id: collection.id,
+      title: collection.title,
+      handle: collection.handle,
+      image_url: collection.image?.url ?? null,
+    }));
+
+    const articles: PredictiveArticle[] = (
+      predictiveSearch?.articles ?? []
+    ).map((article: any) => ({
+      id: article.id,
+      title: article.title,
+      handle: article.handle,
+      blog_handle: article.blog?.handle ?? '',
+      image_url: article.image?.url ?? null,
+      published_at: article.publishedAt,
+    }));
+
+    const pages: PredictivePage[] = (predictiveSearch?.pages ?? []).map(
+      (page: any) => ({
+        id: page.id,
+        title: page.title,
+        handle: page.handle,
+      }),
+    );
+
+    return Response.json({
+      hits,
+      querySuggestions,
+      vendors,
+      collections,
+      articles,
+      pages,
+    });
+  } catch (error) {
+    console.error('predictive-search loader error:', error);
+    return Response.json(
+      {
+        hits: [],
+        querySuggestions: [],
+        vendors: [],
+        collections: [],
+        articles: [],
+        pages: [],
+        error: 'Search is temporarily unavailable.',
+      },
+      {status: 500},
+    );
+  }
+}
+
+===== templates\search.tsx =====
+import {lazy, Suspense, useEffect, useState} from 'react';
+import {useLoaderData} from 'react-router';
+import type {Route} from './+types/search';
+import {Analytics} from '@shopify/hydrogen';
+import type {AlgoliaConfig} from '~/lib/algolia';
+import {getEmptyPredictiveSearchResult} from '~/lib/search';
+import type {PredictiveSearchReturn} from '~/lib/search';
+import type {PredictiveSearchQuery} from 'storefrontapi.generated';
+
+// Lazy + client-only: react-instantsearch (and its CJS algoliasearch-helper
+// dependency) is loaded ONLY in the browser. See AlgoliaInstantSearch.client.tsx
+// for why this file must keep the `.client.tsx` suffix.
+const AlgoliaInstantSearch = lazy(
+  () => import('~/snippets/AlgoliaInstantSearch.client'),
+);
+
+export const meta: Route.MetaFunction = () => {
+  return [{title: `Hydrogen | Search`}];
+};
+
+interface AlgoliaSearchReturn {
+  type: 'algolia';
+  term: string;
+  algolia: AlgoliaConfig;
+}
+
+export async function loader({
+  request,
+  context,
+}: Route.LoaderArgs): Promise<PredictiveSearchReturn | AlgoliaSearchReturn> {
+  const url = new URL(request.url);
+  const isPredictive = url.searchParams.has('predictive');
+
+  // Predictive branch — powers the header search flyout (SearchAside in
+  // PageLayout.tsx). Untouched: still Shopify-native, still required.
+  if (isPredictive) {
+    return predictiveSearch({request, context});
+  }
+
+  // Full-page branch — now Algolia-powered instead of the old
+  // Shopify Storefront API `regularSearch()`.
+  const {env} = context;
+  const term = String(url.searchParams.get('q') || '');
+
+  return {
+    type: 'algolia',
+    term,
+    algolia: {
+      appId: env.PUBLIC_ALGOLIA_APP_ID,
+      searchKey: env.PUBLIC_ALGOLIA_SEARCH_KEY,
+      indexName: env.PUBLIC_ALGOLIA_INDEX_NAME,
+    },
+  };
+}
+
+/**
+ * Renders the /search route
+ */
+export default function SearchPage() {
+  const data = useLoaderData<typeof loader>();
+
+  // Predictive requests render nothing — the flyout in PageLayout.tsx
+  // renders its own dropdown UI; this route is only hit for its JSON data.
+  if (data.type === 'predictive') return null;
+
+  const {algolia, term} = data;
+
+  // Gate rendering on client mount. Belt-and-suspenders alongside the
+  // `.client.tsx` suffix: this guarantees the dynamic import() itself is
+  // never even called during SSR, not just that its module is excluded
+  // from the server bundle.
+  const [hasMounted, setHasMounted] = useState(false);
+  useEffect(() => setHasMounted(true), []);
+
+  return (
+    <div className="search-page">
+      {hasMounted && (
+        <Suspense fallback={<div className="search-loading">Loading search…</div>}>
+          <AlgoliaInstantSearch algolia={algolia} term={term} />
+        </Suspense>
+      )}
+      <Analytics.SearchView data={{searchTerm: term, searchResults: null}} />
+    </div>
+  );
+}
+
+/**
+ * Predictive search query and fragments — kept as-is, still used by the
+ * header search flyout via ?predictive=1 requests to this same route.
+ */
+const PREDICTIVE_SEARCH_ARTICLE_FRAGMENT = `#graphql
+  fragment PredictiveArticle on Article {
+    __typename
+    id
+    title
+    handle
+    blog {
+      handle
+    }
+    image {
+      url
+      altText
+      width
+      height
+    }
+    trackingParameters
+  }
+` as const;
+
+const PREDICTIVE_SEARCH_COLLECTION_FRAGMENT = `#graphql
+  fragment PredictiveCollection on Collection {
+    __typename
+    id
+    title
+    handle
+    image {
+      url
+      altText
+      width
+      height
+    }
+    trackingParameters
+  }
+` as const;
+
+const PREDICTIVE_SEARCH_PAGE_FRAGMENT = `#graphql
+  fragment PredictivePage on Page {
+    __typename
+    id
+    title
+    handle
+    trackingParameters
+  }
+` as const;
+
+const PREDICTIVE_SEARCH_PRODUCT_FRAGMENT = `#graphql
+  fragment PredictiveProduct on Product {
+    __typename
+    id
+    title
+    handle
+    trackingParameters
+    selectedOrFirstAvailableVariant(
+      selectedOptions: []
+      ignoreUnknownOptions: true
+      caseInsensitiveMatch: true
+    ) {
+      id
+      image {
+        url
+        altText
+        width
+        height
+      }
+      price {
+        amount
+        currencyCode
+      }
+    }
+  }
+` as const;
+
+const PREDICTIVE_SEARCH_QUERY_FRAGMENT = `#graphql
+  fragment PredictiveQuery on SearchQuerySuggestion {
+    __typename
+    text
+    styledText
+    trackingParameters
+  }
+` as const;
+
+// NOTE: https://shopify.dev/docs/api/storefront/latest/queries/predictiveSearch
+const PREDICTIVE_SEARCH_QUERY = `#graphql
+  query PredictiveSearch(
+    $country: CountryCode
+    $language: LanguageCode
+    $limit: Int!
+    $limitScope: PredictiveSearchLimitScope!
+    $term: String!
+    $types: [PredictiveSearchType!]
+  ) @inContext(country: $country, language: $language) {
+    predictiveSearch(
+      limit: $limit,
+      limitScope: $limitScope,
+      query: $term,
+      types: $types,
+    ) {
+      articles {
+        ...PredictiveArticle
+      }
+      collections {
+        ...PredictiveCollection
+      }
+      pages {
+        ...PredictivePage
+      }
+      products {
+        ...PredictiveProduct
+      }
+      queries {
+        ...PredictiveQuery
+      }
+    }
+  }
+  ${PREDICTIVE_SEARCH_ARTICLE_FRAGMENT}
+  ${PREDICTIVE_SEARCH_COLLECTION_FRAGMENT}
+  ${PREDICTIVE_SEARCH_PAGE_FRAGMENT}
+  ${PREDICTIVE_SEARCH_PRODUCT_FRAGMENT}
+  ${PREDICTIVE_SEARCH_QUERY_FRAGMENT}
+` as const;
+
+/**
+ * Predictive search fetcher — unchanged from the original file.
+ */
+async function predictiveSearch({
+  request,
+  context,
+}: Pick<
+  Route.ActionArgs,
+  'request' | 'context'
+>): Promise<PredictiveSearchReturn> {
+  const {storefront} = context;
+  const url = new URL(request.url);
+  const term = String(url.searchParams.get('q') || '').trim();
+  const limit = Number(url.searchParams.get('limit') || 10);
+  const type = 'predictive';
+
+  if (!term) return {type, term, result: getEmptyPredictiveSearchResult()};
+
+  const {
+    predictiveSearch: items,
+    errors,
+  }: PredictiveSearchQuery & {errors?: Array<{message: string}>} =
+    await storefront.query(PREDICTIVE_SEARCH_QUERY, {
+      variables: {
+        limit,
+        limitScope: 'EACH',
+        term,
+      },
+    });
+
+  if (errors) {
+    throw new Error(
+      `Shopify API errors: ${errors.map(({message}: {message: string}) => message).join(', ')}`,
+    );
+  }
+
+  if (!items) {
+    throw new Error('No predictive search data returned from Shopify API');
+  }
+
+  const total = Object.values(items).reduce(
+    (acc: number, item: Array<unknown>) => acc + item.length,
+    0,
+  );
+
+  return {type, term, result: {items, total}};
+}
+

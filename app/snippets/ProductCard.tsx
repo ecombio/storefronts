@@ -1,4 +1,9 @@
 // app/snippets/ProductCard.tsx
+//
+// The site's real, interactive product card: image, price, rating,
+// wishlist toggle, compare checkbox, quick-view trigger, and an add-
+// to-cart form. Used directly in collection/search grids, and portaled
+// into shoppable-embed slots inside blog articles (see Article.tsx).
 
 import {useEffect, useState} from 'react';
 import {Link, useNavigate} from 'react-router';
@@ -25,10 +30,16 @@ import {
 
 export interface ProductCardProps {
   product: ProductCardFragment;
+  // Whether to show the vendor/brand name above the title.
   showVendor?: boolean;
+  // Image loading strategy — 'eager' for above-the-fold cards (e.g.
+  // the first row of a grid), 'lazy' (default) for everything else.
   loading?: 'eager' | 'lazy';
 }
 
+// Responsive image size hints matching common grid breakpoints, so the
+// browser fetches an appropriately-sized image rather than the largest
+// available at every viewport width.
 const IMAGE_SIZES =
   '(max-width: 480px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw';
 
@@ -40,16 +51,24 @@ function parseRating(raw?: string | null): number {
     const parsed = JSON.parse(raw);
     return parseFloat(parsed?.value ?? '0') || 0;
   } catch {
+    // Malformed/unexpected metafield value — fail closed to 0 rather
+    // than throwing and breaking the whole card.
     return 0;
   }
 }
 
+// Parses the reviews-count metafield (plain numeric string) safely.
 function parseCount(raw?: string | null): number {
   if (!raw) return 0;
   const n = parseInt(raw, 10);
   return Number.isNaN(n) ? 0 : n;
 }
 
+// Dispatches a DOM CustomEvent that some higher-level listener (a
+// global QuickView modal controller, presumably) picks up to open the
+// quick-view panel for this product. Decoupled via events rather than
+// a prop-drilled callback, so ProductCard doesn't need to know about
+// the modal system directly.
 function handleQuickViewClick(
   e: React.MouseEvent<HTMLButtonElement>,
   handle: string,
@@ -71,6 +90,7 @@ export function ProductCard({product, showVendor = true, loading = 'lazy'}: Prod
   const navigate = useNavigate();
   const {open: openAside} = useAside();
 
+  // Optional custom metafields/extras this card conditionally renders.
   const etaText = product.etaText?.value;
   const isSponsored = product.sponsored?.value === 'true';
   const averageScore = parseRating(product.reviewsRating?.value);
@@ -90,9 +110,12 @@ export function ProductCard({product, showVendor = true, loading = 'lazy'}: Prod
   // from CompareBar (for example) left this card's checkbox showing
   // checked until the page rerendered or navigated.
   useEffect(() => {
+    // Initial sync from localStorage-backed compare/wishlist lists.
     setIsComparing(readCompareList().some((entry) => entry.id === product.id));
     setIsWishlisted(readWishlist().some((entry) => entry.id === product.id));
 
+    // Custom events fired by compare.ts/wishlist.ts mutators (or other
+    // components) whenever either list changes, anywhere in the app.
     function onCompareUpdated(e: Event) {
       const detail = (e as CustomEvent<{items: CompareEntry[]}>).detail;
       const list = detail?.items ?? readCompareList();
@@ -105,6 +128,9 @@ export function ProductCard({product, showVendor = true, loading = 'lazy'}: Prod
       setIsWishlisted(list.some((entry) => entry.id === product.id));
     }
 
+    // Cross-tab sync: the native `storage` event fires in *other* tabs
+    // when localStorage changes in this one, so a compare/wishlist
+    // change in one tab reflects in cards open in another.
     function onStorage(e: StorageEvent) {
       if (e.key === COMPARE_KEY) {
         setIsComparing(readCompareList().some((entry) => entry.id === product.id));
@@ -124,6 +150,7 @@ export function ProductCard({product, showVendor = true, loading = 'lazy'}: Prod
     };
   }, [product.id]);
 
+  // Handles the compare checkbox toggling on/off.
   function handleCompareChange(e: React.ChangeEvent<HTMLInputElement>) {
     const checked = e.target.checked;
 
@@ -137,6 +164,9 @@ export function ProductCard({product, showVendor = true, loading = 'lazy'}: Prod
       };
       const {added} = addToCompare(entry);
       if (!added) {
+        // Compare list is full (COMPARE_MAX reached) — revert the
+        // checkbox and show the limit message instead of silently
+        // failing.
         e.target.checked = false;
         setCompareLimitHit(true);
         window.setTimeout(() => setCompareLimitHit(false), 2500);
@@ -149,6 +179,9 @@ export function ProductCard({product, showVendor = true, loading = 'lazy'}: Prod
     }
   }
 
+  // Handles the wishlist heart button — toggleWishlistEntry flips the
+  // stored state and reports back whether the product ended up
+  // wishlisted or not, so this stays a single source of truth.
   function handleWishlistToggle() {
     const entry: WishlistEntry = {
       id: product.id,
@@ -161,6 +194,9 @@ export function ProductCard({product, showVendor = true, loading = 'lazy'}: Prod
     setIsWishlisted(wishlisted);
   }
 
+  // Cart line to add — empty array if there's no valid variant (e.g.
+  // the product has no purchasable variant at all), which effectively
+  // disables the add-to-cart form below.
   const lines: Array<OptimisticCartLineInput> = variant
     ? [{merchandiseId: variant.id, quantity: 1}]
     : [];
@@ -182,6 +218,8 @@ export function ProductCard({product, showVendor = true, loading = 'lazy'}: Prod
               alt={image.altText ?? product.title}
             />
           ) : (
+            // No product image — render an empty placeholder box so
+            // card layout/height stays consistent within a grid.
             <div className="product-card__img-placeholder" aria-hidden="true" />
           )}
         </Link>
@@ -190,6 +228,8 @@ export function ProductCard({product, showVendor = true, loading = 'lazy'}: Prod
           <SaleBadge price={price} compareAtPrice={compareAtPrice} />
         </span>
 
+        {/* Wishlist toggle — reflects isWishlisted via aria-pressed for
+            assistive tech, in addition to the visual state. */}
         <button
           type="button"
           className="product-card__wishlist-btn"
@@ -209,6 +249,8 @@ export function ProductCard({product, showVendor = true, loading = 'lazy'}: Prod
           </svg>
         </button>
 
+        {/* Quick-view trigger — dispatches the quickview:open event
+            handled elsewhere rather than owning any modal state here. */}
         <button
           type="button"
           className="product-card__quickview-btn"
@@ -235,6 +277,8 @@ export function ProductCard({product, showVendor = true, loading = 'lazy'}: Prod
         </Link>
 
         <div className="product-card__reviews">
+          {/* Clicking the rating jumps to the reviews section on the
+              full product page via a URL hash. */}
           <StarRating
             averageScore={averageScore}
             totalReviews={totalReviews}
@@ -261,6 +305,9 @@ export function ProductCard({product, showVendor = true, loading = 'lazy'}: Prod
 
         {variant && (
           <div className="product-card__bottom-row">
+            {/* CartForm handles the actual cart mutation; the render
+                prop gives access to the fetcher so the button can
+                reflect in-flight/disabled state. */}
             <CartForm route="/cart" inputs={{lines}} action={CartForm.ACTIONS.LinesAdd}>
               {(fetcher: FetcherWithComponents<any>) => (
                 <button
@@ -268,6 +315,10 @@ export function ProductCard({product, showVendor = true, loading = 'lazy'}: Prod
                   className="product-card__atc-btn"
                   disabled={!variant.availableForSale || fetcher.state !== 'idle'}
                   onClick={() => {
+                    // Open the cart aside immediately on click (rather
+                    // than waiting for the mutation to resolve) for a
+                    // snappier feel — only when the item is actually
+                    // available to add.
                     if (variant.availableForSale) openAside('cart');
                   }}
                 >
