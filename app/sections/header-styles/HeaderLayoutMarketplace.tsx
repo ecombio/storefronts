@@ -1,4 +1,4 @@
-// app/sections/header-styles/HeaderLayoutGymshark.tsx
+// app/sections/header-styles/HeaderLayoutMarketplace.tsx
 //
 // Single row (desktop, lg+): logo + nav menu inline together on the
 // left, search + account/cart cluster pinned right — denser, more
@@ -17,7 +17,7 @@
 
 import type {HeaderLayoutProps} from './types';
 
-export function HeaderLayoutGymshark({
+export function HeaderLayoutMarketplace({
   logo,
   menu,
   search,

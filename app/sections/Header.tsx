@@ -24,17 +24,17 @@ import {type WishlistEntry, WISHLIST_KEY, readWishlist} from '~/lib/wishlist'; /
 import {type CompareEntry, COMPARE_KEY, COMPARE_MAX, readCompareList} from '~/lib/compare'; // ADDED
 
 import type {HeaderLayoutProps} from './header-styles/types';
-import {HeaderLayoutNike} from './header-styles/HeaderLayoutNike';
-import {HeaderLayoutBackMarket} from './header-styles/HeaderLayoutBackMarket';
-import {HeaderLayoutGymshark} from './header-styles/HeaderLayoutGymshark';
+import {HeaderLayoutLaunchpad} from './header-styles/HeaderLayoutLaunchpad';
+import {HeaderLayoutStorefront} from './header-styles/HeaderLayoutStorefront';
+import {HeaderLayoutMarketplace} from './header-styles/HeaderLayoutMarketplace';
 
 // Registry of available header arrangements. Adding a new style is
 // additive: build HeaderLayoutX.tsx against HeaderLayoutProps, add it
 // here, done — nothing else in this file needs to change.
 const HEADER_LAYOUTS: Record<HeaderStyle, React.ComponentType<HeaderLayoutProps>> = {
-  nike: HeaderLayoutNike,
-  backmarket: HeaderLayoutBackMarket,
-  gymshark: HeaderLayoutGymshark,
+  launchpad: HeaderLayoutLaunchpad,
+  storefront: HeaderLayoutStorefront,
+  marketplace: HeaderLayoutMarketplace,
 };
 
 export interface HeaderProps {

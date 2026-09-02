@@ -1,4 +1,4 @@
-// app/sections/header-styles/HeaderLayoutNike.tsx
+// app/sections/header-styles/HeaderLayoutLaunchpad.tsx
 //
 // Single row (desktop, lg+): logo — centered nav menu — compact
 // search + account/cart, mirroring Nike's header where search shares
@@ -14,7 +14,7 @@
 
 import type {HeaderLayoutProps} from './types';
 
-export function HeaderLayoutNike({
+export function HeaderLayoutLaunchpad({
   logo,
   menu,
   search,

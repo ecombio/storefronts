@@ -1,4 +1,4 @@
-// app/sections/header-styles/HeaderLayoutBackMarket.tsx
+// app/sections/header-styles/HeaderLayoutStorefront.tsx
 //
 // Row 1 (desktop, lg+): logo — flex-grow search — account/cart. Search
 // grows to fill whatever space is left between logo and ctas (capped
@@ -23,7 +23,7 @@
 
 import type {HeaderLayoutProps} from './types';
 
-export function HeaderLayoutBackMarket({
+export function HeaderLayoutStorefront({
   logo,
   menu,
   search,

@@ -12,9 +12,9 @@ export const LOGO_SRC =
 // down the line so merchandising can switch it without a deploy — a
 // constant is the simplest starting point.
 // ─────────────────────────────────────────────────────────────────────────
-export type HeaderStyle = 'nike' | 'backmarket' | 'gymshark';
+export type HeaderStyle = 'launchpad' | 'storefront' | 'marketplace';
 
-export const ACTIVE_HEADER_STYLE: HeaderStyle = 'backmarket';
+export const ACTIVE_HEADER_STYLE: HeaderStyle = 'marketplace';
 
 // ─────────────────────────────────────────────────────────────────────────
 // Header CTA feature flags
