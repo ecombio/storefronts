@@ -113,7 +113,7 @@ export function Header({
         <Layout
           logo={
             <NavLink prefetch="intent" to="/" end className="shrink-0" aria-label={`${shop.name} — home`}>
-              <img src={wordmarkSrc} alt={shop.name} width={140} height={28} className="h-6 w-auto sm:h-7" />
+              <img src={wordmarkSrc} alt={shop.name} width={140} height={28} className="h-8 w-auto sm:h-9" />
             </NavLink>
           }
           menu={
@@ -177,7 +177,7 @@ function HeaderAccount({
     <NavLink
       prefetch="intent"
       to="/account"
-      className="flex items-center gap-1.5 text-sm font-medium text-gray-800 hover:text-gray-950"
+      className="flex items-center gap-1.5 text-sm font-medium text-gray-800 hover:text-gray-950" aria-label="Account"
     >
       <Suspense fallback={<AccountContent label="Sign in/ Register" />}>
         <Await
@@ -222,8 +222,8 @@ function HeaderAccount({
 function AccountContent({label}: {label: string}) {
   return (
     <>
-      <User size={18} aria-hidden="true" />
-      <span className="hidden whitespace-nowrap sm:inline">{label}</span>
+      <User size={28} aria-hidden="true" />
+      
     </>
   );
 }
@@ -249,18 +249,17 @@ function CartBadge({count = 0}: {count?: number}) {
       aria-label={`Cart, ${count} item${count === 1 ? '' : 's'}`}
     >
       <span className="relative">
-        <ShoppingBag size={17} className="shrink-0" aria-hidden="true" />
-        <span
-          className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-gray-900 text-[9px] font-semibold leading-none text-white"
-          aria-hidden="true"
-        >
-          {count}
-        </span>
+        <ShoppingBag size={28} className="shrink-0" aria-hidden="true" />
+        {count > 0 && (
+          <span
+            className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-gray-900 text-[9px] font-semibold leading-none text-white"
+            aria-hidden="true"
+          >
+            {count}
+          </span>
+        )}
       </span>
-      <span className="hidden sm:inline" aria-hidden="true">
-        Cart
-      </span>
-    </Link>
+      </Link>
   );
 }
 
@@ -302,12 +301,14 @@ function WishlistBadge({count = 0}: {count?: number}) {
     >
       <span className="relative">
         <Heart size={17} className="shrink-0" aria-hidden="true" />
-        <span
-          className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-gray-900 text-[9px] font-semibold leading-none text-white"
-          aria-hidden="true"
-        >
-          {count}
-        </span>
+        {count > 0 && (
+          <span
+            className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-gray-900 text-[9px] font-semibold leading-none text-white"
+            aria-hidden="true"
+          >
+            {count}
+          </span>
+        )}
       </span>
       <span className="hidden sm:inline" aria-hidden="true">
         Wishlist
@@ -362,12 +363,14 @@ function CompareBadge({count = 0}: {count?: number}) {
     >
       <span className="relative">
         <Scale size={17} className="shrink-0" aria-hidden="true" />
-        <span
-          className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-gray-900 text-[9px] font-semibold leading-none text-white"
-          aria-hidden="true"
-        >
-          {count}
-        </span>
+        {count > 0 && (
+          <span
+            className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-gray-900 text-[9px] font-semibold leading-none text-white"
+            aria-hidden="true"
+          >
+            {count}
+          </span>
+        )}
       </span>
       <span className="hidden sm:inline" aria-hidden="true">
         Compare

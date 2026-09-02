@@ -94,8 +94,7 @@ export interface UtilityLink {
 export const UTILITY_LINKS: UtilityLink[] = [
   {label: 'Track Order', url: '/apps/track'},
   {label: 'Store Locator', url: '/pages/stores'},
-  {label: 'Track Order', url: '/apps/track'},
-];
+  ];
 
 // ─────────────────────────────────────────────────────────────────────────
 // Region / language picker
@@ -400,3 +399,4 @@ export const FALLBACK_HEADER_MENU = {
     },
   ],
 };
+

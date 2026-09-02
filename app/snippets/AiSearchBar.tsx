@@ -332,13 +332,7 @@ export const AiSearchBar = forwardRef<HTMLDivElement, AiSearchBarProps>(
                     in compact mode (e.g. the single-row desktop header) —
                     that gate has been removed so the animation renders at
                     both sizes. */}
-                <AnimatedPlaceholder
-                  index={suggestionIndex}
-                  suggestions={suggestions}
-                  itemHeight={cfg.itemHeight}
-                  fontSize={cfg.fontSize}
-                  lineHeight={cfg.lineHeight}
-                />
+                {/* Typewriter temporarily disabled — was <AnimatedPlaceholder .../> here */}
               </>
             )}
 
