@@ -125,6 +125,9 @@ async function loadCriticalData({context}: Route.LoaderArgs) {
       return {menu: null, shop: null} as unknown as Awaited<ReturnType<typeof storefront.query<typeof HEADER_QUERY>>>;
     });
 
+  // TEMP DEBUG — remove once the menu/collectionImages issue is confirmed fixed
+  console.log('HEADER MENU DEBUG:', JSON.stringify(header.menu, null, 2));
+
   const collectionImages = await loadMenuCollectionImages(storefront, header.menu).catch(
     (error: Error) => {
       console.error(error);
