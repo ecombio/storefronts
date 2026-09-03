@@ -88,7 +88,8 @@ export default function Quote({
  *   ></div>
  *
  * Only `data-text` is required. `data-role` is ignored unless
- * `data-attribution` is also present.
+ * `data-attribution` is also present. See quote.md for the full
+ * editor-facing syntax reference and filled-in examples.
  */
 
 const QUOTE_EMBED_RE = /<div\s+data-quote-embed\b([^>]*)><\/div>/gi;
@@ -100,6 +101,26 @@ function escapeHtml(value: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+// Reverses the browser/editor's HTML-entity encoding on an attribute
+// value pulled out of raw markup via regex (not a DOM parser), so it
+// can be safely re-escaped exactly once by escapeHtml() above.
+// Without this, a literal "&" typed in the blog editor is already
+// serialized as "&amp;" in article.contentHtml by the time it reaches
+// here — escapeHtml() would otherwise turn that into "&amp;amp;" and
+// render the literal string "&amp;" on the page instead of "&".
+// Order matters: &amp; must be decoded LAST, since decoding it first
+// would turn a source "&amp;lt;" into "&lt;" and then further into
+// "<" — which is wrong; only one level of encoding should ever be
+// undone here, matching one level of re-encoding in escapeHtml().
+function decodeHtmlEntities(value: string): string {
+  return value
+    .replace(/&quot;/g, "\"")
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
 }
 
 function parseAttrs(attrString: string): Record<string, string> {
@@ -121,6 +142,12 @@ function parseAttrs(attrString: string): Record<string, string> {
  * A marker missing `data-text` is dropped silently (renders nothing)
  * rather than left in place or thrown on — same "skip malformed"
  * behavior as the other blocks.
+ *
+ * Every attribute value is decoded (decodeHtmlEntities) before being
+ * re-escaped (escapeHtml) exactly once — attrs are pulled out of raw
+ * article HTML via regex rather than a DOM parser, so any entity an
+ * editor typed (e.g. "&", "<", a quotation mark) already arrives here
+ * pre-encoded and must be normalized back to its literal form first.
  */
 export function injectQuoteEmbeds(html: string): string {
   return html.replace(QUOTE_EMBED_RE, (_match, attrString: string) => {
@@ -128,7 +155,7 @@ export function injectQuoteEmbeds(html: string): string {
     if (!attrs.text) return "";
 
     const variant = attrs.variant === "pull" ? "pull" : "card";
-    const text = escapeHtml(attrs.text);
+    const text = escapeHtml(decodeHtmlEntities(attrs.text));
 
     const markMarkup =
       variant === "card"
@@ -137,9 +164,9 @@ export function injectQuoteEmbeds(html: string): string {
 
     let attributionMarkup = "";
     if (attrs.attribution) {
-      const attribution = escapeHtml(attrs.attribution);
+      const attribution = escapeHtml(decodeHtmlEntities(attrs.attribution));
       const roleMarkup = attrs.role
-        ? `<span class="quote__role">, ${escapeHtml(attrs.role)}</span>`
+        ? `<span class="quote__role">, ${escapeHtml(decodeHtmlEntities(attrs.role))}</span>`
         : "";
       attributionMarkup = `<figcaption class="quote__attribution">&mdash; <cite class="quote__name">${attribution}</cite>${roleMarkup}</figcaption>`;
     }

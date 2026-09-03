@@ -15,8 +15,21 @@
  * Keeping one shared stylesheet means there's no flash of
  * unstyled/differently-styled content when hydration swaps the
  * static grid for the live component.
+ *
+ * All four layouts (grid / fullscreen / slideshow / carousel) stay
+ * CONTAINED within the article body's normal width — none of them
+ * break out to the viewport edge. fullscreen/slideshow previously
+ * used a 100vw + negative-margin full-bleed trick; that's been
+ * removed so every layout respects .article-body/.article-layout's
+ * boundaries. The fullscreen/slideshow/carousel modifier classes still
+ * change the visual treatment (borderless tiles, wider crop, slide
+ * track, scrollable strip instead of a grid) — they just no longer
+ * escape the column width to do it.
  */
 
+/* Root wrapper for the whole block. Defines the local design tokens
+   (custom properties) used throughout this file, scoped to .ig-root
+   so they don't leak into or clash with the rest of the article. */
 .ig-root {
   --ig-ink: #17181c;
   --ig-paper: #ffffff;
@@ -28,13 +41,17 @@
   margin: 2rem 0;
 }
 
+/* Optional heading rendered above the grid (from data-gallery-title). */
 .ig-title {
-  margin: 0 0 0.9rem;
+  margin: 0 0 0.5rem;
   font-size: 1.05rem;
   font-weight: 600;
   letter-spacing: -0.01em;
 }
 
+/* Thumbnail grid. Column count comes from the --ig-columns custom
+   property set inline by the component/static markup (defaults to 3
+   here as a fallback if it's ever missing). */
 .ig-grid {
   list-style: none;
   display: grid;
@@ -44,6 +61,9 @@
   padding: 0;
 }
 
+/* On narrow viewports, always drop to a 2-column grid regardless of
+   the configured column count — more columns than that gets too
+   cramped on mobile. */
 @media (max-width: 640px) {
   .ig-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -54,6 +74,324 @@
   margin: 0;
 }
 
+/* Fullscreen layout modifier.
+   Previously broke the grid out to the viewport edge via a 100vw +
+   negative-margin full-bleed trick. Removed — this layout now stays
+   within the article body's normal width like every other layout;
+   only the tighter gap (below) and the borderless/wider-crop tile
+   treatment (further down) distinguish it visually from the default
+   grid. */
+.ig-root--fullscreen .ig-grid {
+  grid-template-columns: 1fr;
+  gap: 2px;
+}
+
+/* Borderless, square-cornered tiles for the banner look — the 1px
+   border/border-radius from the standard grid reads as a stray
+   inline card here. The 2px gap above (in place of the standard
+   grid's 0.6rem) keeps a thin reveal of the page background between
+   tiles instead. */
+.ig-root--fullscreen .ig-thumb-button {
+  border: none;
+  border-radius: 0;
+}
+
+/* Wider aspect ratio than the standard square crop — reads better as
+   a banner/hero strip than a tight square grid. Overrides
+   ig-thumb-img--square's aspect-ratio specifically, rather than
+   changing the default for every gallery, so a fullscreen gallery
+   with squareThumbnails explicitly set to false is unaffected
+   (nothing to override in that case). */
+.ig-root--fullscreen .ig-thumb-img--square {
+  aspect-ratio: 16 / 9;
+}
+
+@media (max-width: 640px) {
+  /* Taller ratio on mobile — 16:9 gets very short once the grid
+     drops to 2 columns on a narrow screen. */
+  .ig-root--fullscreen .ig-thumb-img--square {
+    aspect-ratio: 4 / 3;
+  }
+}
+
+/* Slideshow layout: one large image at a time, scroll-snapped, with
+   overlaid arrow buttons and a row of dots beneath. Positioning
+   context for the arrows, which are absolutely positioned relative
+   to this wrapper. */
+.ig-slideshow {
+  position: relative;
+}
+
+/* Previously broke the track out to the viewport edge via the same
+   100vw + negative-margin trick as fullscreen's .ig-grid above.
+   Removed — the track now stays within the article body's normal
+   width; width: 100% just fills its (contained) parent instead of
+   the old 100vw. */
+.ig-root--slideshow .ig-slideshow-track {
+  width: 100%;
+}
+
+/* Horizontally-scrolling track. scroll-snap-type: x mandatory makes
+   the browser settle on a slide boundary after any scroll/swipe with
+   no JS required — the arrow/dot buttons layer programmatic
+   scrolling on top of this, they don't replace it. Scrollbar hidden
+   since the dots below already communicate position/count. */
+.ig-slideshow-track {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.ig-slideshow-track::-webkit-scrollbar {
+  display: none;
+}
+
+/* Each slide takes the full width of the track and snaps to its
+   start edge, so exactly one slide is in view at a time. */
+.ig-slide {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  min-width: 0;
+}
+
+.ig-slide-button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: zoom-in;
+}
+
+.ig-slide-button:focus-visible {
+  outline: 2px solid var(--ig-accent);
+  outline-offset: -2px;
+}
+
+.ig-slide-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 80vh;
+  object-fit: cover;
+}
+
+/* Overlaid prev/next buttons on top of the current slide. Distinct
+   from .ig-icon-button (used in the dark lightbox overlay) because
+   this sits directly on top of arbitrary photo content on the page
+   itself, not a controlled dark backdrop — the semi-transparent
+   black circle keeps the white icon legible regardless of what's
+   underneath. */
+.ig-slideshow-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: rgba(17, 17, 15, 0.45);
+  color: #f2f1ec;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.ig-slideshow-nav:hover {
+  background: rgba(17, 17, 15, 0.7);
+}
+
+.ig-slideshow-nav:focus-visible {
+  outline: 2px solid #f2f1ec;
+  outline-offset: 2px;
+}
+
+.ig-slideshow-nav--prev {
+  left: 1rem;
+}
+
+.ig-slideshow-nav--next {
+  right: 1rem;
+}
+
+/* Row of dot indicators below the track — one per image, filled to
+   mark whichever slide is currently in view. */
+.ig-slideshow-dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.85rem 0 0;
+}
+
+.ig-slideshow-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: var(--ig-line);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.ig-slideshow-dot:hover {
+  background: var(--ig-accent);
+}
+
+.ig-slideshow-dot--active {
+  background: var(--ig-accent);
+  transform: scale(1.2);
+}
+
+.ig-slideshow-dot:focus-visible {
+  outline: 2px solid var(--ig-accent);
+  outline-offset: 2px;
+}
+
+/* Caption for the currently-visible slide — unlike .ig-caption (used
+   in the dark lightbox overlay), this sits on the page's normal
+   light background, so it uses the page ink color rather than the
+   lightbox's pale-on-dark tone. */
+.ig-slideshow-caption {
+  margin: 0.75rem 0 0;
+  text-align: center;
+  color: var(--ig-ink);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 640px) {
+  .ig-slide-img {
+    max-height: 60vh;
+  }
+
+  .ig-slideshow-nav {
+    width: 34px;
+    height: 34px;
+  }
+}
+
+/* Carousel layout: a horizontally-scrollable strip of fixed-width
+   thumbnails, several visible at once — unlike slideshow's one-at-a-
+   time paging. Positioning context for the overlaid nav arrows, same
+   relationship as .ig-slideshow to .ig-slideshow-nav. */
+.ig-carousel {
+  position: relative;
+}
+
+/* Horizontally-scrolling track. No scroll-snap-type here (unlike
+   .ig-slideshow-track) — this is a free-scrolling strip, not a paged
+   one, matching the "free scroll area" behavior described in the
+   component. Native drag/trackpad/touch scrolling works via
+   overflow-x alone; scrollCarouselBy in the .tsx just nudges it
+   programmatically on top. Scrollbar hidden for the same reason as
+   the slideshow track — the arrow buttons communicate that there's
+   more to scroll to. */
+.ig-carousel-track {
+  list-style: none;
+  display: flex;
+  /* Explicit nowrap (not just relying on flex's nowrap default) —
+     this is the single-row/carousel guarantee. Without it, if
+     anything on the page (a theme's article/prose reset targeting
+     bare `ul`/`li` selectors, usually) beats this rule on
+     specificity or load order, the items fall back to wrapping
+     instead of scrolling, which is what turns the strip into a
+     second grid. overflow-y: hidden backs this up visually so even
+     a wrapped item is clipped rather than shown on a second line. */
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  gap: 0.6rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ig-carousel-track::-webkit-scrollbar {
+  display: none;
+}
+
+/* Fixed-width thumbnail cell — this is the "fixed-width" the .tsx
+   comments refer to; nothing in the component sets this dimension,
+   so it has to live here. Chosen to roughly match a comfortable
+   multi-up strip at desktop width; narrows on small screens below.
+   .ig-thumb-img--square (shared with the grid layout) still applies
+   a 1:1 aspect-ratio to the <img> inside, so this yields 160×160
+   tiles by default. width + min-width alongside flex-basis is
+   belt-and-suspenders against a prose/article reset setting `li`
+   or `img` width elsewhere on the page — flex-basis alone can lose
+   that fight depending on specificity. */
+.ig-carousel-cell {
+  flex: 0 0 160px;
+  width: 160px;
+  min-width: 160px;
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .ig-carousel-cell {
+    flex: 0 0 120px;
+    width: 120px;
+    min-width: 120px;
+  }
+}
+
+/* Overlaid prev/next buttons on top of the track, same treatment as
+   .ig-slideshow-nav (semi-transparent dark circle, since this also
+   sits on top of arbitrary photo content rather than a controlled
+   backdrop). */
+.ig-carousel-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: rgba(17, 17, 15, 0.45);
+  color: #f2f1ec;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.ig-carousel-nav:hover {
+  background: rgba(17, 17, 15, 0.7);
+}
+
+.ig-carousel-nav:focus-visible {
+  outline: 2px solid #f2f1ec;
+  outline-offset: 2px;
+}
+
+.ig-carousel-nav--prev {
+  left: 0.5rem;
+}
+
+.ig-carousel-nav--next {
+  right: 0.5rem;
+}
+
+@media (max-width: 640px) {
+  .ig-carousel-nav {
+    width: 34px;
+    height: 34px;
+  }
+}
+
+/* Each grid thumbnail is a full-bleed button/link (see .tsx: <a> in
+   the static markup, <button> once hydrated) — same visual treatment
+   either way. Shared by both the grid and carousel layouts. */
 .ig-thumb-button {
   display: block;
   width: 100%;
@@ -71,6 +409,8 @@
   border-color: var(--ig-accent);
 }
 
+/* Keyboard-focus ring, distinct from :hover so mouse users don't see
+   an outline on click while keyboard users still get one on tab. */
 .ig-thumb-button:focus-visible {
   outline: 2px solid var(--ig-accent);
   outline-offset: 2px;
@@ -83,10 +423,18 @@
   object-fit: cover;
 }
 
+/* Applied when squareThumbnails is true (the component's default) to
+   force a 1:1 crop regardless of the source image's aspect ratio. */
 .ig-thumb-img--square {
   aspect-ratio: 1 / 1;
 }
 
+/* Full-screen dimmed backdrop behind the lightbox. Fixed + inset:0
+   covers the viewport regardless of scroll position; the component
+   also locks body scroll while this is open (see the .tsx effect).
+   NOTE: this is the lightbox OVERLAY, unrelated to the fullscreen
+   gallery LAYOUT above — it's still meant to cover the full viewport
+   since it's a modal dialog, not part of the article's normal flow. */
 .ig-overlay {
   position: fixed;
   inset: 0;
@@ -98,6 +446,8 @@
   padding: 1.25rem;
 }
 
+/* Centered content column inside the overlay: counter/close row,
+   image stage, caption, and filmstrip stacked vertically. */
 .ig-lightbox {
   width: 100%;
   max-width: 960px;
@@ -106,6 +456,7 @@
   gap: 0.75rem;
 }
 
+/* Row containing the "n / total" counter and the close button. */
 .ig-lightbox-top {
   display: flex;
   align-items: center;
@@ -119,6 +470,9 @@
   opacity: 0.8;
 }
 
+/* Shared circular-button style for close/prev/next controls inside
+   the dark lightbox — deliberately different from .ig-thumb-button
+   since it sits on a dark backdrop rather than the page background. */
 .ig-icon-button {
   display: inline-flex;
   align-items: center;
@@ -144,6 +498,8 @@
   outline-offset: 2px;
 }
 
+/* Wraps the current full-size image plus its prev/next arrows;
+   relative positioning lets the arrows be pinned to its edges. */
 .ig-lightbox-stage {
   position: relative;
   display: flex;
@@ -152,6 +508,9 @@
   min-height: 0;
 }
 
+/* The active full-size image itself — capped to a share of the
+   viewport height so it never forces the lightbox to overflow the
+   screen, and object-fit: contain preserves its aspect ratio. */
 .ig-lightbox-img {
   max-width: 100%;
   max-height: 70vh;
@@ -159,12 +518,16 @@
   object-fit: contain;
 }
 
+/* Prev/next arrow buttons, vertically centered on the stage. */
 .ig-nav {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
 }
 
+/* On small screens the arrows sit just inside the image edges so they
+   don't get clipped by the viewport; on wider screens (below) they
+   move further out into the surrounding padding. */
 .ig-nav--prev {
   left: -4px;
 }
@@ -182,6 +545,7 @@
   }
 }
 
+/* Optional caption text under the lightbox image (from data-caption). */
 .ig-caption {
   margin: 0;
   text-align: center;
@@ -189,6 +553,9 @@
   font-size: 0.9rem;
 }
 
+/* Horizontal, scrollable strip of every image in the set, letting the
+   user jump directly to any image instead of stepping with prev/next.
+   Only rendered (in the .tsx) when there's more than one image. */
 .ig-filmstrip {
   list-style: none;
   display: flex;
@@ -199,6 +566,8 @@
   justify-content: center;
 }
 
+/* Individual filmstrip thumbnail. Dimmed by default (opacity) so the
+   active one stands out without needing a heavy border treatment. */
 .ig-filmstrip-button {
   width: 52px;
   height: 52px;
@@ -217,6 +586,9 @@
   opacity: 0.85;
 }
 
+/* Applied to whichever filmstrip thumbnail matches the currently
+   active lightbox image (aria-current is set alongside this in the
+   .tsx for assistive tech). */
 .ig-filmstrip-button--active {
   opacity: 1;
   border-color: #f2f1ec;
@@ -229,10 +601,23 @@
   display: block;
 }
 
+/* Respect the user's OS-level motion preference by disabling the
+   hover/focus transitions entirely, rather than just shortening them. */
 @media (prefers-reduced-motion: reduce) {
   .ig-thumb-button,
   .ig-icon-button,
-  .ig-filmstrip-button {
+  .ig-filmstrip-button,
+  .ig-slideshow-nav,
+  .ig-slideshow-dot,
+  .ig-carousel-nav {
     transition: none;
+  }
+
+  .ig-slideshow-track {
+    scroll-behavior: auto;
+  }
+
+  .ig-carousel-track {
+    scroll-behavior: auto;
   }
 }

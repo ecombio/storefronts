@@ -42,12 +42,13 @@
 // "Summary" ("Key takeaways") is a fourth shape: authored via a
 // data-summary-embed marker like FAQ/quote/CTA, but NOT rendered
 // inline where that marker appears. It's pulled out of the body
-// entirely in the loader (extractSummarySection) and, when the
-// custom.show_summary metafield is on (isSummaryEnabled), rendered as
-// its own static block at the very top of the article — below the
-// hero image, above the body/TOC grid — regardless of where in the
-// body the editor placed the marker. See Summary.tsx / Summary.md for
-// the marker syntax, metafield setup, and editor-facing guidelines.
+// entirely in the loader (extractSummarySection) and, whenever a
+// valid marker is found, rendered as its own static block at the
+// very top of the article — below the hero image, above the
+// body/TOC grid — regardless of where in the body the editor placed
+// the marker. No metafield gate: the marker is hand-authored, so its
+// presence is itself the signal to render it. See Summary.tsx /
+// Summary.md for the marker syntax and editor-facing guidelines.
 //
 // "Social sharing" follows AuthorSection's shape too — no marker, no
 // portal, no DOM-scanning effect. Its inputs (article title, hero
@@ -100,7 +101,6 @@ import {injectRecipeHeader} from '~/components/blogs/RecipeHeader';
 import {
   extractSummarySection,
   renderSummary,
-  isSummaryEnabled,
 } from '~/components/blogs/Summary';
 import type {ProductCardFragment} from 'storefrontapi.generated';
 import articleStyles from '~/assets/article.css?url';
@@ -109,7 +109,7 @@ import authorSectionStyles from '~/assets/article-author.css?url';
 import twoColumnContentStyles from '~/assets/two-column-content.css?url';
 import videoStyles from '~/assets/video.css?url';
 import galleryStyles from '~/components/blogs/ImagesGallery.css?url';
-import blogButtonStyles from '~/assets/blog-button.css?url';
+import blogButtonStyles from '~/components/blogs/Button.css?url';
 import quoteStyles from '~/assets/quote.css?url';
 import recipeHeaderStyles from '~/assets/recipe-header.css?url';
 import newsletterFormStyles from '~/assets/newsletter-form.css?url';
@@ -139,30 +139,37 @@ import socialShareStyles from '~/assets/social-share.css?url';
 // to style the STATIC server-rendered grid (see injectImagesGallery),
 // not just the hydrated component, since the grid is visible and
 // functional before any JS runs.
-// blog-button.css is ALSO explicitly linked here rather than relying
-// solely on button.tsx's own bare side-effect import (`import
-// '~/assets/blog-button.css'` at the top of button.tsx). That
-// side-effect import covers <BlogButton> usages mounted directly in
-// JSX elsewhere in the route tree (e.g. inside AuthorSection), but
-// injectBlogButtons() below is a pure server-side string transform
-// with no component in the React tree for this route — nothing
-// guarantees its CSS dependency is included in *this* route's client
-// bundle unless we say so explicitly, so we do, matching every other
-// route-scoped stylesheet's ?url + links() convention here. Same
-// "only ever appears inside a blog article body" scoping reasoning as
-// the marker-based stylesheets above, per button.tsx's own header
-// comment (usage is scoped to blog articles + AuthorSection, unlike
-// the newsletter form). Redundant with the side-effect import in any
-// case where both fire on this route — harmless, since it's the same
-// stylesheet deduped by the browser.
-// quote.css is route-scoped for the same reason as blog-button.css:
+// Button.css is ALSO explicitly linked here rather than relying
+// solely on Button.tsx's own bare side-effect import (`import
+// './Button.css'` at the top of Button.tsx). That side-effect import
+// covers <BlogButton> usages mounted directly in JSX elsewhere in the
+// route tree (e.g. inside AuthorSection), but injectBlogButtons()
+// below is a pure server-side string transform with no component in
+// the React tree for this route — nothing guarantees its CSS
+// dependency is included in *this* route's client bundle unless we
+// say so explicitly, so we do, matching every other route-scoped
+// stylesheet's ?url + links() convention here. Same "only ever
+// appears inside a blog article body" scoping reasoning as the
+// marker-based stylesheets above, per Button.tsx's own header comment
+// (usage is scoped to blog articles + AuthorSection, unlike the
+// newsletter form). Redundant with the side-effect import in any case
+// where both fire on this route — harmless, since it's the same
+// stylesheet deduped by the browser. Now co-located at
+// ~/components/blogs/Button.css — same placement convention as
+// ImagesGallery.css next to ImagesGallery.tsx — rather than living
+// under app/assets/ like the marker-only stylesheets (quote.css,
+// recipe-header.css) that have no component counterpart. The
+// stylesheet was previously app/assets/blog-button.css; that file has
+// been removed now that this route and Button.tsx both point here
+// instead.
+// quote.css is route-scoped for the same reason as Button.css:
 // the data-quote-embed marker only ever appears inside a blog article
 // body, and injectQuoteEmbeds() is a pure server-side string transform
 // with no component in this route's React tree, so nothing guarantees
 // its CSS ships in this route's client bundle unless we say so
 // explicitly here.
 // recipe-header.css is route-scoped for the same reason as
-// blog-button.css/quote.css: the data-recipe-header marker only ever
+// Button.css/quote.css: the data-recipe-header marker only ever
 // appears inside a blog article body, and injectRecipeHeader() is a
 // pure server-side string transform with no component in this
 // route's React tree, so nothing guarantees its CSS ships in this
@@ -194,7 +201,7 @@ import socialShareStyles from '~/assets/social-share.css?url';
 // <BlogPostCard> directly would link it the same way, independently.
 // summary.css is route-scoped for the same "only ever appears on this
 // route" reasoning as related-blog-posts.css/article-author.css.
-// Unlike the marker-based stylesheets above (blog-button.css,
+// Unlike the marker-based stylesheets above (Button.css,
 // quote.css), the summary box is not rendered via
 // dangerouslySetInnerHTML alongside the rest of the article body — it
 // is resolved in the loader (extractSummarySection + renderSummary in
@@ -203,7 +210,7 @@ import socialShareStyles from '~/assets/social-share.css?url';
 // via dangerouslySetInnerHTML rather than a real component, so its
 // CSS still needs to be linked explicitly here rather than riding
 // along with a component's own side-effect import, same reasoning as
-// blog-button.css/quote.css.
+// Button.css/quote.css.
 // social-share.css is route-scoped for the same "only ever appears on
 // this route" reasoning as related-blog-posts.css/article-author.css.
 // <SocialShare> IS a component directly in this route's React tree
@@ -373,13 +380,11 @@ async function loadCriticalData({context, request, params}: Route.LoaderArgs) {
     extractSummarySection(contentHtml);
   contentHtml = contentHtmlWithoutSummary;
 
-  // Gated by the custom.show_summary boolean metafield (see
-  // isSummaryEnabled in Summary.tsx) — same off-by-default pattern as
-  // isTocEnabled/getAuthorSectionData. An article can have a perfectly
-  // valid data-summary-embed marker and still render nothing at the
-  // top until an editor explicitly flips this on.
-  const summaryHtml =
-    isSummaryEnabled(article) && summary ? renderSummary(summary) : null;
+  // Renders whenever a valid data-summary-embed marker was found —
+  // no metafield gate. The marker is authored by hand (never
+  // auto-generated), so its presence in the article body is itself
+  // the editor's signal to show it.
+  const summaryHtml = summary ? renderSummary(summary) : null;
 
   // Resolves data-cta button markers (see button.tsx / button.md for
   // marker syntax) into real <a class="blog-cta ..."> markup. Runs
@@ -578,16 +583,23 @@ type NewsletterSlot = {
 };
 
 // Describes one gallery slot found in the rendered article body: the
-// DOM node to portal into, plus the image list/title/columns resolved
-// server-side by injectImagesGallery (read back off the slot's data
-// attributes via readGallerySlot, same idea as NewsletterSlot above —
-// different data shape since a gallery carries a full image array
-// rather than two strings).
+// DOM node to portal into, plus the image list/title/columns/layout
+// resolved server-side by injectImagesGallery (read back off the
+// slot's data attributes via readGallerySlot, same idea as
+// NewsletterSlot above — different data shape since a gallery
+// carries a full image array rather than two strings).
+//
+// `layout` added here (previously missing) so the visual treatment
+// (grid / fullscreen / slideshow) survives the client-side portal
+// swap instead of silently reverting to the 'grid' default the
+// moment <ImagesGallery /> hydrates in — readGallerySlot already
+// parsed and returned it, this type just wasn't carrying it through.
 type GallerySlot = {
   el: HTMLElement;
   images: GalleryImage[];
   title?: string;
   columns?: 2 | 3 | 4 | 5;
+  layout?: 'grid' | 'fullscreen' | 'slideshow';
 };
 
 export default function ArticleTemplate() {
@@ -640,7 +652,7 @@ export default function ArticleTemplate() {
 
   // The gallery slots discovered in the DOM. Kept separate for the
   // same reason as videoSlots/newsletterSlots — different data shape
-  // (image array + optional title/columns, read back via
+  // (image array + optional title/columns/layout, read back via
   // readGallerySlot) and a different component (<ImagesGallery>)
   // portaled in. Unlike videoSlots, the props are resolved once here
   // (readGallerySlot at scan time) rather than per-render, since
@@ -850,7 +862,7 @@ export default function ArticleTemplate() {
       .querySelectorAll<HTMLElement>('[data-gallery-slot]')
       .forEach((el) => {
         // Parses and validates the slot's data-gallery-images (and
-        // optional title/columns) attributes in one shot.
+        // optional title/columns/layout) attributes in one shot.
         const data = readGallerySlot(el);
 
         // Skip malformed slots (missing/unparsable data-gallery-images).
@@ -892,9 +904,10 @@ export default function ArticleTemplate() {
       )}
 
       {/* "Key takeaways" summary, top of the article, directly below
-          the hero. Gated by custom.show_summary (see isSummaryEnabled
-          in Summary.tsx) and resolved once in the loader — a raw HTML
-          string, not a component, since that box is fully static. */}
+          the hero. No metafield gate — renders whenever a valid
+          data-summary-embed marker was found, resolved once in the
+          loader as a raw HTML string, not a component, since that
+          box is fully static. */}
       {summaryHtml && (
         <div
           dangerouslySetInnerHTML={{__html: summaryHtml}}
@@ -1014,16 +1027,23 @@ export default function ArticleTemplate() {
 
       {/* For each discovered gallery slot, portal the live
           <ImagesGallery> in — replacing the static thumbnail grid
-          that was cleared above. Props were already resolved at scan
-          time (readGallerySlot, above), so this just spreads them.
-          Keyed by position for the same reason as the newsletter/
-          video slots — an article can embed more than one gallery. */}
-      {gallerySlots.map(({el, images, title: galleryTitle, columns}, i) =>
-        createPortal(
-          <ImagesGallery images={images} title={galleryTitle} columns={columns} />,
-          el,
-          `gallery-${i}`,
-        ),
+          that was cleared above. Props (including layout) were
+          already resolved at scan time (readGallerySlot, above), so
+          this just spreads them through. Keyed by position for the
+          same reason as the newsletter/video slots — an article can
+          embed more than one gallery. */}
+      {gallerySlots.map(
+        ({el, images, title: galleryTitle, columns, layout}, i) =>
+          createPortal(
+            <ImagesGallery
+              images={images}
+              title={galleryTitle}
+              columns={columns}
+              layout={layout}
+            />,
+            el,
+            `gallery-${i}`,
+          ),
       )}
 
       {/* "Social sharing" card, right after the body/TOC grid and
@@ -1065,5 +1085,3 @@ export default function ArticleTemplate() {
     </div>
   );
 }
-
-

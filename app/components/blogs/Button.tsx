@@ -1,9 +1,12 @@
-// app/components/blogs/button.tsx
+// app/components/blogs/Button.tsx
 //
 // CTA button for blog articles, in two forms that share one CSS file
-// (~/assets/blog-button.css, imported below as a side-effect import —
-// see "Self-contained styling" in button.md for why this one diverges
-// from the ?url + links() convention the sibling blog-* stylesheets use):
+// (./Button.css, imported below as a side-effect import — see
+// "Self-contained styling" in button.md for why the *component*
+// import stays a bare side-effect import rather than the ?url +
+// links() convention the sibling blog-* stylesheets use, even though
+// the file itself now lives co-located next to this component, the
+// same way ImagesGallery.css sits next to ImagesGallery.tsx):
 //
 // 1. <BlogButton> — a real React component for CTAs you place directly
 //    in a route's JSX (e.g. a fixed end-of-article CTA in
@@ -34,10 +37,20 @@
 // </div> it saw. That lazy match previously truncated a marker's label
 // (and corrupted the surrounding HTML) whenever an editor wrapped the
 // label text in a nested <div> instead of an inline tag like <span>.
+//
+// RENAME: this file was previously button.tsx (lowercase). Every
+// sibling blog-marker module (FaqSection, TwoColumnContent, Quote,
+// RecipeHeader, NewsletterForm, Video, ImagesGallery, Summary) uses
+// PascalCase filenames, and the route's import
+// (`from '~/components/blogs/Button'`) always assumed that casing —
+// which only resolved locally on case-insensitive filesystems
+// (macOS/Windows). Renamed to Button.tsx to match the import and the
+// sibling convention, so the build no longer depends on filesystem
+// case-sensitivity.
 
 import * as React from 'react';
 import {Link} from 'react-router';
-import '~/assets/blog-button.css';
+import './Button.css';
 
 // ---------------------------------------------------------------------------
 // Types

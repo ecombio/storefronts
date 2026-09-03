@@ -1,0 +1,162 @@
+/* app/components/blogs/Button.css
+ * Styles both the React <BlogButton> component and the static markup
+ * produced by injectBlogButtons() — same class names, one stylesheet,
+ * so a CTA looks identical whether it's hand-placed in JSX or dropped
+ * into an article body via the Shopify blog editor marker.
+ *
+ * Co-located with Button.tsx (same placement convention as
+ * ImagesGallery.css next to ImagesGallery.tsx) rather than living
+ * under app/assets/ like the other marker-only stylesheets
+ * (quote.css, recipe-header.css) that have no component counterpart.
+ * Still effectively route-scoped: Button.tsx pulls this in via a bare
+ * side-effect import for the <BlogButton> component-usage path, and
+ * blogs.$blogHandle.$articleHandle.tsx also links it explicitly via
+ * ?url + links() for the injectBlogButtons() static-transform path,
+ * which has no component in the tree to carry the import — same
+ * "only ever appears inside a blog article body" reasoning as
+ * article.css/two-column-content.css/video.css.
+ */
+
+/* Design tokens for the CTA button family. Centralized here (rather than
+ * hardcoded per-variant) so brand colors can be retuned in one place.
+ * Hover/active shades are precomputed rather than derived at runtime
+ * (no color-mix()/filter tricks) for broad browser support. */
+:root {
+  --cta-bg: #2f5dfb;              /* primary fill */
+  --cta-bg-hover: #264ddb;
+  --cta-bg-active: #1e3eb8;
+  --cta-fg: #ffffff;              /* text/icon color on primary fill */
+  --cta-secondary-bg: #f2f1ee;
+  --cta-secondary-bg-hover: #e6e4de;
+  --cta-secondary-fg: #1a1a1a;
+  --cta-border: #2f5dfb;          /* outline variant's border */
+  --cta-outline-fg: #2f5dfb;      /* outline/ghost text + icon color */
+  --cta-outline-hover: rgba(47, 93, 251, 0.06); /* faint tint, not a solid fill, for outline/ghost hover */
+  --cta-link: #2f5dfb;
+  --cta-ring: #2f5dfb;            /* focus-visible outline color */
+}
+
+/* Wrapper injectBlogButtons() emits around each static <a> button, so a
+ * CTA embedded mid-article gets consistent centering/spacing without
+ * the editor having to add their own layout markup. The React
+ * <BlogButton> component has no equivalent wrapper — callers control
+ * its placement/spacing directly in JSX. */
+.blog-cta-row {
+  display: flex;
+  justify-content: center;
+  margin: 28px 0;
+}
+
+/* Base button styles shared by every variant/size — renders identically
+ * whether the underlying element is <button>, <a>, or react-router <Link>. */
+.blog-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;                        /* space between icon and label */
+  border: 1px solid transparent;   /* reserved so --outline's border doesn't shift layout */
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-decoration: none;           /* strip default <a> underline */
+  cursor: pointer;
+  transition: background-color 150ms ease-out, color 150ms ease-out;
+  user-select: none;               /* prevent accidental text selection on click/drag */
+}
+
+/* Covers both a real disabled <button> and a link rendered as
+ * non-interactive via aria-disabled (links have no native disabled attr). */
+.blog-cta:disabled,
+.blog-cta[aria-disabled='true'] {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* Keyboard-only focus ring (skips mouse clicks) for accessibility. */
+.blog-cta:focus-visible {
+  outline: 2px solid var(--cta-ring);
+  outline-offset: 2px;
+}
+
+/* Sizes — control height/padding/font-size only; color comes from variant classes below. */
+.blog-cta--sm { height: 32px; padding: 0 14px; font-size: 11px; }
+.blog-cta--md { height: 36px; padding: 0 16px; font-size: 12px; }
+.blog-cta--lg { height: 44px; padding: 0 24px; font-size: 13px; }
+
+.blog-cta--full { width: 100%; }
+
+/* Variants */
+
+/* primary — solid brand-color fill, the default CTA style */
+.blog-cta--primary {
+  background: var(--cta-bg);
+  color: var(--cta-fg);
+}
+.blog-cta--primary:hover { background: var(--cta-bg-hover); }
+.blog-cta--primary:active { background: var(--cta-bg-active); }
+
+/* secondary — neutral/low-emphasis fill, for a CTA that shouldn't compete with a primary one nearby */
+.blog-cta--secondary {
+  background: var(--cta-secondary-bg);
+  color: var(--cta-secondary-fg);
+}
+.blog-cta--secondary:hover { background: var(--cta-secondary-bg-hover); }
+
+/* outline — bordered, transparent fill; medium emphasis */
+.blog-cta--outline {
+  background: transparent;
+  border-color: var(--cta-border);
+  color: var(--cta-outline-fg);
+}
+.blog-cta--outline:hover { background: var(--cta-outline-hover); }
+
+/* ghost — same as outline but no border, lowest-emphasis "button-shaped" option */
+.blog-cta--ghost {
+  background: transparent;
+  color: var(--cta-outline-fg);
+}
+.blog-cta--ghost:hover { background: var(--cta-outline-hover); }
+
+/* link — not really a "button" visually; renders as inline underlined text
+ * for CTAs that should read as a link within body copy. Overrides the
+ * shared sizing rules above since it doesn't use the height/padding scale. */
+.blog-cta--link {
+  background: transparent;
+  height: auto;
+  padding: 0;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--cta-link);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.blog-cta--link:hover { opacity: 0.7; }
+
+/* Loading state: block further interaction while the spinner shows,
+ * mirroring the component's isDisabled logic (loading implies disabled). */
+.blog-cta--loading { pointer-events: none; }
+
+.blog-cta__spinner {
+  width: 14px;
+  height: 14px;
+  animation: blog-cta-spin 0.8s linear infinite;
+}
+
+/* Shared wrapper for both the icon prop and the spinner, so either one
+ * sits correctly alongside the label regardless of iconPosition. */
+.blog-cta__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+@keyframes blog-cta-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Slow the spin rather than remove it entirely — a static spinner reads
+ * as a stalled/broken button, so reduced motion gets a gentler animation
+ * instead of none. */
+@media (prefers-reduced-motion: reduce) {
+  .blog-cta__spinner { animation-duration: 1.6s; }
+}
