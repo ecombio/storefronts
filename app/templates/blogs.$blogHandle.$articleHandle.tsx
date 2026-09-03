@@ -499,8 +499,8 @@ async function loadCriticalData({context, request, params}: Route.LoaderArgs) {
   // doesn't come from `article` itself. request.url already reflects
   // the post-redirectIfHandleIsLocalized canonical handle (the
   // redirect above throws/returns before this line runs when the
-  // handle isn't canonical), so this is safe to hand straight to the
-  // share-intent links without re-deriving it from params.
+  // handle isn't canonical), so this is safe to hand straight to
+  // SocialShare without re-deriving it from params.
   const canonicalUrl = request.url;
 
   // Final loader payload: the article with its fully-transformed
@@ -583,10 +583,11 @@ export default function ArticleTemplate() {
   // scanned either, for the same "fully static, no slot" reason as
   // author section — it's rendered directly below, outside
   // dangerouslySetInnerHTML entirely. The summary block is the same
-  // story — it's already been pulled out of contentHtml in the
-  // loader, so there's no marker left in this DOM subtree to find.
-  // Social share is the same story too — it never touches contentHtml
-  // at all, so there's nothing here to scan for it either.
+  // story — it's rendered directly above the body/TOC grid (see
+  // below), never inside this ref's DOM subtree, so there's no
+  // marker/slot for it to be found here. Social share is the same
+  // story too — it never touches contentHtml at all, so there's
+  // nothing here to scan for it either.
   const bodyRef = useRef<HTMLDivElement>(null);
 
   // The shoppable slots discovered in the DOM (populated by the effect
@@ -695,11 +696,10 @@ export default function ArticleTemplate() {
   // swap in after mount. Related posts are ALSO not part of this
   // scan — it isn't inside dangerouslySetInnerHTML at all, so there's
   // no slot to find; it renders directly, further down this same JSX
-  // tree. Same story for the summary block — it's resolved in the
-  // loader and rendered directly above the body/TOC grid, so there's
-  // no slot for it here either. Same story again for social share —
-  // it's rendered directly below the body/TOC grid too, no slot, no
-  // scan needed.
+  // tree. Same story for the summary block — it's resolved/rendered
+  // directly above the body/TOC grid, so there's no slot for it here.
+  // Same story again for social share — it's rendered directly below
+  // the body/TOC grid too, no slot, no scan needed.
   //
   // Deliberately NOT createRoot(el).render(...) here: that would spin up
   // a brand-new, disconnected React tree with no access to this app's
@@ -848,18 +848,15 @@ export default function ArticleTemplate() {
         />
       )}
 
-      {/* "Key takeaways" summary box, top of the article, below the
-          hero. Gated by custom.show_summary (see isSummaryEnabled in
-          Summary.tsx) and resolved once in the loader — a raw HTML
-          string, not a component, since the box is fully static
-          (nothing inside it needs client state or a portal). Rendered
-          directly here rather than left inline in contentHtml,
-          regardless of where in the article body the editor
-          originally placed the data-summary-embed marker. Null when
-          the metafield is off OR the article has no summary marker at
-          all — either way, nothing renders here. */}
+      {/* "Key takeaways" summary, top of the article, directly below
+          the hero. Gated by custom.show_summary (see isSummaryEnabled
+          in Summary.tsx) and resolved once in the loader — a raw HTML
+          string, not a component, since that box is fully static. */}
       {summaryHtml && (
-        <div dangerouslySetInnerHTML={{__html: summaryHtml}} />
+        <div
+          dangerouslySetInnerHTML={{__html: summaryHtml}}
+          className="summary"
+        />
       )}
 
       {/* Body + TOC live in a two-column grid on desktop when the TOC
