@@ -1,6 +1,6 @@
 /*
  * Table of contents layout for blog articles.
- * Own file, imported/linked the same wayas every other feature
+ * Own file, imported/linked the samewayas every other feature
  * stylesheet in root.tsx (see e.g. collection-sidebar.css) — this
  * isn't merged into article.css directly, just loaded alongside it.
  *
@@ -14,7 +14,7 @@
 
 .article-layout {
   max-width: 960px;
-  margin: 0 auto;
+  margin: 0;
 }
 
 .article--hub .article-layout {
@@ -38,16 +38,16 @@
 
 @media (min-width: 900px) {
   .article-layout {
-    grid-template-columns: 1fr 240px;
+    grid-template-columns: 240px 1fr;
   }
 
   .article-toc {
-    order: 2;
+    order: -1;
   }
 }
 
 /* Applied when the TOC is toggled off (or the article has no h2/h3
-   headings to list) — collapses back to a single column instead of
+   headings to list) — collapses backto a single column instead of
    reserving an empty 240px sidebar gutter next to the body. */
 
 @media (min-width: 900px) {
@@ -56,7 +56,7 @@
   }
 }
 
-/* The TOC itself: <details> wrapping a <nav>. Below 900px it behaves
+/* The TOC itself: <details> wrappinga <nav>. Below 900px it behaves
    as a native collapsible (summary visible, content toggles open/
    closed). At/above 900px, CSS forces itopen regardless of the
    `open` attribute's actual state and hides the summary — this is
@@ -216,7 +216,7 @@
 }
 
 /* Smooth-scroll TOC anchor jumps insteadof an instant snap.
-   Respects prefers-reduced-motion so it doesn't fight anyone who's
+   Respects prefers-reduced-motion soit doesn't fight anyone who's
    opted out of scroll animation at the OS/browser level. */
 
 @media (prefers-reduced-motion: no-preference) {
