@@ -62,6 +62,32 @@ export default async function handleRequest(
       'https://staticw2.yotpo.com',
       'https://fonts.gstatic.com',
     ],
+    // media-src governs <video>/<audio> src loading. Previously unset,
+    // which meant it fell back to default-src ('self' + cdn.shopify.com
+    // + shopify.com + localhost only) — silently blocking any video
+    // whose data-src pointed elsewhere, including Shopify CDN-hosted
+    // videos served from a different subdomain than cdn.shopify.com.
+    // See app/components/blogs/Video.tsx / Video.md for the marker
+    // this unblocks.
+    mediaSrc: [
+      "'self'",
+      'https://cdn.shopify.com',
+      // Temporary: commondatastorage.googleapis.com serves the public-
+      // domain sample videos (Big Buck Bunny, Elephants Dream, etc.)
+      // used as placeholder examples in Video.md while testing the
+      // data-video-embed marker locally. Remove once real Shopify CDN
+      // video assets replace these placeholders in published content.
+      'https://commondatastorage.googleapis.com',
+    ],
+    // frame-src governs <iframe> src loading — required for the
+    // YouTube/Vimeo facade embeds in Video.tsx. Previously unset, same
+    // default-src fallback problem as mediaSrc above, so every
+    // YouTube/Vimeo embed was silently blocked at the framing step.
+    frameSrc: [
+      "'self'",
+      'https://www.youtube-nocookie.com',
+      'https://player.vimeo.com',
+    ],
     imgSrc: [
       "'self'",
       'data:',
@@ -82,6 +108,12 @@ export default async function handleRequest(
       // replace these placeholders.
       'https://picsum.photos',
       'https://fastly.picsum.photos',
+      // Temporary: placehold.co placeholder poster images used in
+      // Video.md's data-video-embed examples while testing locally.
+      // Remove once real Shopify CDN poster images replace these
+      // placeholders in published content — same reasoning as
+      // picsum.photos above.
+      'https://placehold.co',
       // Mega-menu fallback collection images (Header.constants.ts
       // SUBMENU_IMAGES) served from ecombio.com's CDN.
       'http://ecombio.com',
