@@ -127,18 +127,12 @@ async function loadCriticalData({context}: Route.LoaderArgs) {
       return {menu: null, shop: null} as unknown as Awaited<ReturnType<typeof storefront.query<typeof HEADER_QUERY>>>;
     });
 
-  // TEMP DEBUG — remove once the menu/collectionImages issue is confirmed fixed
-  console.log('HEADER MENU DEBUG:', JSON.stringify(header.menu, null, 2));
-
   const collectionImages = await loadMenuCollectionImages(storefront, header.menu).catch(
     (error: Error) => {
       console.error(error);
       return {};
     },
   );
-
-  // TEMP DEBUG — remove once the menu/collectionImages issue is confirmed fixed
-  console.log('COLLECTION IMAGES DEBUG:', JSON.stringify(collectionImages, null, 2));
 
   return {header, collectionImages};
 }
@@ -156,9 +150,15 @@ async function loadMenuCollectionImages(
 
   if (!collectionIds.length) return {};
 
-  const data = await storefront.query(MENU_COLLECTION_IMAGES_QUERY, {
-    variables: {ids: collectionIds},
-  });
+  const data = await storefront
+    .query(MENU_COLLECTION_IMAGES_QUERY, {
+      cache: storefront.CacheLong(),
+      variables: {ids: collectionIds},
+    })
+    .catch((error: Error) => {
+      console.error('MENU_COLLECTION_IMAGES_QUERY failed:', error);
+      return {nodes: []};
+    });
 
   return Object.fromEntries(
     data.nodes

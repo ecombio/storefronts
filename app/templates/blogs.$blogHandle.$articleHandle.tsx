@@ -160,9 +160,19 @@ export default function ArticleTemplate() {
   // needs to be opened imperatively - CSS :target can only fake the visual
   // state and leaves the item stuck open/unclosable. Re-run when contentHtml
   // changes (e.g. client-side navigation between articles).
+  //
+  // Uses getElementById rather than querySelector(hash) — a heading
+  // whose text starts with a digit (e.g. "2. Understand motor types")
+  // slugifies to an id like "2-understand-...", which is a perfectly
+  // valid HTML id but NOT a valid CSS selector when used unescaped
+  // with a leading "#". querySelector() throws a SyntaxError on that,
+  // which crashed the whole page (500) instead of just failing to
+  // scroll. getElementById takes a raw id string, no selector parsing
+  // involved, so it has no such restriction.
   useEffect(() => {
     if (!window.location.hash) return;
-    const target = document.querySelector(window.location.hash);
+    const id = decodeURIComponent(window.location.hash.slice(1));
+    const target = document.getElementById(id);
     if (target instanceof HTMLDetailsElement) {
       target.open = true;
     }
