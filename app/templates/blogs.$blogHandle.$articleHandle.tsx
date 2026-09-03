@@ -115,7 +115,7 @@ import recipeHeaderStyles from '~/assets/recipe-header.css?url';
 import newsletterFormStyles from '~/assets/newsletter-form.css?url';
 import relatedBlogPostsStyles from '~/assets/related-blog-posts.css?url';
 import blogPostCardStyles from '~/assets/blog-post-card.css?url';
-import summaryStyles from '~/assets/summary.css?url';
+import summaryStyles from '~/components/blogs/Summary.css?url';
 import socialShareStyles from '~/assets/social-share.css?url';
 // newsletter-form.css moved HERE from root.tsx (previously loaded
 // globally there, on the reasoning that the data-newsletter-form
@@ -202,7 +202,7 @@ import socialShareStyles from '~/assets/social-share.css?url';
 // section/grid rules. It's linked here because THIS route happens to
 // render it (via <RelatedBlogPosts>) — a future route rendering
 // <BlogPostCard> directly would link it the same way, independently.
-// summary.css is route-scoped for the same "only ever appears on this
+// Summary.css is route-scoped for the same "only ever appears on this
 // route" reasoning as related-blog-posts.css/article-author.css.
 // Unlike the marker-based stylesheets above (Button.css,
 // quote.css), the summary box is not rendered via
