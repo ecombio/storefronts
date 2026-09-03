@@ -1,4 +1,52 @@
 // app/templates/blogs.$blogHandle.$articleHandle.tsx
+//
+// Route for a single blog article (e.g. /blogs/news/my-article). The
+// loader does most of the heavy lifting: it fetches the article, then
+// runs a pipeline of string-transform passes over its raw contentHtml
+// to resolve editor-authored markers (shoppable products, CTA buttons,
+// pull-quotes, recipe headers, two-column layout, FAQs, newsletter
+// form, video embeds, image galleries) into real markup, and assigns
+// heading ids for the optional table of contents. The component then
+// renders that HTML via dangerouslySetInnerHTML and, for the marker
+// types that need live React behavior (shoppable cards, newsletter
+// form, video, gallery), scans the rendered DOM for the slots the
+// loader left behind and portals the real interactive components into
+// them client-side. CTA buttons, pull-quotes, and recipe headers are
+// the exception — they resolve to fully static markup with no slot
+// and no hydration step (see button.tsx / button.md, Quote.tsx /
+// quote.md, and RecipeHeader.tsx / recipe-header.md for the marker
+// syntax editors use in the Shopify blog editor).
+//
+// "Related blogs" (bottom of article, below the author section) is a
+// third shape again — not a marker/portal block, since it isn't
+// placed inline by an editor. It follows AuthorSection's shape
+// instead: gating fn + loader-side data resolver + presentational
+// component, rendered directly. Unlike every other block on this
+// route, RelatedBlogPosts.tsx is the single source of truth for its
+// whole feature — gating, the candidate-pool GraphQL query, the
+// curated+fallback merge logic, AND the component all live in that
+// one file (see related-blog-posts.md for setup instructions), so
+// this route only ever imports from that one path for the feature.
+//
+// "Summary" ("Key takeaways") is a fourth shape: authored via a
+// data-summary-embed marker like FAQ/quote/CTA, but NOT rendered
+// inline where that marker appears. It's pulled out of the body
+// entirely in the loader (extractSummarySection) and, when the
+// custom.show_summary metafield is on (isSummaryEnabled), rendered as
+// its own static block at the very top of the article — below the
+// hero image, above the body/TOC grid — regardless of where in the
+// body the editor placed the marker. See Summary.tsx / Summary.md for
+// the marker syntax, metafield setup, and editor-facing guidelines.
+//
+// "Social sharing" follows AuthorSection's shape too — no marker, no
+// portal, no DOM-scanning effect. Its inputs (article title, hero
+// image, and the page's own canonical URL) are already available in
+// the route/loader rather than embedded in the rich text body, so
+// editors have no control over its placement — it's a fixed section
+// rendered right after the body/TOC grid, directly above
+// AuthorSection. See SocialShare.tsx / social-share.md for the
+// component, its (currently no-op until ARTICLE_QUERY grows the
+// metafield) opt-out gating, and setup notes.
 import {useEffect, useRef, useState} from 'react';
 import {createPortal} from 'react-dom';
 import {useLoaderData} from 'react-router';
@@ -10,13 +58,31 @@ import {injectFaqSections} from '~/components/blogs/FaqSection';
 import {injectTwoColumnContent} from '~/components/blogs/TwoColumnContent';
 import {withHeadingIds, TableOfContents, isTocEnabled} from '~/components/blogs/TableOfContents';
 import {AuthorSection, getAuthorSectionData} from '~/components/blogs/AuthorSection';
-import {injectNewsletterForm, NewsletterForm} from '~/components/blogs/NewsletterForm';
+import SocialShare, {isSocialShareEnabled} from '~/components/blogs/SocialShare';
+import RelatedBlogPosts, {
+  getRelatedPostsData,
+  RELATED_POSTS_CANDIDATES_QUERY,
+} from '~/components/blogs/RelatedBlogPosts';
+import {
+  injectNewsletterForm,
+  NewsletterForm,
+  DEFAULT_HEADING as NEWSLETTER_DEFAULT_HEADING,
+  DEFAULT_SUBHEADING as NEWSLETTER_DEFAULT_SUBHEADING,
+} from '~/components/blogs/NewsletterForm';
 import Video, {injectVideoEmbeds, readVideoSlot} from '~/components/blogs/video';
 import ImagesGallery, {
   injectImagesGallery,
   readGallerySlot,
   type GalleryImage,
 } from '~/components/blogs/ImagesGallery';
+import {injectBlogButtons} from '~/components/blogs/button';
+import {injectQuoteEmbeds} from '~/components/blogs/Quote';
+import {injectRecipeHeader} from '~/components/blogs/RecipeHeader';
+import {
+  extractSummarySection,
+  renderSummary,
+  isSummaryEnabled,
+} from '~/components/blogs/Summary';
 import {ProductCard} from '~/snippets/ProductCard';
 import {Solo, Duo, Trio} from '~/components/blogs/ProductGallery';
 
@@ -27,9 +93,24 @@ import authorSectionStyles from '~/assets/article-author.css?url';
 import twoColumnContentStyles from '~/assets/two-column-content.css?url';
 import videoStyles from '~/assets/video.css?url';
 import galleryStyles from '~/assets/gallery.css?url';
-// newsletter-form.css is NOT imported here — it now loads globally
-// via root.tsx (see the ADDED comment there), since the
-// data-newsletter-form marker is reusable outside blog articles too.
+import blogButtonStyles from '~/assets/blog-button.css?url';
+import quoteStyles from '~/assets/quote.css?url';
+import recipeHeaderStyles from '~/assets/recipe-header.css?url';
+import newsletterFormStyles from '~/assets/newsletter-form.css?url';
+import relatedBlogPostsStyles from '~/assets/related-blog-posts.css?url';
+import blogPostCardStyles from '~/assets/blog-post-card.css?url';
+import summaryStyles from '~/assets/summary.css?url';
+import socialShareStyles from '~/assets/social-share.css?url';
+// newsletter-form.css moved HERE from root.tsx (previously loaded
+// globally there, on the reasoning that the data-newsletter-form
+// marker might be used outside blog articles). In practice the marker
+// is only ever authored inside a blog article body, so it now follows
+// the same route-scoped ?url + links() convention as
+// blog-button.css/quote.css below, rather than shipping on every page
+// on the site. If a non-blog surface starts using
+// injectNewsletterForm/<NewsletterForm> later, that surface should
+// import newsletter-form.css itself the same way this route does —
+// not force it back onto every route via root.tsx.
 // two-column-content.css stays route-scoped, same reasoning as
 // article.css/article-author.css: the data-two-col marker only ever
 // appears inside a blog article body, unlike the newsletter marker.
@@ -42,7 +123,82 @@ import galleryStyles from '~/assets/gallery.css?url';
 // to style the STATIC server-rendered grid (see injectImagesGallery),
 // not just the hydrated component, since the grid is visible and
 // functional before any JS runs.
+// blog-button.css is ALSO explicitly linked here rather than relying
+// solely on button.tsx's own bare side-effect import (`import
+// '~/assets/blog-button.css'` at the top of button.tsx). That
+// side-effect import covers <BlogButton> usages mounted directly in
+// JSX elsewhere in the route tree (e.g. inside AuthorSection), but
+// injectBlogButtons() below is a pure server-side string transform
+// with no component in the React tree for this route — nothing
+// guarantees its CSS dependency is included in *this* route's client
+// bundle unless we say so explicitly, so we do, matching every other
+// route-scoped stylesheet's ?url + links() convention here. Same
+// "only ever appears inside a blog article body" scoping reasoning as
+// the marker-based stylesheets above, per button.tsx's own header
+// comment (usage is scoped to blog articles + AuthorSection, unlike
+// the newsletter form). Redundant with the side-effect import in any
+// case where both fire on this route — harmless, since it's the same
+// stylesheet deduped by the browser.
+// quote.css is route-scoped for the same reason as blog-button.css:
+// the data-quote-embed marker only ever appears inside a blog article
+// body, and injectQuoteEmbeds() is a pure server-side string transform
+// with no component in this route's React tree, so nothing guarantees
+// its CSS ships in this route's client bundle unless we say so
+// explicitly here.
+// recipe-header.css is route-scoped for the same reason as
+// blog-button.css/quote.css: the data-recipe-header marker only ever
+// appears inside a blog article body, and injectRecipeHeader() is a
+// pure server-side string transform with no component in this
+// route's React tree, so nothing guarantees its CSS ships in this
+// route's client bundle unless we say so explicitly here.
+// newsletter-form.css follows that same "only ever appears inside a
+// blog article body, and its injector has no component in this
+// route's React tree" reasoning too now that it's scoped here instead
+// of root.tsx — see the note above.
+// related-blog-posts.css is route-scoped for the same "only ever
+// appears on this route" reasoning as article-author.css: unlike the
+// marker-based stylesheets above, <RelatedBlogPosts> IS a component
+// directly in this route's React tree (same as <AuthorSection>), so
+// in principle its styles could be pulled in via a bare side-effect
+// import inside RelatedBlogPosts.tsx instead — but every other
+// directly-rendered block in this route (AuthorSection, TableOfContents)
+// links its stylesheet explicitly here rather than relying on that, so
+// this follows the same convention rather than introducing a new one.
+// This file now covers ONLY the section wrapper + grid — card-level
+// styles were split out to blog-post-card.css (see below) when
+// BlogPostCard.tsx was extracted into its own reusable component.
+// blog-post-card.css is linked separately (not folded into
+// related-blog-posts.css) for the same reason BlogPostCard.tsx is its
+// own file and not inlined into RelatedBlogPosts.tsx: <BlogPostCard>
+// is meant to be renderable from other routes/sections later (a blog
+// index page, a "recent posts" widget, etc.), each of which would
+// need this stylesheet without needing related-blog-posts.css's
+// section/grid rules. It's linked here because THIS route happens to
+// render it (via <RelatedBlogPosts>) — a future route rendering
+// <BlogPostCard> directly would link it the same way, independently.
+// summary.css is route-scoped for the same "only ever appears on this
+// route" reasoning as related-blog-posts.css/article-author.css.
+// Unlike the marker-based stylesheets above (blog-button.css,
+// quote.css), the summary box is not rendered via
+// dangerouslySetInnerHTML alongside the rest of the article body — it
+// is resolved in the loader (extractSummarySection + renderSummary in
+// Summary.tsx) and rendered directly in this component's JSX, right
+// after the hero image — but it is still a raw HTML string rendered
+// via dangerouslySetInnerHTML rather than a real component, so its
+// CSS still needs to be linked explicitly here rather than riding
+// along with a component's own side-effect import, same reasoning as
+// blog-button.css/quote.css.
+// social-share.css is route-scoped for the same "only ever appears on
+// this route" reasoning as related-blog-posts.css/article-author.css.
+// <SocialShare> IS a component directly in this route's React tree
+// (same as <AuthorSection>/<RelatedBlogPosts>), so it's linked
+// explicitly here rather than via a side-effect import, matching the
+// convention every other directly-rendered block in this route
+// follows.
 
+// Route-scoped stylesheets — Remix/React Router collects these via
+// links() and injects <link> tags only when this route is active, so
+// blog-article-only CSS never ships on unrelated pages.
 export function links() {
   return [
     {rel: 'stylesheet', href: articleStyles},
@@ -50,13 +206,28 @@ export function links() {
     {rel: 'stylesheet', href: twoColumnContentStyles},
     {rel: 'stylesheet', href: videoStyles},
     {rel: 'stylesheet', href: galleryStyles},
+    {rel: 'stylesheet', href: blogButtonStyles},
+    {rel: 'stylesheet', href: quoteStyles},
+    {rel: 'stylesheet', href: recipeHeaderStyles},
+    {rel: 'stylesheet', href: newsletterFormStyles},
+    {rel: 'stylesheet', href: relatedBlogPostsStyles},
+    {rel: 'stylesheet', href: blogPostCardStyles},
+    {rel: 'stylesheet', href: summaryStyles},
+    {rel: 'stylesheet', href: socialShareStyles},
   ];
 }
 
+// Page <title>, driven off the loaded article. Optional-chained/
+// defaulted to '' since meta() can run before the loader resolves in
+// some error/boundary states.
 export const meta: Route.MetaFunction = ({data}) => {
   return [{title: `Hydrogen | ${data?.article.title ?? ''} article`}];
 };
 
+// Standard Hydrogen loader split: critical data is awaited before the
+// page renders (needed for meta/SEO and to avoid layout shift), while
+// loadDeferredData is for anything safe to stream in after first
+// paint. Currently nothing is deferred for this route (see below).
 export async function loader(args: Route.LoaderArgs) {
   const deferredData = loadDeferredData(args);
   const criticalData = await loadCriticalData(args);
@@ -66,20 +237,46 @@ export async function loader(args: Route.LoaderArgs) {
 async function loadCriticalData({context, request, params}: Route.LoaderArgs) {
   const {blogHandle, articleHandle} = params;
 
+  // Both route params are required to look anything up — missing
+  // either one means a malformed URL, not a valid "not found" article.
   if (!articleHandle || !blogHandle) {
     throw new Response('Not found', {status: 404});
   }
 
-  const [{blog}] = await Promise.all([
+  // Fetched together: the article itself, and a same-blog candidate
+  // pool for the related-posts tag-based fallback (see
+  // RELATED_POSTS_CANDIDATES_QUERY, exported alongside the component
+  // from RelatedBlogPosts.tsx / related-blog-posts.md). The
+  // candidate query doesn't depend on anything from the article
+  // response — both only need blogHandle — so there's no reason to
+  // sequence them; running them in parallel here is what actually
+  // uses Promise.all for concurrency, rather than the previous
+  // single-query placeholder shape.
+  const [{blog}, {blog: candidateBlog}] = await Promise.all([
     context.storefront.query(ARTICLE_QUERY, {
       variables: {blogHandle, articleHandle},
     }),
+    context.storefront.query(RELATED_POSTS_CANDIDATES_QUERY, {
+      // Fetches a window comfortably larger than the 3-post limit
+      // getRelatedPostsData renders with, since ranking by shared
+      // tags happens over whatever this returns — see
+      // related-blog-posts.md §3 for why this can't be done
+      // server-side.
+      variables: {blogHandle, first: 20},
+    }),
   ]);
 
+  // No blog, or blog exists but has no article at this handle — both
+  // are a 404, not just a missing article.
   if (!blog?.articleByHandle) {
     throw new Response(null, {status: 404});
   }
 
+  // Shopify content can be localized under a different handle per
+  // market/language; if the requested handle isn't the canonical one
+  // for the resolved locale, this redirects to the canonical URL
+  // (SEO/duplicate-content hygiene) rather than silently serving
+  // content under the "wrong" handle.
   redirectIfHandleIsLocalized(
     request,
     {
@@ -94,18 +291,31 @@ async function loadCriticalData({context, request, params}: Route.LoaderArgs) {
 
   const article = blog.articleByHandle;
 
+  // Scan the raw article HTML for shoppable-product markers (see
+  // ProductGallery.tsx) and collect the numeric product IDs they
+  // reference, so they can be fetched in one batched query rather
+  // than one request per marker.
   const productIds = extractShoppableProductIds(article.contentHtml);
   let contentHtml = article.contentHtml;
 
+  // Pairs of [numeric id, resolved product]; stays empty when the
+  // article has no shoppable markers, so nothing downstream needs to
+  // special-case "no products".
   let shoppableProducts: [string, ProductCardFragment][] = [];
 
   if (productIds.length > 0) {
+    // Shopify's numeric product IDs need to be turned into full GIDs
+    // before they're usable in a GraphQL `ids` filter.
     const gids = productIds.map((id) => `gid://shopify/Product/${id}`);
 
     const {nodes} = await context.storefront.query(SHOPPABLE_PRODUCTS_QUERY, {
       variables: {ids: gids},
     });
 
+    // Re-key the fetched nodes back to the original numeric ids (the
+    // order/format the markers use), dropping any id the query
+    // couldn't resolve (deleted/unpublished product) rather than
+    // carrying a null/undefined entry forward.
     const productsById = new Map(
       productIds
         .map((id, i) => [id, nodes?.[i]] as const)
@@ -115,20 +325,88 @@ async function loadCriticalData({context, request, params}: Route.LoaderArgs) {
         ),
     );
 
+    // Replace each shoppable marker in the HTML with its resolved
+    // static card markup (see ProductGallery.tsx for the marker →
+    // markup transform).
     contentHtml = injectShoppableProducts(article.contentHtml, productsById);
     shoppableProducts = [...productsById.entries()];
   }
-  // ...existing shoppable-embed block unchanged...
+
+  // Pulls the data-summary-embed marker (if any) out of the body
+  // entirely and returns it separately — a summary box is rendered
+  // as its own top-of-article block (see below), not inline where the
+  // editor happened to place the marker. Runs here, before
+  // injectBlogButtons/injectQuoteEmbeds/injectRecipeHeader/
+  // injectTwoColumnContent, so a summary marker can never be mistaken
+  // for content nested inside a button/quote/recipe-header/two-col
+  // block by those passes' parsing — by the time any of them run, the
+  // marker is already gone from contentHtml.
+  //
+  // Always extracted (regardless of the metafield below) so a marker
+  // an editor leaves in the body is stripped either way — otherwise
+  // toggling custom.show_summary off after publishing would leave
+  // raw, unstyled <li>/<p> markup sitting in the article body.
+  const {html: contentHtmlWithoutSummary, summary} =
+    extractSummarySection(contentHtml);
+  contentHtml = contentHtmlWithoutSummary;
+
+  // Gated by the custom.show_summary boolean metafield (see
+  // isSummaryEnabled in Summary.tsx) — same off-by-default pattern as
+  // isTocEnabled/getAuthorSectionData. An article can have a perfectly
+  // valid data-summary-embed marker and still render nothing at the
+  // top until an editor explicitly flips this on.
+  const summaryHtml =
+    isSummaryEnabled(article) && summary ? renderSummary(summary) : null;
+
+  // Resolves data-cta button markers (see button.tsx / button.md for
+  // marker syntax) into real <a class="blog-cta ..."> markup. Runs
+  // here, before injectTwoColumnContent, for the same reason the
+  // shoppable-embed pass runs before it: a CTA marker's output is a
+  // self-contained <div class="blog-cta-row">...</div>, so resolving
+  // it first keeps two-column's div-depth counting accurate if a
+  // button marker is ever nested inside a column. No async data fetch
+  // needed — pure string transform, same shape as the FAQ/newsletter/
+  // video/gallery passes below, just ordered earlier to match the
+  // shoppable-embed precedent. Fully static output — no slot, no
+  // client-side scan/portal step needed (see button.tsx header
+  // comment for why).
+  contentHtml = injectBlogButtons(contentHtml);
+
+  // Resolves data-quote-embed markers (see Quote.tsx / quote.md for
+  // marker syntax) into a static <figure class="quote ..."> card. Runs
+  // here, immediately after injectBlogButtons, for the same reason:
+  // its output is a self-contained node, so resolving it before
+  // injectTwoColumnContent keeps that pass's div-depth counting
+  // accurate if a quote marker is ever nested inside a column. No
+  // async data fetch needed — pure string transform, same shape as
+  // the FAQ/newsletter/video/gallery passes below. Fully static
+  // output — no slot, no client-side scan/portal step needed (see
+  // Quote.tsx header comment for why).
+  contentHtml = injectQuoteEmbeds(contentHtml);
+
+  // Resolves data-recipe-header markers (see RecipeHeader.tsx /
+  // recipe-header.md for marker syntax) into a static, print-ready
+  // recipe info card. Runs here, alongside injectBlogButtons/
+  // injectQuoteEmbeds, for the same reason: its output is a
+  // self-contained node (an optional shared <script> plus a
+  // <div class="recipe-header">), so resolving it before
+  // injectTwoColumnContent keeps that pass's div-depth counting
+  // accurate if a recipe header is ever nested inside a column. No
+  // async data fetch needed — pure string transform, same shape as
+  // the button/quote passes. Fully static output — no slot, no
+  // client-side scan/portal step needed (see RecipeHeader.tsx header
+  // comment for why).
+  contentHtml = injectRecipeHeader(contentHtml);
 
   // Normalizes data-two-col marker blocks into two-column grid markup
   // (see TwoColumnContent.tsx for the marker syntax). Pure string
-  // transform, no data fetch needed — runs right after the
-  // shoppable-embed block so a shoppable-product marker nested inside
-  // a column is already resolved to its real card markup by the time
-  // this pass counts div depth. Not required for correctness (the
-  // depth-counting is content-agnostic either way) but keeps
-  // transform order matching how these blocks typically appear
-  // structurally in an article.
+  // transform, no data fetch needed — runs right after the CTA
+  // button/quote/recipe-header passes so a shoppable-product, button,
+  // quote, or recipe-header marker nested inside a column is already
+  // resolved to its real markup by the time this pass counts div
+  // depth. Not required for correctness (the depth-counting is
+  // content-agnostic either way) but keeps transform order matching
+  // how these blocks typically appear structurally in an article.
   contentHtml = injectTwoColumnContent(contentHtml);
 
   contentHtml = injectFaqSections(contentHtml); // runs regardless of
@@ -179,12 +457,15 @@ async function loadCriticalData({context, request, params}: Route.LoaderArgs) {
 
   // Assigns ids to any h2/h3 that doesn't already have one and returns
   // the flat heading list TableOfContents renders from. Order relative
-  // to the two-col/FAQ/newsletter/video/gallery injection above
-  // doesn't matter — none of those passes ever touch an h2/h3 tag, so
-  // there's nothing for this pass to double-process either way. (A
-  // heading nested inside a two-col column is still just an h2/h3 in
-  // the final HTML by this point, so it gets an id and a TOC entry
-  // like any other.)
+  // to the CTA/quote/recipe-header/two-col/FAQ/newsletter/video/
+  // gallery injection above doesn't matter — none of those passes
+  // ever touch an h2/h3 tag, so there's nothing for this pass to
+  // double-process either way. (A heading nested inside a two-col
+  // column is still just an h2/h3 in the final HTML by this point, so
+  // it gets an id and a TOC entry like any other.) The summary block
+  // is unaffected either way — by this point it's already been
+  // extracted out of contentHtml entirely and lives in summaryHtml
+  // instead.
   let tocHeadings: ReturnType<typeof withHeadingIds>['headings'] = [];
 
   if (tocEnabled) {
@@ -200,15 +481,49 @@ async function loadCriticalData({context, request, params}: Route.LoaderArgs) {
   // AuthorSection.tsx for the exact gating rules).
   const authorSection = getAuthorSectionData(article);
 
+  // Resolves custom.show_related_posts / custom.related_blog_posts
+  // (added to ARTICLE_QUERY — see related-blog-posts.md §2) plus the
+  // candidateBlog pool fetched above into render-ready related-posts
+  // data, merging curated picks with tag-ranked fallback candidates —
+  // or null if the section shouldn't appear at all (see
+  // RelatedBlogPosts.tsx for the exact merge logic). Independent of
+  // contentHtml/tocHeadings/authorSection above — this doesn't touch
+  // the article body at all, just reads metafields off `article` and
+  // ranks against `candidateBlog`.
+  const relatedPosts = getRelatedPostsData(
+    article,
+    candidateBlog?.articles?.nodes ?? [],
+  );
+
+  // The page's own canonical URL — SocialShare's only input that
+  // doesn't come from `article` itself. request.url already reflects
+  // the post-redirectIfHandleIsLocalized canonical handle (the
+  // redirect above throws/returns before this line runs when the
+  // handle isn't canonical), so this is safe to hand straight to the
+  // share-intent links without re-deriving it from params.
+  const canonicalUrl = request.url;
+
+  // Final loader payload: the article with its fully-transformed
+  // contentHtml, the resolved shoppable products (for the client-side
+  // portal step to look up by id), the resolved summary box markup
+  // (or null), the canonical URL for social sharing, and everything
+  // the TOC/author section/related-posts section need to decide
+  // whether/how to render.
   return {
     article: {...article, contentHtml},
     shoppableProducts,
     tocEnabled,
     tocHeadings,
     authorSection,
+    relatedPosts,
+    summaryHtml,
+    canonicalUrl,
   };
 }
 
+// Nothing needs to stream in after first paint for this route today —
+// kept as a no-op stub so the critical/deferred split stays consistent
+// with other routes and is a one-line change to start using.
 function loadDeferredData({context}: Route.LoaderArgs) {
   return {};
 }
@@ -252,14 +567,26 @@ export default function ArticleTemplate() {
     tocEnabled,
     tocHeadings,
     authorSection,
+    relatedPosts,
+    summaryHtml,
+    canonicalUrl,
   } = useLoaderData<typeof loader>();
   const {title, image, contentHtml, author} = article;
 
   // Ref to the container the raw article HTML is injected into, so we
   // can scan its actual DOM for shoppable/newsletter/video/gallery
-  // slots after render. Note: two-col-content is NOT scanned here —
-  // it's fully static (see TwoColumnContent.tsx), so there's no slot
-  // type for it and nothing for this component to find/portal.
+  // slots after render. Note: two-col-content, CTA buttons, quotes,
+  // and recipe headers are NOT scanned here — all four are fully
+  // static (see TwoColumnContent.tsx, button.tsx, Quote.tsx,
+  // RecipeHeader.tsx), so there's no slot type for any of them and
+  // nothing for this component to find/portal. Related posts aren't
+  // scanned either, for the same "fully static, no slot" reason as
+  // author section — it's rendered directly below, outside
+  // dangerouslySetInnerHTML entirely. The summary block is the same
+  // story — it's already been pulled out of contentHtml in the
+  // loader, so there's no marker left in this DOM subtree to find.
+  // Social share is the same story too — it never touches contentHtml
+  // at all, so there's nothing here to scan for it either.
   const bodyRef = useRef<HTMLDivElement>(null);
 
   // The shoppable slots discovered in the DOM (populated by the effect
@@ -343,9 +670,14 @@ export default function ArticleTemplate() {
   // scroll. getElementById takes a raw id string, no selector parsing
   // involved, so it has no such restriction.
   useEffect(() => {
+    // No hash in the URL — nothing to auto-open, so skip the DOM lookup.
     if (!window.location.hash) return;
+    // Hash may contain percent-encoded characters (e.g. spaces/unicode
+    // in a heading), so decode before matching against the raw id.
     const id = decodeURIComponent(window.location.hash.slice(1));
     const target = document.getElementById(id);
+    // Only <details> elements have an `.open` property to set — guard
+    // in case the hash happens to match some other element's id.
     if (target instanceof HTMLDetailsElement) {
       target.open = true;
     }
@@ -357,7 +689,17 @@ export default function ArticleTemplate() {
   // <form> from injectNewsletterForm, the empty data-video-slot node
   // from injectVideoEmbeds, and the static thumbnail grid from
   // injectImagesGallery respectively) and records them so the real,
-  // interactive components can be portaled into them below.
+  // interactive components can be portaled into them below. CTA
+  // buttons, quotes, and recipe headers are NOT part of this scan —
+  // their inject* functions already produce final markup, nothing to
+  // swap in after mount. Related posts are ALSO not part of this
+  // scan — it isn't inside dangerouslySetInnerHTML at all, so there's
+  // no slot to find; it renders directly, further down this same JSX
+  // tree. Same story for the summary block — it's resolved in the
+  // loader and rendered directly above the body/TOC grid, so there's
+  // no slot for it here either. Same story again for social share —
+  // it's rendered directly below the body/TOC grid too, no slot, no
+  // scan needed.
   //
   // Deliberately NOT createRoot(el).render(...) here: that would spin up
   // a brand-new, disconnected React tree with no access to this app's
@@ -379,9 +721,15 @@ export default function ArticleTemplate() {
   // <ImagesGallery> is in the same boat as <Video> — no app context
   // needed (just local React state for the lightbox), scanned/portaled
   // the same way purely for consistency and because it needs a mount
-  // point inside this tree too.
+  // point inside this tree too. <RelatedBlogPosts>, like
+  // <AuthorSection> and <SocialShare>, needs none of this — it's a
+  // normal component mounted directly in JSX below, no portal
+  // involved. The summary block needs none of this either — it's a
+  // plain dangerouslySetInnerHTML string with nothing interactive in
+  // it, rendered directly, same as the article body itself.
   useEffect(() => {
     const container = bodyRef.current;
+    // Nothing mounted yet (or unmounted) — nothing to scan.
     if (!container) return;
 
     const found: ShoppableSlot[] = [];
@@ -412,13 +760,23 @@ export default function ArticleTemplate() {
     const foundNewsletters: NewsletterSlot[] = [];
 
     // Look for every element the server marked as a newsletter-form
-    // slot (see injectNewsletterForm in NewsletterForm.tsx).
+    // slot (see injectNewsletterForm in NewsletterForm.tsx). Falls
+    // back to the same DEFAULT_HEADING/DEFAULT_SUBHEADING constants
+    // NewsletterForm.tsx itself uses — imported, not retyped, so the
+    // client-side fallback can never silently drift from the server's
+    // actual default copy. (In normal operation injectNewsletterForm
+    // always writes both attributes with a resolved value before this
+    // ever runs, so this fallback is a safety net, not the common
+    // path.)
     container
       .querySelectorAll<HTMLElement>('[data-newsletter-slot]')
       .forEach((el) => {
         const heading =
-          el.getAttribute('data-newsletter-heading') ?? 'Join the newsletter';
-        const subheading = el.getAttribute('data-newsletter-subheading') ?? '';
+          el.getAttribute('data-newsletter-heading') ??
+          NEWSLETTER_DEFAULT_HEADING;
+        const subheading =
+          el.getAttribute('data-newsletter-subheading') ??
+          NEWSLETTER_DEFAULT_SUBHEADING;
 
         // Clear the static server-rendered form - the portal below
         // renders the live, fetcher-backed replacement into this same
@@ -448,6 +806,8 @@ export default function ArticleTemplate() {
     container
       .querySelectorAll<HTMLElement>('[data-gallery-slot]')
       .forEach((el) => {
+        // Parses and validates the slot's data-gallery-images (and
+        // optional title/columns) attributes in one shot.
         const data = readGallerySlot(el);
 
         // Skip malformed slots (missing/unparsable data-gallery-images).
@@ -488,15 +848,33 @@ export default function ArticleTemplate() {
         />
       )}
 
+      {/* "Key takeaways" summary box, top of the article, below the
+          hero. Gated by custom.show_summary (see isSummaryEnabled in
+          Summary.tsx) and resolved once in the loader — a raw HTML
+          string, not a component, since the box is fully static
+          (nothing inside it needs client state or a portal). Rendered
+          directly here rather than left inline in contentHtml,
+          regardless of where in the article body the editor
+          originally placed the data-summary-embed marker. Null when
+          the metafield is off OR the article has no summary marker at
+          all — either way, nothing renders here. */}
+      {summaryHtml && (
+        <div dangerouslySetInnerHTML={{__html: summaryHtml}} />
+      )}
+
       {/* Body + TOC live in a two-column grid on desktop when the TOC
           is enabled (see article-toc.css); collapses to one column via
-          --no-toc when it's not. h1/meta/hero above stay full-width. */}
+          --no-toc when it's not. h1/meta/hero/summary above stay
+          full-width. */}
       <div className={articleLayoutClassName}>
-        {/* Raw article HTML from Shopify, with shoppable-embed,
-            two-col, newsletter-form, video-embed, and gallery-embed
-            markers already resolved and heading ids assigned by the
-            loader above. bodyRef lets the effects above scan this DOM
-            subtree once it's mounted. */}
+        {/* Raw article HTML from Shopify, with shoppable-embed, CTA
+            button, quote, recipe-header, two-col, newsletter-form,
+            video-embed, and gallery-embed markers already resolved
+            and heading ids assigned by the loader above. The summary
+            marker (if any) has already been extracted out entirely by
+            this point — it never appears in this HTML string,
+            regardless of where the editor placed it. bodyRef lets the
+            effects above scan this DOM subtree once it's mounted. */}
         <div
           ref={bodyRef}
           dangerouslySetInnerHTML={{__html: contentHtml}}
@@ -606,6 +984,25 @@ export default function ArticleTemplate() {
         ),
       )}
 
+      {/* "Social sharing" card, right after the body/TOC grid and
+          directly above the author section — closest section to
+          AuthorSection, matching its rendered-directly shape (no
+          marker, no portal). Always renders unless an editor has
+          explicitly opted out via custom.show_social_share (see
+          isSocialShareEnabled) — currently always true until that
+          metafield is added to ARTICLE_QUERY. url is the loader's
+          canonicalUrl (request.url, post-locale-redirect); imageUrl
+          falls back to the hero image so Pinterest gets a share
+          preview even on articles that never set a dedicated share
+          image. */}
+      {isSocialShareEnabled(article) && (
+        <SocialShare
+          url={canonicalUrl}
+          title={title}
+          imageUrl={image?.url}
+        />
+      )}
+
       {/* "About the author" card, bottom of the article. Only renders
           when the editor has both flipped show_author_section on AND
           filled in a bio — see getAuthorSectionData() for the exact
@@ -613,6 +1010,16 @@ export default function ArticleTemplate() {
           null → nothing renders here, same as before this feature
           existed. */}
       {authorSection && <AuthorSection data={authorSection} />}
+
+      {/* "Related blogs", very bottom of the article, after the
+          author section. Renders whenever getRelatedPostsData found
+          anything to show — curated picks from
+          custom.related_blog_posts, tag-ranked fallback candidates,
+          or a merge of both (see RelatedBlogPosts.tsx). An editor
+          setting custom.show_related_posts = false, or an article
+          with no curated picks AND an empty candidate pool, both
+          resolve to relatedPosts === null → nothing renders here. */}
+      {relatedPosts && <RelatedBlogPosts posts={relatedPosts.posts} />}
     </div>
   );
 }

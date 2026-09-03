@@ -39,7 +39,8 @@
 }
 
 /* --pull: lightweight inline variant, no card chrome — just a left
-   border accent, for dropping a quote without visually boxing it off. */
+   border accent, for dropping a quote inline without visually boxing
+   it off. */
 .quote--pull {
   padding-left: 20px;
   border-left: 3px solid var(--quote-accent-color, #2f3bf0);

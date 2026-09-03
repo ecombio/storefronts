@@ -53,6 +53,13 @@
 // class rather than doing it synchronously right after the call —
 // removing it immediately after print() could revert the page
 // before the print dialog has actually rendered on those browsers.
+//
+// KNOWN LIMITATION (multi-header articles): the print-isolation CSS
+// in recipe-header.css targets the shared `.recipe-header` class, not
+// a specific card, so clicking "Print recipe" on any one card in an
+// article with multiple recipe headers currently prints all of them.
+// See recipe-header.md for editor-facing guidance until this is
+// addressed.
 
 function escapeHtml(value: string): string {
   return value

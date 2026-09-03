@@ -4,30 +4,29 @@
  * "Summary" / "Key takeaways" block for Shopify blog articles, with a
  * choice of layouts (list, numbered, grid, highlight).
  *
- * This is fully static — same family as `injectFaqSections` /
- * `injectTwoColumnContent`, not the marker → slot → portal pattern
- * used by ProductGallery/NewsletterForm/video/ImagesGallery. A
- * summary box is just styled text: nothing in it needs client state,
- * an event handler, or a fetcher, so there's no reason to hydrate it
- * into a React component at all. `injectSummarySections` runs once in
- * the loader and the resulting HTML is the final markup — no
- * DOM-scanning effect or `createPortal` needed for this one.
+ * Unlike FAQ/two-column/CTA-button/quote — which render inline,
+ * exactly where the editor drops the marker — a summary box is always
+ * pinned to the TOP of the article, above the body, similar to how
+ * TableOfContents/AuthorSection are gated by a metafield and rendered
+ * directly rather than in-place. So this file does two things:
  *
- * Marker syntax (inserted via the article's HTML/embed editor):
+ *   1. Defines the `data-summary-embed` marker syntax editors use in
+ *      the Shopify blog editor's HTML/embed block to AUTHOR the box's
+ *      content (title, layout, items) — same marker shape as before.
+ *   2. Provides `extractSummarySection`, which finds that marker
+ *      *wherever it appears* in the raw contentHtml, removes it from
+ *      the body entirely, and returns its parsed data separately —
+ *      so the route can render it as its own top-of-article block
+ *      instead of leaving it inline.
  *
- *   <div data-summary-embed data-summary-title="Key takeaways" data-summary-layout="grid">
- *     <ul>
- *       <li>Point one</li>
- *       <li>Point two</li>
- *       <li>Point three</li>
- *     </ul>
- *   </div>
+ * Visibility is controlled by the `custom.show_summary` boolean
+ * metafield (see `isSummaryEnabled`) — same defaults-off pattern as
+ * `isTocEnabled`/`getAuthorSectionData`. When the metafield is off,
+ * the marker (if an editor left one in the body) is still stripped
+ * out — never rendered inline, never left as raw unstyled markup.
  *
- * `data-summary-title` is optional. `data-summary-layout` is one of
- * `list` (default) | `numbered` | `grid` | `highlight`. Items come
- * from `<li>` tags if present, or `<p>` tags otherwise (useful for
- * `highlight`, which reads best as one or two sentences rather than a
- * bulleted list).
+ * See Summary.md for the full marker syntax, metafield setup, and
+ * editor-facing usage examples.
  */
 
 export type SummaryLayout = 'list' | 'numbered' | 'grid' | 'highlight';
@@ -105,18 +104,64 @@ const RENDERERS: Record<SummaryLayout, (items: string[]) => string> = {
   highlight: renderHighlight,
 };
 
+// Parsed marker data, decoupled from rendering — extraction and
+// rendering are separate steps now (unlike the old single-pass
+// injectSummarySections) since the route needs the data to decide
+// *whether* to render at all (isSummaryEnabled) before committing to
+// producing markup.
+export type SummaryData = {
+  title?: string;
+  layout: SummaryLayout;
+  items: string[];
+};
+
 /**
- * injectSummarySections — finds every `data-summary-embed` marker in
- * the article body and replaces it with the rendered summary box.
- * Pure string transform, no data fetch needed — same reasoning as
- * injectFaqSections/injectTwoColumnContent, so it can run alongside
- * them in the loader.
- *
- * A marker with no usable items (no `<li>` or `<p>` tags inside it) is
- * dropped entirely rather than rendered as an empty box.
+ * isSummaryEnabled — reads the custom.show_summary boolean metafield
+ * (aliased to `showSummary` in ARTICLE_QUERY — see Summary.md §2).
+ * Defaults to false/off, same pattern as isTocEnabled: an article
+ * with a perfectly valid data-summary-embed marker in its body still
+ * renders nothing at the top until an editor explicitly flips this
+ * on. Shopify metafields are stored as strings even for boolean type,
+ * hence the === 'true' check rather than a truthy check on the
+ * metafield object itself (an unset metafield and a metafield whose
+ * value happens to be the string "false" both need to resolve to
+ * false here).
  */
-export function injectSummarySections(contentHtml: string): string {
-  return contentHtml.replace(SUMMARY_EMBED_RE, (fullMatch, inner: string) => {
+export function isSummaryEnabled(article: {
+  showSummary?: {value: string} | null;
+}): boolean {
+  return article.showSummary?.value === 'true';
+}
+
+/**
+ * extractSummarySection — finds the FIRST data-summary-embed marker
+ * anywhere in contentHtml, removes it from the returned html, and
+ * returns its parsed data separately. A summary box is a single
+ * top-of-article element, not a repeatable inline block like FAQ/
+ * quote/CTA, so a second marker (an editor accidentally pasting the
+ * embed twice) is silently dropped rather than rendered twice or
+ * merged — only the first one found "wins".
+ *
+ * A marker with no usable items (no `<li>` or `<p>` tags inside it)
+ * is dropped the same way injectSummarySections used to drop it —
+ * removed from the body, summary stays null.
+ *
+ * Always strips the marker from the returned html regardless of
+ * whether it parsed to a usable summary — callers that don't want to
+ * render anything (isSummaryEnabled() === false) should still call
+ * this and use only the `.html` field, so a marker left in the body
+ * by an editor never leaks into the page as raw unstyled HTML while
+ * the feature is toggled off.
+ */
+export function extractSummarySection(contentHtml: string): {
+  html: string;
+  summary: SummaryData | null;
+} {
+  let summary: SummaryData | null = null;
+
+  const html = contentHtml.replace(SUMMARY_EMBED_RE, (fullMatch, inner: string) => {
+    if (summary) return ''; // already found one; drop any further marker
+
     const wrapperOpenTag = fullMatch.slice(0, fullMatch.indexOf('>') + 1);
     const title = parseAttr(wrapperOpenTag, 'data-summary-title');
     const layoutRaw = parseAttr(wrapperOpenTag, 'data-summary-layout');
@@ -129,9 +174,24 @@ export function injectSummarySections(contentHtml: string): string {
     const items = extractItems(inner);
     if (items.length === 0) return '';
 
-    const heading = title ? `<h3 class="sum-title">${escapeHtml(title)}</h3>` : '';
-    const body = RENDERERS[layout](items);
-
-    return `<div class="sum-root sum-layout--${layout}">${heading}${body}</div>`;
+    summary = {title, layout, items};
+    return '';
   });
+
+  return {html, summary};
+}
+
+/**
+ * renderSummary — turns parsed SummaryData into the final static
+ * <div class="sum-root ...">...</div> markup. Split out from
+ * extraction so the route can call extractSummarySection
+ * unconditionally (to always strip the marker) while only calling
+ * renderSummary when isSummaryEnabled(article) is true.
+ */
+export function renderSummary(summary: SummaryData): string {
+  const heading = summary.title
+    ? `<h3 class="sum-title">${escapeHtml(summary.title)}</h3>`
+    : '';
+  const body = RENDERERS[summary.layout](summary.items);
+  return `<div class="sum-root sum-layout--${summary.layout}">${heading}${body}</div>`;
 }

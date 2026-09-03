@@ -1,11 +1,18 @@
 /* app/assets/related-blog-posts.css
  *
- * Styles for RelatedBlogPosts.tsx. Route-scoped rather than global —
- * same reasoning as article.css/video.css/gallery.css: this section
- * only ever renders inside blogs.$blogHandle.$articleHandle.
+ * Styles for RelatedBlogPosts.tsx — the section wrapper and grid
+ * layout ONLY. Per-card styles (.bpc-*) now live in
+ * blog-post-card.css, since BlogPostCard.tsx was extracted out to be
+ * reusable outside this section; this file no longer needs to know
+ * what a card looks like, only how many of them fit across the row
+ * and how much space surrounds the section.
  */
 
 .rbp-root {
+  /* Larger gap above than below: this section always sits right after
+     the article body, so it needs clear separation from the content
+     above it, but the bottom gap can be small since a footer/next
+     section typically follows. */
   margin: 3rem 0 1rem;
 }
 
@@ -14,12 +21,17 @@
   font-size: 1.4rem;
   font-weight: 700;
   text-align: center;
+  /* Slightly tightened tracking is a deliberate look for large/bold
+     headings — keeps bold letterforms from feeling too spaced out. */
   letter-spacing: -0.01em;
 }
 
 .rbp-grid {
-  list-style: none;
+  list-style: none; /* it's a <ul> in the markup, but visually a card grid, not a list */
   display: grid;
+  /* Reads the --rbp-columns custom property set inline by the component
+     (RelatedBlogPostsProps.columns); 3 is the CSS-side fallback if that
+     variable is ever missing, matching the component's own default. */
   grid-template-columns: repeat(var(--rbp-columns, 3), 1fr);
   gap: 1.25rem;
   margin: 0;
@@ -28,80 +40,9 @@
 
 @media (max-width: 720px) {
   .rbp-grid {
+    /* Below tablet width, always collapse to a single column regardless
+       of how many columns were requested — 2/3/4-across never has room
+       to breathe on a phone-sized viewport. */
     grid-template-columns: 1fr;
   }
-}
-
-.rbp-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 1rem;
-  border: 1px solid #dcdad4;
-  border-radius: 4px;
-  text-align: center;
-}
-
-.rbp-image-link {
-  display: block;
-  width: 100%;
-}
-
-.rbp-image {
-  display: block;
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
-  border: 1px solid #dcdad4;
-}
-
-.rbp-image--placeholder {
-  background: #f4f3f0;
-}
-
-.rbp-card-title {
-  margin: 0.25rem 0 0;
-  font-size: 1rem;
-  font-weight: 700;
-}
-
-.rbp-card-title a {
-  color: inherit;
-  text-decoration: none;
-}
-
-.rbp-card-title a:hover {
-  text-decoration: underline;
-}
-
-.rbp-date {
-  display: block;
-  font-size: 0.7rem;
-  letter-spacing: 0.06em;
-  color: #9a978f;
-}
-
-.rbp-read-more {
-  display: inline-block;
-  margin-top: 0.35rem;
-  padding: 0.55rem 1.6rem;
-  background: #3b4cf6;
-  color: #ffffff;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  text-decoration: none;
-  border-radius: 3px;
-  transition: background 0.15s ease;
-}
-
-.rbp-read-more:hover {
-  background: #2c3ce0;
-}
-
-.rbp-read-more:focus-visible {
-  outline: 2px solid #3b4cf6;
-  outline-offset: 2px;
 }

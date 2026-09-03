@@ -1,0 +1,95 @@
+/* app/assets/blog-post-card.css
+ *
+ * Styles for BlogPostCard.tsx. Split out of related-blog-posts.css —
+ * these rules style ONE card (.bpc-*) and know nothing about grids,
+ * sections, or headings, so this file loads wherever <BlogPostCard>
+ * is rendered, independent of which page/section is doing the
+ * rendering. related-blog-posts.css keeps only the section wrapper
+ * and grid layout that's specific to the "related posts" block.
+ */
+
+.bpc-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1rem;
+  border: 1px solid #dcdad4; /* light neutral border, matches .bpc-image border below */
+  border-radius: 4px;
+  text-align: center;
+}
+
+.bpc-image-link {
+  display: block; /* anchors are inline by default; block lets it fill the card's width */
+  width: 100%;
+}
+
+.bpc-image {
+  display: block;
+  width: 100%;
+  /* Belt-and-suspenders with the component's aspectRatio="1/1" prop:
+     this rule also applies to the placeholder <div>, which has no
+     aspectRatio prop of its own, so every card's image slot is the
+     same square height whether or not a post has an image. */
+  aspect-ratio: 1 / 1;
+  object-fit: cover; /* crops rather than distorting non-square source images */
+  border: 1px solid #dcdad4;
+}
+
+.bpc-image--placeholder {
+  /* Subtle off-white fill so the empty slot doesn't read as a broken
+     image or a layout bug when a post has no image. */
+  background: #f4f3f0;
+}
+
+.bpc-card-title {
+  margin: 0.25rem 0 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.bpc-card-title a {
+  color: inherit; /* link shouldn't look like a link until hovered */
+  text-decoration: none;
+}
+
+.bpc-card-title a:hover {
+  text-decoration: underline;
+}
+
+.bpc-date {
+  display: block;
+  font-size: 0.7rem;
+  /* Wide letter-spacing + small size + muted color is the classic
+     "metadata" treatment — visually de-emphasized relative to the
+     title so the eye goes to the title first. */
+  letter-spacing: 0.06em;
+  color: #9a978f;
+}
+
+.bpc-read-more {
+  display: inline-block;
+  margin-top: 0.35rem;
+  padding: 0.55rem 1.6rem;
+  background: #3b4cf6; /* brand accent blue — the one spot of color on an otherwise neutral card */
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase; /* pill-button-style CTA rather than an inline text link */
+  text-decoration: none;
+  border-radius: 3px;
+  transition: background 0.15s ease; /* smooths the hover color change below */
+}
+
+.bpc-read-more:hover {
+  background: #2c3ce0; /* darker shade of the same blue, for hover feedback */
+}
+
+.bpc-read-more:focus-visible {
+  /* Keyboard-focus ring only (focus-visible, not focus) so mouse clicks
+     don't leave a visible outline, but tab navigation still gets a
+     clear, accessible indicator. */
+  outline: 2px solid #3b4cf6;
+  outline-offset: 2px;
+}

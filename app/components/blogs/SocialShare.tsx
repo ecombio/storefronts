@@ -1,3 +1,5 @@
+import type {ReactNode} from 'react';
+
 /**
  * SocialShare
  * -----------
@@ -36,9 +38,11 @@ type Platform = {
   id: 'email' | 'facebook' | 'x' | 'pinterest';
   label: string;
   href: (args: {url: string; title: string; imageUrl?: string}) => string;
-  /** Email should navigate normally, not open a popup */
+  /** Popup links also get target="_blank" as the no-JS fallback; email
+   *  should navigate the current tab normally, not open a popup or a
+   *  new tab. */
   popup: boolean;
-  icon: () => React.ReactNode;
+  icon: () => ReactNode;
 };
 
 const PLATFORMS: Platform[] = [
@@ -101,13 +105,13 @@ export default function SocialShare({
                 className="ss-button"
                 href={href}
                 aria-label={platform.label}
-                target={platform.popup ? undefined : undefined}
-                rel="noopener noreferrer"
+                target={platform.popup ? '_blank' : undefined}
+                rel={platform.popup ? 'noopener noreferrer' : undefined}
                 onClick={
                   platform.popup
                     ? (event) => {
                         // Progressive enhancement only — the href above
-                        // already works as a plain navigation/new-tab
+                        // already works as a plain new-tab navigation
                         // link if this handler never runs (JS disabled,
                         // middle-click, etc).
                         event.preventDefault();
@@ -140,9 +144,13 @@ function EnvelopeIcon() {
 }
 
 function FacebookIcon() {
+  // Clean glyph inside a real 0 0 24 24 viewBox — the previous version
+  // used path coordinates authored for a taller box (~y=15-29) with a
+  // translate(0 -4) patch that still left it outside the 24-unit
+  // viewBox, so it rendered shifted/cropped next to the other icons.
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M15 8.5h2.5V5.2c-.43-.06-1.9-.2-3.62-.2-3.58 0-6.03 2.24-6.03 6.36V15H4.5v3.7h3.35V29h3.98V18.7h3.22l.5-3.7h-3.72v-3.15c0-1.07.29-1.35 1.17-1.35Z" transform="translate(0 -4)" />
+      <path d="M15.5 8.5H18V5.2c-.43-.06-1.9-.2-3.62-.2-3.58 0-6.03 2.24-6.03 6.36V15H5v3.7h3.35V29h3.98V18.7h3.22l.5-3.7h-3.72v-3.15c0-1.07.29-1.35 1.17-1.35Z" transform="translate(0 -9)" />
     </svg>
   );
 }

@@ -73,6 +73,20 @@ export const ARTICLE_QUERY = `#graphql
         showToc: metafield(namespace: "custom", key: "show_toc") {
           value
         }
+        # Gates the top-of-article "Key takeaways" summary box (see
+        # Summary.tsx / Summary.md). Boolean metafield, defined at
+        # /settings/custom_data/article/metafields as
+        # custom.show_summary. Same "true"/"false" string-value
+        # pattern as showToc/showAuthorSection above — isSummaryEnabled()
+        # in Summary.tsx checks value === 'true', so an unset metafield
+        # (value undefined) and an explicit "false" both resolve to
+        # hidden. The summary content itself still comes from a
+        # data-summary-embed marker in contentHtml, not from this
+        # metafield — this only controls whether that marker's parsed
+        # content is rendered at the top of the page.
+        showSummary: metafield(namespace: "custom", key: "show_summary") {
+          value
+        }
       }
     }
   }

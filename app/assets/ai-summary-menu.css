@@ -1,0 +1,82 @@
+/*
+ * Styles for AiSummaryMenu.tsx — the trigger button, its dropdown,
+ * and the small status/error lines below it. Sibling to summary.css
+ * (manual "Key takeaways" box); this file only covers the AI-menu
+ * additions layered underneath that box, using the same neutral
+ * palette (#1a1a1a / #e5e5e5 / #f8f8f8) so the two don't visually
+ * clash when both are present.
+ */
+
+.ai-summary-wrap {
+  margin: 1rem 0 2.25rem;
+}
+
+.ai-summary-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.ai-summary-trigger {
+  padding: 0.6rem 1.1rem;
+  border: 1px solid #1a1a1a;
+  border-radius: 999px;
+  background: #fff;
+  color: #1a1a1a;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ai-summary-trigger:hover:not(:disabled) {
+  background: #1a1a1a;
+  color: #fff;
+}
+
+.ai-summary-trigger:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.ai-summary-dropdown {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  left: 0;
+  z-index: 10;
+  min-width: 220px;
+  padding: 0.4rem;
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.ai-summary-dropdown button {
+  display: block;
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #1a1a1a;
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ai-summary-dropdown button:hover {
+  background: #f8f8f8;
+}
+
+.ai-summary-copied,
+.ai-summary-error {
+  margin: 0.6rem 0 0;
+  font-size: 0.88rem;
+}
+
+.ai-summary-copied {
+  color: #2a2a2a;
+}
+
+.ai-summary-error {
+  color: #b3261e;
+}

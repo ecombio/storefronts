@@ -1,16 +1,22 @@
 /*
  * Summary / "Key takeaways" block for blog articles, added via the
  * data-summary-embed marker (see Summary.tsx for the marker syntax
- * and the server-side normalization pass). Own file, linked the same
- * way as every other feature stylesheet in the article route (see
- * article-toc.css, two-column-content.css, recipe-header.css) —
+ * and the server-side extraction/render pass). Own file, linked the
+ * same way as every other feature stylesheet in the article route
+ * (see article-toc.css, two-column-content.css, recipe-header.css) —
  * loaded alongside article.css, not merged into it.
  *
- * Class names match what Summary.tsx's renderers emit exactly:
+ * Class names match what Summary.tsx's renderSummary() emits exactly:
  * sum-root / sum-title / sum-list / sum-item / sum-grid / sum-chip /
  * sum-highlight-text, plus a sum-layout--<variant> modifier on the
  * root for anything layout-specific that isn't already scoped by a
  * more specific class (e.g. sum-list--numbered).
+ *
+ * The box itself is rendered at the TOP of the article (below the
+ * hero image, above the body/TOC grid) rather than inline in the
+ * article body — see the route's header comment for why — but its
+ * markup and class names are unchanged from the original inline
+ * version, so this stylesheet didn't need any updates for that move.
  */
 
 .sum-root {

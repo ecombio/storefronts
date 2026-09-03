@@ -3,6 +3,31 @@
 /* eslint-disable */
 import type * as StorefrontAPI from '@shopify/hydrogen/storefront-api-types';
 
+export type RelatedPostsCandidatesQueryVariables = StorefrontAPI.Exact<{
+  blogHandle: StorefrontAPI.Scalars['String']['input'];
+  first: StorefrontAPI.Scalars['Int']['input'];
+  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
+  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
+}>;
+
+export type RelatedPostsCandidatesQuery = {
+  blog?: StorefrontAPI.Maybe<{
+    articles: {
+      nodes: Array<
+        Pick<
+          StorefrontAPI.Article,
+          'id' | 'title' | 'handle' | 'tags' | 'publishedAt'
+        > & {
+          blog: Pick<StorefrontAPI.Blog, 'handle'>;
+          image?: StorefrontAPI.Maybe<
+            Pick<StorefrontAPI.Image, 'url' | 'altText' | 'width' | 'height'>
+          >;
+        }
+      >;
+    };
+  }>;
+};
+
 export type MenuCollectionImagesQueryVariables = StorefrontAPI.Exact<{
   ids:
     | Array<StorefrontAPI.Scalars['ID']['input']>
@@ -117,6 +142,9 @@ export type ArticleQuery = {
             Pick<StorefrontAPI.Metafield, 'value'>
           >;
           showToc?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
+          showSummary?: StorefrontAPI.Maybe<
+            Pick<StorefrontAPI.Metafield, 'value'>
+          >;
         }
       >;
     }
@@ -1832,11 +1860,15 @@ export type PredictiveSearchQuery = {
 };
 
 interface GeneratedQueryTypes {
+  '#graphql\n  query RelatedPostsCandidates(\n    $blogHandle: String!\n    $first: Int!\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    blog(handle: $blogHandle) {\n      articles(first: $first, sortKey: PUBLISHED_AT, reverse: true) {\n        nodes {\n          id\n          title\n          handle\n          tags\n          publishedAt\n          blog {\n            handle\n          }\n          image {\n            url\n            altText\n            width\n            height\n          }\n        }\n      }\n    }\n  }\n': {
+    return: RelatedPostsCandidatesQuery;
+    variables: RelatedPostsCandidatesQueryVariables;
+  };
   '#graphql\n  query MenuCollectionImages($ids: [ID!]!, $country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    nodes(ids: $ids) {\n      ... on Collection {\n        id\n        image {\n          url\n          altText\n        }\n      }\n    }\n  }\n': {
     return: MenuCollectionImagesQuery;
     variables: MenuCollectionImagesQueryVariables;
   };
-  '#graphql\n  query Article(\n    $articleHandle: String!\n    $blogHandle: String!\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(language: $language, country: $country) {\n    blog(handle: $blogHandle) {\n      handle\n      articleByHandle(handle: $articleHandle) {\n        handle\n        title\n        contentHtml\n        publishedAt\n        author: authorV2 {\n          name\n        }\n        image {\n          id\n          altText\n          url\n          width\n          height\n        }\n        seo {\n          description\n          title\n        }\n        blog {\n          handle\n        }\n        layoutVariant: metafield(namespace: "custom", key: "layout_variant") {\n          value\n        }\n        # Points at a single "Author" metaobject entry (see README.md\n        # for the metaobject definition: name / bio / avatar fields).\n        # One entry per person, reused across every article they\'re\n        # credited on — edit the metaobject once, every article that\n        # references it picks up the change.\n        authorProfile: metafield(namespace: "custom", key: "author_profile") {\n          reference {\n            ... on Metaobject {\n              name: field(key: "name") {\n                value\n              }\n              bio: field(key: "bio") {\n                value\n              }\n              avatar: field(key: "avatar") {\n                reference {\n                  ... on MediaImage {\n                    image {\n                      url\n                      altText\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n        showAuthorSection: metafield(\n          namespace: "custom"\n          key: "show_author_section"\n        ) {\n          value\n        }\n        showToc: metafield(namespace: "custom", key: "show_toc") {\n          value\n        }\n      }\n    }\n  }\n': {
+  '#graphql\n  query Article(\n    $articleHandle: String!\n    $blogHandle: String!\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(language: $language, country: $country) {\n    blog(handle: $blogHandle) {\n      handle\n      articleByHandle(handle: $articleHandle) {\n        handle\n        title\n        contentHtml\n        publishedAt\n        author: authorV2 {\n          name\n        }\n        image {\n          id\n          altText\n          url\n          width\n          height\n        }\n        seo {\n          description\n          title\n        }\n        blog {\n          handle\n        }\n        layoutVariant: metafield(namespace: "custom", key: "layout_variant") {\n          value\n        }\n        # Points at a single "Author" metaobject entry (see README.md\n        # for the metaobject definition: name / bio / avatar fields).\n        # One entry per person, reused across every article they\'re\n        # credited on — edit the metaobject once, every article that\n        # references it picks up the change.\n        authorProfile: metafield(namespace: "custom", key: "author_profile") {\n          reference {\n            ... on Metaobject {\n              name: field(key: "name") {\n                value\n              }\n              bio: field(key: "bio") {\n                value\n              }\n              avatar: field(key: "avatar") {\n                reference {\n                  ... on MediaImage {\n                    image {\n                      url\n                      altText\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n        showAuthorSection: metafield(\n          namespace: "custom"\n          key: "show_author_section"\n        ) {\n          value\n        }\n        showToc: metafield(namespace: "custom", key: "show_toc") {\n          value\n        }\n        # Gates the top-of-article "Key takeaways" summary box (see\n        # Summary.tsx / Summary.md). Boolean metafield, defined at\n        # /settings/custom_data/article/metafields as\n        # custom.show_summary. Same "true"/"false" string-value\n        # pattern as showToc/showAuthorSection above — isSummaryEnabled()\n        # in Summary.tsx checks value === \'true\', so an unset metafield\n        # (value undefined) and an explicit "false" both resolve to\n        # hidden. The summary content itself still comes from a\n        # data-summary-embed marker in contentHtml, not from this\n        # metafield — this only controls whether that marker\'s parsed\n        # content is rendered at the top of the page.\n        showSummary: metafield(namespace: "custom", key: "show_summary") {\n          value\n        }\n      }\n    }\n  }\n': {
     return: ArticleQuery;
     variables: ArticleQueryVariables;
   };
