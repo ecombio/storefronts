@@ -104,14 +104,14 @@ import {
 } from '~/components/blogs/Summary';
 import type {ProductCardFragment} from 'storefrontapi.generated';
 import articleStyles from '~/assets/article.css?url';
-import articleTocStyles from '~/assets/article-toc.css?url';
+import articleTocStyles from '~/components/blogs/TableOfContents.css?url';
 import authorSectionStyles from '~/assets/article-author.css?url';
-import twoColumnContentStyles from '~/assets/two-column-content.css?url';
+import twoColumnContentStyles from '~/components/blogs/TwoColumnContent.css?url';
 import videoStyles from '~/assets/video.css?url';
 import galleryStyles from '~/components/blogs/ImagesGallery.css?url';
 import blogButtonStyles from '~/components/blogs/Button.css?url';
 import quoteStyles from '~/assets/quote.css?url';
-import recipeHeaderStyles from '~/assets/recipe-header.css?url';
+import recipeHeaderStyles from '~/components/blogs/RecipeHeader.css?url';
 import newsletterFormStyles from '~/assets/newsletter-form.css?url';
 import relatedBlogPostsStyles from '~/assets/related-blog-posts.css?url';
 import blogPostCardStyles from '~/assets/blog-post-card.css?url';
@@ -127,9 +127,27 @@ import socialShareStyles from '~/assets/social-share.css?url';
 // injectNewsletterForm/<NewsletterForm> later, that surface should
 // import newsletter-form.css itself the same way this route does —
 // not force it back onto every route via root.tsx.
-// two-column-content.css stays route-scoped, same reasoning as
+// article-toc.css is route-scoped for the same "only ever appears on
+// this route" reasoning as article-author.css: <TableOfContents> IS a
+// component directly in this route's React tree (same as
+// <AuthorSection>), so it's linked explicitly here rather than via a
+// side-effect import, matching every other directly-rendered block in
+// this route. Now co-located at ~/components/blogs/TableOfContents.css,
+// same placement convention as Button.css/ImagesGallery.css/
+// RecipeHeader.css/TwoColumnContent.css next to their components,
+// rather than living under app/assets/ like quote.css (which has no
+// component counterpart). Previously app/assets/article-toc.css; that
+// file has been removed now that this route and TableOfContents.tsx
+// both point here instead.
+// TwoColumnContent.css is route-scoped for the same reason as
 // article.css/article-author.css: the data-two-col marker only ever
 // appears inside a blog article body, unlike the newsletter marker.
+// Now co-located at ~/components/blogs/TwoColumnContent.css, same
+// placement convention as Button.css/ImagesGallery.css/RecipeHeader.css
+// next to their components, rather than living under app/assets/ like
+// quote.css (which has no component counterpart). Previously
+// app/assets/two-column-content.css; that file has been removed now
+// that this route and TwoColumnContent.tsx both point here instead.
 // video.css stays route-scoped too, same reasoning: the
 // data-video-embed marker (see video.tsx) only ever appears
 // inside a blog article body.
@@ -171,12 +189,19 @@ import socialShareStyles from '~/assets/social-share.css?url';
 // with no component in this route's React tree, so nothing guarantees
 // its CSS ships in this route's client bundle unless we say so
 // explicitly here.
-// recipe-header.css is route-scoped for the same reason as
+// RecipeHeader.css is route-scoped for the same reason as
 // Button.css/quote.css: the data-recipe-header marker only ever
 // appears inside a blog article body, and injectRecipeHeader() is a
 // pure server-side string transform with no component in this
 // route's React tree, so nothing guarantees its CSS ships in this
-// route's client bundle unless we say so explicitly here.
+// route's client bundle unless we say so explicitly here. Now
+// co-located at ~/components/blogs/RecipeHeader.css — same
+// placement convention as Button.css/ImagesGallery.css next to
+// their components — rather than living under app/assets/ like
+// quote.css, which still has no component counterpart. The
+// stylesheet was previously app/assets/recipe-header.css; that file
+// has been removed now that this route and RecipeHeader.tsx both
+// point here instead.
 // newsletter-form.css follows that same "only ever appears inside a
 // blog article body, and its injector has no component in this
 // route's React tree" reasoning too now that it's scoped here instead

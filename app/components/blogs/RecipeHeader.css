@@ -1,10 +1,30 @@
 /*
  * Printable recipe info card for blog articles, added via the
  * data-recipe-header marker (see RecipeHeader.tsx for the marker
- * syntax and the server-side normalization pass). Own file, linked
- * the same way as every other feature stylesheet in the article
- * route (see article-toc.css, two-column-content.css) — loaded
- * alongside article.css, not merged into it.
+ * syntax and the server-side normalization pass). Co-located next to
+ * RecipeHeader.tsx — same placement convention as Button.css next to
+ * Button.tsx and ImagesGallery.css next to ImagesGallery.tsx — rather
+ * than living under app/assets/ like quote.css, which still has no
+ * component counterpart. Previously app/assets/recipe-header.css;
+ * that file has been removed now that this route and RecipeHeader.tsx
+ * both point here instead. Still linked explicitly in the article
+ * route's links() array (see blogs.$blogHandle.$articleHandle.tsx),
+ * not via a bare side-effect import — injectRecipeHeader() is a pure
+ * server-side string transform with no component in that route's
+ * React tree, so nothing guarantees this CSS ships in the client
+ * bundle unless the route says so explicitly.
+ *
+ * SPECIFICITY NOTE: .recipe-header__image is deliberately written as
+ * `.recipe-header .recipe-header__image` (two classes) rather than a
+ * single class. article.css has a `.article img` rule (one class +
+ * one element = same specificity weight as two classes) that sets
+ * width: 100%/height: auto on every <img> inside .article — including
+ * this one, since .recipe-header lives inside .article-body inside
+ * .article. A single-class `.recipe-header__image` selector loses to
+ * `.article img` regardless of stylesheet load order, which is what
+ * caused the recipe photo to render full-width instead of at its
+ * intended 240x200 box. The two-class selector here outranks it. Same
+ * reasoning applies to the mobile override in the media query below.
  */
 
 .recipe-header {
@@ -17,13 +37,14 @@
   background: #fff;
 }
 
-.recipe-header__image {
+.recipe-header .recipe-header__image {
   flex-shrink: 0;
   width: 240px;
   height: 200px;
   border-radius: 10px;
   object-fit: cover;
   background: #f0f0f0;
+  margin: 0;
 }
 
 .recipe-header__image--placeholder {
@@ -116,13 +137,37 @@
   color: #4a4a4a;
 }
 
+/* Optional per-stat hyperlink (see data-recipe-{stat}-url in
+   RecipeHeader.tsx). Kept visually close to the plain-text value —
+   same size/weight, underline as the only link cue at rest — so a
+   linked stat doesn't look out of place next to unlinked ones in the
+   same grid. inline-block + negative margin lets the hover background
+   extend slightly past the text on all sides without shifting the
+   surrounding layout (the negative margin cancels the padding out at
+   rest, so the link still sits flush with the label above it). */
+.recipe-header__stat-link {
+  display: inline-block;
+  margin: -0.15rem -0.35rem;
+  padding: 0.15rem 0.35rem;
+  border-radius: 6px;
+  color: #3059f2;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.recipe-header__stat-link:hover {
+  background-color: #f0f0f0;
+  color: #1d3fc9;
+}
+
 @media (max-width: 640px) {
   .recipe-header {
     flex-direction: column;
     padding: 1.5rem;
   }
 
-  .recipe-header__image {
+  .recipe-header .recipe-header__image {
     width: 100%;
     height: 220px;
   }
@@ -167,5 +212,14 @@
 
   body.recipe-printing .recipe-header__print {
     display: none;
+  }
+
+  /* Underlines read fine on paper, but the link color and hover
+     background have no meaning once printed — normalize to the same
+     text color as unlinked stat values so the printed card looks
+     uniform, and drop the background entirely. */
+  body.recipe-printing .recipe-header__stat-link {
+    background-color: transparent;
+    color: #4a4a4a;
   }
 }

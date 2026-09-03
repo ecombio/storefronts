@@ -48,7 +48,18 @@ const RATIO_CLASS: Record<string, string> = {
   '1-2': 'two-col-content--1-2',
 };
 
-const MARKER_OPEN_REGEX = /<div\b[^>]*\bdata-two-col\b[^>]*>/gi;
+// The `(?![\w-])` negative lookahead is load-bearing: without it,
+// `\bdata-two-col\b` also matches as a substring inside
+// `data-two-col-ratio`, since `\b` is a plain word-boundary (word
+// char <-> non-word char) and `-` counts as non-word on both sides
+// of "col". That falsely qualified a div carrying ONLY
+// data-two-col-ratio (no actual data-two-col attribute) as a marker
+// open tag. The lookahead requires whatever follows "data-two-col"
+// to NOT be a letter/digit/underscore/hyphen — i.e. the attribute
+// name must end there (matched by whitespace, `=`, or `>` next) —
+// so `data-two-col-ratio` no longer qualifies while `data-two-col`,
+// `data-two-col=""`, and `data-two-col >` still do.
+const MARKER_OPEN_REGEX = /<div\b[^>]*\bdata-two-col\b(?![\w-])[^>]*>/gi;
 const RATIO_ATTR_REGEX = /\bdata-two-col-ratio=["']([^"']*)["']/i;
 
 /**
