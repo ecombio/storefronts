@@ -2,8 +2,17 @@
 //
 // Auto-generated table of contents for blog articles, built from
 // whatever h2/h3 tags exist in the article body — no marker syntax,
-// no metafield. Editors write normal headings in Shopify's blog HTML
-// editor (as they already do); nothing extra to author.
+// no metafield required for heading detection. Editors write normal
+// headings in Shopify's blog HTML editor (as they already do);
+// nothing extra to author for the TOC content itself.
+//
+// Whether the TOC renders AT ALL is a separate, explicit decision —
+// see `isTocEnabled` below. It defaults OFF: an article only gets a
+// TOC if an editor explicitly sets custom.show_toc = true, mirroring
+// how AuthorSection.tsx gates on custom.show_author_section. This is
+// intentionally decoupled from whether the article *has* headings —
+// an article can have h2/h3s and still not show a TOC if the
+// metafield isn't set.
 //
 // Two entry points, same split as FaqSection.tsx:
 //
@@ -18,6 +27,13 @@
 //      even with zero JS (the ids from #1 already make in-page anchor
 //      navigation work natively); the effect below layers on
 //      active-section highlighting as progressive enhancement.
+//
+// Callers should gate rendering with `isTocEnabled(article)` BEFORE
+// calling withHeadingIds/passing headings in — see the usage note
+// above isTocEnabled for the exact call-site pattern. The component
+// itself keeps its own `headings.length === 0` fallback as a second
+// safety net, but that alone is not sufficient gating: an article
+// can have headings and still need the TOC hidden by default.
 //
 // Unlike the shoppable-embed system in ProductGallery.tsx, this needs
 // no portal/hydration-slot dance in Article's template: it doesn't
@@ -43,6 +59,37 @@ export type TocHeading = {
 // one level deep — h2/h3 is all withHeadingIds scans for, so a node's
 // children are always h3s, never grandchildren.
 type TocNode = TocHeading & {children: TocHeading[]};
+
+// Shape of the raw metafield data as read off the article object in
+// the loader (see ARTICLE_QUERY's `showToc` field). Kept loose/
+// optional the same way ArticleWithAuthorMetafields is in
+// AuthorSection.tsx — metafields are optional by nature, so this can
+// be null/undefined if unset in the admin.
+export type ArticleWithTocMetafield = {
+  showToc?: {value?: string | null} | null;
+};
+
+/**
+ * Resolves whether the table of contents should render for this
+ * article. Defaults to OFF: only an explicit "true" on the
+ * custom.show_toc metafield enables it. An unset metafield (null,
+ * the default for every article until an editor opts in) safely
+ * resolves to false — matching the same off-by-default pattern
+ * getAuthorSectionData uses for custom.show_author_section.
+ *
+ * Usage at the call site (loader or template):
+ *
+ *   const tocEnabled = isTocEnabled(article);
+ *   const {html, headings} = tocEnabled
+ *     ? withHeadingIds(article.contentHtml)
+ *     : {html: article.contentHtml, headings: []};
+ *
+ *   // ...later in JSX...
+ *   {tocEnabled && <TableOfContents headings={headings} />}
+ */
+export function isTocEnabled(article: ArticleWithTocMetafield): boolean {
+  return article.showToc?.value === 'true';
+}
 
 // Groups the flat heading list into a tree: each h3 nests under
 // whichever h2 preceded it in the article body. This mirrors the
@@ -133,6 +180,11 @@ const LABEL_ATTR_REGEX = /\bdata-toc-label=["']([^"']+)["']/;
  * the flat list of headings for <TableOfContents> to render. Honors
  * data-toc-skip / data-toc-label if the editor added them — see
  * comment above.
+ *
+ * Callers should only invoke this when isTocEnabled(article) is true
+ * — see the usage note on isTocEnabled. Calling it unconditionally is
+ * harmless (it's a pure string transform) but wasteful, since its
+ * output is discarded whenever the TOC is gated off.
  */
 export function withHeadingIds(html: string): {
   html: string;

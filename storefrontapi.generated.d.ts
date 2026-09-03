@@ -96,6 +96,27 @@ export type ArticleQuery = {
           layoutVariant?: StorefrontAPI.Maybe<
             Pick<StorefrontAPI.Metafield, 'value'>
           >;
+          authorProfile?: StorefrontAPI.Maybe<{
+            reference?: StorefrontAPI.Maybe<{
+              name?: StorefrontAPI.Maybe<
+                Pick<StorefrontAPI.MetaobjectField, 'value'>
+              >;
+              bio?: StorefrontAPI.Maybe<
+                Pick<StorefrontAPI.MetaobjectField, 'value'>
+              >;
+              avatar?: StorefrontAPI.Maybe<{
+                reference?: StorefrontAPI.Maybe<{
+                  image?: StorefrontAPI.Maybe<
+                    Pick<StorefrontAPI.Image, 'url' | 'altText'>
+                  >;
+                }>;
+              }>;
+            }>;
+          }>;
+          showAuthorSection?: StorefrontAPI.Maybe<
+            Pick<StorefrontAPI.Metafield, 'value'>
+          >;
+          showToc?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
         }
       >;
     }
@@ -1802,7 +1823,7 @@ interface GeneratedQueryTypes {
     return: MenuCollectionImagesQuery;
     variables: MenuCollectionImagesQueryVariables;
   };
-  '#graphql\n  query Article(\n    $articleHandle: String!\n    $blogHandle: String!\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(language: $language, country: $country) {\n    blog(handle: $blogHandle) {\n      handle\n      articleByHandle(handle: $articleHandle) {\n        handle\n        title\n        contentHtml\n        publishedAt\n        author: authorV2 {\n          name\n        }\n        image {\n          id\n          altText\n          url\n          width\n          height\n        }\n        seo {\n          description\n          title\n        }\n        blog {\n          handle\n        }\n        layoutVariant: metafield(namespace: "custom", key: "layout_variant") {\n          value\n        }\n      }\n    }\n  }\n': {
+  '#graphql\n  query Article(\n    $articleHandle: String!\n    $blogHandle: String!\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(language: $language, country: $country) {\n    blog(handle: $blogHandle) {\n      handle\n      articleByHandle(handle: $articleHandle) {\n        handle\n        title\n        contentHtml\n        publishedAt\n        author: authorV2 {\n          name\n        }\n        image {\n          id\n          altText\n          url\n          width\n          height\n        }\n        seo {\n          description\n          title\n        }\n        blog {\n          handle\n        }\n        layoutVariant: metafield(namespace: "custom", key: "layout_variant") {\n          value\n        }\n        # Points at a single "Author" metaobject entry (see README.md\n        # for the metaobject definition: name / bio / avatar fields).\n        # One entry per person, reused across every article they\'re\n        # credited on — edit the metaobject once, every article that\n        # references it picks up the change.\n        authorProfile: metafield(namespace: "custom", key: "author_profile") {\n          reference {\n            ... on Metaobject {\n              name: field(key: "name") {\n                value\n              }\n              bio: field(key: "bio") {\n                value\n              }\n              avatar: field(key: "avatar") {\n                reference {\n                  ... on MediaImage {\n                    image {\n                      url\n                      altText\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n        showAuthorSection: metafield(\n          namespace: "custom"\n          key: "show_author_section"\n        ) {\n          value\n        }\n        showToc: metafield(namespace: "custom", key: "show_toc") {\n          value\n        }\n      }\n    }\n  }\n': {
     return: ArticleQuery;
     variables: ArticleQueryVariables;
   };

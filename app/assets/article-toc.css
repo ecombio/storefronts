@@ -45,6 +45,16 @@
   }
 }
 
+/* Applied when the TOC is toggled off (or the article has no h2/h3
+   headings to list) — collapses back to a single column instead of
+   reserving an empty 240px sidebar gutter next to the body. */
+
+@media (min-width: 900px) {
+  .article-layout--no-toc {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* The TOC itself: <details> wrapping a <nav>. Below 900px it behaves
    as a native collapsible (summary visible, content toggles open/
    closed). At/above 900px, CSS forces it open regardless of the

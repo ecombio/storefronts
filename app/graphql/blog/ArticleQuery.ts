@@ -37,6 +37,42 @@ export const ARTICLE_QUERY = `#graphql
         layoutVariant: metafield(namespace: "custom", key: "layout_variant") {
           value
         }
+        # Points at a single "Author" metaobject entry (see README.md
+        # for the metaobject definition: name / bio / avatar fields).
+        # One entry per person, reused across every article they're
+        # credited on — edit the metaobject once, every article that
+        # references it picks up the change.
+        authorProfile: metafield(namespace: "custom", key: "author_profile") {
+          reference {
+            ... on Metaobject {
+              name: field(key: "name") {
+                value
+              }
+              bio: field(key: "bio") {
+                value
+              }
+              avatar: field(key: "avatar") {
+                reference {
+                  ... on MediaImage {
+                    image {
+                      url
+                      altText
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        showAuthorSection: metafield(
+          namespace: "custom"
+          key: "show_author_section"
+        ) {
+          value
+        }
+        showToc: metafield(namespace: "custom", key: "show_toc") {
+          value
+        }
       }
     }
   }

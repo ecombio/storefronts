@@ -43,6 +43,7 @@ import paginatedResourceSectionStyles from '~/assets/paginated-resource-section.
 import stickyHeaderStyles from '~/assets/sticky-header.css?url';
 import articleCardStyles from '~/assets/article-card.css?url';
 import articleTocStyles from '~/assets/article-toc.css?url'; // ADDED — table-of-contents sidebar/collapsible layout for blog articles; loads after articleCardStyles, the other article-scoped stylesheet
+import newsletterFormStyles from '~/assets/newsletter-form.css?url'; // ADDED — inline newsletter signup form (see NewsletterForm.tsx); global rather than route-scoped like article.css/article-author.css, since the data-newsletter-form marker is reusable outside blog articles too, not blog-only like the TOC
 import subCollectionStyles from '~/assets/sub-collection.css?url';
 import collectionAfterItemsStyles from '~/assets/collection-after-items.css?url';
 import cartDrawerStyles from '~/assets/cart-drawer.css?url';
@@ -227,6 +228,9 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={articleCardStyles}></link>
         {/* ADDED — table-of-contents sidebar/collapsible layout for blog articles */}
         <link rel="stylesheet" href={articleTocStyles}></link>
+        {/* ADDED — inline newsletter signup form; global since the
+            data-newsletter-form marker isn't blog-only */}
+        <link rel="stylesheet" href={newsletterFormStyles}></link>
         <link rel="stylesheet" href={subCollectionStyles}></link>
         <link rel="stylesheet" href={collectionAfterItemsStyles}></link>
         <link rel="stylesheet" href={cartDrawerStyles}></link>
