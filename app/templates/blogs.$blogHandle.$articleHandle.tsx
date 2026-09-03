@@ -107,7 +107,7 @@ import articleStyles from '~/assets/article.css?url';
 import articleTocStyles from '~/components/blogs/TableOfContents.css?url';
 import authorSectionStyles from '~/components/blogs/AuthorSection.css?url';
 import twoColumnContentStyles from '~/components/blogs/TwoColumnContent.css?url';
-import videoStyles from '~/assets/video.css?url';
+import videoStyles from '~/components/blogs/Video.css?url';
 import galleryStyles from '~/components/blogs/ImagesGallery.css?url';
 import blogButtonStyles from '~/components/blogs/Button.css?url';
 import quoteStyles from '~/assets/quote.css?url';
@@ -155,12 +155,18 @@ import socialShareStyles from '~/components/blogs/SocialShare.css?url';
 // quote.css (which has no component counterpart). Previously
 // app/assets/two-column-content.css; that file has been removed now
 // that this route and TwoColumnContent.tsx both point here instead.
-// video.css stays route-scoped too, same reasoning: the
-// data-video-embed marker (see video.tsx) only ever appears
-// inside a blog article body.
+// Video.css stays route-scoped too, same reasoning: the
+// data-video-embed marker (see Video.tsx) only ever appears
+// inside a blog article body. Now co-located at
+// ~/components/blogs/Video.css, same placement convention as
+// Button.css/ImagesGallery.css/RecipeHeader.css next to their
+// components, rather than living under app/assets/ like quote.css
+// (which has no component counterpart). Previously
+// app/assets/video.css; that file has been removed now that this
+// route and Video.tsx both point here instead.
 // ImagesGallery.css stays route-scoped for the same reason again: the
 // data-gallery-embed marker (see ImagesGallery.tsx) only ever appears
-// inside a blog article body. Unlike video.css, ImagesGallery.css also has
+// inside a blog article body. Unlike Video.css, ImagesGallery.css also has
 // to style the STATIC server-rendered grid (see injectImagesGallery),
 // not just the hydrated component, since the grid is visible and
 // functional before any JS runs. It covers all four layout variants
@@ -519,7 +525,7 @@ async function loadCriticalData({context, request, params}: Route.LoaderArgs) {
   contentHtml = injectNewsletterForm(contentHtml);
 
   // Rewrites data-video-embed markers into a data-video-slot node
-  // (see video.tsx) the client hydrates into the real <Video>
+  // (see Video.tsx) the client hydrates into the real <Video>
   // component via portal — same reasoning and same "no async data
   // fetch" shape as injectNewsletterForm just above, so it runs
   // alongside it. Unlike the newsletter form, there's no meaningful
@@ -914,7 +920,7 @@ export default function ArticleTemplate() {
     setNewsletterSlots(foundNewsletters);
 
     // Look for every element the server marked as a video slot (see
-    // injectVideoEmbeds in video.tsx). Unlike the other slot types,
+    // injectVideoEmbeds in Video.tsx). Unlike the other slot types,
     // the props themselves are read back per-element at render time
     // via readVideoSlot (see the .map() below) rather than pre-parsed
     // here — there's nothing to clear first since injectVideoEmbeds
