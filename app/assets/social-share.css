@@ -1,7 +1,7 @@
 /* app/assets/social-share.css
  *
  * Styles for SocialShare.tsx. Route-scoped rather than global — same
- * reasoning as article.css/video.css/gallery.css/related-blog-posts.css:
+ * reasoning as article.css/video.css/ImagesGallery.css/related-blog-posts.css:
  * this section only ever renders inside blogs.$blogHandle.$articleHandle.
  */
 

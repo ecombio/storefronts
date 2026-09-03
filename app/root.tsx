@@ -29,7 +29,7 @@ import productDescriptionStyles from '~/assets/product-description.css?url';
 import customerReviewsStyles from '~/assets/customer-reviews.css?url';
 import starRatingStyles from '~/assets/star-rating.css?url';
 import productCardStyles from '~/assets/product-card.css?url';
-import productRowStyles from '~/assets/product-row.css?url'; // ADDED — grid layout for Solo/Duo/Trio shoppable rows; loads after productCardStyles so its [data-columns] rules can lay out the cards it styles
+import productSectionsStyles from '~/components/blogs/product-sections.css?url'; // grid/gallery/focus/text layout for ProductSections.tsx shoppable embeds; loads after productCardStyles so its [data-columns] rules can lay out the cards it styles
 import productCarouselStyles from '~/assets/product-carousel.css?url';
 import collectionCardStyles from '~/assets/collection-card.css?url';
 import collectionCarouselStyles from '~/assets/collection-carousel.css?url';
@@ -219,7 +219,7 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={customerReviewsStyles}></link>
         <link rel="stylesheet" href={starRatingStyles}></link>
         <link rel="stylesheet" href={productCardStyles}></link>
-        <link rel="stylesheet" href={productRowStyles}></link>
+        <link rel="stylesheet" href={productSectionsStyles}></link>
         <link rel="stylesheet" href={productCarouselStyles}></link>
         <link rel="stylesheet" href={collectionCardStyles}></link>
         <link rel="stylesheet" href={collectionCarouselStyles}></link>

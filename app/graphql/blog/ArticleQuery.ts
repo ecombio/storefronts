@@ -87,6 +87,61 @@ export const ARTICLE_QUERY = `#graphql
         showSummary: metafield(namespace: "custom", key: "show_summary") {
           value
         }
+        # Gates the "Related blogs" section (see RelatedBlogPosts.tsx /
+        # related-blog-posts.md §2). Same "true"/"false" string-value,
+        # off-by-default pattern as showToc/showAuthorSection/showSummary
+        # above — getRelatedPostsData() checks value === 'true'.
+        showRelatedPosts: metafield(
+          namespace: "custom"
+          key: "show_related_posts"
+        ) {
+          value
+        }
+        # Editor-curated list of specific articles to feature, merged
+        # with the tag-ranked fallback candidates from
+        # RELATED_POSTS_CANDIDATES_QUERY (see related-blog-posts.md §3
+        # for the merge logic). List-of-article-reference metafield —
+        # field selection below is a best-effort match to what
+        # BlogPostCard likely needs (handle/title/image/blog handle);
+        # confirm against RelatedBlogPosts.tsx / BlogPostCard.tsx and
+        # adjust if the shape doesn't match.
+        relatedBlogPosts: metafield(
+          namespace: "custom"
+          key: "related_blog_posts"
+        ) {
+          references(first: 10) {
+            nodes {
+              ... on Article {
+                handle
+                title
+                publishedAt
+                image {
+                  url
+                  altText
+                  width
+                  height
+                }
+                blog {
+                  handle
+                }
+              }
+            }
+          }
+        }
+        # Gates the "Social sharing" card (see SocialShare.tsx /
+        # social-share.md). Same "true"/"false" string-value pattern as
+        # the other show* metafields above — isSocialShareEnabled()
+        # checks value === 'true' (or, per the route's original
+        # comment, may currently default to true when unset — confirm
+        # against SocialShare.tsx's actual gating logic once this field
+        # is wired in, since it was previously a no-op with no metafield
+        # to read at all).
+        showSocialShare: metafield(
+          namespace: "custom"
+          key: "show_social_share"
+        ) {
+          value
+        }
       }
     }
   }

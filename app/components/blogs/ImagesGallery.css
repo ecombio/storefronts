@@ -1,7 +1,7 @@
-/* app/assets/gallery.css
+/* app/components/blogs/ImagesGallery.css
  *
  * Styles for the data-gallery-embed block (see
- * ~/components/blogs/ImagesGallery.tsx). Route-scoped rather than
+ * ./ImagesGallery.tsx, colocated). Route-scoped rather than
  * global — same reasoning as article.css/video.css: the data-gallery
  * marker only ever appears inside a blog article body.
  *

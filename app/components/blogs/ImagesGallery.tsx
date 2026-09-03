@@ -37,7 +37,7 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
  * `<img>` needs a real `src`, should have `alt`, and can carry an
  * optional `data-caption` shown under the image in the lightbox.
  *
- * Styles live in ~/assets/gallery.css (route-scoped, imported via
+ * Styles live in ~/components/blogs/ImagesGallery.css (route-scoped, imported via
  * `links()` in the route file) rather than an inline <style> tag —
  * the static server-rendered grid needs to look right before
  * hydration runs, and an inline <style> only exists once the React

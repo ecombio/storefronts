@@ -17,6 +17,17 @@
 // quote.md, and RecipeHeader.tsx / recipe-header.md for the marker
 // syntax editors use in the Shopify blog editor).
 //
+// Shoppable-product embeds now come from ~/components/blogs/
+// ProductSections (focus / grid / gallery / text layouts), which
+// supersedes the old ProductGallery.tsx (single / solo / duo / trio).
+// See ProductSections.tsx's header comment for the marker authoring
+// contract and the static/interactive component split. The slot type,
+// scan effect, and portal switch below were updated to match its
+// 'focus' | 'grid' | 'gallery' | 'text' kinds and to read the
+// data-heading / data-body attributes it writes for gallery/text
+// slots (both encodeURIComponent-encoded, decoded back out at scan
+// time rather than re-scraped from the static inner markup).
+//
 // "Related blogs" (bottom of article, below the author section) is a
 // third shape again — not a marker/portal block, since it isn't
 // placed inline by an editor. It follows AuthorSection's shape
@@ -47,13 +58,21 @@
 // AuthorSection. See SocialShare.tsx / social-share.md for the
 // component, its (currently no-op until ARTICLE_QUERY grows the
 // metafield) opt-out gating, and setup notes.
+import {ARTICLE_QUERY, SHOPPABLE_PRODUCTS_QUERY} from '~/graphql/blog/ArticleQuery';
 import {useEffect, useRef, useState} from 'react';
 import {createPortal} from 'react-dom';
 import {useLoaderData} from 'react-router';
 import type {Route} from './+types/blogs.$blogHandle.$articleHandle';
 import {Image} from '@shopify/hydrogen';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
-import {extractShoppableProductIds, injectShoppableProducts} from '~/components/blogs/ProductGallery';
+import {
+  extractShoppableProductIds,
+  injectShoppableProducts,
+  ProductFocus,
+  ProductGrid,
+  ProductGallery as ProductGallerySection,
+  ProductWithText,
+} from '~/components/blogs/ProductSections';
 import {injectFaqSections} from '~/components/blogs/FaqSection';
 import {injectTwoColumnContent} from '~/components/blogs/TwoColumnContent';
 import {withHeadingIds, TableOfContents, isTocEnabled} from '~/components/blogs/TableOfContents';
@@ -83,17 +102,13 @@ import {
   renderSummary,
   isSummaryEnabled,
 } from '~/components/blogs/Summary';
-import {ProductCard} from '~/snippets/ProductCard';
-import {Solo, Duo, Trio} from '~/components/blogs/ProductGallery';
-
-import {ARTICLE_QUERY, SHOPPABLE_PRODUCTS_QUERY} from '~/graphql/blog/ArticleQuery';
 import type {ProductCardFragment} from 'storefrontapi.generated';
 import articleStyles from '~/assets/article.css?url';
 import articleTocStyles from '~/assets/article-toc.css?url';
 import authorSectionStyles from '~/assets/article-author.css?url';
 import twoColumnContentStyles from '~/assets/two-column-content.css?url';
 import videoStyles from '~/assets/video.css?url';
-import galleryStyles from '~/assets/gallery.css?url';
+import galleryStyles from '~/components/blogs/ImagesGallery.css?url';
 import blogButtonStyles from '~/assets/blog-button.css?url';
 import quoteStyles from '~/assets/quote.css?url';
 import recipeHeaderStyles from '~/assets/recipe-header.css?url';
@@ -118,9 +133,9 @@ import socialShareStyles from '~/assets/social-share.css?url';
 // video.css stays route-scoped too, same reasoning: the
 // data-video-embed marker (see video.tsx) only ever appears
 // inside a blog article body.
-// gallery.css stays route-scoped for the same reason again: the
+// ImagesGallery.css stays route-scoped for the same reason again: the
 // data-gallery-embed marker (see ImagesGallery.tsx) only ever appears
-// inside a blog article body. Unlike video.css, gallery.css also has
+// inside a blog article body. Unlike video.css, ImagesGallery.css also has
 // to style the STATIC server-rendered grid (see injectImagesGallery),
 // not just the hydrated component, since the grid is visible and
 // functional before any JS runs.
@@ -196,6 +211,12 @@ import socialShareStyles from '~/assets/social-share.css?url';
 // explicitly here rather than via a side-effect import, matching the
 // convention every other directly-rendered block in this route
 // follows.
+//
+// product-sections.css is NOT linked here, unlike the marker
+// stylesheets above — it's imported directly in root.tsx alongside product-card.css, since
+// .product-card's own internals (image/title/price/button) already
+// live there and this file only adds the per-layout arrangement rules
+// on top. It is intentionally absent from this route's links() array.
 
 // Route-scoped stylesheets — Remix/React Router collects these via
 // links() and injects <link> tags only when this route is active, so
@@ -294,7 +315,7 @@ async function loadCriticalData({context, request, params}: Route.LoaderArgs) {
   const article = blog.articleByHandle;
 
   // Scan the raw article HTML for shoppable-product markers (see
-  // ProductGallery.tsx) and collect the numeric product IDs they
+  // ProductSections.tsx) and collect the numeric product IDs they
   // reference, so they can be fetched in one batched query rather
   // than one request per marker.
   const productIds = extractShoppableProductIds(article.contentHtml);
@@ -328,8 +349,8 @@ async function loadCriticalData({context, request, params}: Route.LoaderArgs) {
     );
 
     // Replace each shoppable marker in the HTML with its resolved
-    // static card markup (see ProductGallery.tsx for the marker →
-    // markup transform).
+    // static section markup (see ProductSections.tsx for the
+    // marker → markup transform: focus / grid / gallery / text).
     contentHtml = injectShoppableProducts(article.contentHtml, productsById);
     shoppableProducts = [...productsById.entries()];
   }
@@ -531,12 +552,19 @@ function loadDeferredData({context}: Route.LoaderArgs) {
 }
 
 // Describes one shoppable-embed slot found in the rendered article
-// body: the DOM node to portal into, what layout it wants (single /
-// solo / duo / trio), and which product IDs it references.
+// body: the DOM node to portal into, which layout it wants (focus /
+// grid / gallery / text — see ProductSections.tsx), which product IDs
+// it references, and — for gallery/text — the original heading/body
+// copy (decoded back off the slot's data-heading/data-body attributes
+// at scan time, since the static inner markup is a plain rendered
+// <h3>/<div> by the time this runs, not a reliable source to
+// re-scrape from).
 type ShoppableSlot = {
   el: HTMLElement;
   kind: string;
   ids: string[];
+  heading?: string;
+  body?: string;
 };
 
 // Describes one newsletter-form slot found in the rendered article
@@ -688,7 +716,7 @@ export default function ArticleTemplate() {
 
   // Finds each server-rendered shoppable-embed, newsletter-form,
   // video, and gallery slot (rendered with the hook-free Static*
-  // components in ~/components/blogs/ProductGallery, the static
+  // components in ~/components/blogs/ProductSections, the static
   // <form> from injectNewsletterForm, the empty data-video-slot node
   // from injectVideoEmbeds, and the static thumbnail grid from
   // injectImagesGallery respectively) and records them so the real,
@@ -736,11 +764,13 @@ export default function ArticleTemplate() {
 
     const found: ShoppableSlot[] = [];
 
-    // Look for every element the server marked as a shoppable slot.
+    // Look for every element the server marked as a shoppable slot
+    // (see injectShoppableProducts in ProductSections.tsx).
     container
       .querySelectorAll<HTMLElement>('[data-shoppable-slot]')
       .forEach((el) => {
-        // `data-shoppable-slot` holds the layout kind: single/solo/duo/trio.
+        // `data-shoppable-slot` holds the layout kind: focus / grid /
+        // gallery / text.
         const kind = el.getAttribute('data-shoppable-slot');
         // `data-product-ids` holds a comma-separated list of numeric
         // product IDs for this slot; split and drop empty entries.
@@ -751,10 +781,21 @@ export default function ArticleTemplate() {
         // Skip malformed slots (missing kind, or no product IDs).
         if (!kind || ids.length === 0) return;
 
+        // Only gallery/text markers carry heading/body copy;
+        // renderMarker only writes these attributes when present, so
+        // both are undefined for focus/grid slots. Values are
+        // encodeURIComponent-encoded by injectShoppableProducts,
+        // decoded back here rather than left for the client to
+        // re-scrape from the static inner markup's rendered text.
+        const rawHeading = el.getAttribute('data-heading');
+        const rawBody = el.getAttribute('data-body');
+        const heading = rawHeading ? decodeURIComponent(rawHeading) : undefined;
+        const body = rawBody ? decodeURIComponent(rawBody) : undefined;
+
         // Clear the static server-rendered markup - the portal below
         // renders the live replacement into this same node.
         el.innerHTML = '';
-        found.push({el, kind, ids});
+        found.push({el, kind, ids, heading, body});
       });
 
     setSlots(found);
@@ -893,37 +934,39 @@ export default function ArticleTemplate() {
       {/* For each discovered shoppable slot, build the appropriate
           interactive component and portal it into that slot's DOM
           node — replacing the static SSR markup that was cleared
-          above. */}
-      {slots.map(({el, kind, ids}) => {
+          above. Kinds come from ProductSections.tsx: focus (1
+          product), grid (2-4 products), gallery (heading + body + row
+          of 1-4 products), text (heading + body beside 1 product). */}
+      {slots.map(({el, kind, ids, heading, body}) => {
         let node: React.ReactNode = null;
 
         switch (kind) {
-          case 'single': {
-            // A single standalone product card.
-            const product = productsById.get(ids[0]);
-            node = product ? <ProductCard product={product} /> : null;
+          case 'focus':
+            // Single large product card.
+            node = <ProductFocus productId={ids[0]} productsById={productsById} />;
             break;
-          }
-          case 'solo':
-            // Single-product row layout (distinct styling from 'single').
-            node = (
-              <Solo productIds={[ids[0]]} productsById={productsById} />
-            );
+          case 'grid':
+            // 2x2 grid of product cards.
+            node = <ProductGrid productIds={ids} productsById={productsById} />;
             break;
-          case 'duo':
-            // Two-product row layout.
+          case 'gallery':
+            // Heading + body copy above a row of 1-4 products.
             node = (
-              <Duo
-                productIds={[ids[0], ids[1]]}
+              <ProductGallerySection
+                heading={heading}
+                body={body}
+                productIds={ids}
                 productsById={productsById}
               />
             );
             break;
-          case 'trio':
-            // Three-product row layout.
+          case 'text':
+            // Heading + body copy beside a single product card.
             node = (
-              <Trio
-                productIds={[ids[0], ids[1], ids[2]]}
+              <ProductWithText
+                heading={heading}
+                body={body}
+                productId={ids[0]}
                 productsById={productsById}
               />
             );
@@ -1022,3 +1065,5 @@ export default function ArticleTemplate() {
     </div>
   );
 }
+
+

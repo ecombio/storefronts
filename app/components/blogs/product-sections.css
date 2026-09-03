@@ -1,0 +1,201 @@
+/* ---------------------------------------------
+   Product Sections (blog article product embeds)
+   Styles app/components/blogs/ProductSections.tsx.
+   Import into app.css alongside product-card.css —
+   .product-card internals (image, title, price, button)
+   live there; this file only controls how cards are
+   arranged per layout (focus / grid / gallery / text).
+
+   Layout is driven by the data-columns attribute the
+   component sets at render time — same "purely CSS keys
+   off the column count" pattern the old ProductRow system
+   used, so nothing here needs to know product counts ahead
+   of time.
+
+   CHANGELOG (this pass):
+     - Fixed: .product-section--grid had no rule for
+       data-columns="3" (a grid marker where exactly 3 of
+       2-4 requested product IDs resolved). It fell through
+       to the flat `repeat(2, 1fr)` base rule, producing 2
+       cards on one row and a single orphaned, stretched
+       card alone on the row below. Added an explicit
+       [data-columns='3'] rule, mirroring the pattern
+       .product-section--gallery already used for its own
+       1/2/3/4-column row.
+     - Fixed: the [data-columns='3'] rule above has higher
+       specificity (0,2,0) than the mobile media query's
+       bare .product-section--grid selector (0,1,0), so the
+       3-column desktop layout was winning even under 600px
+       and never collapsing to a single column. Mobile block
+       now explicitly targets [data-columns='3'] (matching
+       the specificity the gallery section already used for
+       its own per-column mobile overrides) so the media
+       query correctly wins there too.
+--------------------------------------------- */
+
+.product-section {
+  margin: 2.5rem 0;
+}
+
+/* ---------------------------------------------
+   Focus — one large card, centered
+--------------------------------------------- */
+
+.product-section--focus {
+  display: flex;
+  justify-content: center;
+}
+
+.product-section--focus .product-card {
+  width: 100%;
+  max-width: 360px;
+}
+
+.product-section--focus .product-card__atc-btn {
+  padding: 0.85rem 1.5rem;
+  font-size: 1rem;
+}
+
+/* ---------------------------------------------
+   Grid — 2-4 product cards. Base rule handles the
+   even counts (2 -> single row, 4 -> 2x2); explicit
+   overrides handle the odd-one-out counts (1, 3) that
+   can occur when some requested IDs don't resolve.
+--------------------------------------------- */
+
+.product-section--grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+  max-width: 640px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Only 1 of 2-4 requested products resolved — lay out as a single
+   centered column rather than stretching a lone card full-width. */
+.product-section--grid[data-columns='1'] {
+  grid-template-columns: 1fr;
+  max-width: 300px;
+}
+
+/* Only 3 of 2-4 requested products resolved — lay out as a single
+   3-across row (wider max-width to match) rather than falling through
+   to the 2-column base rule and stranding the 3rd card alone on its
+   own row. */
+.product-section--grid[data-columns='3'] {
+  grid-template-columns: repeat(3, 1fr);
+  max-width: 900px;
+}
+
+/* ---------------------------------------------
+   Gallery — heading + body copy above a row of cards
+--------------------------------------------- */
+
+.product-section--gallery {
+  text-align: center;
+}
+
+.product-section--gallery .product-section__copy {
+  max-width: 620px;
+  margin: 0 auto 1.75rem;
+}
+
+.product-section--gallery .product-section__row {
+  display: grid;
+  gap: 1.25rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.product-section--gallery .product-section__row[data-columns='1'] {
+  grid-template-columns: minmax(0, 300px);
+  justify-content: center;
+}
+
+.product-section--gallery .product-section__row[data-columns='2'] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.product-section--gallery .product-section__row[data-columns='3'] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.product-section--gallery .product-section__row[data-columns='4'] {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* ---------------------------------------------
+   Text — heading + body copy beside a single card
+--------------------------------------------- */
+
+.product-section--text {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.product-section--text .product-section__copy {
+  flex: 1 1 340px;
+}
+
+.product-section--text .product-card {
+  flex: 0 0 220px;
+  width: 220px;
+}
+
+/* ---------------------------------------------
+   Shared copy block (heading + body) — gallery + text
+--------------------------------------------- */
+
+.product-section__heading {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+
+.product-section__body {
+  color: #4a4a4a;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.product-section__body p {
+  margin: 0 0 0.75rem;
+}
+
+.product-section__body p:last-child {
+  margin-bottom: 0;
+}
+
+/* ---------------------------------------------
+   Mobile — collapse every multi-column layout to a
+   single stacked column
+--------------------------------------------- */
+
+@media (max-width: 600px) {
+  .product-section--grid,
+  .product-section--grid[data-columns='3'] {
+    grid-template-columns: 1fr;
+    max-width: 300px;
+  }
+
+  .product-section--gallery .product-section__row[data-columns='2'],
+  .product-section--gallery .product-section__row[data-columns='3'],
+  .product-section--gallery .product-section__row[data-columns='4'] {
+    grid-template-columns: minmax(0, 300px);
+    justify-content: center;
+  }
+
+  .product-section--text {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .product-section--text .product-card {
+    flex: none;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+}
