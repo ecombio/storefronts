@@ -6,9 +6,8 @@
  *
  * Unlike FAQ/two-column/CTA-button/quote — which render inline,
  * exactly where the editor drops the marker — a summary box is always
- * pinned to the TOP of the article, above the body, similar to how
- * TableOfContents/AuthorSection are gated by a metafield and rendered
- * directly rather than in-place. So this file does two things:
+ * pinned to the TOP of the article, above the body. So this file does
+ * two things:
  *
  *   1. Defines the `data-summary-embed` marker syntax editors use in
  *      the Shopify blog editor's HTML/embed block to AUTHOR the box's
@@ -19,14 +18,26 @@
  *      so the route can render it as its own top-of-article block
  *      instead of leaving it inline.
  *
- * Visibility is controlled by the `custom.show_summary` boolean
- * metafield (see `isSummaryEnabled`) — same defaults-off pattern as
- * `isTocEnabled`/`getAuthorSectionData`. When the metafield is off,
- * the marker (if an editor left one in the body) is still stripped
- * out — never rendered inline, never left as raw unstyled markup.
+ * No metafield gate: the marker is hand-authored (never
+ * auto-generated), so its presence in the article body is itself the
+ * editor's signal to render it. Whenever a valid data-summary-embed
+ * marker is found, `renderSummary` produces the box; if the article
+ * has no marker (or the marker has no usable items), nothing renders.
+ * The marker is still always stripped out of the body during
+ * extraction either way — never left inline, never left as raw
+ * unstyled markup.
  *
- * See Summary.md for the full marker syntax, metafield setup, and
- * editor-facing usage examples.
+ * SEO: the rendered box is wrapped in a <section aria-label="Key
+ * takeaways"> rather than a bare <div>, and is accompanied by an
+ * ItemList JSON-LD block — see renderSummary below. ItemList (not
+ * FAQPage) is the correct schema.org type here since these are plain
+ * takeaway bullets, not question/answer pairs. This gives search
+ * engines and AI-answer engines (Google AI Overviews, etc.) an
+ * explicit, structured signal for the article's key points, in
+ * addition to the human-readable box.
+ *
+ * See Summary.md for the full marker syntax and editor-facing usage
+ * examples.
  */
 
 export type SummaryLayout = 'list' | 'numbered' | 'grid' | 'highlight';
@@ -53,6 +64,17 @@ function escapeHtml(value: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+// Escapes a string for safe embedding inside a <script type=
+// "application/ld+json"> block. JSON.stringify already escapes
+// quotes/backslashes/control characters correctly for JSON, but a
+// literal "</script>" sequence inside a string value would still
+// prematurely close the script tag in HTML — replacing "<" with its
+// unicode escape sequence neutralizes that without touching the JSON
+// validity of the output.
+function escapeForJsonLd(value: string): string {
+  return value.replace(/</g, '\\u003c');
 }
 
 function extractItems(inner: string): string[] {
@@ -105,33 +127,14 @@ const RENDERERS: Record<SummaryLayout, (items: string[]) => string> = {
 };
 
 // Parsed marker data, decoupled from rendering — extraction and
-// rendering are separate steps now (unlike the old single-pass
-// injectSummarySections) since the route needs the data to decide
-// *whether* to render at all (isSummaryEnabled) before committing to
-// producing markup.
+// rendering are separate steps since the route needs the data to
+// decide *whether* anything was found (summary !== null) before
+// committing to producing markup.
 export type SummaryData = {
   title?: string;
   layout: SummaryLayout;
   items: string[];
 };
-
-/**
- * isSummaryEnabled — reads the custom.show_summary boolean metafield
- * (aliased to `showSummary` in ARTICLE_QUERY — see Summary.md §2).
- * Defaults to false/off, same pattern as isTocEnabled: an article
- * with a perfectly valid data-summary-embed marker in its body still
- * renders nothing at the top until an editor explicitly flips this
- * on. Shopify metafields are stored as strings even for boolean type,
- * hence the === 'true' check rather than a truthy check on the
- * metafield object itself (an unset metafield and a metafield whose
- * value happens to be the string "false" both need to resolve to
- * false here).
- */
-export function isSummaryEnabled(article: {
-  showSummary?: {value: string} | null;
-}): boolean {
-  return article.showSummary?.value === 'true';
-}
 
 /**
  * extractSummarySection — finds the FIRST data-summary-embed marker
@@ -146,12 +149,11 @@ export function isSummaryEnabled(article: {
  * is dropped the same way injectSummarySections used to drop it —
  * removed from the body, summary stays null.
  *
- * Always strips the marker from the returned html regardless of
- * whether it parsed to a usable summary — callers that don't want to
- * render anything (isSummaryEnabled() === false) should still call
- * this and use only the `.html` field, so a marker left in the body
- * by an editor never leaks into the page as raw unstyled HTML while
- * the feature is toggled off.
+ * Always strips the marker from the returned html, whether or not it
+ * parsed to a usable summary — callers should always use the `.html`
+ * field regardless of what `.summary` comes back as, so a marker
+ * with no usable items never leaks into the page as raw unstyled
+ * HTML.
  */
 export function extractSummarySection(contentHtml: string): {
   html: string;
@@ -182,16 +184,54 @@ export function extractSummarySection(contentHtml: string): {
 }
 
 /**
+ * renderJsonLd — builds an ItemList JSON-LD <script> block from the
+ * summary's items. ItemList (not FAQPage) is the correct schema.org
+ * type for a plain set of takeaway bullets rather than question/
+ * answer pairs. `position` is 1-indexed per the ItemList spec. This
+ * is emitted purely for search engines/AI answer engines to pick up
+ * — it has no visual presence, so it's safe to include regardless of
+ * which visual layout (list/numbered/grid/highlight) is rendered.
+ */
+function renderJsonLd(summary: SummaryData): string {
+  const itemListElement = summary.items.map((item, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: item,
+  }));
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    ...(summary.title ? {name: summary.title} : {}),
+    itemListElement,
+  };
+
+  return `<script type="application/ld+json">${escapeForJsonLd(
+    JSON.stringify(jsonLd),
+  )}</script>`;
+}
+
+/**
  * renderSummary — turns parsed SummaryData into the final static
- * <div class="sum-root ...">...</div> markup. Split out from
- * extraction so the route can call extractSummarySection
+ * markup: a <section aria-label="Key takeaways"> (semantic, not a
+ * bare <div>, for accessibility and crawler clarity) wrapping the
+ * chosen layout's markup, plus an adjacent ItemList JSON-LD <script>
+ * block for search/AI-answer engines (see renderJsonLd above). Split
+ * out from extraction so the route can call extractSummarySection
  * unconditionally (to always strip the marker) while only calling
- * renderSummary when isSummaryEnabled(article) is true.
+ * renderSummary when a summary was actually found (summary !== null).
  */
 export function renderSummary(summary: SummaryData): string {
   const heading = summary.title
     ? `<h3 class="sum-title">${escapeHtml(summary.title)}</h3>`
     : '';
   const body = RENDERERS[summary.layout](summary.items);
-  return `<div class="sum-root sum-layout--${summary.layout}">${heading}${body}</div>`;
+  const jsonLd = renderJsonLd(summary);
+
+  return (
+    `<section class="sum-root sum-layout--${summary.layout}" aria-label="Key takeaways">` +
+    `${heading}${body}` +
+    `</section>` +
+    jsonLd
+  );
 }
