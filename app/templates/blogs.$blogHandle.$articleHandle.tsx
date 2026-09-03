@@ -69,13 +69,13 @@ import {
   DEFAULT_HEADING as NEWSLETTER_DEFAULT_HEADING,
   DEFAULT_SUBHEADING as NEWSLETTER_DEFAULT_SUBHEADING,
 } from '~/components/blogs/NewsletterForm';
-import Video, {injectVideoEmbeds, readVideoSlot} from '~/components/blogs/video';
+import Video, {injectVideoEmbeds, readVideoSlot} from '~/components/blogs/Video';
 import ImagesGallery, {
   injectImagesGallery,
   readGallerySlot,
   type GalleryImage,
 } from '~/components/blogs/ImagesGallery';
-import {injectBlogButtons} from '~/components/blogs/button';
+import {injectBlogButtons} from '~/components/blogs/Button';
 import {injectQuoteEmbeds} from '~/components/blogs/Quote';
 import {injectRecipeHeader} from '~/components/blogs/RecipeHeader';
 import {
