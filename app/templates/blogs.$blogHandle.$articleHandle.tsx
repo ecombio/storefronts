@@ -89,6 +89,7 @@ import {Solo, Duo, Trio} from '~/components/blogs/ProductGallery';
 import {ARTICLE_QUERY, SHOPPABLE_PRODUCTS_QUERY} from '~/graphql/blog/ArticleQuery';
 import type {ProductCardFragment} from 'storefrontapi.generated';
 import articleStyles from '~/assets/article.css?url';
+import articleTocStyles from '~/assets/article-toc.css?url';
 import authorSectionStyles from '~/assets/article-author.css?url';
 import twoColumnContentStyles from '~/assets/two-column-content.css?url';
 import videoStyles from '~/assets/video.css?url';
@@ -202,6 +203,7 @@ import socialShareStyles from '~/assets/social-share.css?url';
 export function links() {
   return [
     {rel: 'stylesheet', href: articleStyles},
+    {rel: 'stylesheet', href: articleTocStyles},
     {rel: 'stylesheet', href: authorSectionStyles},
     {rel: 'stylesheet', href: twoColumnContentStyles},
     {rel: 'stylesheet', href: videoStyles},

@@ -1,26 +1,27 @@
 /*
  * Table of contents layout for blog articles.
- * Own file, imported/linked the same way as every other feature
+ * Own file, imported/linked the same wayas every other feature
  * stylesheet in root.tsx (see e.g. collection-sidebar.css) — this
  * isn't merged into article.css directly, just loaded alongside it.
  *
- * Widens .article/.article--hub/.article--feature (defined in
- * article.css) so the sidebar has room without squeezing the body —
- * adjust these to taste, they're a starting point, not measured
- * against your actual reading-width preference.
+ * Widens .article-layout for the hub/feature variants so the sidebar
+ * has room without squeezing the body — adjust these to taste,
+ * they're a starting point, not measured against your actual
+ * reading-width preference. The outer .article container itself
+ * tracks --content-max-width (see article.css); these narrower
+ * values are just for the body+TOC reading grid inside it.
  */
 
-.article,
-.article--hub,
-.article--feature {
+.article-layout {
   max-width: 960px;
+  margin: 0 auto;
 }
 
-.article--hub {
+.article--hub .article-layout {
   max-width: 1120px;
 }
 
-.article--feature {
+.article--feature .article-layout {
   max-width: 1180px;
 }
 
@@ -57,7 +58,7 @@
 
 /* The TOC itself: <details> wrapping a <nav>. Below 900px it behaves
    as a native collapsible (summary visible, content toggles open/
-   closed). At/above 900px, CSS forces it open regardless of the
+   closed). At/above 900px, CSS forces itopen regardless of the
    `open` attribute's actual state and hides the summary — this is
    the same "native element, CSS overrides the breakpoint" trick used
    for the accordion, just inverted (open-by-default there is
@@ -214,7 +215,7 @@
   scroll-margin-top: 6rem;
 }
 
-/* Smooth-scroll TOC anchor jumps instead of an instant snap.
+/* Smooth-scroll TOC anchor jumps insteadof an instant snap.
    Respects prefers-reduced-motion so it doesn't fight anyone who's
    opted out of scroll animation at the OS/browser level. */
 

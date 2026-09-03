@@ -4,7 +4,7 @@
 --------------------------------------------- */
 
 .article {
-  max-width: 720px;
+  max-width: var(--content-max-width, 1440px);
   margin: 0 auto;
   padding: 2rem 1.25rem 4rem;
   font-family: system-ui, -apple-system, sans-serif;
@@ -243,13 +243,15 @@
      ("category" = hub, "articles" = spoke)
    .article--feature: optional per-article metafield override
      (custom.layout_variant), layers on top of hub/spoke
+
+   Note: outer container width (max-width) for all three variants
+   is now controlled by article-toc.css via .article-layout, so the
+   body/TOC grid and the hero/summary/social/author sections above
+   and below it share one consistent width per variant. This block
+   only sets typography/heading differences between variants.
 --------------------------------------------- */
 
-/* Hub: pillar/guide pages — wider column, bigger hero heading */
-.article--hub {
-  max-width: 860px;
-}
-
+/* Hub: pillar/guide pages — bigger hero heading */
 .article--hub h1 {
   font-size: 2.75rem;
 }
@@ -264,11 +266,7 @@
 }
 
 /* Feature: any article explicitly flagged via metafield, regardless of
-   which blog it's in — gets the widest column and largest heading of all */
-.article--feature {
-  max-width: 920px;
-}
-
+   which blog it's in — gets the largest heading of all */
 .article--feature h1 {
   font-size: 3rem;
 }
