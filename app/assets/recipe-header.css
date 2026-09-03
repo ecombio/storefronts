@@ -1,0 +1,171 @@
+/*
+ * Printable recipe info card for blog articles, added via the
+ * data-recipe-header marker (see RecipeHeader.tsx for the marker
+ * syntax and the server-side normalization pass). Own file, linked
+ * the same way as every other feature stylesheet in the article
+ * route (see article-toc.css, two-column-content.css) — loaded
+ * alongside article.css, not merged into it.
+ */
+
+.recipe-header {
+  display: flex;
+  gap: 2rem;
+  padding: 1.75rem 2rem;
+  margin: 2.5rem 0;
+  border: 1px solid #e5e5e5;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.recipe-header__image {
+  flex-shrink: 0;
+  width: 240px;
+  height: 200px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #f0f0f0;
+}
+
+.recipe-header__image--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.recipe-header__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.recipe-header__heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.recipe-header__title {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #3059f2;
+}
+
+.recipe-header__print {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  background: #fff;
+  color: #1a1a1a;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.recipe-header__print:hover {
+  background: #f5f5f5;
+  border-color: #b8b8b8;
+}
+
+.recipe-header__print-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.recipe-header__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.1rem 2rem;
+  margin: 0;
+}
+
+.recipe-header__stat {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.recipe-header__icon {
+  flex-shrink: 0;
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-top: 0.1rem;
+  color: #1a1a1a;
+}
+
+.recipe-header__stat-text {
+  min-width: 0;
+}
+
+.recipe-header__stat-label {
+  margin: 0 0 0.15rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.recipe-header__stat-value {
+  margin: 0;
+  font-size: 0.92rem;
+  color: #4a4a4a;
+}
+
+@media (max-width: 640px) {
+  .recipe-header {
+    flex-direction: column;
+    padding: 1.5rem;
+  }
+
+  .recipe-header__image {
+    width: 100%;
+    height: 220px;
+  }
+
+  .recipe-header__heading-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+}
+
+/* ---------------------------------------------
+   Print isolation
+   Toggled via the .recipe-printing class on <body>, set/unset by
+   window.__printRecipeHeader() in RecipeHeader.tsx. Uses the classic
+   visibility-based "print only this element" trick rather than
+   display:none on siblings, since that would require knowing the
+   rest of the page's DOM structure (header, nav, footer) ahead of
+   time — visibility inheritance handles that automatically for any
+   page layout.
+--------------------------------------------- */
+
+@media print {
+  body.recipe-printing * {
+    visibility: hidden;
+  }
+
+  body.recipe-printing .recipe-header,
+  body.recipe-printing .recipe-header * {
+    visibility: visible;
+  }
+
+  body.recipe-printing .recipe-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    margin: 0;
+    border: none;
+    box-shadow: none;
+  }
+
+  body.recipe-printing .recipe-header__print {
+    display: none;
+  }
+}

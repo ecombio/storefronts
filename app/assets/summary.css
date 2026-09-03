@@ -1,0 +1,135 @@
+/*
+ * Summary / "Key takeaways" block for blog articles, added via the
+ * data-summary-embed marker (see Summary.tsx for the marker syntax
+ * and the server-side normalization pass). Own file, linked the same
+ * way as every other feature stylesheet in the article route (see
+ * article-toc.css, two-column-content.css, recipe-header.css) —
+ * loaded alongside article.css, not merged into it.
+ *
+ * Class names match what Summary.tsx's renderers emit exactly:
+ * sum-root / sum-title / sum-list / sum-item / sum-grid / sum-chip /
+ * sum-highlight-text, plus a sum-layout--<variant> modifier on the
+ * root for anything layout-specific that isn't already scoped by a
+ * more specific class (e.g. sum-list--numbered).
+ */
+
+.sum-root {
+  margin: 2.25rem 0;
+  padding: 1.5rem 1.75rem;
+  border: 1px solid #e5e5e5;
+  border-radius: 14px;
+  background: #f8f8f8;
+}
+
+.sum-title {
+  margin: 0 0 1rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+/* ---------------------------------------------
+   list (default)
+--------------------------------------------- */
+
+.sum-list {
+  margin: 0;
+  padding-left: 1.4rem;
+  list-style: disc;
+}
+
+.sum-item {
+  margin-bottom: 0.55rem;
+  font-size: 0.98rem;
+  line-height: 1.55;
+  color: #2a2a2a;
+}
+
+.sum-item:last-child {
+  margin-bottom: 0;
+}
+
+/* ---------------------------------------------
+   numbered
+--------------------------------------------- */
+
+.sum-list--numbered {
+  list-style: none;
+  padding-left: 0;
+}
+
+.sum-item--numbered {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.sum-number {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  background: #1a1a1a;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.sum-item-text {
+  padding-top: 0.15rem;
+}
+
+/* ---------------------------------------------
+   grid
+--------------------------------------------- */
+
+.sum-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sum-chip {
+  padding: 0.7rem 0.9rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  text-align: center;
+}
+
+/* ---------------------------------------------
+   highlight
+--------------------------------------------- */
+
+.sum-layout--highlight {
+  border-left: 4px solid #3059f2;
+  background: #eef2ff;
+}
+
+.sum-highlight-text {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: #1a1a3d;
+}
+
+@media (max-width: 560px) {
+  .sum-root {
+    padding: 1.25rem;
+  }
+
+  .sum-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  }
+}

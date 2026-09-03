@@ -1,0 +1,126 @@
+/* app/assets/blog-button.css
+ * Styles both the React <BlogButton> component and the static markup
+ * produced by injectBlogButtons() — same class names, one stylesheet,
+ * so a CTA looks identical whether it's hand-placed in JSX or dropped
+ * into an article body via the Shopify blog editor marker.
+ *
+ * Route-scoped: imported via links() in
+ * blogs.$blogHandle.$articleHandle.tsx, same reasoning as
+ * article.css/two-column-content.css/video.css — the blog-cta classes
+ * only ever appear inside a blog article.
+ */
+
+:root {
+  --cta-bg: #2f5dfb;
+  --cta-bg-hover: #264ddb;
+  --cta-bg-active: #1e3eb8;
+  --cta-fg: #ffffff;
+  --cta-secondary-bg: #f2f1ee;
+  --cta-secondary-bg-hover: #e6e4de;
+  --cta-secondary-fg: #1a1a1a;
+  --cta-border: #2f5dfb;
+  --cta-outline-fg: #2f5dfb;
+  --cta-outline-hover: rgba(47, 93, 251, 0.06);
+  --cta-link: #2f5dfb;
+  --cta-ring: #2f5dfb;
+}
+
+.blog-cta-row {
+  display: flex;
+  justify-content: center;
+  margin: 28px 0;
+}
+
+.blog-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 150ms ease-out, color 150ms ease-out;
+  user-select: none;
+}
+
+.blog-cta:disabled,
+.blog-cta[aria-disabled='true'] {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.blog-cta:focus-visible {
+  outline: 2px solid var(--cta-ring);
+  outline-offset: 2px;
+}
+
+/* Sizes */
+.blog-cta--sm { height: 32px; padding: 0 14px; font-size: 11px; }
+.blog-cta--md { height: 36px; padding: 0 16px; font-size: 12px; }
+.blog-cta--lg { height: 44px; padding: 0 24px; font-size: 13px; }
+
+.blog-cta--full { width: 100%; }
+
+/* Variants */
+.blog-cta--primary {
+  background: var(--cta-bg);
+  color: var(--cta-fg);
+}
+.blog-cta--primary:hover { background: var(--cta-bg-hover); }
+.blog-cta--primary:active { background: var(--cta-bg-active); }
+
+.blog-cta--secondary {
+  background: var(--cta-secondary-bg);
+  color: var(--cta-secondary-fg);
+}
+.blog-cta--secondary:hover { background: var(--cta-secondary-bg-hover); }
+
+.blog-cta--outline {
+  background: transparent;
+  border-color: var(--cta-border);
+  color: var(--cta-outline-fg);
+}
+.blog-cta--outline:hover { background: var(--cta-outline-hover); }
+
+.blog-cta--ghost {
+  background: transparent;
+  color: var(--cta-outline-fg);
+}
+.blog-cta--ghost:hover { background: var(--cta-outline-hover); }
+
+.blog-cta--link {
+  background: transparent;
+  height: auto;
+  padding: 0;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--cta-link);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.blog-cta--link:hover { opacity: 0.7; }
+
+.blog-cta--loading { pointer-events: none; }
+
+.blog-cta__spinner {
+  width: 14px;
+  height: 14px;
+  animation: blog-cta-spin 0.8s linear infinite;
+}
+
+.blog-cta__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+@keyframes blog-cta-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blog-cta__spinner { animation-duration: 1.6s; }
+}

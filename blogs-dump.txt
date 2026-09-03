@@ -1,0 +1,3528 @@
+===== C:\Users\Admin\Shopify\Storefronts\Headless\app\components\blogs\AuthorSection.tsx =====
+
+// app/components/blogs/AuthorSection.tsx
+//
+// Optional "About the author" card shown at the bottom of a blog
+// article. Off by default: an editor must both flip the
+// show_author_section metafield to true AND assign an author_profile
+// metaobject reference (with a bio filled in) for it to render at all
+// — a bare toggle with no profile would just show an empty card,
+// which is worse than not showing a card at all.
+//
+// Author identity (name/bio/avatar) lives in a reusable "Author"
+// metaobject, not as loose fields on the article itself — see
+// README.md for the metaobject definition. article.author (the
+// built-in blog author field) is intentionally NOT used here: once an
+// author has a full profile, the profile's own name field is the
+// single source of truth, so editing it in one place updates every
+// article that references it.
+
+export type AuthorAvatar = {
+  url: string;
+  altText: string | null;
+};
+
+export type AuthorSectionData = {
+  name: string;
+  bio: string;
+  avatar: AuthorAvatar | null;
+};
+
+// Shape of the raw metafield data as read off the article object in
+// the loader (see the ARTICLE_QUERY additions in README.md). Kept
+// loose/optional throughout — metafields and metaobject references
+// are optional by nature, so any of these can be null/undefined if
+// unset in the admin.
+type ArticleWithAuthorMetafields = {
+  authorProfile?: {
+    reference?: {
+      name?: {value?: string | null} | null;
+      bio?: {value?: string | null} | null;
+      avatar?: {
+        reference?: {
+          image?: {url?: string | null; altText?: string | null} | null;
+        } | null;
+      } | null;
+    } | null;
+  } | null;
+  showAuthorSection?: {value?: string | null} | null;
+};
+
+/**
+ * Resolves the raw author_profile metaobject reference into the data
+ * AuthorSection needs to render, or null if the section shouldn't
+ * show at all.
+ *
+ * Gating is intentionally strict and layered:
+ *   1. show_author_section must be explicitly "true".
+ *   2. author_profile must actually reference a metaobject entry.
+ *   3. That entry must have a non-empty bio.
+ *   4. That entry must have a non-empty name.
+ * If any of those is missing, this returns null and the caller
+ * renders nothing — no empty card, no "Author: undefined", no broken
+ * circle where an avatar should be. The avatar is the one fully
+ * optional field: if it's not set on the metaobject entry,
+ * AuthorSection falls back to an initial instead of gating the whole
+ * section on it.
+ */
+export function getAuthorSectionData(
+  article: ArticleWithAuthorMetafields,
+): AuthorSectionData | null {
+  const isEnabled = article.showAuthorSection?.value === 'true';
+  if (!isEnabled) return null;
+
+  const profile = article.authorProfile?.reference;
+  if (!profile) return null;
+
+  const bio = profile.bio?.value?.trim();
+  if (!bio) return null;
+
+  const name = profile.name?.value?.trim();
+  if (!name) return null;
+
+  const image = profile.avatar?.reference?.image;
+  const avatar = image?.url
+    ? {url: image.url, altText: image.altText ?? null}
+    : null;
+
+  return {name, bio, avatar};
+}
+
+export function AuthorSection({data}: {data: AuthorSectionData}) {
+  const {name, bio, avatar} = data;
+
+  // Bio may contain line breaks (multi-line text metafield) — render
+  // each as its own paragraph rather than collapsing into one dense
+  // block, matching the reference design's two-line bio layout.
+  const bioParagraphs = bio.split(/\n+/).filter(Boolean);
+
+  return (
+    <section className="author-section" aria-label="About the author">
+      <h2 className="author-section__heading">The Author : {name}</h2>
+      <div className="author-section__body">
+        <div className="author-section__avatar">
+          {avatar ? (
+            <img
+              src={avatar.url}
+              alt={avatar.altText ?? name}
+              width={72}
+              height={72}
+              loading="lazy"
+            />
+          ) : (
+            // No avatar image set on the metaobject entry — fall back
+            // to the author's initial rather than leaving a broken/
+            // empty circle.
+            <span
+              className="author-section__avatar-fallback"
+              aria-hidden="true"
+            >
+              {name.charAt(0).toUpperCase()}
+            </span>
+          )}
+        </div>
+        <div className="author-section__bio">
+          {bioParagraphs.map((paragraph, i) => (
+            <p key={i}>{paragraph}</p>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+===== C:\Users\Admin\Shopify\Storefronts\Headless\app\components\blogs\Button.tsx =====
+
+// app/components/blogs/button.tsx
+//
+// CTA button for blog articles, in two forms that share one CSS file
+// (~/assets/blog-button.css, imported below as a side-effect import —
+// see "Self-contained styling" in button.md for why this one diverges
+// from the ?url + links() convention the sibling blog-* stylesheets use):
+//
+// 1. <BlogButton> — a real React component for CTAs you place directly
+//    in a route's JSX (e.g. a fixed end-of-article CTA in
+//    blogs.$blogHandle.$articleHandle.tsx, or inside AuthorSection).
+//    Rendered wherever the route tree already provides Router context,
+//    so it's safe to use react-router's <Link> for internal hrefs.
+//
+// 2. injectBlogButtons(html) — a pure string transform, same shape as
+//    injectFaqSections/injectNewsletterForm/injectVideoEmbeds, that lets
+//    editors drop a CTA marker directly into an article's HTML in the
+//    Shopify blog editor and have it come out as real button markup.
+//
+// Unlike the newsletter-form and video-embed markers, a CTA marker does
+// NOT resolve to a data-*-slot + createPortal pair. A button needs no
+// Router hooks (no useNavigate/useFetcher) and no client JS to be
+// useful — an <a href> works with zero hydration — so it follows the
+// same "fully static, no slot" precedent as two-column-content instead.
+// Click tracking (see button.md) rides on the static data-cta-id
+// attribute plus a GTM/GA4 selector rule, not a client handler, for the
+// same reason: nothing hydrates this node.
+
+import * as React from 'react';
+import {Link} from 'react-router';
+import '~/assets/blog-button.css';
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'link';
+export type ButtonSize = 'sm' | 'md' | 'lg';
+
+export interface BlogButtonProps
+  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'> {
+  /** Button label. Keep it a short, active-voice action ("Shop the set"). */
+  children: React.ReactNode;
+  /** If provided, renders a link (internal → react-router <Link>, external → <a>) instead of a <button>. */
+  href?: string;
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  icon?: React.ReactNode;
+  iconPosition?: 'left' | 'right';
+  /** Stretch to fill the width of its container. */
+  fullWidth?: boolean;
+  /** Force new-tab behavior. Auto-detected for external hrefs when omitted. */
+  newTab?: boolean;
+  /** Shows a spinner and disables interaction. */
+  loading?: boolean;
+  /**
+   * Analytics identifier, e.g. "blog-midpost-shop-now". Rendered as
+   * data-cta-id so GTM/GA4 can target it without any client JS from
+   * this component — see button.md "Tracking".
+   */
+  ctaId?: string;
+  onClick?: (event: React.MouseEvent<HTMLElement>) => void;
+  className?: string;
+}
+
+function isExternalHref(href: string): boolean {
+  return /^https?:\/\//i.test(href) || href.startsWith('mailto:') || href.startsWith('tel:');
+}
+
+function cx(...parts: Array<string | false | null | undefined>): string {
+  return parts.filter(Boolean).join(' ');
+}
+
+const Spinner = () => (
+  <svg className="blog-cta__spinner" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <circle opacity="0.25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+    <path opacity="0.75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+  </svg>
+);
+
+// ---------------------------------------------------------------------------
+// React component — use for CTAs placed directly in route/component JSX.
+// ---------------------------------------------------------------------------
+
+export const BlogButton = React.forwardRef<HTMLElement, BlogButtonProps>(function BlogButton(
+  {
+    children,
+    href,
+    variant = 'primary',
+    size = 'md',
+    icon,
+    iconPosition = 'left',
+    fullWidth = false,
+    newTab,
+    loading = false,
+    disabled,
+    ctaId,
+    onClick,
+    className,
+    ...rest
+  },
+  ref,
+) {
+  const isDisabled = disabled || loading;
+
+  const classes = cx(
+    'blog-cta',
+    `blog-cta--${variant}`,
+    `blog-cta--${size}`,
+    fullWidth && 'blog-cta--full',
+    loading && 'blog-cta--loading',
+    className,
+  );
+
+  const content = (
+    <>
+      {loading ? <Spinner /> : icon && iconPosition === 'left' && <span className="blog-cta__icon">{icon}</span>}
+      <span>{children}</span>
+      {!loading && icon && iconPosition === 'right' && <span className="blog-cta__icon">{icon}</span>}
+    </>
+  );
+
+  if (href && !isDisabled) {
+    const external = newTab ?? isExternalHref(href);
+
+    if (external) {
+      return (
+        <a
+          ref={ref as React.Ref<HTMLAnchorElement>}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={onClick}
+          data-cta-id={ctaId}
+          className={classes}
+        >
+          {content}
+        </a>
+      );
+    }
+
+    // Internal link: use react-router's <Link> for client-side nav +
+    // prefetch. Safe here because BlogButton is only ever rendered
+    // directly inside the route tree (see file header) — never
+    // portaled into dangerouslySetInnerHTML content the way the
+    // newsletter form is, so Router context is always present.
+    return (
+      <Link
+        ref={ref as React.Ref<HTMLAnchorElement>}
+        to={href}
+        onClick={onClick}
+        data-cta-id={ctaId}
+        className={classes}
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <button
+      ref={ref as React.Ref<HTMLButtonElement>}
+      type="button"
+      onClick={onClick}
+      disabled={isDisabled}
+      aria-busy={loading || undefined}
+      data-cta-id={ctaId}
+      className={classes}
+      {...rest}
+    >
+      {content}
+    </button>
+  );
+});
+
+BlogButton.displayName = 'BlogButton';
+
+// ---------------------------------------------------------------------------
+// injectBlogButtons — marker → static markup, for CTAs embedded inside an
+// article's own HTML via the Shopify blog editor.
+//
+// Marker syntax (typed by editors directly into the HTML source view):
+//
+//   <div data-cta="primary" data-cta-href="/collections/new-arrivals"
+//        data-cta-id="blog-summer-guide-shop">Shop new arrivals</div>
+//
+// - data-cta       required. One of: primary | secondary | outline | ghost | link
+// - data-cta-href  required. Destination URL (relative or absolute).
+// - data-cta-id    optional but strongly recommended — see button.md "Tracking".
+// - data-cta-size  optional. sm | md (default) | lg
+// - the div's inner text is the button label.
+//
+// A marker missing data-cta-href or with empty inner text is left
+// untouched rather than silently dropped, so a malformed marker shows up
+// as visibly broken (raw div) in preview instead of just vanishing.
+// ---------------------------------------------------------------------------
+
+const CTA_MARKER_RE =
+  /<div\b([^>]*)\bdata-cta="(primary|secondary|outline|ghost|link)"([^>]*)>([\s\S]*?)<\/div>/gi;
+
+function readAttr(attrString: string, name: string): string | undefined {
+  const match = attrString.match(new RegExp(`\\b${name}="([^"]*)"`, 'i'));
+  return match?.[1];
+}
+
+export function injectBlogButtons(html: string): string {
+  return html.replace(CTA_MARKER_RE, (full, before: string, variant: string, after: string, inner: string) => {
+    const attrs = `${before} ${after}`;
+    const href = readAttr(attrs, 'data-cta-href');
+    const ctaId = readAttr(attrs, 'data-cta-id');
+    const size = readAttr(attrs, 'data-cta-size') ?? 'md';
+    const label = inner.replace(/<[^>]+>/g, '').trim();
+
+    if (!href || !label) return full;
+
+    const classes = `blog-cta blog-cta--${variant} blog-cta--${size}`;
+    const external = isExternalHref(href);
+    const relAttr = external ? ' target="_blank" rel="noopener noreferrer"' : '';
+    const idAttr = ctaId ? ` data-cta-id="${ctaId}"` : '';
+
+    return `<div class="blog-cta-row"><a class="${classes}" href="${href}"${relAttr}${idAttr}>${label}</a></div>`;
+  });
+}
+
+export default BlogButton;
+
+
+===== C:\Users\Admin\Shopify\Storefronts\Headless\app\components\blogs\FaqSection.tsx =====
+
+// app/components/blogs/FaqSection.tsx
+//
+// FAQ accordion for blog articles, with two entry points:
+//
+//   1. `<FaqSection>` — a real component, for devs who want to hardcode
+//      a FAQ block directly into a .tsx template. Renders a heading
+//      plus the accordion.
+//   2. `injectFaqSections(html)` — a server-side HTML transform, for
+//      content authored in the Shopify blog editor. Scans article HTML
+//      for `<script type="application/json" data-faq>[...]</script>`
+//      marker blocks and replaces each with static accordion markup
+//      (no heading — see below) plus an FAQPage JSON-LD block.
+//
+// Both share the same .accordion / .accordion__item / .accordion__summary
+// / .accordion__icon / .accordion__content markup and classes already
+// styled in app/assets/article.css.
+//
+// Why a <script> marker and not a div attribute (e.g. data-faq="[...]"):
+// cramming a JSON array into an HTML attribute value means every quote,
+// apostrophe (e.g. "What's the difference...") and newline in the
+// questions/answers has to be hand-escaped by whoever is editing the
+// article in Shopify's HTML source view. A script block lets them paste
+// ordinary JSON with none of that — same reasoning that keeps GraphQL
+// query bodies here as plain strings rather than something fussier.
+//
+// Why no client-side hydration step (unlike the shoppable-embed system
+// in ProductGallery.tsx): FaqSection has no hooks that need a React
+// context provider, and <details>/<summary> is natively interactive
+// with zero JS. So injectFaqSections can render straight to final HTML
+// with renderToStaticMarkup and nothing further needs to happen on the
+// client — no slots, no portals, no Article.tsx changes required.
+//
+// Why the injected version omits the "Frequently Asked Questions"
+// heading that <FaqSection> renders by default: articles that already
+// hand-author an <h2>Frequently Asked Questions</h2> above their FAQ
+// content (as this site's articles already do) would otherwise get a
+// duplicate heading. The marker only replaces the accordion itself;
+// editors keep authoring their own heading exactly as before.
+
+import {renderToStaticMarkup} from 'react-dom/server';
+import {useId} from 'react';
+
+export type FaqItem = {
+  id?: string;
+  question: string;
+  answer: React.ReactNode;
+  defaultOpen?: boolean;
+};
+
+export interface FaqSectionProps {
+  items: FaqItem[];
+  title?: string | null;
+  structuredData?: boolean;
+}
+
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-');
+}
+
+function toStructuredDataJson(items: FaqItem[]): string {
+  const data = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: items
+      .filter((item): item is FaqItem & {answer: string} => typeof item.answer === 'string')
+      .map((item) => ({
+        '@type': 'Question',
+        name: item.question,
+        acceptedAnswer: {'@type': 'Answer', text: item.answer},
+      })),
+  };
+  return JSON.stringify(data).replace(/</g, '\\u003c');
+}
+
+function FaqAccordionItem({item}: {item: FaqItem}) {
+  const generatedId = useId().replace(/:/g, '');
+  const id = item.id ?? `faq-${slugify(item.question) || generatedId}`;
+
+  return (
+    <details className="accordion__item" id={id} open={item.defaultOpen}>
+      <summary className="accordion__summary">
+        {item.question}
+        <span className="accordion__icon" />
+      </summary>
+      <div className="accordion__content">
+        {typeof item.answer === 'string' ? <p>{item.answer}</p> : item.answer}
+      </div>
+    </details>
+  );
+}
+
+export function FaqSection({
+  items,
+  title = 'Frequently Asked Questions',
+  structuredData = true,
+}: FaqSectionProps) {
+  if (items.length === 0) return null;
+
+  return (
+    <section className="faq-section" aria-labelledby={title ? 'faq-section-heading' : undefined}>
+      {title && (
+        <h2 id="faq-section-heading" className="faq-section__heading">
+          {title}
+        </h2>
+      )}
+
+      <div className="accordion">
+        {items.map((item) => (
+          <FaqAccordionItem key={item.id ?? item.question} item={item} />
+        ))}
+      </div>
+
+      {structuredData && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{__html: toStructuredDataJson(items)}} />
+      )}
+    </section>
+  );
+}
+
+const FAQ_MARKER = /<script type="application\/json" data-faq>([\s\S]*?)<\/script>/g;
+
+export function injectFaqSections(html: string): string {
+  return html.replace(FAQ_MARKER, (full, rawJson: string) => {
+    let items: unknown;
+    try {
+      items = JSON.parse(rawJson);
+    } catch {
+      return full;
+    }
+
+    if (!Array.isArray(items) || items.length === 0) return full;
+
+    return renderToStaticMarkup(
+      <>
+        <div className="accordion">
+          {(items as FaqItem[]).map((item, i) => (
+            <FaqAccordionItem key={item.id ?? `${item.question}-${i}`} item={item} />
+          ))}
+        </div>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{__html: toStructuredDataJson(items as FaqItem[])}} />
+      </>,
+    );
+  });
+}
+
+
+===== C:\Users\Admin\Shopify\Storefronts\Headless\app\components\blogs\ImagesGallery.tsx =====
+
+import { useCallback, useEffect, useId, useRef, useState } from "react";
+
+/**
+ * ImagesGallery
+ * -------------
+ * Interactive gallery block for Shopify blog articles: a grid of
+ * thumbnails that opens into a full-size lightbox with keyboard
+ * navigation, a counter, captions, and a filmstrip of the rest of the
+ * set.
+ *
+ * This file exports three things, mirroring the shape of the other
+ * blog blocks (ProductGallery, FaqSection, NewsletterForm, video):
+ *
+ *   - `injectImagesGallery(contentHtml)` — a server-side, pure string
+ *     transform run in the route loader. Finds every
+ *     `data-gallery-embed` marker in the article body and replaces it
+ *     with a static, working (no-JS) thumbnail grid wrapped in a
+ *     `data-gallery-slot` node.
+ *   - `readGallerySlot(el)` — a client-side helper that reads the
+ *     props back off a `data-gallery-slot` node so it can be handed to
+ *     the component below.
+ *   - `ImagesGallery` (default export) — the interactive React
+ *     component, portaled into each `data-gallery-slot` node once the
+ *     route's DOM-scanning effect finds it (see
+ *     blogs.$blogHandle.$articleHandle.tsx).
+ *
+ * Marker syntax (inserted via the article's HTML/embed editor —
+ * whatever the editor already puts in the content HTML for an image,
+ * just wrapped):
+ *
+ *   <div data-gallery-embed data-gallery-title="My gallery" data-gallery-columns="3">
+ *     <img src="https://cdn.shopify.com/.../bag.jpg" alt="Canvas satchel, front view" data-caption="The Fielder satchel" />
+ *     <img src="https://cdn.shopify.com/.../glasses.jpg" alt="Round sunglasses" />
+ *   </div>
+ *
+ * `data-gallery-title` and `data-gallery-columns` are optional; each
+ * `<img>` needs a real `src`, should have `alt`, and can carry an
+ * optional `data-caption` shown under the image in the lightbox.
+ *
+ * Styles live in ~/assets/gallery.css (route-scoped, imported via
+ * `links()` in the route file) rather than an inline <style> tag —
+ * the static server-rendered grid needs to look right before
+ * hydration runs, and an inline <style> only exists once the React
+ * component itself has mounted.
+ */
+
+export interface GalleryImage {
+  /** Full-resolution image URL (Shopify CDN URL, etc.) */
+  src: string;
+  /** Required for accessibility + SEO */
+  alt: string;
+  /** Optional caption shown under the lightbox image */
+  caption?: string;
+  /** Optional smaller URL for the grid thumbnail; falls back to src */
+  thumbnailSrc?: string;
+}
+
+export interface ImagesGalleryProps {
+  images: GalleryImage[];
+  /** Optional heading rendered above the grid, e.g. "My gallery" */
+  title?: string;
+  /** Grid columns at desktop width. Defaults to 3. */
+  columns?: 2 | 3 | 4 | 5;
+  /** Crop thumbnails to a square. Defaults to true. */
+  squareThumbnails?: boolean;
+  /** Optional className for outer wrapper, for page-level overrides */
+  className?: string;
+}
+
+export default function ImagesGallery({
+  images,
+  title,
+  columns = 3,
+  squareThumbnails = true,
+  className,
+}: ImagesGalleryProps) {
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const headingId = useId();
+
+  const isOpen = activeIndex !== null;
+
+  const openAt = useCallback((index: number) => {
+    setActiveIndex(index);
+  }, []);
+
+  const close = useCallback(() => {
+    setActiveIndex(null);
+    triggerRef.current?.focus();
+  }, []);
+
+  const showPrev = useCallback(() => {
+    setActiveIndex((current) => {
+      if (current === null) return current;
+      return (current - 1 + images.length) % images.length;
+    });
+  }, [images.length]);
+
+  const showNext = useCallback(() => {
+    setActiveIndex((current) => {
+      if (current === null) return current;
+      return (current + 1) % images.length;
+    });
+  }, [images.length]);
+
+  // Keyboard controls + scroll lock while the lightbox is open
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    closeButtonRef.current?.focus();
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") close();
+      if (event.key === "ArrowLeft") showPrev();
+      if (event.key === "ArrowRight") showNext();
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen, close, showPrev, showNext]);
+
+  if (!images || images.length === 0) return null;
+
+  const active = activeIndex !== null ? images[activeIndex] : null;
+
+  return (
+    <div className={`ig-root${className ? ` ${className}` : ""}`}>
+      {title ? (
+        <h3 className="ig-title" id={headingId}>
+          {title}
+        </h3>
+      ) : null}
+
+      <ul
+        className="ig-grid"
+        style={{ ["--ig-columns" as string]: columns }}
+        aria-labelledby={title ? headingId : undefined}
+      >
+        {images.map((image, index) => (
+          <li className="ig-cell" key={image.src + index}>
+            <button
+              type="button"
+              className="ig-thumb-button"
+              onClick={(event) => {
+                triggerRef.current = event.currentTarget;
+                openAt(index);
+              }}
+              aria-haspopup="dialog"
+            >
+              <img
+                className={`ig-thumb-img${squareThumbnails ? " ig-thumb-img--square" : ""}`}
+                src={image.thumbnailSrc ?? image.src}
+                alt={image.alt}
+                loading="lazy"
+              />
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      {isOpen && active ? (
+        <div
+          className="ig-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label={title ? `${title} — expanded image` : "Expanded image"}
+          onClick={(event) => {
+            if (event.target === event.currentTarget) close();
+          }}
+        >
+          <div className="ig-lightbox">
+            <div className="ig-lightbox-top">
+              <span className="ig-counter">
+                {(activeIndex as number) + 1} / {images.length}
+              </span>
+              <button
+                type="button"
+                ref={closeButtonRef}
+                className="ig-icon-button"
+                onClick={close}
+                aria-label="Close gallery"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+
+            <div className="ig-lightbox-stage">
+              {images.length > 1 ? (
+                <button
+                  type="button"
+                  className="ig-icon-button ig-nav ig-nav--prev"
+                  onClick={showPrev}
+                  aria-label="Previous image"
+                >
+                  <ChevronIcon direction="left" />
+                </button>
+              ) : null}
+
+              <img
+                className="ig-lightbox-img"
+                src={active.src}
+                alt={active.alt}
+              />
+
+              {images.length > 1 ? (
+                <button
+                  type="button"
+                  className="ig-icon-button ig-nav ig-nav--next"
+                  onClick={showNext}
+                  aria-label="Next image"
+                >
+                  <ChevronIcon direction="right" />
+                </button>
+              ) : null}
+            </div>
+
+            {active.caption ? (
+              <p className="ig-caption">{active.caption}</p>
+            ) : null}
+
+            {images.length > 1 ? (
+              <ul className="ig-filmstrip">
+                {images.map((image, index) => (
+                  <li key={image.src + index}>
+                    <button
+                      type="button"
+                      className={`ig-filmstrip-button${
+                        index === activeIndex ? " ig-filmstrip-button--active" : ""
+                      }`}
+                      onClick={() => setActiveIndex(index)}
+                      aria-label={`Show image ${index + 1}: ${image.alt}`}
+                      aria-current={index === activeIndex}
+                    >
+                      <img
+                        src={image.thumbnailSrc ?? image.src}
+                        alt=""
+                        loading="lazy"
+                      />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <path d="M2 2L16 16M16 2L2 16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function ChevronIcon({ direction }: { direction: "left" | "right" }) {
+  const d = direction === "left" ? "M11 3L5 9L11 15" : "M7 3L13 9L7 15";
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <path d={d} stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// ---------------------------------------------------------------------
+// Server-side: marker → static slot
+// ---------------------------------------------------------------------
+
+const GALLERY_EMBED_RE = /<div[^>]*\bdata-gallery-embed\b[^>]*>([\s\S]*?)<\/div>/gi;
+const IMG_TAG_RE = /<img\b[^>]*>/gi;
+
+function parseAttr(tag: string, name: string): string | undefined {
+  const match = tag.match(new RegExp(`${name}=["']([^"']*)["']`, "i"));
+  return match ? match[1] : undefined;
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function renderStaticGalleryGrid(images: GalleryImage[], columns = 3): string {
+  const items = images
+    .map(
+      (image) =>
+        `<li class="ig-cell">` +
+        `<a class="ig-thumb-button" href="${escapeHtml(image.src)}" target="_blank" rel="noreferrer">` +
+        `<img class="ig-thumb-img ig-thumb-img--square" src="${escapeHtml(
+          image.thumbnailSrc ?? image.src,
+        )}" alt="${escapeHtml(image.alt)}" loading="lazy" />` +
+        `</a></li>`,
+    )
+    .join("");
+
+  return `<ul class="ig-grid" style="--ig-columns:${columns}">${items}</ul>`;
+}
+
+/**
+ * injectImagesGallery — finds every `data-gallery-embed` marker in the
+ * article body, pulls the images out of the raw `<img>` tags inside
+ * it, and replaces the whole block with a `data-gallery-slot` node: a
+ * real, working (no-JS) grid of thumbnails linking to the full-size
+ * images, plus a `data-gallery-images` attribute carrying the parsed
+ * image list as JSON so the client can hand it straight to
+ * `<ImagesGallery />` for the interactive lightbox — same
+ * "static now, upgrade on hydrate" shape as injectNewsletterForm.
+ * Pure string transform, no data fetch needed, same reasoning as
+ * injectFaqSections/injectNewsletterForm/injectVideoEmbeds, so it can
+ * run alongside them in the loader.
+ *
+ * A marker with no usable `<img src="...">` tags inside it is dropped
+ * entirely rather than rendered as an empty gallery slot.
+ */
+export function injectImagesGallery(contentHtml: string): string {
+  return contentHtml.replace(GALLERY_EMBED_RE, (fullMatch, inner: string) => {
+    const wrapperOpenTag = fullMatch.slice(0, fullMatch.indexOf(">") + 1);
+    const title = parseAttr(wrapperOpenTag, "data-gallery-title");
+    const columnsRaw = parseAttr(wrapperOpenTag, "data-gallery-columns");
+    const columns = columnsRaw ? Number(columnsRaw) : 3;
+
+    const images: GalleryImage[] = [];
+    const imgTags = inner.match(IMG_TAG_RE) ?? [];
+    for (const tag of imgTags) {
+      const src = parseAttr(tag, "src");
+      if (!src) continue;
+      images.push({
+        src,
+        alt: parseAttr(tag, "alt") ?? "",
+        caption: parseAttr(tag, "data-caption"),
+      });
+    }
+
+    if (images.length === 0) return "";
+
+    const encodedImages = encodeURIComponent(JSON.stringify(images));
+    const titleAttr = title ? ` data-gallery-title="${escapeHtml(title)}"` : "";
+    const columnsAttr = ` data-gallery-columns="${columns}"`;
+    const heading = title ? `<h3 class="ig-title">${escapeHtml(title)}</h3>` : "";
+
+    return (
+      `<div class="ig-root" data-gallery-slot data-gallery-images="${encodedImages}"` +
+      `${titleAttr}${columnsAttr}>` +
+      heading +
+      renderStaticGalleryGrid(images, columns) +
+      `</div>`
+    );
+  });
+}
+
+// ---------------------------------------------------------------------
+// Client-side: slot → props
+// ---------------------------------------------------------------------
+
+export interface GallerySlotData {
+  images: GalleryImage[];
+  title?: string;
+  columns?: 2 | 3 | 4 | 5;
+}
+
+/**
+ * readGallerySlot — client-side counterpart to injectImagesGallery.
+ * Reads the data-gallery-images / -title / -columns attributes a
+ * data-gallery-slot node was given server-side and returns props
+ * ready to spread onto `<ImagesGallery />`, or null if the slot is
+ * malformed — same "skip malformed" behavior as readVideoSlot.
+ */
+export function readGallerySlot(el: HTMLElement): GallerySlotData | null {
+  const raw = el.getAttribute("data-gallery-images");
+  if (!raw) return null;
+
+  let images: GalleryImage[];
+  try {
+    images = JSON.parse(decodeURIComponent(raw));
+  } catch {
+    return null;
+  }
+  if (!Array.isArray(images) || images.length === 0) return null;
+
+  const title = el.getAttribute("data-gallery-title") ?? undefined;
+  const columnsRaw = el.getAttribute("data-gallery-columns");
+  const columns = columnsRaw ? (Number(columnsRaw) as 2 | 3 | 4 | 5) : undefined;
+
+  return { images, title, columns };
+}
+
+
+===== C:\Users\Admin\Shopify\Storefronts\Headless\app\components\blogs\NewsletterForm.tsx =====
+
+// app/components/blogs/NewsletterForm.tsx
+//
+// Inline newsletter signup form for blog articles, following the same
+// marker-based injection pattern as ProductGallery.tsx (shoppable
+// embeds) and FaqSection.tsx (FAQ accordions):
+//
+//   1. `injectNewsletterForm(html)` — a pure, server-side string
+//      transform run in the loader. Scans contentHtml for
+//      `<div data-newsletter-form>` markers and rewrites each into a
+//      static, no-JS-required <form> (progressive enhancement: it
+//      works even before hydration) plus a `data-newsletter-slot`
+//      attribute the client-side scan looks for — same shape as
+//      `data-shoppable-slot` in the article template.
+//
+//   2. `<NewsletterForm />` — the real, interactive component. Uses
+//      useFetcher (Remix/React Router) to submit without a full page
+//      navigation and show inline pending/success/error state.
+//      Mounted via createPortal in the article template, not
+//      createRoot — useFetcher needs the app's Router context, same
+//      reasoning documented for the shoppable-slot portal.
+//
+// Editor-facing marker syntax (written directly in Shopify's blog
+// HTML source view, same spirit as data-shoppable-product / data-faq):
+//
+//   <div data-newsletter-form></div>
+//     Plain signup form, default heading/copy.
+//
+//   <div
+//     data-newsletter-form
+//     data-newsletter-heading="Get weekly ride tips"
+//     data-newsletter-subheading="One email a week. No spam, unsubscribe anytime."
+//   ></div>
+//     Optional per-placement copy override. Both attributes are
+//     optional and independent — set one, both, or neither.
+//
+// Submits to POST /api/newsletter-subscribe (see
+// app/templates/api.newsletter-subscribe.tsx), which records
+// marketing consent via a Storefront API customerCreate mutation —
+// see that file's header comment for the one real limitation that
+// comes with staying on the Storefront API (no admin token required)
+// instead of the Admin API.
+
+import {useEffect, useId, useRef} from 'react';
+import {useFetcher} from 'react-router';
+
+export type NewsletterFormData = {
+  heading: string;
+  subheading: string;
+};
+
+const DEFAULT_HEADING = 'Join the newsletter';
+const DEFAULT_SUBHEADING =
+  'New rides, gear guides, and deals. No spam, unsubscribe anytime.';
+
+const MARKER_REGEX = /<div([^>]*\bdata-newsletter-form\b[^>]*)>\s*<\/div>/g;
+const HEADING_ATTR_REGEX = /\bdata-newsletter-heading=["']([^"']*)["']/;
+const SUBHEADING_ATTR_REGEX = /\bdata-newsletter-subheading=["']([^"']*)["']/;
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/**
+ * Scans article HTML for `data-newsletter-form` markers and rewrites
+ * each into a static, server-rendered <form> — real markup that works
+ * with zero JS (submits via a normal POST) — wrapped in a
+ * `data-newsletter-slot` node carrying the resolved heading/
+ * subheading as data attributes, so the client-side scan in the
+ * article template can read them without re-parsing the original
+ * HTML. Mirrors `data-shoppable-slot` from ProductGallery.tsx.
+ */
+export function injectNewsletterForm(html: string): string {
+  return html.replace(MARKER_REGEX, (full, attrs: string) => {
+    const heading = attrs.match(HEADING_ATTR_REGEX)?.[1] ?? DEFAULT_HEADING;
+    const subheading =
+      attrs.match(SUBHEADING_ATTR_REGEX)?.[1] ?? DEFAULT_SUBHEADING;
+
+    const headingAttr = escapeHtml(heading);
+    const subheadingAttr = escapeHtml(subheading);
+
+    // Static fallback: a real <form action method> that works before
+    // hydration or with JS disabled entirely. Cleared and replaced by
+    // the interactive component the same way shoppable slots are, but
+    // unlike those, this one degrades to a fully working native form
+    // rather than an empty node if JS never loads.
+    return (
+      `<div data-newsletter-slot data-newsletter-heading="${headingAttr}" data-newsletter-subheading="${subheadingAttr}">` +
+      `<form class="newsletter-form" action="/api/newsletter-subscribe" method="post">` +
+      `<h3 class="newsletter-form__heading">${headingAttr}</h3>` +
+      `<p class="newsletter-form__subheading">${subheadingAttr}</p>` +
+      `<div class="newsletter-form__row">` +
+      `<label class="newsletter-form__label" for="newsletter-email-static">Email address</label>` +
+      `<input class="newsletter-form__input" id="newsletter-email-static" type="email" name="email" placeholder="you@example.com" required />` +
+      `<button class="newsletter-form__submit" type="submit">Subscribe</button>` +
+      `</div>` +
+      `</form>` +
+      `</div>`
+    );
+  });
+}
+
+type FetcherData = {ok: true} | {ok: false; error: string};
+
+/**
+ * Interactive replacement for the static form above. Portaled into
+ * the `[data-newsletter-slot]` node found by the article template's
+ * slot scan (extended alongside the existing shoppable-slot scan —
+ * see the template's useEffect).
+ */
+export function NewsletterForm({data}: {data: NewsletterFormData}) {
+  const {heading, subheading} = data;
+  const fetcher = useFetcher<FetcherData>();
+  const inputId = useId();
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const isSubmitting = fetcher.state !== 'idle';
+  const result = fetcher.data;
+  const succeeded = result?.ok === true;
+
+  // Clear the input after a successful subscribe, so the form doesn't
+  // sit there with the just-submitted address still visible.
+  useEffect(() => {
+    if (succeeded) {
+      formRef.current?.reset();
+    }
+  }, [succeeded]);
+
+  return (
+    <div className="newsletter-form">
+      <h3 className="newsletter-form__heading">{heading}</h3>
+      <p className="newsletter-form__subheading">{subheading}</p>
+
+      {succeeded ? (
+        <p className="newsletter-form__success" role="status">
+          You&rsquo;re subscribed — thanks for joining!
+        </p>
+      ) : (
+        <fetcher.Form
+          ref={formRef}
+          method="post"
+          action="/api/newsletter-subscribe"
+          className="newsletter-form__row"
+        >
+          <label className="newsletter-form__label" htmlFor={inputId}>
+            Email address
+          </label>
+          <input
+            className="newsletter-form__input"
+            id={inputId}
+            type="email"
+            name="email"
+            placeholder="you@example.com"
+            required
+            disabled={isSubmitting}
+          />
+          {/* Honeypot: real visitors never see or fill this (off-
+              screen via CSS in newsletter-form.css, not
+              type="hidden" — some bots specifically skip
+              hidden-type inputs but still fill visible-but-off-
+              screen ones). The subscribe route silently treats any
+              submission with this filled in as a fake success. */}
+          <input
+            className="newsletter-form__hp"
+            type="text"
+            name="company"
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+          />
+          <button
+            className="newsletter-form__submit"
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Subscribing…' : 'Subscribe'}
+          </button>
+        </fetcher.Form>
+      )}
+
+      {result?.ok === false && (
+        <p className="newsletter-form__error" role="alert">
+          {result.error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+
+===== C:\Users\Admin\Shopify\Storefronts\Headless\app\components\blogs\ProductGallery.tsx =====
+
+// app/components/blogs/ProductGallery.tsx
+//
+// Consolidated shoppable-product-embed system for blog articles: merges
+// what were previously ~/snippets/RowSnippets.tsx,
+// ~/snippets/StaticRowSnippets.tsx, ~/snippets/ProductRow.tsx,
+// ~/lib/shoppable-embeds.tsx, ~/snippets/StaticProductCard.tsx, and
+// ~/snippets/StaticProductRow.tsx into a single file.
+//
+// NOTE: kept as .tsx, not .ts — contains JSX
+// (renderToStaticMarkup(<StaticProductCard .../>) etc.) and won't
+// compile as .ts.
+//
+// Four layers live here:
+//   1. Interactive components (Solo/Duo/Trio, ProductRow) — real,
+//      hook-driven rows used client-side and portaled into hydrated
+//      slots by Article.tsx.
+//   2. StaticProductCard — hook-free, server-safe twin of ProductCard
+//      (~/snippets/ProductCard). Used ONLY by the renderToStaticMarkup
+//      pass below — ProductCard itself can't render there because it
+//      calls useNavigate(), useAside(), and CartForm's internal
+//      fetcher hook, none of which have a provider available inside
+//      the article loader's SSR string-injection pass, and would
+//      throw.
+//   3. StaticProductRow / StaticSolo/Duo/Trio — hook-free twins of
+//      ProductRow/Solo/Duo/Trio, built on StaticProductCard, used only
+//      for the same SSR pass.
+//   4. Marker extract/inject logic — scans article HTML for
+//      data-shoppable-product / data-solo / data-duo / data-trio
+//      markers and resolves them against fetched product data.
+//
+// Each rendered slot is wrapped in a `[data-shoppable-slot]` container
+// carrying what's needed to re-render it as the real, interactive
+// component on the client: see the hydration effect in
+// app/sections/Article.tsx, which finds these slots after mount and
+// swaps each one for the live Solo/Duo/Trio/ProductCard via
+// createPortal.
+//
+// Matching is intentionally strict, mirroring the single-marker
+// contract in docs/shoppable-blog-articles.md: exact attribute name,
+// digits-only IDs, no extra whitespace, no nested content. A marker
+// that doesn't match is left untouched by extract (so it's never
+// queried) and is therefore also left untouched by inject (nothing to
+// replace it with) — same "fail silently, don't show a broken card"
+// behavior as a bad or deleted product ID.
+
+import {renderToStaticMarkup} from 'react-dom/server';
+import {ProductCard} from '~/snippets/ProductCard';
+import type {ProductCardFragment} from 'storefrontapi.generated';
+
+// ---------------------------------------------------------------------------
+// Shared types
+// ---------------------------------------------------------------------------
+
+// Type-level helper that pins the array length to exactly N elements
+// (1, 2, or 3), falling back to a plain array for any other N. This is
+// what makes Solo/Duo/Trio's (and StaticSolo/Duo/Trio's) props require
+// exactly 1/2/3 product IDs at the type level rather than just "an
+// array of strings".
+type FixedArray<T, N extends number> = N extends 1
+  ? [T]
+  : N extends 2
+    ? [T, T]
+    : N extends 3
+      ? [T, T, T]
+      : T[];
+
+// Shared prop shape for Solo/Duo/Trio and StaticSolo/Duo/Trio,
+// parameterized by how many product IDs they require.
+type RowProps<N extends number> = {
+  productIds: FixedArray<string, N>;
+  productsById: Map<string, ProductCardFragment>;
+};
+
+type ProductRowProps = {
+  productIds: string[];
+  productsById: Map<string, ProductCardFragment>;
+};
+
+// ---------------------------------------------------------------------------
+// Interactive components (client-side; real hooks, real context)
+// ---------------------------------------------------------------------------
+
+// Renders a row of full ProductCard components — wishlist, quick view,
+// compare, and add-to-cart all live — for a list of product IDs
+// resolved against productsById. Unresolved IDs are silently dropped.
+function ProductRow({productIds, productsById}: ProductRowProps) {
+  const products = productIds
+    .map((id) => productsById.get(id))
+    .filter((p): p is ProductCardFragment => Boolean(p));
+
+  if (products.length === 0) return null;
+
+  return (
+    <div className="product-row" data-columns={products.length}>
+      {products.map((product) => (
+        <ProductCard key={product.id} product={product} />
+      ))}
+    </div>
+  );
+}
+
+// 1-product row layout. All three variants just forward to the same
+// ProductRow — the distinction is purely at the type/call-site level
+// (enforcing the right number of IDs) plus whatever CSS keys off the
+// resulting product count.
+export function Solo({productIds, productsById}: RowProps<1>) {
+  return <ProductRow productIds={productIds} productsById={productsById} />;
+}
+
+// 2-product row layout.
+export function Duo({productIds, productsById}: RowProps<2>) {
+  return <ProductRow productIds={productIds} productsById={productsById} />;
+}
+
+// 3-product row layout.
+export function Trio({productIds, productsById}: RowProps<3>) {
+  return <ProductRow productIds={productIds} productsById={productsById} />;
+}
+
+// ---------------------------------------------------------------------------
+// StaticProductCard — hook-free, server-safe twin of ProductCard
+// ---------------------------------------------------------------------------
+//
+// Renders the same classes/markup as ProductCard so the page looks
+// correct immediately. Article.tsx's hydration effect then swaps each
+// rendered slot for the real, interactive ProductCard on the client -
+// mirrors the same "static now, upgrade after mount" pattern already
+// used there for FAQ deep-linking.
+//
+// Deliberately omits: wishlist button, quick view button, compare
+// checkbox, and the CartForm add-to-cart button - all of them need JS to
+// do anything, so nothing is lost by leaving them out of pre-hydration
+// markup. The add-to-cart slot becomes a plain link to the product page
+// instead, so it's still a usable affordance even if hydration is slow
+// or fails outright.
+//
+// The reviews block (product-card__reviews) IS kept, as an empty
+// placeholder, even though StarRating itself needs no hooks and could
+// render live data here. product-card.css gives that div a fixed
+// min-height and it sits in normal flow above the pricing block - if the
+// static pass skipped it entirely, hydration would insert it after
+// mount and shove the price down by ~18px+, a visible layout jump on
+// every article page load. Kept empty (not populated with live rating
+// data) rather than duplicating ProductCard's rating-parsing logic here;
+// the visual gap is blank until hydration fills it in, which is a much
+// smaller cost than the reflow.
+
+interface StaticProductCardProps {
+  product: ProductCardFragment;
+  showVendor?: boolean;
+}
+
+function formatMoney(amount: string, currencyCode: string): string {
+  try {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currencyCode,
+    }).format(parseFloat(amount));
+  } catch {
+    return `${amount} ${currencyCode}`;
+  }
+}
+
+function StaticProductCard({
+  product,
+  showVendor = true,
+}: StaticProductCardProps) {
+  const url = `/products/${product.handle}`;
+  const image = product.featuredImage;
+  const price = product.priceRange.minVariantPrice;
+  const compareAtPrice = product.compareAtPriceRange?.minVariantPrice;
+  const variant = product.selectedOrFirstAvailableVariant;
+  const etaText = product.etaText?.value;
+  const isSponsored = product.sponsored?.value === 'true';
+  const onSale =
+    !!compareAtPrice &&
+    parseFloat(compareAtPrice.amount) > parseFloat(price.amount);
+
+  return (
+    <div
+      className="product-card"
+      data-product-id={product.id}
+      data-product-handle={product.handle}
+    >
+      <div className="product-card__img-zone">
+        {isSponsored && (
+          <span className="product-card__sponsored-label">Sponsored</span>
+        )}
+
+        <a
+          href={url}
+          className="product-card__image-wrapper"
+          aria-label={product.title}
+        >
+          {image ? (
+            <img
+              src={image.url}
+              alt={image.altText ?? product.title}
+              className="product-card__img product-card__img--primary"
+              loading="lazy"
+            />
+          ) : (
+            <div className="product-card__img-placeholder" aria-hidden="true" />
+          )}
+        </a>
+
+        {onSale && (
+          <span className="product-card__badge-slot">
+            <span className="sale-badge">Sale</span>
+          </span>
+        )}
+      </div>
+
+      <div className="product-card__body">
+        {showVendor && product.vendor && (
+          <span className="product-card__vendor">{product.vendor}</span>
+        )}
+
+        <a href={url} className="product-card__title" title={product.title}>
+          {product.title}
+        </a>
+
+        {/* Empty placeholder — see comment above StaticProductCard.
+            Prevents a layout shift when hydration mounts the real
+            ProductCard's StarRating. */}
+        <div className="product-card__reviews" aria-hidden="true" />
+
+        <div className="product-card__pricing">
+          {onSale && compareAtPrice && (
+            <span className="product-card__price product-card__price--compare">
+              <s>{formatMoney(compareAtPrice.amount, compareAtPrice.currencyCode)}</s>
+            </span>
+          )}
+          <span className="product-card__price product-card__price--sale">
+            {formatMoney(price.amount, price.currencyCode)}
+          </span>
+        </div>
+
+        {etaText && (
+          <div className="product-card__eta" aria-label="Estimated delivery">
+            <span>{etaText}</span>
+          </div>
+        )}
+
+        {variant && (
+          <div className="product-card__bottom-row">
+            <a href={url} className="product-card__atc-btn">
+              {variant.availableForSale ? 'View product' : 'Sold out'}
+            </a>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Static row components (SSR-only; no hooks, no context — used below by
+// injectShoppableProducts via renderToStaticMarkup)
+// ---------------------------------------------------------------------------
+
+// Hook-free twin of ProductRow. Same resolve-and-drop contract: an ID
+// with no match (deleted/unpublished product, typo) is dropped, not
+// rendered as a broken card.
+function StaticProductRow({productIds, productsById}: ProductRowProps) {
+  const products = productIds
+    .map((id) => productsById.get(id))
+    .filter((p): p is ProductCardFragment => Boolean(p));
+
+  if (products.length === 0) return null;
+
+  return (
+    <div className="product-row" data-columns={products.length}>
+      {products.map((product) => (
+        <StaticProductCard key={product.id} product={product} />
+      ))}
+    </div>
+  );
+}
+
+// Static 1-product row — renders via StaticProductRow, no hooks.
+function StaticSolo({productIds, productsById}: RowProps<1>) {
+  return (
+    <StaticProductRow productIds={productIds} productsById={productsById} />
+  );
+}
+
+// Static 2-product row.
+function StaticDuo({productIds, productsById}: RowProps<2>) {
+  return (
+    <StaticProductRow productIds={productIds} productsById={productsById} />
+  );
+}
+
+// Static 3-product row.
+function StaticTrio({productIds, productsById}: RowProps<3>) {
+  return (
+    <StaticProductRow productIds={productIds} productsById={productsById} />
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Marker extract/inject (server-side article HTML processing)
+// ---------------------------------------------------------------------------
+
+// The four marker "kinds" this module understands. Mirrors the `kind`
+// value that later gets written into `data-shoppable-slot` on the
+// rendered wrapper, and read back by Article.tsx's hydration effect.
+type MarkerKind = 'single' | 'solo' | 'duo' | 'trio';
+
+// Describes one marker type: which HTML attribute identifies it, how
+// many comma-separated IDs it expects, and its resolved "kind" name.
+type MarkerSpec = {attr: string; count: number; kind: MarkerKind};
+
+// The full set of recognized markers. To add a new layout (say, a
+// 4-product grid), this is the single place a new spec would be added
+// — extract/inject both iterate this list generically.
+const MARKERS: MarkerSpec[] = [
+  {attr: 'data-shoppable-product', count: 1, kind: 'single'},
+  {attr: 'data-solo', count: 1, kind: 'solo'},
+  {attr: 'data-duo', count: 2, kind: 'duo'},
+  {attr: 'data-trio', count: 3, kind: 'trio'},
+];
+
+// Builds a strict matcher for one marker: empty self-closing-style div,
+// exact attribute name, value = N comma-separated digit runs, no space
+// around `=`. e.g. for {attr: 'data-duo', count: 2}:
+//   <div data-duo="(\d+,\d+)"></div>
+function markerRegex({attr, count}: MarkerSpec): RegExp {
+  // Repeat `\d+` `count` times, joined by literal commas, e.g.
+  // count=3 -> "\d+,\d+,\d+" for a trio marker.
+  const value = Array(count).fill(String.raw`\d+`).join(',');
+  // Global flag so callers can find every occurrence in the document,
+  // not just the first.
+  return new RegExp(String.raw`<div ${attr}="(${value})"></div>`, 'g');
+}
+
+/**
+ * Scans article HTML for every recognized marker type and returns the
+ * deduped list of numeric product IDs referenced, in first-seen order.
+ * Used by the loader to build the batched SHOPPABLE_PRODUCTS_QUERY
+ * before rendering.
+ */
+export function extractShoppableProductIds(html: string): string[] {
+  // Set dedupes automatically and preserves insertion order in JS,
+  // which is what "first-seen order" relies on here.
+  const seen = new Set<string>();
+
+  for (const spec of MARKERS) {
+    const regex = markerRegex(spec);
+    let match: RegExpExecArray | null;
+    // exec() with a /g regex is stateful — repeated calls advance
+    // lastIndex, walking through every match in the string until none
+    // remain (loop exits when exec returns null).
+    while ((match = regex.exec(html)) !== null) {
+      // match[1] is the captured ID-list group, e.g. "123,456" for a
+      // duo marker — split it into individual IDs.
+      for (const id of match[1].split(',')) seen.add(id);
+    }
+  }
+
+  return [...seen];
+}
+
+/**
+ * Replaces every recognized marker with its server-rendered (static)
+ * product markup, wrapped in a `[data-shoppable-slot]` container for
+ * client-side hydration. Degrades gracefully:
+ *   - data-shoppable-product: unresolved ID -> dropped (empty string)
+ *   - data-solo/duo/trio: renders with whichever IDs resolved
+ *     (StaticProductRow filters unresolved ones internally); renders
+ *     nothing if none resolve
+ * Markers that failed the strict pattern were never extracted, so they
+ * simply aren't matched here either and are left as inert HTML.
+ */
+export function injectShoppableProducts(
+  html: string,
+  productsById: Map<string, ProductCardFragment>,
+): string {
+  let result = html;
+
+  // Run each marker type's regex over the (progressively rewritten)
+  // HTML string, replacing every match with its rendered markup.
+  for (const spec of MARKERS) {
+    const regex = markerRegex(spec);
+    result = result.replace(regex, (_full, idList: string) =>
+      renderMarker(spec.kind, idList.split(','), productsById),
+    );
+  }
+
+  return result;
+}
+
+// Renders one marker's replacement HTML: the inner product markup plus
+// the outer data-shoppable-slot wrapper the client hydrates against.
+function renderMarker(
+  kind: MarkerKind,
+  ids: string[],
+  productsById: Map<string, ProductCardFragment>,
+): string {
+  const inner = renderInner(kind, ids, productsById);
+  // If nothing could be rendered (e.g. a lone unresolved product ID
+  // for a `single` marker), drop the marker entirely rather than
+  // emitting an empty wrapper div.
+  if (!inner) return '';
+
+  // The wrapper carries the full original ID list (not just the ones
+  // that resolved here - a product could get published between this
+  // request and the client mounting) so the hydration effect can redo
+  // the lookup with its own copy of the product data.
+  return `<div data-shoppable-slot="${kind}" data-product-ids="${ids.join(',')}">${inner}</div>`;
+}
+
+// Renders the actual product markup for a marker, using the hook-free
+// Static* components so this works during a plain string-rendering
+// pass with no React context available.
+function renderInner(
+  kind: MarkerKind,
+  ids: string[],
+  productsById: Map<string, ProductCardFragment>,
+): string {
+  switch (kind) {
+    case 'single': {
+      const product = productsById.get(ids[0]);
+      // No product resolved (deleted/inaccessible) -> render nothing.
+      return product
+        ? renderToStaticMarkup(<StaticProductCard product={product} />)
+        : '';
+    }
+    case 'solo':
+      return renderToStaticMarkup(
+        <StaticSolo productIds={[ids[0]]} productsById={productsById} />,
+      );
+    case 'duo':
+      return renderToStaticMarkup(
+        <StaticDuo
+          productIds={[ids[0], ids[1]]}
+          productsById={productsById}
+        />,
+      );
+    case 'trio':
+      return renderToStaticMarkup(
+        <StaticTrio
+          productIds={[ids[0], ids[1], ids[2]]}
+          productsById={productsById}
+        />,
+      );
+  }
+}
+
+
+===== C:\Users\Admin\Shopify\Storefronts\Headless\app\components\blogs\Quote.tsx =====
+
+/**
+ * Quote
+ * -----
+ * Blog content block for emphasizing a single piece of information — a
+ * stat, a customer line, a key takeaway — as a styled pull-quote card
+ * with optional attribution.
+ *
+ * Unlike Video, this block has no interactivity (no click handler, no
+ * state that changes after render), so it does NOT use the
+ * marker-injection → portal-hydration pattern Video/NewsletterForm use.
+ * It follows the simpler pattern FaqSection/TwoColumnContent already
+ * use: `injectQuoteEmbeds` rewrites the marker directly into final
+ * markup server-side, in the loader. Nothing ships to the client for
+ * this block beyond the CSS — no slot, no scan, no createPortal.
+ *
+ * The `Quote` component below is exported for typed reuse (e.g. hand-
+ * placing a quote in a Liquid section later), but it is never portaled
+ * into anything — `injectQuoteEmbeds` writes equivalent static HTML
+ * directly.
+ */
+
+export type QuoteVariant = "card" | "pull";
+
+export interface QuoteProps {
+  /** The quote itself. Rendered wrapped in straight double quotes. */
+  text: string;
+  /** Who said it. Rendered in a <cite>. */
+  attribution?: string;
+  /** Secondary detail — title/company. Only rendered alongside `attribution`. */
+  role?: string;
+  /**
+   * "card" (default): bordered white card with a quote-mark icon —
+   * matches the reference design (see quote.md).
+   * "pull": lighter-weight, no card chrome — just a left border accent,
+   * for dropping a quote inline without visually boxing it off.
+   */
+  variant?: QuoteVariant;
+  /** Extra class on the root element. */
+  className?: string;
+}
+
+export default function Quote({
+  text,
+  attribution,
+  role,
+  variant = "card",
+  className,
+}: QuoteProps) {
+  return (
+    <figure
+      className={["quote", `quote--${variant}`, className]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      {variant === "card" && (
+        <svg
+          className="quote__mark"
+          viewBox="0 0 24 16"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path d="M0 16 4 0h5l-3 16H0Zm11 0 4-16h5l-3 16h-6Z" />
+        </svg>
+      )}
+
+      <blockquote className="quote__text">&quot;{text}&quot;</blockquote>
+
+      {attribution && (
+        <figcaption className="quote__attribution">
+          &mdash; <cite className="quote__name">{attribution}</cite>
+          {role && <span className="quote__role">, {role}</span>}
+        </figcaption>
+      )}
+    </figure>
+  );
+}
+
+/**
+ * Marker syntax an editor drops into a blog article's HTML (via the
+ * Shopify blog editor's custom-HTML block):
+ *
+ *   <div
+ *     data-quote-embed
+ *     data-text="Life is like a sandwich - the more you add to it..."
+ *     data-attribution="Max Crunch"
+ *     data-role="Crunchly Co-founder"
+ *     data-variant="card"
+ *   ></div>
+ *
+ * Only `data-text` is required. `data-role` is ignored unless
+ * `data-attribution` is also present.
+ */
+
+const QUOTE_EMBED_RE = /<div\s+data-quote-embed\b([^>]*)><\/div>/gi;
+const ATTR_RE = /data-([\w-]+)="([^"]*)"/g;
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function parseAttrs(attrString: string): Record<string, string> {
+  const attrs: Record<string, string> = {};
+  let match: RegExpExecArray | null;
+  ATTR_RE.lastIndex = 0;
+  while ((match = ATTR_RE.exec(attrString))) {
+    attrs[match[1]] = match[2];
+  }
+  return attrs;
+}
+
+/**
+ * Rewrites every `data-quote-embed` marker in `html` into final,
+ * semantic quote markup. Pure string transform, no data fetch and no
+ * hydration needed — runs alongside injectFaqSections/
+ * injectNewsletterForm/injectVideoEmbeds in the loader.
+ *
+ * A marker missing `data-text` is dropped silently (renders nothing)
+ * rather than left in place or thrown on — same "skip malformed"
+ * behavior as the other blocks.
+ */
+export function injectQuoteEmbeds(html: string): string {
+  return html.replace(QUOTE_EMBED_RE, (_match, attrString: string) => {
+    const attrs = parseAttrs(attrString);
+    if (!attrs.text) return "";
+
+    const variant = attrs.variant === "pull" ? "pull" : "card";
+    const text = escapeHtml(attrs.text);
+
+    const markMarkup =
+      variant === "card"
+        ? `<svg class="quote__mark" viewBox="0 0 24 16" aria-hidden="true" focusable="false"><path d="M0 16 4 0h5l-3 16H0Zm11 0 4-16h5l-3 16h-6Z" /></svg>`
+        : "";
+
+    let attributionMarkup = "";
+    if (attrs.attribution) {
+      const attribution = escapeHtml(attrs.attribution);
+      const roleMarkup = attrs.role
+        ? `<span class="quote__role">, ${escapeHtml(attrs.role)}</span>`
+        : "";
+      attributionMarkup = `<figcaption class="quote__attribution">&mdash; <cite class="quote__name">${attribution}</cite>${roleMarkup}</figcaption>`;
+    }
+
+    return (
+      `<figure class="quote quote--${variant}">` +
+      markMarkup +
+      `<blockquote class="quote__text">&quot;${text}&quot;</blockquote>` +
+      attributionMarkup +
+      `</figure>`
+    );
+  });
+}
+
+
+
+===== C:\Users\Admin\Shopify\Storefronts\Headless\app\components\blogs\RecipeHeader.tsx =====
+
+// app/components/blogs/RecipeHeader.tsx
+//
+// Printable recipe info card for blog articles, added via a
+// `data-recipe-header` marker written directly in Shopify's blog
+// HTML source view — same editor-facing convention as
+// data-shoppable-product, data-faq, data-newsletter-form, and
+// data-two-col.
+//
+// PURELY STATIC, same reasoning as TwoColumnContent.tsx: nothing here
+// needs to fetch data or hydrate into a React component. The one bit
+// of interactivity — the "Print recipe" button — is handled with a
+// plain inline onclick, not a portaled component, because
+// window.print() needs nothing from this app's React tree (no
+// Router context, no fetcher, no cart/aside context — contrast with
+// NewsletterForm's useFetcher(), which is exactly why THAT one needs
+// a portal and this one doesn't).
+//
+// Editor-facing marker syntax — all attributes optional, but at
+// least one of the four stat fields or an image is required (see
+// "malformed input" below):
+//
+//   <div
+//     data-recipe-header
+//     data-recipe-title="Recipe informations"
+//     data-recipe-image="https://cdn.shopify.com/.../cupcake.jpg"
+//     data-recipe-image-alt="Frosted cupcake on a plate"
+//     data-recipe-prep-time="10 minutes"
+//     data-recipe-cook-time="10 minutes"
+//     data-recipe-servings="8 persons"
+//     data-recipe-category="Desserts"
+//   ></div>
+//
+// data-recipe-title defaults to "Recipe informations" when omitted.
+// Any of the four stat attributes can be left out — only the stats
+// that are present render, so a recipe with no meaningful "servings"
+// value (e.g. a sauce or a drink) can simply omit that attribute
+// rather than showing a blank or a fabricated placeholder.
+//
+// PRINT BEHAVIOR: clicking "Print recipe" adds a `recipe-printing`
+// class to <body>, calls window.print(), then removes the class on
+// the browser's `afterprint` event (registered once, guarded against
+// duplicate registration if more than one recipe header appears in
+// the same article). recipe-header.css uses that class with the
+// classic visibility-based "print only this element" trick — hiding
+// everything else on the page and making only the card visible —
+// which works regardless of what the rest of the page's DOM looks
+// like (header, nav, footer, other article content), unlike a
+// display:none approach that would need to know the page structure
+// to selectively hide siblings.
+//
+// KNOWN LIMITATION: some mobile browsers treat window.print() as
+// non-blocking, so `afterprint` is the correct signal to remove the
+// class rather than doing it synchronously right after the call —
+// removing it immediately after print() could revert the page
+// before the print dialog has actually rendered on those browsers.
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+const MARKER_REGEX = /<div([^>]*\bdata-recipe-header\b[^>]*)>\s*<\/div>/g;
+
+const TITLE_ATTR_REGEX = /\bdata-recipe-title=["']([^"']*)["']/;
+const IMAGE_ATTR_REGEX = /\bdata-recipe-image=["']([^"']*)["']/;
+const IMAGE_ALT_ATTR_REGEX = /\bdata-recipe-image-alt=["']([^"']*)["']/;
+const PREP_TIME_ATTR_REGEX = /\bdata-recipe-prep-time=["']([^"']*)["']/;
+const COOK_TIME_ATTR_REGEX = /\bdata-recipe-cook-time=["']([^"']*)["']/;
+const SERVINGS_ATTR_REGEX = /\bdata-recipe-servings=["']([^"']*)["']/;
+const CATEGORY_ATTR_REGEX = /\bdata-recipe-category=["']([^"']*)["']/;
+
+const DEFAULT_TITLE = 'Recipe informations';
+
+// Minimal inline outline icons matching the four stat types, kept as
+// raw SVG strings (not a React icon library) since this whole
+// component is a server-side string transform, not a mounted
+// component.
+const ICON_CLOCK =
+  '<svg class="recipe-header__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+const ICON_PERSON =
+  '<svg class="recipe-header__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20c0-3.6 3-6 6.5-6s6.5 2.4 6.5 6"/></svg>';
+const ICON_CATEGORY =
+  '<svg class="recipe-header__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.2"/></svg>';
+const ICON_PRINT =
+  '<svg class="recipe-header__print-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="4" y="9" width="16" height="8" rx="1.5"/><path d="M6 14h12v7H6z"/></svg>';
+
+type RecipeStat = {icon: string; label: string; value: string};
+
+/**
+ * Builds one <div class="recipe-header__stat"> block for a single
+ * present attribute — icon + bold label + value, matching the
+ * two-per-row layout in recipe-header.css.
+ */
+function statHtml({icon, label, value}: RecipeStat): string {
+  return (
+    `<div class="recipe-header__stat">` +
+    `${icon}` +
+    `<div class="recipe-header__stat-text">` +
+    `<dt class="recipe-header__stat-label">${escapeHtml(label)}</dt>` +
+    `<dd class="recipe-header__stat-value">${escapeHtml(value)}</dd>` +
+    `</div>` +
+    `</div>`
+  );
+}
+
+// Registered once, guarded, so this still works correctly if an
+// article has more than one recipe header — every button's onclick
+// calls the same global function rather than each carrying its own
+// copy of the print logic inline.
+const PRINT_SCRIPT = `
+<script>
+(function () {
+  if (window.__recipeHeaderPrintReady) return;
+  window.__recipeHeaderPrintReady = true;
+  window.addEventListener('afterprint', function () {
+    document.body.classList.remove('recipe-printing');
+  });
+  window.__printRecipeHeader = function () {
+    document.body.classList.add('recipe-printing');
+    window.print();
+  };
+})();
+</script>`;
+
+/**
+ * Scans article HTML for `data-recipe-header` markers and rewrites
+ * each into a static, print-ready recipe info card. Pure string
+ * transform, run once in the loader — same shape as
+ * injectNewsletterForm/injectFaqSections.
+ */
+export function injectRecipeHeader(html: string): string {
+  let printScriptEmitted = false;
+
+  return html.replace(MARKER_REGEX, (full, attrs: string) => {
+    const title = attrs.match(TITLE_ATTR_REGEX)?.[1] ?? DEFAULT_TITLE;
+    const image = attrs.match(IMAGE_ATTR_REGEX)?.[1];
+    const imageAlt = attrs.match(IMAGE_ALT_ATTR_REGEX)?.[1] ?? '';
+    const prepTime = attrs.match(PREP_TIME_ATTR_REGEX)?.[1];
+    const cookTime = attrs.match(COOK_TIME_ATTR_REGEX)?.[1];
+    const servings = attrs.match(SERVINGS_ATTR_REGEX)?.[1];
+    const category = attrs.match(CATEGORY_ATTR_REGEX)?.[1];
+
+    const stats: RecipeStat[] = [];
+    if (prepTime) stats.push({icon: ICON_CLOCK, label: 'Prep time', value: prepTime});
+    if (cookTime) stats.push({icon: ICON_CLOCK, label: 'Cooking time', value: cookTime});
+    if (servings) stats.push({icon: ICON_PERSON, label: 'Servings', value: servings});
+    if (category) stats.push({icon: ICON_CATEGORY, label: 'Category', value: category});
+
+    // Nothing meaningful to render (no image, no stats) — leave the
+    // marker untouched rather than rendering an empty card. Same
+    // fail-safe reasoning as the shoppable-slot scan skipping slots
+    // with no product ids.
+    if (!image && stats.length === 0) return full;
+
+    const imageHtml = image
+      ? `<img class="recipe-header__image" src="${escapeHtml(image)}" alt="${escapeHtml(imageAlt)}" loading="lazy" />`
+      : `<div class="recipe-header__image recipe-header__image--placeholder" role="img" aria-label="${escapeHtml(imageAlt || 'Recipe photo not provided')}"></div>`;
+
+    const statsHtml = stats.length
+      ? `<dl class="recipe-header__stats">${stats.map(statHtml).join('')}</dl>`
+      : '';
+
+    // Emit the shared print script once per article, immediately
+    // before the first recipe header that needs it — keeps it
+    // co-located with what uses it rather than requiring a separate
+    // global <script> registration elsewhere.
+    const scriptHtml = printScriptEmitted ? '' : PRINT_SCRIPT;
+    printScriptEmitted = true;
+
+    return (
+      `${scriptHtml}` +
+      `<div class="recipe-header">` +
+      `${imageHtml}` +
+      `<div class="recipe-header__body">` +
+      `<div class="recipe-header__heading-row">` +
+      `<h3 class="recipe-header__title">${escapeHtml(title)}</h3>` +
+      `<button type="button" class="recipe-header__print" onclick="window.__printRecipeHeader()">` +
+      `${ICON_PRINT}<span>Print recipe</span>` +
+      `</button>` +
+      `</div>` +
+      `${statsHtml}` +
+      `</div>` +
+      `</div>`
+    );
+  });
+}
+
+
+
+===== C:\Users\Admin\Shopify\Storefronts\Headless\app\components\blogs\RelatedBlogPosts.tsx =====
+
+import {Image} from '@shopify/hydrogen';
+import {Link} from 'react-router';
+
+/**
+ * RelatedBlogPosts
+ * -----------------
+ * "Related blogs" section rendered at the end of an article — same
+ * pattern as AuthorSection, NOT the marker/inject/portal pattern used
+ * by ProductGallery/FaqSection/NewsletterForm/video/ImagesGallery.
+ *
+ * Why this one is different: those blocks exist because an editor
+ * manually drops a marker at a specific point *inside* the article's
+ * rich text. Related posts aren't placed like that — they're picked
+ * (curated by the editor via a metafield, or worked out from shared
+ * tags) and always show as one fixed block after the article body, so
+ * there's no inline marker to parse and nothing to portal into. This
+ * file exports the same three-part shape as AuthorSection instead:
+ *
+ *   - `isRelatedPostsEnabled(article)` — gating, same shape as
+ *     isTocEnabled/getAuthorSectionData's own gating.
+ *   - `getRelatedPostsData(article, candidatePool)` — resolves
+ *     render-ready data or null, run in the loader (see wiring
+ *     instructions in related-blog-posts.md).
+ *   - `RelatedBlogPosts` (default export) — the presentational
+ *     component, rendered directly (no portal — it doesn't need one,
+ *     since it's not hydrating into markup that came from
+ *     dangerouslySetInnerHTML).
+ */
+
+export interface RelatedPost {
+  id: string;
+  title: string;
+  handle: string;
+  blogHandle: string;
+  publishedAt: string;
+  image?: {
+    url: string;
+    altText?: string | null;
+    width?: number | null;
+    height?: number | null;
+  } | null;
+}
+
+export interface RelatedBlogPostsProps {
+  posts: RelatedPost[];
+  /** Defaults to "Related blogs" */
+  title?: string;
+  /** Grid columns at desktop width. Defaults to 3. */
+  columns?: 2 | 3 | 4;
+}
+
+export default function RelatedBlogPosts({
+  posts,
+  title = 'Related blogs',
+  columns = 3,
+}: RelatedBlogPostsProps) {
+  if (!posts || posts.length === 0) return null;
+
+  return (
+    <section className="rbp-root" aria-labelledby="rbp-heading">
+      <h2 className="rbp-title" id="rbp-heading">
+        {title}
+      </h2>
+
+      <ul
+        className="rbp-grid"
+        style={{['--rbp-columns' as string]: columns}}
+      >
+        {posts.map((post) => (
+          <li className="rbp-card" key={post.id}>
+            <Link
+              to={`/blogs/${post.blogHandle}/${post.handle}`}
+              className="rbp-image-link"
+            >
+              {post.image ? (
+                <Image
+                  data={post.image}
+                  sizes="(min-width: 760px) 320px, 90vw"
+                  aspectRatio="1/1"
+                  crop="center"
+                  loading="lazy"
+                  className="rbp-image"
+                />
+              ) : (
+                <div className="rbp-image rbp-image--placeholder" />
+              )}
+            </Link>
+
+            <h3 className="rbp-card-title">
+              <Link to={`/blogs/${post.blogHandle}/${post.handle}`}>
+                {post.title}
+              </Link>
+            </h3>
+
+            <time className="rbp-date" dateTime={post.publishedAt}>
+              {formatShortDate(post.publishedAt)}
+            </time>
+
+            <Link
+              to={`/blogs/${post.blogHandle}/${post.handle}`}
+              className="rbp-read-more"
+            >
+              Read more
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/** Formats a date as "10.10.24" — matches the reference design. */
+function formatShortDate(dateString: string): string {
+  const date = new Date(dateString);
+  const dd = String(date.getDate()).padStart(2, '0');
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const yy = String(date.getFullYear()).slice(-2);
+  return `${dd}.${mm}.${yy}`;
+}
+
+// ---------------------------------------------------------------------
+// Gating + data resolution — run in the route loader
+// ---------------------------------------------------------------------
+
+/**
+ * Minimal shape this module needs from the article the loader already
+ * fetched. Kept intentionally small/structural (rather than importing
+ * the generated Article type) so this file doesn't need to know about
+ * the rest of ARTICLE_QUERY's shape — same "just the fields I use"
+ * approach as getAuthorSectionData likely takes for its own metafields.
+ */
+export interface RelatedPostsSourceArticle {
+  id: string;
+  tags?: string[] | null;
+  metafield?: {value: string} | null; // custom.show_related_posts
+  relatedArticlesField?: {
+    references?: {
+      nodes: Array<{
+        id: string;
+        title: string;
+        handle: string;
+        publishedAt: string;
+        blog: {handle: string};
+        image?: RelatedPost['image'];
+      }>;
+    };
+  } | null; // custom.related_articles (list.article_reference)
+}
+
+/**
+ * isRelatedPostsEnabled — gating for the section. Unlike the TOC and
+ * author section (both off by default), related posts default to ON:
+ * the whole point is to increase time-on-site, so an article should
+ * show them unless an editor has explicitly opted out via
+ * custom.show_related_posts = false. Mirrors the metafield-boolean
+ * shape of isTocEnabled, just with the default flipped.
+ */
+export function isRelatedPostsEnabled(
+  article: RelatedPostsSourceArticle,
+): boolean {
+  return article.metafield?.value !== 'false';
+}
+
+/**
+ * A candidate for the tag-based fallback needs its own tags to be
+ * rankable — RelatedPost itself stays lean (it's also the shape the
+ * curated-metafield path returns, which has no reason to carry tags
+ * once it's been picked), so the fallback pool uses this extended
+ * shape instead.
+ */
+export interface RelatedPostCandidate extends RelatedPost {
+  tags?: string[] | null;
+}
+
+/**
+ * getRelatedPostsData — resolves the posts to show, preferring an
+ * editor-curated list and falling back to a tag-based match:
+ *
+ *   1. If custom.related_articles (a list.article_reference metafield)
+ *      is set, use those articles, in the order the editor picked
+ *      them — this is the "Picked by relevant further reading" path.
+ *   2. Otherwise, fall back to `candidatePool` (articles from the same
+ *      blog, fetched separately — see wiring instructions), ranked by
+ *      how many tags they share with the current article (ties broken
+ *      by recency), and sliced to `limit`. An article with zero shared
+ *      tags can still appear if the pool is thin — this is a "keep
+ *      the section populated" fallback, not a strict relevance filter.
+ *
+ * Returns null when the section is disabled or there's nothing to
+ * show, so the caller can skip rendering entirely — same "null means
+ * don't render" contract as getAuthorSectionData.
+ */
+export function getRelatedPostsData(
+  article: RelatedPostsSourceArticle,
+  candidatePool: RelatedPostCandidate[],
+  {limit = 3}: {limit?: number} = {},
+): {posts: RelatedPost[]} | null {
+  if (!isRelatedPostsEnabled(article)) return null;
+
+  const curated = article.relatedArticlesField?.references?.nodes;
+  if (curated && curated.length > 0) {
+    const posts: RelatedPost[] = curated.slice(0, limit).map((node) => ({
+      id: node.id,
+      title: node.title,
+      handle: node.handle,
+      blogHandle: node.blog.handle,
+      publishedAt: node.publishedAt,
+      image: node.image,
+    }));
+    return posts.length > 0 ? {posts} : null;
+  }
+
+  const pool = candidatePool.filter((post) => post.id !== article.id);
+  if (pool.length === 0) return null;
+
+  const currentTags = new Set(article.tags ?? []);
+  const scored = pool
+    .map((post) => {
+      const sharedTagCount = (post.tags ?? []).filter((tag) =>
+        currentTags.has(tag),
+      ).length;
+      return {post, sharedTagCount};
+    })
+    .sort((a, b) => {
+      if (b.sharedTagCount !== a.sharedTagCount) {
+        return b.sharedTagCount - a.sharedTagCount;
+      }
+      return (
+        new Date(b.post.publishedAt).getTime() -
+        new Date(a.post.publishedAt).getTime()
+      );
+    });
+
+  return {posts: scored.slice(0, limit).map((entry) => entry.post)};
+}
+
+
+
+===== C:\Users\Admin\Shopify\Storefronts\Headless\app\components\blogs\SocialShare.tsx =====
+
+/**
+ * SocialShare
+ * -----------
+ * "Social sharing" card shown on an article: email, Facebook, X, and
+ * Pinterest share links.
+ *
+ * Rendered directly in the tree, same as AuthorSection — no marker,
+ * no portal, no DOM-scanning effect needed. Two reasons this one is
+ * even simpler than AuthorSection:
+ *
+ *   1. It doesn't parse anything out of `contentHtml` — its only
+ *      inputs (article title, image, and the page's own URL) are
+ *      already available in the route/loader, not embedded in the
+ *      rich text body.
+ *   2. Every link is a real share-intent URL (mailto:, Facebook's
+ *      sharer, X's intent, Pinterest's pin-create), so the whole
+ *      component works with zero JavaScript — clicking a link just
+ *      navigates, same as any other <a>. The onClick handlers below
+ *      are a progressive enhancement (open a small popup instead of
+ *      leaving the article) layered on top of hrefs that are already
+ *      fully functional without them.
+ */
+
+export interface SocialShareProps {
+  /** Canonical URL of the article being shared */
+  url: string;
+  /** Article title, used as the share text/subject */
+  title: string;
+  /** Optional image URL, used for Pinterest's richer share preview */
+  imageUrl?: string;
+  /** Defaults to "Social sharing" */
+  heading?: string;
+}
+
+type Platform = {
+  id: 'email' | 'facebook' | 'x' | 'pinterest';
+  label: string;
+  href: (args: {url: string; title: string; imageUrl?: string}) => string;
+  /** Email should navigate normally, not open a popup */
+  popup: boolean;
+  icon: () => React.ReactNode;
+};
+
+const PLATFORMS: Platform[] = [
+  {
+    id: 'email',
+    label: 'Share by email',
+    href: ({url, title}) =>
+      `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(url)}`,
+    popup: false,
+    icon: EnvelopeIcon,
+  },
+  {
+    id: 'facebook',
+    label: 'Share on Facebook',
+    href: ({url}) =>
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+    popup: true,
+    icon: FacebookIcon,
+  },
+  {
+    id: 'x',
+    label: 'Share on X',
+    href: ({url, title}) =>
+      `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`,
+    popup: true,
+    icon: XIcon,
+  },
+  {
+    id: 'pinterest',
+    label: 'Share on Pinterest',
+    href: ({url, title, imageUrl}) =>
+      `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(url)}` +
+      `&description=${encodeURIComponent(title)}` +
+      (imageUrl ? `&media=${encodeURIComponent(imageUrl)}` : ''),
+    popup: true,
+    icon: PinterestIcon,
+  },
+];
+
+export default function SocialShare({
+  url,
+  title,
+  imageUrl,
+  heading = 'Social sharing',
+}: SocialShareProps) {
+  return (
+    <section className="ss-root" aria-labelledby="ss-heading">
+      <h2 className="ss-heading" id="ss-heading">
+        {heading}
+      </h2>
+
+      <ul className="ss-list">
+        {PLATFORMS.map((platform) => {
+          const Icon = platform.icon;
+          const href = platform.href({url, title, imageUrl});
+
+          return (
+            <li key={platform.id}>
+              <a
+                className="ss-button"
+                href={href}
+                aria-label={platform.label}
+                target={platform.popup ? undefined : undefined}
+                rel="noopener noreferrer"
+                onClick={
+                  platform.popup
+                    ? (event) => {
+                        // Progressive enhancement only — the href above
+                        // already works as a plain navigation/new-tab
+                        // link if this handler never runs (JS disabled,
+                        // middle-click, etc).
+                        event.preventDefault();
+                        window.open(
+                          href,
+                          'share-popup',
+                          'width=600,height=520,noopener,noreferrer',
+                        );
+                      }
+                    : undefined
+                }
+              >
+                <Icon />
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
+function EnvelopeIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="2" y="4" width="20" height="16" rx="2" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M3 6l9 7 9-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function FacebookIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M15 8.5h2.5V5.2c-.43-.06-1.9-.2-3.62-.2-3.58 0-6.03 2.24-6.03 6.36V15H4.5v3.7h3.35V29h3.98V18.7h3.22l.5-3.7h-3.72v-3.15c0-1.07.29-1.35 1.17-1.35Z" transform="translate(0 -4)" />
+    </svg>
+  );
+}
+
+function XIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M18.9 3H22l-7.6 8.7L23 21h-6.9l-5.4-6.7L4.5 21H1.4l8.2-9.3L1 3h7.1l4.9 6.1L18.9 3Zm-1.2 16h1.7L7.4 4.9H5.6L17.7 19Z" />
+    </svg>
+  );
+}
+
+function PinterestIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 2C6.48 2 2 6.48 2 12c0 4.24 2.63 7.86 6.35 9.32-.09-.79-.17-2.01.03-2.87.19-.79 1.22-5.02 1.22-5.02s-.31-.62-.31-1.55c0-1.45.84-2.53 1.89-2.53.89 0 1.32.67 1.32 1.47 0 .9-.57 2.24-.87 3.48-.25 1.05.52 1.9 1.55 1.9 1.86 0 3.29-1.96 3.29-4.79 0-2.51-1.8-4.26-4.37-4.26-2.98 0-4.73 2.23-4.73 4.54 0 .9.35 1.87.78 2.39a.31.31 0 0 1 .07.3c-.08.32-.25 1.05-.29 1.19-.05.2-.15.24-.35.14-1.32-.61-2.15-2.54-2.15-4.09 0-3.33 2.42-6.39 6.98-6.39 3.66 0 6.51 2.61 6.51 6.09 0 3.63-2.29 6.55-5.47 6.55-1.07 0-2.07-.56-2.42-1.21l-.66 2.5c-.24.92-.89 2.08-1.32 2.78.99.31 2.04.47 3.13.47 5.52 0 10-4.48 10-10S17.52 2 12 2Z" />
+    </svg>
+  );
+}
+
+// ---------------------------------------------------------------------
+// Optional gating — only needed if an article should be able to opt
+// out of the section. Mirrors isRelatedPostsEnabled's shape: default
+// on, opt out via a metafield.
+// ---------------------------------------------------------------------
+
+export interface SocialShareSourceArticle {
+  metafield?: {value: string} | null; // custom.show_social_share
+}
+
+export function isSocialShareEnabled(
+  article: SocialShareSourceArticle,
+): boolean {
+  return article.metafield?.value !== 'false';
+}
+
+
+
+===== C:\Users\Admin\Shopify\Storefronts\Headless\app\components\blogs\Summary.tsx =====
+
+/**
+ * Summary
+ * -------
+ * "Summary" / "Key takeaways" block for Shopify blog articles, with a
+ * choice of layouts (list, numbered, grid, highlight).
+ *
+ * This is fully static — same family as `injectFaqSections` /
+ * `injectTwoColumnContent`, not the marker → slot → portal pattern
+ * used by ProductGallery/NewsletterForm/video/ImagesGallery. A
+ * summary box is just styled text: nothing in it needs client state,
+ * an event handler, or a fetcher, so there's no reason to hydrate it
+ * into a React component at all. `injectSummarySections` runs once in
+ * the loader and the resulting HTML is the final markup — no
+ * DOM-scanning effect or `createPortal` needed for this one.
+ *
+ * Marker syntax (inserted via the article's HTML/embed editor):
+ *
+ *   <div data-summary-embed data-summary-title="Key takeaways" data-summary-layout="grid">
+ *     <ul>
+ *       <li>Point one</li>
+ *       <li>Point two</li>
+ *       <li>Point three</li>
+ *     </ul>
+ *   </div>
+ *
+ * `data-summary-title` is optional. `data-summary-layout` is one of
+ * `list` (default) | `numbered` | `grid` | `highlight`. Items come
+ * from `<li>` tags if present, or `<p>` tags otherwise (useful for
+ * `highlight`, which reads best as one or two sentences rather than a
+ * bulleted list).
+ */
+
+export type SummaryLayout = 'list' | 'numbered' | 'grid' | 'highlight';
+
+const VALID_LAYOUTS: SummaryLayout[] = ['list', 'numbered', 'grid', 'highlight'];
+
+const SUMMARY_EMBED_RE = /<div[^>]*\bdata-summary-embed\b[^>]*>([\s\S]*?)<\/div>/gi;
+const LI_TAG_RE = /<li\b[^>]*>([\s\S]*?)<\/li>/gi;
+const P_TAG_RE = /<p\b[^>]*>([\s\S]*?)<\/p>/gi;
+
+function parseAttr(tag: string, name: string): string | undefined {
+  const match = tag.match(new RegExp(`${name}=["']([^"']*)["']`, 'i'));
+  return match ? match[1] : undefined;
+}
+
+function stripTags(html: string): string {
+  return html.replace(/<[^>]+>/g, '').trim();
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function extractItems(inner: string): string[] {
+  const liItems = [...inner.matchAll(LI_TAG_RE)].map((match) => stripTags(match[1]));
+  if (liItems.length > 0) return liItems.filter(Boolean);
+
+  const pItems = [...inner.matchAll(P_TAG_RE)].map((match) => stripTags(match[1]));
+  return pItems.filter(Boolean);
+}
+
+function renderList(items: string[]): string {
+  const rows = items
+    .map((item) => `<li class="sum-item">${escapeHtml(item)}</li>`)
+    .join('');
+  return `<ul class="sum-list">${rows}</ul>`;
+}
+
+function renderNumbered(items: string[]): string {
+  const rows = items
+    .map(
+      (item, i) =>
+        `<li class="sum-item sum-item--numbered">` +
+        `<span class="sum-number">${i + 1}</span>` +
+        `<span class="sum-item-text">${escapeHtml(item)}</span>` +
+        `</li>`,
+    )
+    .join('');
+  return `<ol class="sum-list sum-list--numbered">${rows}</ol>`;
+}
+
+function renderGrid(items: string[]): string {
+  const cells = items
+    .map((item) => `<li class="sum-chip">${escapeHtml(item)}</li>`)
+    .join('');
+  return `<ul class="sum-grid">${cells}</ul>`;
+}
+
+function renderHighlight(items: string[]): string {
+  // Highlight reads best as one block of text; join multiple
+  // paragraphs/items with a space rather than rendering them as a list.
+  const text = items.join(' ');
+  return `<p class="sum-highlight-text">${escapeHtml(text)}</p>`;
+}
+
+const RENDERERS: Record<SummaryLayout, (items: string[]) => string> = {
+  list: renderList,
+  numbered: renderNumbered,
+  grid: renderGrid,
+  highlight: renderHighlight,
+};
+
+/**
+ * injectSummarySections — finds every `data-summary-embed` marker in
+ * the article body and replaces it with the rendered summary box.
+ * Pure string transform, no data fetch needed — same reasoning as
+ * injectFaqSections/injectTwoColumnContent, so it can run alongside
+ * them in the loader.
+ *
+ * A marker with no usable items (no `<li>` or `<p>` tags inside it) is
+ * dropped entirely rather than rendered as an empty box.
+ */
+export function injectSummarySections(contentHtml: string): string {
+  return contentHtml.replace(SUMMARY_EMBED_RE, (fullMatch, inner: string) => {
+    const wrapperOpenTag = fullMatch.slice(0, fullMatch.indexOf('>') + 1);
+    const title = parseAttr(wrapperOpenTag, 'data-summary-title');
+    const layoutRaw = parseAttr(wrapperOpenTag, 'data-summary-layout');
+    const layout: SummaryLayout = VALID_LAYOUTS.includes(
+      layoutRaw as SummaryLayout,
+    )
+      ? (layoutRaw as SummaryLayout)
+      : 'list';
+
+    const items = extractItems(inner);
+    if (items.length === 0) return '';
+
+    const heading = title ? `<h3 class="sum-title">${escapeHtml(title)}</h3>` : '';
+    const body = RENDERERS[layout](items);
+
+    return `<div class="sum-root sum-layout--${layout}">${heading}${body}</div>`;
+  });
+}
+
+
+===== C:\Users\Admin\Shopify\Storefronts\Headless\app\components\blogs\TableOfContents.tsx =====
+
+// app/components/blogs/TableOfContents.tsx
+//
+// Auto-generated table of contents for blog articles, built from
+// whatever h2/h3 tags exist in the article body — no marker syntax,
+// no metafield required for heading detection. Editors write normal
+// headings in Shopify's blog HTML editor (as they already do);
+// nothing extra to author for the TOC content itself.
+//
+// Whether the TOC renders AT ALL is a separate, explicit decision —
+// see `isTocEnabled` below. It defaults OFF: an article only gets a
+// TOC if an editor explicitly sets custom.show_toc = true, mirroring
+// how AuthorSection.tsx gates on custom.show_author_section. This is
+// intentionally decoupled from whether the article *has* headings —
+// an article can have h2/h3s and still not show a TOC if the
+// metafield isn't set.
+//
+// Two entry points, same split as FaqSection.tsx:
+//
+//   1. `withHeadingIds(html)` — a server-side HTML transform, run in
+//      the loader. Scans contentHtml for <h2>/<h3> tags, assigns each
+//      one a slugified id (skipping any that already have one), and
+//      returns both the rewritten HTML and the flat heading list the
+//      component needs to render its links.
+//
+//   2. `<TableOfContents headings={...} />` — a real component, fed
+//      the heading list from the loader. Renders as plain jump links
+//      even with zero JS (the ids from #1 already make in-page anchor
+//      navigation work natively); the effect below layers on
+//      active-section highlighting as progressive enhancement.
+//
+// Callers should gate rendering with `isTocEnabled(article)` BEFORE
+// calling withHeadingIds/passing headings in — see the usage note
+// above isTocEnabled for the exact call-site pattern. The component
+// itself keeps its own `headings.length === 0` fallback as a second
+// safety net, but that alone is not sufficient gating: an article
+// can have headings and still need the TOC hidden by default.
+//
+// Unlike the shoppable-embed system in ProductGallery.tsx, this needs
+// no portal/hydration-slot dance in Article's template: it doesn't
+// call useNavigate(), useAside(), or any cart hook, so it can just
+// render directly in the route tree with its own small useEffect for
+// the scroll-spy — no context-provider requirements to route around.
+//
+// Desktop-sidebar / mobile-collapsible without two copies of the DOM:
+// same trick as the accordion — a single native <details> wrapping the
+// nav. CSS (app/assets/article-toc.css) hides the <summary> and forces
+// the content open past the desktop breakpoint; below it, <details>
+// behaves as an ordinary native collapsible with zero extra JS.
+
+import {useEffect, useMemo, useRef, useState} from 'react';
+
+export type TocHeading = {
+  id: string;
+  text: string;
+  level: 2 | 3;
+};
+
+// A heading plus whichever h3s fall under it in document order. Only
+// one level deep — h2/h3 is all withHeadingIds scans for, so a node's
+// children are always h3s, never grandchildren.
+type TocNode = TocHeading & {children: TocHeading[]};
+
+// Shape of the raw metafield data as read off the article object in
+// the loader (see ARTICLE_QUERY's `showToc` field). Kept loose/
+// optional the same way ArticleWithAuthorMetafields is in
+// AuthorSection.tsx — metafields are optional by nature, so this can
+// be null/undefined if unset in the admin.
+export type ArticleWithTocMetafield = {
+  showToc?: {value?: string | null} | null;
+};
+
+/**
+ * Resolves whether the table of contents should render for this
+ * article. Defaults to OFF: only an explicit "true" on the
+ * custom.show_toc metafield enables it. An unset metafield (null,
+ * the default for every article until an editor opts in) safely
+ * resolves to false — matching the same off-by-default pattern
+ * getAuthorSectionData uses for custom.show_author_section.
+ *
+ * Usage at the call site (loader or template):
+ *
+ *   const tocEnabled = isTocEnabled(article);
+ *   const {html, headings} = tocEnabled
+ *     ? withHeadingIds(article.contentHtml)
+ *     : {html: article.contentHtml, headings: []};
+ *
+ *   // ...later in JSX...
+ *   {tocEnabled && <TableOfContents headings={headings} />}
+ */
+export function isTocEnabled(article: ArticleWithTocMetafield): boolean {
+  return article.showToc?.value === 'true';
+}
+
+// Groups the flat heading list into a tree: each h3 nests under
+// whichever h2 preceded it in the article body. This mirrors the
+// hierarchy the Shopify blog editor's HTML already implies (an h3
+// "belongs" to the h2 above it) — nothing new to author, no marker
+// needed, same "auto from the HTML" spirit as withHeadingIds itself.
+// An h3 with no preceding h2 (unusual, but not invalid HTML) becomes
+// its own top-level entry rather than being dropped.
+function groupIntoTree(headings: TocHeading[]): TocNode[] {
+  const tree: TocNode[] = [];
+  let current: TocNode | null = null;
+
+  for (const h of headings) {
+    if (h.level === 2) {
+      current = {...h, children: []};
+      tree.push(current);
+    } else if (current) {
+      current.children.push(h);
+    } else {
+      tree.push({...h, children: []});
+    }
+  }
+
+  return tree;
+}
+
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-');
+}
+
+// CSS identifiers (and therefore unescaped "#id" selectors) can't
+// start with a digit. slugify() alone would happily turn a heading
+// like "2. Understand motor types" into the id "2-understand-motor-
+// types" — a perfectly valid HTML id, but one that breaks the moment
+// anything does document.querySelector('#' + id) instead of
+// getElementById. Rather than relying on every future call site to
+// remember that rule, make the ids safe by construction: prefix with
+// a letter whenever the slug would otherwise start with a digit.
+function toSafeId(base: string): string {
+  return /^\d/.test(base) ? `s-${base}` : base;
+}
+
+function stripTags(html: string): string {
+  return html
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&')
+    .replace(/&nbsp;/g, ' ')
+    .trim();
+}
+
+const HEADING_REGEX = /<h([23])((?:\s[^>]*)?)>([\s\S]*?)<\/h\1>/g;
+const ID_ATTR_REGEX = /\bid=["']([^"']+)["']/;
+
+// Editor-facing escape hatches, authored directly in Shopify's blog
+// HTML source view — same spirit as the data-shoppable-product /
+// data-faq markers elsewhere in this pipeline, just attributes on an
+// existing tag rather than a standalone marker div, since the tag
+// (the heading itself) already exists in the author's content.
+//
+//   data-toc-skip           — omit this heading from the TOC entirely.
+//                              The heading itself is left completely
+//                              untouched: no id added, not rewritten.
+//                              For headings that exist for visual/SEO
+//                              structure but shouldn't clutter the
+//                              sidebar (e.g. a lone "Frequently Asked
+//                              Questions" heading right before an FAQ
+//                              accordion that already makes its own
+//                              section obvious).
+//   data-toc-label="..."    — override the TOC link text without
+//                              changing the heading itself. The id/
+//                              slug is still derived from the real
+//                              heading text, so anchors stay stable
+//                              even if the label is edited later. For
+//                              long, descriptive headings that read
+//                              fine in the body but are too wide for a
+//                              sidebar link.
+const SKIP_ATTR_REGEX = /\bdata-toc-skip\b/;
+const LABEL_ATTR_REGEX = /\bdata-toc-label=["']([^"']+)["']/;
+
+/**
+ * Scans article HTML for h2/h3 tags, assigns a slugified id to any
+ * that don't already have one (deduped against collisions with a
+ * `-2`, `-3`, ... suffix), and returns the rewritten HTML alongside
+ * the flat list of headings for <TableOfContents> to render. Honors
+ * data-toc-skip / data-toc-label if the editor added them — see
+ * comment above.
+ *
+ * Callers should only invoke this when isTocEnabled(article) is true
+ * — see the usage note on isTocEnabled. Calling it unconditionally is
+ * harmless (it's a pure string transform) but wasteful, since its
+ * output is discarded whenever the TOC is gated off.
+ */
+export function withHeadingIds(html: string): {
+  html: string;
+  headings: TocHeading[];
+} {
+  const headings: TocHeading[] = [];
+  const seen = new Map<string, number>();
+
+  const rewritten = html.replace(
+    HEADING_REGEX,
+    (full, levelStr: string, attrs: string, inner: string) => {
+      const level = Number(levelStr) as 2 | 3;
+      const rawText = stripTags(inner);
+
+      // Skip headings that resolve to no visible text (rare, but a
+      // heading built entirely from an embed/image would slugify to
+      // an empty string) rather than emitting an empty TOC entry.
+      if (!rawText) return full;
+
+      // Editor opted this heading out of the TOC — leave it exactly
+      // as authored, don't list it, don't touch its id (if it already
+      // has one, e.g. for a manual deep link elsewhere, that stays).
+      if (SKIP_ATTR_REGEX.test(attrs)) return full;
+
+      const existingId = attrs.match(ID_ATTR_REGEX)?.[1];
+      let id = existingId;
+
+      if (!id) {
+        const base = slugify(rawText) || `section-${headings.length + 1}`;
+        const safeBase = toSafeId(base);
+        const count = seen.get(safeBase) ?? 0;
+        seen.set(safeBase, count + 1);
+        id = count === 0 ? safeBase : `${safeBase}-${count + 1}`;
+      }
+
+      const labelOverride = attrs.match(LABEL_ATTR_REGEX)?.[1];
+      const text = labelOverride ? stripTags(labelOverride) : rawText;
+
+      headings.push({id, text, level});
+
+      if (existingId) return full;
+
+      return `<h${levelStr}${attrs} id="${id}">${inner}</h${levelStr}>`;
+    },
+  );
+
+  return {html: rewritten, headings};
+}
+
+export function TableOfContents({headings}: {headings: TocHeading[]}) {
+  const tree = useMemo(() => groupIntoTree(headings), [headings]);
+
+  const [activeId, setActiveId] = useState<string | null>(
+    headings[0]?.id ?? null,
+  );
+  // Tracks which heading elements are currently intersecting the
+  // "reading zone" defined by rootMargin below, keyed by id — updated
+  // in place by the observer callback rather than rebuilt each time.
+  const intersecting = useRef<Map<string, boolean>>(new Map());
+
+  // Which top-level (h2) sections are currently expanded to show their
+  // h3 children. Purely manual — the button in each row is the only
+  // thing that opens or closes a section; scrolling never expands one
+  // on its own, so the sidebar's expanded state always matches exactly
+  // what the reader chose to open.
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+
+  function toggle(id: string) {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
+
+  useEffect(() => {
+    if (headings.length === 0) return;
+
+    const elements = headings
+      .map((h) => document.getElementById(h.id))
+      .filter((el): el is HTMLElement => el !== null);
+
+    if (elements.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          intersecting.current.set(entry.target.id, entry.isIntersecting);
+        }
+
+        // Walk headings in document order and keep the last one still
+        // marked intersecting — with the top-biased rootMargin below,
+        // that's the section whose start has scrolled past the top
+        // zone but hasn't been fully passed yet, i.e. "what you're
+        // currently reading."
+        let current: string | null = null;
+        for (const h of headings) {
+          if (intersecting.current.get(h.id)) current = h.id;
+        }
+        if (current) setActiveId(current);
+      },
+      {
+        // Biases the "active" zone toward the top of the viewport
+        // (accounting for a sticky header) rather than the whole
+        // screen, so highlighting doesn't jump to a heading that's
+        // only barely visible at the very bottom.
+        rootMargin: '-96px 0px -70% 0px',
+        threshold: 0,
+      },
+    );
+
+    elements.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, [headings]);
+
+  if (headings.length === 0) return null;
+
+  return (
+    <details className="article-toc" open>
+      <summary>On this page</summary>
+      <nav aria-label="Table of contents">
+        <ul>
+          {tree.map((node) => {
+            const hasChildren = node.children.length > 0;
+            const isExpanded = expandedIds.has(node.id);
+            const isActive = activeId === node.id;
+            const hasActiveChild = node.children.some(
+              (c) => c.id === activeId,
+            );
+
+            return (
+              <li
+                key={node.id}
+                className={[
+                  'article-toc__item',
+                  isActive ? 'article-toc__item--active' : null,
+                  hasActiveChild ? 'article-toc__item--active-child' : null,
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+              >
+                <div className="article-toc__row">
+                  <a href={`#${node.id}`}>{node.text}</a>
+
+                  {hasChildren && (
+                    <button
+                      type="button"
+                      className={[
+                        'article-toc__toggle',
+                        isExpanded ? 'article-toc__toggle--expanded' : null,
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
+                      aria-expanded={isExpanded}
+                      aria-label={`${isExpanded ? 'Collapse' : 'Expand'} "${node.text}" subsections`}
+                      onClick={() => toggle(node.id)}
+                    >
+                      <span className="article-toc__chevron" aria-hidden="true" />
+                    </button>
+                  )}
+                </div>
+
+                {hasChildren && isExpanded && (
+                  <ul className="article-toc__sublist">
+                    {node.children.map((child) => (
+                      <li
+                        key={child.id}
+                        className={[
+                          'article-toc__item',
+                          'article-toc__item--h3',
+                          activeId === child.id
+                            ? 'article-toc__item--active'
+                            : null,
+                        ]
+                          .filter(Boolean)
+                          .join(' ')}
+                      >
+                        <a href={`#${child.id}`}>{child.text}</a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+    </details>
+  );
+}
+
+
+===== C:\Users\Admin\Shopify\Storefronts\Headless\app\components\blogs\TwoColumnContent.tsx =====
+
+// app/components/blogs/TwoColumnContent.tsx
+//
+// Two-column rich text layout for blog articles, added via a
+// `data-two-col` marker written directly in Shopify's blog HTML
+// source view — same editor-facing convention as the shoppable-embed
+// (data-shoppable-product), FAQ (data-faq), and newsletter-form
+// (data-newsletter-form) markers, but unlike those, this one is
+// PURELY STATIC: the columns are just rich text/HTML the editor
+// already wrote, so there's no data to fetch and nothing to
+// hydrate. No React component, no client-side scan/portal, no
+// useEffect in the article template — injectTwoColumnContent() runs
+// once in the loader and the resulting markup is inert HTML from
+// then on.
+//
+// MIX FORMATS: each column can hold ANY HTML — paragraphs, headings,
+// images, lists, or even another marker (e.g. a shoppable-embed).
+// The scanner below counts raw <div>/</div> depth rather than
+// pattern-matching specific attributes, so nested markup of any kind
+// doesn't confuse where a column or the wrapper ends. See
+// two-column-content.md for worked examples of every format
+// combination.
+//
+// Editor-facing marker syntax:
+//
+//   <div data-two-col>
+//     <div>First column — any rich text/HTML.</div>
+//     <div>Second column — any rich text/HTML.</div>
+//   </div>
+//
+// Optional ratio override (defaults to equal columns):
+//
+//   <div data-two-col data-two-col-ratio="2-1">
+//     ...
+//   </div>
+//
+//   Supported ratios: "1-1" (default), "2-1", "1-2".
+//
+// Malformed input (anything other than exactly two direct child
+// <div> elements inside the marker) is left completely untouched —
+// same fail-safe reasoning as the shoppable-slot scan skipping slots
+// with a missing kind or empty product-ids list: better to render an
+// editor's mistake as plain, ugly-but-visible HTML than to silently
+// eat their content or half-transform it into broken markup.
+
+const RATIO_CLASS: Record<string, string> = {
+  '1-1': 'two-col-content--1-1',
+  '2-1': 'two-col-content--2-1',
+  '1-2': 'two-col-content--1-2',
+};
+
+const MARKER_OPEN_REGEX = /<div\b[^>]*\bdata-two-col\b[^>]*>/gi;
+const RATIO_ATTR_REGEX = /\bdata-two-col-ratio=["']([^"']*)["']/i;
+
+/**
+ * Given the index just past an already-consumed `<div ...>` opening
+ * tag, walks forward counting nested `<div` opens and `</div>`
+ * closes to find the index of that div's matching `</div>`. Content-
+ * agnostic — nested divs, images, or other embed markers inside
+ * don't confuse the boundary. Returns null if the tags never balance
+ * (truncated/malformed HTML).
+ */
+function findMatchingDivClose(html: string, openTagEnd: number): number | null {
+  const tagRegex = /<div\b[^>]*>|<\/div>/gi;
+  tagRegex.lastIndex = openTagEnd;
+
+  let depth = 1;
+  let match: RegExpExecArray | null;
+
+  while ((match = tagRegex.exec(html))) {
+    if (match[0].toLowerCase() === '</div>') {
+      depth -= 1;
+      if (depth === 0) return match.index;
+    } else {
+      depth += 1;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Given the inner HTML of a `data-two-col` block, returns the raw
+ * inner HTML of its first two direct child <div> elements — or null
+ * if there aren't exactly two direct-child divs (anything else
+ * between/around them besides whitespace, only one child, or a third
+ * child all count as malformed).
+ */
+function extractTwoColumns(innerHtml: string): [string, string] | null {
+  const childOpenRegex = /<div\b[^>]*>/gi;
+  const columns: string[] = [];
+  let cursor = 0;
+
+  while (columns.length < 3) {
+    childOpenRegex.lastIndex = cursor;
+    const openMatch = childOpenRegex.exec(innerHtml);
+
+    // Anything but whitespace between the last column and the next
+    // (or the end of the block) means this isn't a clean two-child
+    // wrapper.
+    const between = innerHtml.slice(cursor, openMatch?.index ?? innerHtml.length);
+    if (between.trim().length > 0) return null;
+
+    if (!openMatch) break;
+
+    const closeIndex = findMatchingDivClose(innerHtml, childOpenRegex.lastIndex);
+    if (closeIndex === null) return null;
+
+    columns.push(innerHtml.slice(childOpenRegex.lastIndex, closeIndex));
+    cursor = closeIndex + '</div>'.length;
+  }
+
+  if (columns.length !== 2) return null;
+  return [columns[0], columns[1]];
+}
+
+/**
+ * Scans article HTML for `data-two-col` markers and rewrites each
+ * into normalized `.two-col-content` markup with exactly two
+ * `.two-col-content__col` children, ready for the CSS grid layout in
+ * two-column-content.css. Pure string transform, run once in the
+ * loader — same shape as injectFaqSections/injectNewsletterForm.
+ */
+export function injectTwoColumnContent(html: string): string {
+  let result = '';
+  let cursor = 0;
+  MARKER_OPEN_REGEX.lastIndex = 0;
+
+  let openMatch: RegExpExecArray | null;
+  while ((openMatch = MARKER_OPEN_REGEX.exec(html))) {
+    const openStart = openMatch.index;
+    const openEnd = openStart + openMatch[0].length;
+
+    result += html.slice(cursor, openStart);
+
+    const closeIndex = findMatchingDivClose(html, openEnd);
+
+    if (closeIndex === null) {
+      // Unclosed marker — pass the remainder through untouched
+      // rather than guessing at a boundary.
+      result += html.slice(openStart);
+      cursor = html.length;
+      break;
+    }
+
+    const innerHtml = html.slice(openEnd, closeIndex);
+    const columns = extractTwoColumns(innerHtml);
+
+    if (!columns) {
+      // Malformed — pass the original marker and its contents
+      // through unchanged (see file header for why).
+      result += html.slice(openStart, closeIndex + '</div>'.length);
+    } else {
+      const ratioAttr = openMatch[0].match(RATIO_ATTR_REGEX)?.[1];
+      const ratioClass = (ratioAttr && RATIO_CLASS[ratioAttr]) || null;
+      const wrapperClass = ['two-col-content', ratioClass]
+        .filter(Boolean)
+        .join(' ');
+
+      result +=
+        `<div class="${wrapperClass}">` +
+        `<div class="two-col-content__col">${columns[0]}</div>` +
+        `<div class="two-col-content__col">${columns[1]}</div>` +
+        `</div>`;
+    }
+
+    cursor = closeIndex + '</div>'.length;
+    MARKER_OPEN_REGEX.lastIndex = cursor;
+  }
+
+  result += html.slice(cursor);
+  return result;
+}
+
+
+===== C:\Users\Admin\Shopify\Storefronts\Headless\app\components\blogs\Video.tsx =====
+
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from "react";
+
+/**
+ * NOTE ON STYLES: this component does NOT import its own CSS.
+ * app/assets/video.css is registered by the consuming route's
+ * `links()` export (via `?url`), same as article.css/article-author.css
+ * in blogs.$blogHandle.$articleHandle.tsx.
+ */
+
+/**
+ * Video
+ * -----
+ * Drop-in blog content block for embedding video from three sources:
+ *   1. Shopify CDN (self-hosted .mp4 / .webm — native <video>)
+ *   2. YouTube (facade-embed, loads iframe only on interaction)
+ *   3. Vimeo (facade-embed, loads iframe only on interaction)
+ *
+ * Design goals:
+ *  - Zero external dependencies (matches project convention)
+ *  - Lazy-loaded via IntersectionObserver — nothing heavy downloads
+ *    until the block is actually near the viewport
+ *  - Click-to-play "facade" pattern for YouTube/Vimeo so a full embed
+ *    (~500KB+ of iframe JS) never loads unless the reader opts in —
+ *    this is what actually protects blog page-speed/CWV scores
+ *  - Full keyboard + screen-reader support
+ *  - Respects prefers-reduced-motion (never force-autoplays motion)
+ */
+
+export type VideoSource = "shopify" | "youtube" | "vimeo";
+
+export interface VideoCaptionTrack {
+  /** VTT file URL, e.g. served from Shopify CDN Files */
+  src: string;
+  srcLang: string;
+  label: string;
+  default?: boolean;
+}
+
+export interface VideoProps {
+  /**
+   * Raw URL or ID depending on source:
+   *  - shopify: full .mp4/.webm CDN URL
+   *  - youtube: full URL or bare video ID
+   *  - vimeo: full URL or bare video ID
+   */
+  src: string;
+  /** Explicit source. If omitted, it's inferred from `src`. */
+  source?: VideoSource;
+  /** Poster / thumbnail image shown before playback starts. Strongly recommended for CWV. */
+  poster?: string;
+  /** Accessible title, also used as the YouTube/Vimeo iframe title. */
+  title: string;
+  /** Optional caption/subtitle blurb rendered under the video. */
+  caption?: string;
+  /** WebVTT caption tracks (Shopify CDN source only). */
+  tracks?: VideoCaptionTrack[];
+  /** Aspect ratio as width/height, e.g. 16/9 (default) or 1 for square. */
+  aspectRatio?: number;
+  /** Autoplay the Shopify CDN video once it's played (always muted; ignored if prefers-reduced-motion). */
+  autoplay?: boolean;
+  loop?: boolean;
+  muted?: boolean;
+  controls?: boolean;
+  /** Extra class on the root element. */
+  className?: string;
+  /** Skip the click-to-play facade and mount the real embed immediately (SEO/AMP-style pages). */
+  eager?: boolean;
+  /** Show the title as a visible card header above the video (default true). Set false to keep it screen-reader-only. */
+  showTitle?: boolean;
+}
+
+const YOUTUBE_ID_RE =
+  /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{6,})/;
+const VIMEO_ID_RE = /vimeo\.com\/(?:video\/)?(\d+)/;
+
+function inferSource(src: string): VideoSource {
+  if (/youtube\.com|youtu\.be/.test(src)) return "youtube";
+  if (/vimeo\.com/.test(src)) return "vimeo";
+  return "shopify";
+}
+
+function extractYouTubeId(src: string): string {
+  const match = src.match(YOUTUBE_ID_RE);
+  return match ? match[1] : src;
+}
+
+function extractVimeoId(src: string): string {
+  const match = src.match(VIMEO_ID_RE);
+  return match ? match[1] : src;
+}
+
+function usePrefersReducedMotion(): boolean {
+  const [reduced, setReduced] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduced(query.matches);
+    const handler = (e: MediaQueryListEvent) => setReduced(e.matches);
+    query.addEventListener("change", handler);
+    return () => query.removeEventListener("change", handler);
+  }, []);
+
+  return reduced;
+}
+
+function useInView<T extends HTMLElement>(rootMargin = "200px") {
+  const ref = useRef<T | null>(null);
+  const [inView, setInView] = useState(false);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node || typeof IntersectionObserver === "undefined") {
+      setInView(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [rootMargin]);
+
+  return { ref, inView };
+}
+
+function PlayButton({
+  onClick,
+  onKeyDown,
+  label,
+}: {
+  onClick: () => void;
+  onKeyDown: (e: KeyboardEvent<HTMLButtonElement>) => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      className="video__play-button"
+      onClick={onClick}
+      onKeyDown={onKeyDown}
+      aria-label={label}
+    >
+      <svg
+        className="video__play-icon"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <circle cx="12" cy="12" r="12" className="video__play-ring" />
+        <path d="M9.75 7.5v9l7.5-4.5-7.5-4.5z" className="video__play-triangle" />
+      </svg>
+    </button>
+  );
+}
+
+export default function Video({
+  src,
+  source,
+  poster,
+  title,
+  caption,
+  tracks = [],
+  aspectRatio = 16 / 9,
+  autoplay = false,
+  loop = false,
+  muted = true,
+  controls = true,
+  className,
+  eager = false,
+  showTitle = true,
+}: VideoProps) {
+  const resolvedSource = source ?? inferSource(src);
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const { ref: containerRef, inView } = useInView<HTMLDivElement>();
+  const [activated, setActivated] = useState(eager);
+  const videoElRef = useRef<HTMLVideoElement | null>(null);
+  const headingId = useId();
+
+  const safeAutoplay = autoplay && !prefersReducedMotion;
+
+  const activate = useCallback(() => setActivated(true), []);
+
+  const handlePlayButtonKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLButtonElement>) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        activate();
+      }
+    },
+    [activate]
+  );
+
+  useEffect(() => {
+    if (resolvedSource !== "shopify" || !activated) return;
+    const el = videoElRef.current;
+    if (el && safeAutoplay) {
+      el.play().catch(() => {
+        /* autoplay can be blocked by the browser; controls remain available */
+      });
+    }
+  }, [activated, resolvedSource, safeAutoplay]);
+
+  const embedUrl = useMemo(() => {
+    if (resolvedSource === "youtube") {
+      const id = extractYouTubeId(src);
+      const params = new URLSearchParams({
+        autoplay: "1",
+        rel: "0",
+        modestbranding: "1",
+      });
+      return `https://www.youtube-nocookie.com/embed/${id}?${params.toString()}`;
+    }
+    if (resolvedSource === "vimeo") {
+      const id = extractVimeoId(src);
+      const params = new URLSearchParams({ autoplay: "1", title: "0", byline: "0" });
+      return `https://player.vimeo.com/video/${id}?${params.toString()}`;
+    }
+    return src;
+  }, [resolvedSource, src]);
+
+  const shouldMountEmbed = activated && (inView || eager);
+
+  return (
+    <figure
+      className={["video__card", className].filter(Boolean).join(" ")}
+      style={{ ["--video-aspect-ratio" as string]: aspectRatio }}
+      ref={containerRef}
+      aria-labelledby={headingId}
+    >
+      {showTitle ? (
+        <div id={headingId} className="video__header">
+          {title}
+        </div>
+      ) : (
+        <span id={headingId} className="video__sr-only-title">
+          {title}
+        </span>
+      )}
+
+      <div className="video__frame">
+        {resolvedSource === "shopify" ? (
+          shouldMountEmbed ? (
+            <video
+              ref={videoElRef}
+              className="video__media"
+              poster={poster}
+              controls={controls}
+              loop={loop}
+              muted={muted || safeAutoplay}
+              playsInline
+              preload="metadata"
+              autoPlay={safeAutoplay}
+            >
+              <source src={src} />
+              {tracks.map((track) => (
+                <track
+                  key={track.src}
+                  kind="captions"
+                  src={track.src}
+                  srcLang={track.srcLang}
+                  label={track.label}
+                  default={track.default}
+                />
+              ))}
+              Your browser doesn&apos;t support embedded video.
+            </video>
+          ) : (
+            <>
+              {poster && (
+                <img
+                  src={poster}
+                  alt=""
+                  className="video__poster"
+                  loading="lazy"
+                />
+              )}
+              <PlayButton
+                onClick={activate}
+                onKeyDown={handlePlayButtonKeyDown}
+                label={`Play video: ${title}`}
+              />
+            </>
+          )
+        ) : shouldMountEmbed ? (
+          <iframe
+            className="video__media"
+            src={embedUrl}
+            title={title}
+            allow="accelerate-encryption; autoplay; picture-in-picture; encrypted-media; gyroscope"
+            allowFullScreen
+            loading="lazy"
+          />
+        ) : (
+          <>
+            {poster ? (
+              <img
+                src={poster}
+                alt=""
+                className="video__poster"
+                loading="lazy"
+              />
+            ) : (
+              <div
+                className={[
+                  "video__poster",
+                  "video__poster--fallback",
+                  resolvedSource === "youtube"
+                    ? "video__poster--youtube"
+                    : "video__poster--vimeo",
+                ].join(" ")}
+                aria-hidden="true"
+              />
+            )}
+            <PlayButton
+              onClick={activate}
+              onKeyDown={handlePlayButtonKeyDown}
+              label={`Play video: ${title}`}
+            />
+          </>
+        )}
+      </div>
+
+      {caption && <figcaption className="video__caption">{caption}</figcaption>}
+    </figure>
+  );
+}
+
+/**
+ * Marker-injection + slot-hydration
+ * ----------------------------------
+ * Lets editors drop a video into a blog article body via a custom-HTML
+ * block, following the same marker-injection (server) → portal-hydration
+ * (client) pattern as ProductGallery/FaqSection/NewsletterForm.
+ *
+ * Editor-authored marker:
+ *
+ *   <div
+ *     data-video-embed
+ *     data-src="https://cdn.shopify.com/videos/c/o/v/example.mp4"
+ *     data-source="shopify"
+ *     data-title="Behind the scenes"
+ *     data-poster="https://cdn.shopify.com/s/files/1/xxxx/poster.jpg"
+ *     data-caption="Filmed in our LA studio."
+ *     data-aspect-ratio="16/9"
+ *     data-autoplay="false"
+ *     data-loop="false"
+ *     data-muted="true"
+ *     data-controls="true"
+ *     data-show-title="true"
+ *   ></div>
+ *
+ * Only `data-src` and `data-title` are required — everything else falls
+ * back to this component's own defaults, and `data-source` can be
+ * omitted since <Video> infers it from the URL.
+ */
+
+const VIDEO_EMBED_RE = /<div\s+data-video-embed\b([^>]*)><\/div>/gi;
+const ATTR_RE = /data-([\w-]+)="([^"]*)"/g;
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function parseAttrs(attrString: string): Record<string, string> {
+  const attrs: Record<string, string> = {};
+  let match: RegExpExecArray | null;
+  ATTR_RE.lastIndex = 0;
+  while ((match = ATTR_RE.exec(attrString))) {
+    attrs[match[1]] = match[2];
+  }
+  return attrs;
+}
+
+// Fields carried straight through from the editor marker onto the
+// hydration slot, unchanged. Kept as a flat list (rather than spreading
+// every parsed attr) so a stray/unexpected data-* attribute on the
+// marker never leaks onto the slot node.
+const PASSTHROUGH_FIELDS = [
+  "src",
+  "source",
+  "title",
+  "poster",
+  "caption",
+  "aspect-ratio",
+  "autoplay",
+  "loop",
+  "muted",
+  "controls",
+  "show-title",
+] as const;
+
+/**
+ * Rewrites every `data-video-embed` marker in `html` into a
+ * `data-video-slot` node the client can find and hydrate (see
+ * `readVideoSlot` + the scanning effect in the article route). Pure
+ * string transform, no data fetch needed — same reasoning as
+ * injectFaqSections/injectNewsletterForm, so it's fine to run alongside
+ * those.
+ *
+ * A marker missing `data-src` is dropped silently (rendered as nothing)
+ * rather than left in place or thrown on — same "skip malformed"
+ * behavior as the shoppable-slot scan in the article template.
+ */
+export function injectVideoEmbeds(html: string): string {
+  return html.replace(VIDEO_EMBED_RE, (_match, attrString: string) => {
+    const attrs = parseAttrs(attrString);
+    if (!attrs.src) return "";
+
+    const slotAttrs = PASSTHROUGH_FIELDS.filter((field) => attrs[field] != null)
+      .map((field) => `data-${field}="${escapeHtml(attrs[field])}"`)
+      .join(" ");
+
+    return `<div data-video-slot ${slotAttrs}></div>`;
+  });
+}
+
+function toBool(value: string | null, fallback: boolean): boolean {
+  if (value == null) return fallback;
+  return value === "true";
+}
+
+// Accepts "16/9" or a bare number like "1" (square).
+function parseAspectRatio(value: string): number | undefined {
+  const [w, h] = value.split("/").map(Number);
+  if (!Number.isFinite(w)) return undefined;
+  if (h == null || !Number.isFinite(h) || h === 0) return w;
+  return w / h;
+}
+
+/**
+ * Reads a single `[data-video-slot]` element's data-* attributes back
+ * into <Video> props. Used by the article route's slot-scanning effect,
+ * mirroring how newsletter/shoppable slots are read back off their DOM
+ * nodes rather than re-parsed from raw HTML on the client.
+ */
+export function readVideoSlot(el: HTMLElement): VideoProps | null {
+  const src = el.getAttribute("data-src");
+  const title = el.getAttribute("data-title");
+  if (!src || !title) return null;
+
+  const source = el.getAttribute("data-source");
+  const aspectRatioAttr = el.getAttribute("data-aspect-ratio");
+
+  return {
+    src,
+    title,
+    source:
+      source === "youtube" || source === "vimeo" || source === "shopify"
+        ? source
+        : undefined,
+    poster: el.getAttribute("data-poster") ?? undefined,
+    caption: el.getAttribute("data-caption") ?? undefined,
+    aspectRatio: aspectRatioAttr ? parseAspectRatio(aspectRatioAttr) : undefined,
+    autoplay: toBool(el.getAttribute("data-autoplay"), false),
+    loop: toBool(el.getAttribute("data-loop"), false),
+    muted: toBool(el.getAttribute("data-muted"), true),
+    controls: toBool(el.getAttribute("data-controls"), true),
+    showTitle: toBool(el.getAttribute("data-show-title"), true),
+  };
+}
+
+

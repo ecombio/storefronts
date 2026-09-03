@@ -1,0 +1,78 @@
+/**
+ * quote.css
+ * Styles for app/components/blogs/Quote.tsx
+ * BEM naming: block = "quote"
+ */
+
+.quote {
+  margin: 0;
+}
+
+/* --card: bordered white card, matches the reference design */
+.quote--card {
+  background: var(--quote-card-bg, #ffffff);
+  border: 1px solid var(--quote-card-border, #eee2d8);
+  border-radius: var(--quote-card-radius, 16px);
+  box-shadow: var(--quote-card-shadow, 0 10px 30px rgba(20, 20, 20, 0.06));
+  padding: var(--quote-card-padding, 24px);
+}
+
+.quote--card .quote__mark {
+  width: 34px;
+  height: auto;
+  fill: var(--quote-accent-color, #2f3bf0);
+  margin-bottom: 16px;
+  display: block;
+}
+
+.quote--card .quote__text {
+  font-size: 1.1875rem;
+  line-height: 1.4;
+  font-weight: 700;
+  color: var(--quote-text-color, #1a1a1a);
+}
+
+.quote--card .quote__attribution {
+  margin-top: 16px;
+  font-size: 0.9375rem;
+  color: var(--quote-attribution-color, #4d4d4d);
+}
+
+/* --pull: lightweight inline variant, no card chrome — just a left
+   border accent, for dropping a quote without visually boxing it off. */
+.quote--pull {
+  padding-left: 20px;
+  border-left: 3px solid var(--quote-accent-color, #2f3bf0);
+}
+
+.quote--pull .quote__text {
+  font-size: 1.125rem;
+  line-height: 1.5;
+  font-style: italic;
+  font-weight: 600;
+  color: var(--quote-text-color, #1a1a1a);
+}
+
+.quote--pull .quote__attribution {
+  margin-top: 10px;
+  font-size: 0.875rem;
+  color: var(--quote-attribution-color, #666);
+}
+
+/* Shared element rules */
+.quote__text {
+  margin: 0;
+}
+
+.quote__attribution {
+  margin: 0;
+}
+
+.quote__name {
+  font-style: normal;
+  font-weight: 600;
+}
+
+.quote__role {
+  font-weight: 400;
+}

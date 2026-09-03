@@ -7,9 +7,16 @@ import {Image} from '@shopify/hydrogen';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {extractShoppableProductIds, injectShoppableProducts} from '~/components/blogs/ProductGallery';
 import {injectFaqSections} from '~/components/blogs/FaqSection';
+import {injectTwoColumnContent} from '~/components/blogs/TwoColumnContent';
 import {withHeadingIds, TableOfContents, isTocEnabled} from '~/components/blogs/TableOfContents';
 import {AuthorSection, getAuthorSectionData} from '~/components/blogs/AuthorSection';
 import {injectNewsletterForm, NewsletterForm} from '~/components/blogs/NewsletterForm';
+import Video, {injectVideoEmbeds, readVideoSlot} from '~/components/blogs/video';
+import ImagesGallery, {
+  injectImagesGallery,
+  readGallerySlot,
+  type GalleryImage,
+} from '~/components/blogs/ImagesGallery';
 import {ProductCard} from '~/snippets/ProductCard';
 import {Solo, Duo, Trio} from '~/components/blogs/ProductGallery';
 
@@ -17,14 +24,32 @@ import {ARTICLE_QUERY, SHOPPABLE_PRODUCTS_QUERY} from '~/graphql/blog/ArticleQue
 import type {ProductCardFragment} from 'storefrontapi.generated';
 import articleStyles from '~/assets/article.css?url';
 import authorSectionStyles from '~/assets/article-author.css?url';
+import twoColumnContentStyles from '~/assets/two-column-content.css?url';
+import videoStyles from '~/assets/video.css?url';
+import galleryStyles from '~/assets/gallery.css?url';
 // newsletter-form.css is NOT imported here — it now loads globally
 // via root.tsx (see the ADDED comment there), since the
 // data-newsletter-form marker is reusable outside blog articles too.
+// two-column-content.css stays route-scoped, same reasoning as
+// article.css/article-author.css: the data-two-col marker only ever
+// appears inside a blog article body, unlike the newsletter marker.
+// video.css stays route-scoped too, same reasoning: the
+// data-video-embed marker (see video.tsx) only ever appears
+// inside a blog article body.
+// gallery.css stays route-scoped for the same reason again: the
+// data-gallery-embed marker (see ImagesGallery.tsx) only ever appears
+// inside a blog article body. Unlike video.css, gallery.css also has
+// to style the STATIC server-rendered grid (see injectImagesGallery),
+// not just the hydrated component, since the grid is visible and
+// functional before any JS runs.
 
 export function links() {
   return [
     {rel: 'stylesheet', href: articleStyles},
     {rel: 'stylesheet', href: authorSectionStyles},
+    {rel: 'stylesheet', href: twoColumnContentStyles},
+    {rel: 'stylesheet', href: videoStyles},
+    {rel: 'stylesheet', href: galleryStyles},
   ];
 }
 
@@ -95,6 +120,17 @@ async function loadCriticalData({context, request, params}: Route.LoaderArgs) {
   }
   // ...existing shoppable-embed block unchanged...
 
+  // Normalizes data-two-col marker blocks into two-column grid markup
+  // (see TwoColumnContent.tsx for the marker syntax). Pure string
+  // transform, no data fetch needed — runs right after the
+  // shoppable-embed block so a shoppable-product marker nested inside
+  // a column is already resolved to its real card markup by the time
+  // this pass counts div depth. Not required for correctness (the
+  // depth-counting is content-agnostic either way) but keeps
+  // transform order matching how these blocks typically appear
+  // structurally in an article.
+  contentHtml = injectTwoColumnContent(contentHtml);
+
   contentHtml = injectFaqSections(contentHtml); // runs regardless of
   // whether shoppable products were present, since FAQ injection needs
   // no async data fetch (unlike the product-embed block above it).
@@ -109,6 +145,31 @@ async function loadCriticalData({context, request, params}: Route.LoaderArgs) {
   // bearing.
   contentHtml = injectNewsletterForm(contentHtml);
 
+  // Rewrites data-video-embed markers into a data-video-slot node
+  // (see video.tsx) the client hydrates into the real <Video>
+  // component via portal — same reasoning and same "no async data
+  // fetch" shape as injectNewsletterForm just above, so it runs
+  // alongside it. Unlike the newsletter form, there's no meaningful
+  // static/no-JS version of the slot to render server-side (the
+  // pre-activation poster + play button only does anything once
+  // hydrated), so the slot starts empty and stays empty until the
+  // portal below fills it in.
+  contentHtml = injectVideoEmbeds(contentHtml);
+
+  // Rewrites data-gallery-embed markers into a data-gallery-slot node
+  // (see ImagesGallery.tsx) the client hydrates into the real
+  // <ImagesGallery> component via portal — same "no async data fetch"
+  // shape as injectNewsletterForm/injectVideoEmbeds, so it runs
+  // alongside them. Unlike video, but like the newsletter form, there
+  // IS a meaningful static/no-JS version: the marker's <img> tags are
+  // parsed and re-rendered as a real, working thumbnail grid (each
+  // thumbnail links straight to its full-size image) before hydration
+  // swaps in the interactive lightbox. Runs after injectVideoEmbeds
+  // so a gallery marker isn't accidentally matched by the broader
+  // video div-scanning if the two ever get nested in an article body;
+  // order isn't otherwise load-bearing.
+  contentHtml = injectImagesGallery(contentHtml);
+
   // Whether the TOC should render at all for this article — defaults
   // to off (see isTocEnabled in TableOfContents.tsx), same off-by-
   // default pattern as authorSection below. Resolved before the
@@ -118,9 +179,12 @@ async function loadCriticalData({context, request, params}: Route.LoaderArgs) {
 
   // Assigns ids to any h2/h3 that doesn't already have one and returns
   // the flat heading list TableOfContents renders from. Order relative
-  // to the FAQ/newsletter injection above doesn't matter — neither of
-  // those passes ever touches an h2/h3 tag, so there's nothing for
-  // this pass to double-process either way.
+  // to the two-col/FAQ/newsletter/video/gallery injection above
+  // doesn't matter — none of those passes ever touch an h2/h3 tag, so
+  // there's nothing for this pass to double-process either way. (A
+  // heading nested inside a two-col column is still just an h2/h3 in
+  // the final HTML by this point, so it gets an id and a TOC entry
+  // like any other.)
   let tocHeadings: ReturnType<typeof withHeadingIds>['headings'] = [];
 
   if (tocEnabled) {
@@ -168,6 +232,19 @@ type NewsletterSlot = {
   subheading: string;
 };
 
+// Describes one gallery slot found in the rendered article body: the
+// DOM node to portal into, plus the image list/title/columns resolved
+// server-side by injectImagesGallery (read back off the slot's data
+// attributes via readGallerySlot, same idea as NewsletterSlot above —
+// different data shape since a gallery carries a full image array
+// rather than two strings).
+type GallerySlot = {
+  el: HTMLElement;
+  images: GalleryImage[];
+  title?: string;
+  columns?: 2 | 3 | 4 | 5;
+};
+
 export default function ArticleTemplate() {
   const {
     article,
@@ -179,7 +256,10 @@ export default function ArticleTemplate() {
   const {title, image, contentHtml, author} = article;
 
   // Ref to the container the raw article HTML is injected into, so we
-  // can scan its actual DOM for shoppable/newsletter slots after render.
+  // can scan its actual DOM for shoppable/newsletter/video/gallery
+  // slots after render. Note: two-col-content is NOT scanned here —
+  // it's fully static (see TwoColumnContent.tsx), so there's no slot
+  // type for it and nothing for this component to find/portal.
   const bodyRef = useRef<HTMLDivElement>(null);
 
   // The shoppable slots discovered in the DOM (populated by the effect
@@ -193,6 +273,22 @@ export default function ArticleTemplate() {
   const [newsletterSlots, setNewsletterSlots] = useState<NewsletterSlot[]>(
     [],
   );
+
+  // The video slots discovered in the DOM. Kept separate from the
+  // other two for the same reason — different data shape (full
+  // <Video> props, read back via readVideoSlot) and a different
+  // component portaled in.
+  const [videoSlots, setVideoSlots] = useState<HTMLElement[]>([]);
+
+  // The gallery slots discovered in the DOM. Kept separate for the
+  // same reason as videoSlots/newsletterSlots — different data shape
+  // (image array + optional title/columns, read back via
+  // readGallerySlot) and a different component (<ImagesGallery>)
+  // portaled in. Unlike videoSlots, the props are resolved once here
+  // (readGallerySlot at scan time) rather than per-render, since
+  // there's no reason to re-parse the same JSON attribute on every
+  // render — same choice as ShoppableSlot/NewsletterSlot above.
+  const [gallerySlots, setGallerySlots] = useState<GallerySlot[]>([]);
 
   // Human-readable published date, e.g. "September 2, 2026".
   const publishedDate = new Intl.DateTimeFormat('en-US', {
@@ -255,10 +351,12 @@ export default function ArticleTemplate() {
     }
   }, [contentHtml]);
 
-  // Finds each server-rendered shoppable-embed and newsletter-form slot
-  // (rendered with the hook-free Static* components in
-  // ~/components/blogs/ProductGallery, and the static <form> from
-  // injectNewsletterForm respectively) and records them so the real,
+  // Finds each server-rendered shoppable-embed, newsletter-form,
+  // video, and gallery slot (rendered with the hook-free Static*
+  // components in ~/components/blogs/ProductGallery, the static
+  // <form> from injectNewsletterForm, the empty data-video-slot node
+  // from injectVideoEmbeds, and the static thumbnail grid from
+  // injectImagesGallery respectively) and records them so the real,
   // interactive components can be portaled into them below.
   //
   // Deliberately NOT createRoot(el).render(...) here: that would spin up
@@ -274,6 +372,14 @@ export default function ArticleTemplate() {
   // root.tsx, which wraps the route's <Outlet />). The newsletter form's
   // useFetcher() needs exactly this same Router context, which is why
   // it's scanned/portaled the same way rather than mounted separately.
+  // <Video> itself doesn't need any app context (no fetcher/router
+  // hooks), but it's scanned/portaled the same way anyway for
+  // consistency, and because it still needs *some* mount point inside
+  // this tree — dangerouslySetInnerHTML content is otherwise inert.
+  // <ImagesGallery> is in the same boat as <Video> — no app context
+  // needed (just local React state for the lightbox), scanned/portaled
+  // the same way purely for consistency and because it needs a mount
+  // point inside this tree too.
   useEffect(() => {
     const container = bodyRef.current;
     if (!container) return;
@@ -323,6 +429,40 @@ export default function ArticleTemplate() {
       });
 
     setNewsletterSlots(foundNewsletters);
+
+    // Look for every element the server marked as a video slot (see
+    // injectVideoEmbeds in video.tsx). Unlike the other slot types,
+    // the props themselves are read back per-element at render time
+    // via readVideoSlot (see the .map() below) rather than pre-parsed
+    // here — there's nothing to clear first since injectVideoEmbeds
+    // never rendered any inner markup into the slot to begin with.
+    const foundVideos = Array.from(
+      container.querySelectorAll<HTMLElement>('[data-video-slot]'),
+    );
+    setVideoSlots(foundVideos);
+
+    const foundGalleries: GallerySlot[] = [];
+
+    // Look for every element the server marked as a gallery slot (see
+    // injectImagesGallery in ImagesGallery.tsx).
+    container
+      .querySelectorAll<HTMLElement>('[data-gallery-slot]')
+      .forEach((el) => {
+        const data = readGallerySlot(el);
+
+        // Skip malformed slots (missing/unparsable data-gallery-images).
+        if (!data) return;
+
+        // Clear the static server-rendered grid - the portal below
+        // renders the live, lightbox-capable replacement into this
+        // same node. Same "static remains usable right up until the
+        // swap" property as the newsletter form: the grid's <a> tags
+        // work with no JS until this line runs.
+        el.innerHTML = '';
+        foundGalleries.push({el, ...data});
+      });
+
+    setGallerySlots(foundGalleries);
   }, [contentHtml]);
 
   // Keyed by numeric ID, matching the numeric IDs in each slot's
@@ -352,10 +492,11 @@ export default function ArticleTemplate() {
           is enabled (see article-toc.css); collapses to one column via
           --no-toc when it's not. h1/meta/hero above stay full-width. */}
       <div className={articleLayoutClassName}>
-        {/* Raw article HTML from Shopify, with shoppable-embed and
-            newsletter-form markers already resolved and heading ids
-            assigned by the loader above. bodyRef lets the effects
-            above scan this DOM subtree once it's mounted. */}
+        {/* Raw article HTML from Shopify, with shoppable-embed,
+            two-col, newsletter-form, video-embed, and gallery-embed
+            markers already resolved and heading ids assigned by the
+            loader above. bodyRef lets the effects above scan this DOM
+            subtree once it's mounted. */}
         <div
           ref={bodyRef}
           dangerouslySetInnerHTML={{__html: contentHtml}}
@@ -435,6 +576,33 @@ export default function ArticleTemplate() {
           <NewsletterForm data={{heading, subheading}} />,
           el,
           `newsletter-${i}`,
+        ),
+      )}
+
+      {/* For each discovered video slot, read its props back off the
+          slot's data-* attributes and portal the live <Video>
+          component in. A slot missing required fields (src/title)
+          resolves to null and renders nothing, same "skip malformed"
+          behavior as the shoppable-slot switch above. Keyed by
+          position for the same reason as the newsletter slots — an
+          article can embed the same video twice. */}
+      {videoSlots.map((el, i) => {
+        const props = readVideoSlot(el);
+        if (!props) return null;
+        return createPortal(<Video {...props} />, el, `video-${i}`);
+      })}
+
+      {/* For each discovered gallery slot, portal the live
+          <ImagesGallery> in — replacing the static thumbnail grid
+          that was cleared above. Props were already resolved at scan
+          time (readGallerySlot, above), so this just spreads them.
+          Keyed by position for the same reason as the newsletter/
+          video slots — an article can embed more than one gallery. */}
+      {gallerySlots.map(({el, images, title: galleryTitle, columns}, i) =>
+        createPortal(
+          <ImagesGallery images={images} title={galleryTitle} columns={columns} />,
+          el,
+          `gallery-${i}`,
         ),
       )}
 

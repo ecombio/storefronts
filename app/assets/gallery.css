@@ -1,0 +1,238 @@
+/* app/assets/gallery.css
+ *
+ * Styles for the data-gallery-embed block (see
+ * ~/components/blogs/ImagesGallery.tsx). Route-scoped rather than
+ * global — same reasoning as article.css/video.css: the data-gallery
+ * marker only ever appears inside a blog article body.
+ *
+ * These rules cover BOTH states of the block:
+ *   1. The static, server-rendered grid (plain <a>/<img> markup,
+ *      produced by injectImagesGallery / renderStaticGalleryGrid) —
+ *      visible immediately, works with no JS.
+ *   2. The hydrated <ImagesGallery /> component that replaces it
+ *      client-side, which reuses the same class names for the grid
+ *      and adds the lightbox markup on top.
+ * Keeping one shared stylesheet means there's no flash of
+ * unstyled/differently-styled content when hydration swaps the
+ * static grid for the live component.
+ */
+
+.ig-root {
+  --ig-ink: #17181c;
+  --ig-paper: #ffffff;
+  --ig-line: #e3e2df;
+  --ig-accent: #2c4a3e;
+  --ig-radius: 10px;
+  font-family: inherit;
+  color: var(--ig-ink);
+  margin: 2rem 0;
+}
+
+.ig-title {
+  margin: 0 0 0.9rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.ig-grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(var(--ig-columns, 3), 1fr);
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+}
+
+@media (max-width: 640px) {
+  .ig-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.ig-cell {
+  margin: 0;
+}
+
+.ig-thumb-button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 1px solid var(--ig-line);
+  border-radius: var(--ig-radius);
+  background: var(--ig-paper);
+  overflow: hidden;
+  cursor: zoom-in;
+  text-decoration: none;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.ig-thumb-button:hover {
+  border-color: var(--ig-accent);
+}
+
+.ig-thumb-button:focus-visible {
+  outline: 2px solid var(--ig-accent);
+  outline-offset: 2px;
+}
+
+.ig-thumb-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.ig-thumb-img--square {
+  aspect-ratio: 1 / 1;
+}
+
+.ig-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(17, 17, 15, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.ig-lightbox {
+  width: 100%;
+  max-width: 960px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ig-lightbox-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #f2f1ec;
+}
+
+.ig-counter {
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  opacity: 0.8;
+}
+
+.ig-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid rgba(242, 241, 236, 0.35);
+  border-radius: 999px;
+  background: transparent;
+  color: #f2f1ec;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.ig-icon-button:hover {
+  background: rgba(242, 241, 236, 0.1);
+  border-color: rgba(242, 241, 236, 0.7);
+}
+
+.ig-icon-button:focus-visible {
+  outline: 2px solid #f2f1ec;
+  outline-offset: 2px;
+}
+
+.ig-lightbox-stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+.ig-lightbox-img {
+  max-width: 100%;
+  max-height: 70vh;
+  border-radius: 6px;
+  object-fit: contain;
+}
+
+.ig-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.ig-nav--prev {
+  left: -4px;
+}
+
+.ig-nav--next {
+  right: -4px;
+}
+
+@media (min-width: 640px) {
+  .ig-nav--prev {
+    left: -52px;
+  }
+  .ig-nav--next {
+    right: -52px;
+  }
+}
+
+.ig-caption {
+  margin: 0;
+  text-align: center;
+  color: #d9d8d2;
+  font-size: 0.9rem;
+}
+
+.ig-filmstrip {
+  list-style: none;
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.25rem 0 0;
+  padding: 0;
+  overflow-x: auto;
+  justify-content: center;
+}
+
+.ig-filmstrip-button {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 auto;
+  padding: 0;
+  border-radius: 6px;
+  border: 1.5px solid transparent;
+  background: transparent;
+  overflow: hidden;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.15s ease, border-color 0.15s ease;
+}
+
+.ig-filmstrip-button:hover {
+  opacity: 0.85;
+}
+
+.ig-filmstrip-button--active {
+  opacity: 1;
+  border-color: #f2f1ec;
+}
+
+.ig-filmstrip-button img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ig-thumb-button,
+  .ig-icon-button,
+  .ig-filmstrip-button {
+    transition: none;
+  }
+}

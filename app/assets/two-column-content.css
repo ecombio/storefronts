@@ -1,0 +1,53 @@
+/*
+ * Two-column rich text layout for blog articles, added via the
+ * data-two-col marker (see TwoColumnContent.tsx for the marker
+ * syntax and the server-side normalization pass). Own file, linked
+ * the same way as every other feature stylesheet in the article
+ * route (see article-toc.css, article-author.css, newsletter-form.css)
+ * — loaded alongside article.css, not merged into it.
+ */
+
+.two-col-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+.two-col-content--2-1 {
+  grid-template-columns: 2fr 1fr;
+}
+
+.two-col-content--1-2 {
+  grid-template-columns: 1fr 2fr;
+}
+
+.two-col-content__col > :first-child {
+  margin-top: 0;
+}
+
+.two-col-content__col > :last-child {
+  margin-bottom: 0;
+}
+
+.two-col-content__col img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+/* Nested embeds (e.g. a shoppable-embed dropped inside a column)
+   should sit flush with the column edge, not fight the column's own
+   text-block spacing. */
+.two-col-content__col .shoppable-embed {
+  margin: 1rem 0;
+}
+
+@media (max-width: 700px) {
+  .two-col-content,
+  .two-col-content--2-1,
+  .two-col-content--1-2 {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}

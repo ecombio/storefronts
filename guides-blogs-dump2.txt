@@ -1,0 +1,1542 @@
+===== C:\Users\Admin\Shopify\Storefronts\Headless\guides\blogs\button.md =====
+# BlogButton
+
+`app/components/blogs/button.tsx` · styles in `app/assets/blog-button.css`
+
+CTA button for blog articles — mid-article product plugs, end-of-post "shop
+the look," related-collection banners. Two ways to use it, sharing one
+stylesheet so they render identically:
+
+1. **`data-cta` marker** — editors drop a marker `<div>` straight into an
+   article's HTML in the Shopify blog editor; `injectBlogButtons()` turns it
+   into real button markup server-side, no app deploy needed per-post.
+2. **`<BlogButton>`** — the React component, for CTAs you place directly in
+   route/component JSX (e.g. a fixed CTA after `AuthorSection`).
+
+This follows the same pattern already used by `injectFaqSections`,
+`injectNewsletterForm`, and `injectVideoEmbeds` in
+`blogs.$blogHandle.$articleHandle.tsx` — a pure string transform over
+`article.contentHtml` in the loader. Unlike the newsletter form and video
+embed, a button needs no `createPortal`/slot: it doesn't call
+`useNavigate()` or `useFetcher()`, so a plain `<a href>` works with zero
+hydration, the same reason `injectTwoColumnContent` renders fully static
+too.
+
+---
+
+## For editors: the marker syntax
+
+In the Shopify blog post's HTML editor, type:
+
+```html
+<div data-cta="primary" data-cta-href="/collections/new-arrivals"
+     data-cta-id="blog-summer-guide-shop">Shop new arrivals</div>
+```
+
+| Attribute        | Required | Values                                              |
+|-------------------|----------|------------------------------------------------------|
+| `data-cta`         | yes      | `primary` \| `secondary` \| `outline` \| `ghost` \| `link` |
+| `data-cta-href`    | yes      | destination URL, relative or absolute                |
+| `data-cta-id`      | recommended | analytics id, e.g. `blog-{post-slug}-{action}` — see **Tracking** |
+| `data-cta-size`    | no       | `sm` \| `md` (default) \| `lg`                        |
+| inner text        | yes      | the button label — keep it short and active ("Shop new arrivals") |
+
+If `data-cta-href` or the label is missing, the marker is left as a raw
+`<div>` in the rendered page rather than silently disappearing — so a typo
+shows up as visibly broken in preview instead of just costing you a CTA
+nobody notices is missing.
+
+**One `primary` per screenful.** If a post has several markers, make one
+`primary` and the rest `secondary`/`outline` — stacking several `primary`
+buttons dilutes which action matters.
+
+---
+
+## Self-contained styling
+
+Every sibling stylesheet in this route (`article.css`, `two-column-content.css`,
+`video.css`, and originally this one too) follows a manual pattern: import
+with `?url`, push into that route's `links()` array. That works, but it
+means the button's styling only exists wherever someone remembers to wire
+it — including into `root.tsx`, since a CTA button is general-purpose
+rather than blog-only (see the `newsletter-form.css` precedent, which loads
+globally for the same reason).
+
+Instead, `button.tsx` imports `~/assets/blog-button.css` directly as a
+side-effect import (no `?url`, no `links()` entry):
+
+```ts
+import '~/assets/blog-button.css';
+```
+
+Vite's built-in CSS handling picks this up automatically — any route or
+component that imports `BlogButton` or `injectBlogButtons` gets the
+stylesheet for free, with no `links()` bookkeeping and nothing to add to
+`root.tsx`. That's the tradeoff: you lose the fine-grained control the
+`?url` pattern gives (e.g. explicit `<link rel="preload">` ordering), but
+gain a component that works correctly the moment it's imported anywhere in
+the app, blog route or not.
+
+## Wiring it into the route
+
+Only one addition to `blogs.$blogHandle.$articleHandle.tsx` is needed now —
+the stylesheet no longer requires a `links()` entry.
+
+### Import
+
+```diff
+ import {injectFaqSections} from '~/components/blogs/FaqSection';
+ import {injectTwoColumnContent} from '~/components/blogs/TwoColumnContent';
++import {BlogButton, injectBlogButtons} from '~/components/blogs/button';
+ import {withHeadingIds, TableOfContents, isTocEnabled} from '~/components/blogs/TableOfContents';
+```
+
+### `loadCriticalData` — run the marker transform
+
+Goes in the same "no data fetch needed" group as `injectFaqSections` /
+`injectNewsletterForm` / `injectVideoEmbeds` — order among that group isn't
+load-bearing for the same reason those three aren't ordered against each
+other (none of these touch each other's markers), so it's placed here for
+readability, right after the video pass:
+
+```diff
+   contentHtml = injectVideoEmbeds(contentHtml);
+
++  // Rewrites data-cta="..." marker divs into static CTA button markup
++  // (see button.tsx for the marker syntax). Pure string transform, no
++  // slot/portal needed — a CTA button needs no Router hooks to work,
++  // so unlike the newsletter form and video embed it renders fully
++  // static here rather than hydrating client-side. Same "no async
++  // data fetch" shape as the three injectors above, so it runs
++  // alongside them.
++  contentHtml = injectBlogButtons(contentHtml);
++
+   const tocEnabled = isTocEnabled(article);
+```
+
+That's it — no new state, no new `useEffect` scan, no new portal loop in
+the component body, because there's no slot to find. The static markup
+`injectBlogButtons` produces is already final HTML by the time it lands in
+`dangerouslySetInnerHTML`.
+
+### Optional: a fixed end-of-article CTA (outside the article body)
+
+If you also want a CTA that isn't authored inline in the article HTML —
+e.g. always show one after `<AuthorSection>` — use the React component
+directly, same as `<AuthorSection>` and `<TableOfContents>` are used now:
+
+```diff
+       {authorSection && <AuthorSection data={authorSection} />}
++
++      <BlogButton href="/collections/all" size="lg" ctaId={`blog-${article.handle}-endpost`}>
++        Shop the collection
++      </BlogButton>
+     </div>
+```
+
+---
+
+## `<BlogButton>` props (for direct JSX placements)
+
+| Prop           | Type                                                         | Default     | Notes                                                                 |
+|----------------|--------------------------------------------------------------|-------------|--------------------------------------------------------------------------|
+| `children`     | `ReactNode`                                                   | —           | Button label.                                                          |
+| `href`         | `string`                                                       | —           | Internal hrefs render via react-router's `<Link>` (client nav + prefetch); external hrefs render `<a target="_blank">`. Omit to render a `<button>`. |
+| `variant`      | `"primary" \| "secondary" \| "outline" \| "ghost" \| "link"`   | `"primary"` | —                                                                       |
+| `size`         | `"sm" \| "md" \| "lg"`                                         | `"md"`      | —                                                                       |
+| `icon`         | `ReactNode`                                                    | —           | —                                                                       |
+| `iconPosition` | `"left" \| "right"`                                            | `"left"`    | —                                                                       |
+| `fullWidth`    | `boolean`                                                      | `false`     | —                                                                       |
+| `newTab`       | `boolean`                                                      | auto        | Overrides auto external-link detection.                                |
+| `loading`      | `boolean`                                                      | `false`     | Spinner + disabled.                                                    |
+| `ctaId`        | `string`                                                       | —           | Rendered as `data-cta-id`.                                             |
+| `onClick`      | `(event) => void`                                              | —           | Only fires for JSX-placed buttons — see **Tracking** for why the marker path doesn't use this. |
+| `className`    | `string`                                                       | —           | Extra classes, appended last.                                          |
+
+`<BlogButton>` is only ever rendered directly inside the route tree (JSX),
+never portaled into `dangerouslySetInnerHTML` content — so `<Link>` always
+has Router context. Don't reuse it inside a portal without checking that
+still holds.
+
+---
+
+## Tracking
+
+The marker path (`injectBlogButtons`) produces plain static HTML with no
+hydration, so there's no `onClick` to attach analytics to — it relies
+entirely on `data-cta-id` plus a GTM/GA4 trigger targeting `[data-cta-id]`
+clicks. `<BlogButton>` carries the same `data-cta-id` attribute, so **one
+GTM trigger covers both** the marker-embedded and JSX-placed buttons.
+
+Recommended `ctaId` convention: `blog-{post-slug or section}-{action}`,
+e.g. `blog-summer-guide-shop-weekender`.
+
+---
+
+## Theming
+
+CSS custom properties in `blog-button.css`, matching the approved wireframe
+(blue fill, white uppercase label, 4px corners):
+
+```css
+:root {
+  --cta-bg: #2f5dfb;
+  --cta-bg-hover: #264ddb;
+  --cta-fg: #ffffff;
+  --cta-border: #2f5dfb;
+  --cta-ring: #2f5dfb;
+}
+```
+
+`#2f5dfb` was estimated from the mockup image, not sampled from a design
+file — swap it if it's off from the real brand blue.
+
+---
+
+## Copy guidance
+
+- **Active voice, name the action.** "Shop the set," "Get the guide" — not "Click here" or "Learn more" by default.
+- **Match the promise to the destination.** "Shop new arrivals" should land on new arrivals, not the homepage.
+- **Keep labels short** — 2–4 words; longer wraps awkwardly at `sm`/mobile widths, especially uppercase.
+
+---
+
+## Accessibility
+
+- Visible `focus-visible` ring on both link and button states.
+- Disabled buttons get `aria-busy` (loading) or are simply not rendered as
+  a clickable element; marker-based CTAs with a missing href are left as
+  an inert `<div>` rather than a dead link.
+- Icon-only usage: pass a native `aria-label` — there's no visible text
+  fallback otherwise.
+- External links get `rel="noopener noreferrer"` automatically, both in
+  the marker output and `<BlogButton>`.
+
+---
+
+## Pre-ship checklist for a new CTA placement
+
+- [ ] Label is an active-voice action, 2–4 words
+- [ ] `data-cta-href` / `href` points to the promised destination
+- [ ] `data-cta-id` set, following the naming convention
+- [ ] Only one `primary` per visible screenful
+- [ ] Checked at mobile width
+
+===== C:\Users\Admin\Shopify\Storefronts\Headless\guides\blogs\image-gallery.md =====
+# Image Gallery — `ImagesGallery.tsx`
+
+A gallery block for Shopify blog articles, built as a marker → static
+render → client hydrate block, the same shape as the other blog embeds
+(`ProductGallery`, `FaqSection`, `NewsletterForm`, `video`). It shows a
+grid of thumbnails; clicking one opens a full-size lightbox with a
+counter, arrow navigation, captions, and a filmstrip of the rest of the
+set.
+
+Files:
+- `app/components/blogs/ImagesGallery.tsx` — marker parser
+  (`injectImagesGallery`), slot reader (`readGallerySlot`), and the
+  interactive component (default export).
+- `app/assets/gallery.css` — route-scoped styles, imported via
+  `links()` in `blogs.$blogHandle.$articleHandle.tsx`, the same way as
+  `article.css` / `video.css`.
+
+## How it fits into the article pipeline
+
+The loader in `blogs.$blogHandle.$articleHandle.tsx` runs a series of
+pure string transforms over `article.contentHtml` before it's rendered:
+shoppable products, two-column content, FAQ sections, the newsletter
+form, video embeds, and now the gallery. Each transform finds its own
+marker and replaces it with a **slot** — a DOM node the client can find
+after render and hydrate into a live React component via `createPortal`.
+
+`injectImagesGallery` follows that pattern:
+
+1. Finds every `data-gallery-embed` marker in the article HTML.
+2. Reads the `<img>` tags inside it into a `GalleryImage[]`.
+3. Replaces the whole marker with a `data-gallery-slot` node containing
+   a real, working thumbnail grid (plain `<a>`/`<img>` tags, no JS
+   required) plus a `data-gallery-images` attribute carrying the same
+   image list as JSON.
+
+On the client, the route's existing DOM-scanning effect (the one that
+already finds `[data-shoppable-slot]`, `[data-newsletter-slot]`, and
+`[data-video-slot]`) also looks for `[data-gallery-slot]`, calls
+`readGallerySlot(el)` to get the props back, clears the static grid,
+and the route portals a live `<ImagesGallery />` into that node — same
+"static now, upgrade on hydrate" behavior as the newsletter form.
+
+## Editor-facing marker syntax
+
+Whatever writes to `article.contentHtml` (the Shopify blog editor's
+HTML/embed block) should wrap a set of images like this:
+
+```html
+<div data-gallery-embed data-gallery-title="My gallery" data-gallery-columns="3">
+  <img src="https://cdn.shopify.com/.../bag.jpg" alt="Canvas satchel, front view" data-caption="The Fielder satchel" />
+  <img src="https://cdn.shopify.com/.../glasses.jpg" alt="Round frame sunglasses" />
+  <img src="https://cdn.shopify.com/.../notebook.jpg" alt="Leather notebook" data-caption="Full-grain leather, A5" />
+</div>
+```
+
+- `data-gallery-embed` — required, marks the block.
+- `data-gallery-title` — optional. Rendered as a heading above the
+  grid, e.g. `"My gallery"`.
+- `data-gallery-columns` — optional, `2`–`5`. Defaults to `3`.
+- Each `<img>` needs a real `src`. `alt` should be filled in for
+  accessibility/SEO (falls back to an empty string if omitted, but
+  don't rely on that). `data-caption` is optional and shows under the
+  image in the lightbox.
+- A marker with no `<img>` tags inside it is dropped entirely rather
+  than rendering an empty gallery.
+
+## Direct usage (outside the marker pipeline)
+
+`ImagesGallery` is also a normal component you can render directly —
+useful in Storybook, a preview surface, or anywhere else that isn't
+going through `contentHtml`.
+
+## Props
+
+| Prop               | Type                                    | Default | Notes                                                      |
+|---------------------|------------------------------------------|---------|--------------------------------------------------------------|
+| `images`            | `GalleryImage[]`                        | —       | Required. See shape below.                                 |
+| `title`             | `string`                                | —       | Optional heading above the grid, e.g. `"My gallery"`.       |
+| `columns`           | `2 \| 3 \| 4 \| 5`                       | `3`     | Desktop grid columns. Collapses to 2 columns under 640px.   |
+| `squareThumbnails`  | `boolean`                               | `true`  | Crops grid thumbnails to a 1:1 square.                       |
+| `className`         | `string`                                | —       | Extra class on the outer wrapper for page-level overrides.  |
+
+### `GalleryImage`
+
+```ts
+interface GalleryImage {
+  src: string;            // full-resolution image URL (e.g. Shopify CDN URL)
+  alt: string;             // required, used for accessibility + SEO
+  caption?: string;        // shown under the image in the lightbox
+  thumbnailSrc?: string;   // smaller image for the grid; falls back to src
+}
+```
+
+## Basic usage
+
+```tsx
+import ImagesGallery from "app/components/blogs/ImagesGallery";
+
+export default function ArticleBody() {
+  return (
+    <ImagesGallery
+      title="My gallery"
+      images={[
+        {
+          src: "https://cdn.shopify.com/.../satchel-bag-full.jpg",
+          thumbnailSrc: "https://cdn.shopify.com/.../satchel-bag-thumb.jpg",
+          alt: "Canvas satchel bag, front view",
+          caption: "The Fielder satchel in canvas and leather.",
+        },
+        {
+          src: "https://cdn.shopify.com/.../round-glasses-full.jpg",
+          alt: "Round frame sunglasses on a stand",
+          caption: "Round frames, tortoiseshell finish.",
+        },
+      ]}
+    />
+  );
+}
+```
+
+This reproduces the "My gallery" pattern from the reference mock: a
+labeled block containing a row of square thumbnails that expand on click.
+
+## Four-column, no captions
+
+```tsx
+<ImagesGallery
+  columns={4}
+  images={productShots.map((shot) => ({
+    src: shot.url,
+    alt: shot.altText,
+  }))}
+/>
+```
+
+## Rendering inside blog article HTML (Liquid + React island)
+
+If the blog body is rendered as HTML/Liquid and the gallery is mounted as a
+React island (e.g. via a custom block or a hydrated component), pass the
+image list in from the article's metafield or block settings instead of
+hardcoding it:
+
+```tsx
+type ArticleGalleryBlock = {
+  settings: {
+    title?: string;
+    columns?: 2 | 3 | 4 | 5;
+  };
+  images: Array<{ src: string; alt: string; caption?: string }>;
+};
+
+function ArticleGallerySection({ block }: { block: ArticleGalleryBlock }) {
+  return (
+    <ImagesGallery
+      title={block.settings.title}
+      columns={block.settings.columns}
+      images={block.images}
+    />
+  );
+}
+```
+
+## Accessibility
+
+- Each thumbnail is a real `<button>`, reachable and activatable by
+  keyboard.
+- Opening the lightbox moves focus to the close button; closing it
+  returns focus to the thumbnail that opened it.
+- `Escape` closes the lightbox; `ArrowLeft` / `ArrowRight` navigate
+  between images.
+- The lightbox is marked `role="dialog"` / `aria-modal="true"`, and
+  background scroll is locked while it's open.
+- `alt` text is required per image — it's used for both the grid and the
+  expanded view, so write real descriptions rather than filenames.
+- Respects `prefers-reduced-motion` by disabling hover/focus transitions.
+
+## Styling / theming
+
+Colors and radius are set as CSS custom properties at the top of
+`app/assets/gallery.css` (`--ig-ink`, `--ig-paper`, `--ig-line`,
+`--ig-accent`, `--ig-radius`). The stylesheet covers both the static
+server-rendered grid and the hydrated component, since they share the
+same class names — to match a specific theme, either:
+
+1. Override the variables from a parent element:
+
+   ```css
+   .my-article .ig-root {
+     --ig-accent: #a63d2f;
+     --ig-radius: 4px;
+   }
+   ```
+
+2. Or edit `gallery.css` directly if you need structural changes
+   rather than token changes.
+
+## Notes / limits
+
+- Images are not uploaded or cropped by this component — pass in URLs
+  you already have (e.g. from Shopify's Files/CDN or a metafield).
+- No built-in swipe gestures for touch; arrow buttons and keyboard
+  navigation cover mobile via tap targets. Add a swipe library on top if
+  you need gesture support.
+- For very large sets (dozens of images), consider paginating the grid
+  or lazy-loading further batches — the filmstrip inside the lightbox
+  is fine for a few dozen but gets cramped much beyond that.
+
+===== C:\Users\Admin\Shopify\Storefronts\Headless\guides\blogs\quote.md =====
+# Quote
+
+`app/components/blogs/Quote.tsx`
+
+A blog content block for emphasizing a single piece of information — a
+stat, a customer line, a key takeaway — as a styled pull-quote, with
+optional attribution.
+
+## Architecture: static, not hydrated
+
+Unlike `Video`, a quote has no interactivity — no click handler, no state
+that changes after render. So it skips the marker-injection →
+portal-hydration pattern `Video`/`NewsletterForm` use, and instead follows
+the simpler pattern `FaqSection`/`TwoColumnContent` already use:
+`injectQuoteEmbeds(html)` rewrites the marker directly into final,
+semantic markup server-side in the loader. Nothing ships to the client for
+this block beyond the CSS — no slot, no scan, no `createPortal`.
+
+`Quote` (the component) is exported for typed reuse elsewhere, but it is
+never portaled into anything in the article pipeline — `injectQuoteEmbeds`
+writes equivalent static HTML directly.
+
+## Usage (as a component)
+
+```tsx
+import Quote from "app/components/blogs/Quote";
+
+<Quote
+  text="Life is like a sandwich - the more you add to it, the messier it gets, but also the more interesting it becomes. Just try not to drop the avocado side down."
+  attribution="Max Crunch"
+  role="Crunchly Co-founder"
+/>
+```
+
+## Props
+
+| Prop | Type | Default | Notes |
+|---|---|---|---|
+| `text` | `string` | — | **Required.** Rendered wrapped in straight double quotes. |
+| `attribution` | `string` | — | Who said it, rendered in `<cite>`. |
+| `role` | `string` | — | Secondary detail (title/company). Only rendered alongside `attribution`. |
+| `variant` | `"card" \| "pull"` | `"card"` | `card`: bordered white card with a quote-mark icon (matches the reference design). `pull`: lighter-weight, no card chrome — just a left border accent, for an inline quote that shouldn't be visually boxed off. |
+| `className` | `string` | — | Extra class on the root `<figure>`. |
+
+## Embedding in article HTML
+
+Editor-authored marker in the article's custom-HTML block:
+
+```html
+<div
+  data-quote-embed
+  data-text="Life is like a sandwich - the more you add to it, the messier it gets, but also the more interesting it becomes. Just try not to drop the avocado side down."
+  data-attribution="Max Crunch"
+  data-role="Crunchly Co-founder"
+  data-variant="card"
+></div>
+```
+
+Only `data-text` is required. `data-role` is ignored unless
+`data-attribution` is also present. A marker missing `data-text` is
+dropped silently — same "skip malformed" behavior as the other blocks.
+
+In the loader, `injectQuoteEmbeds(contentHtml)` runs alongside
+`injectFaqSections`/`injectTwoColumnContent` (same pure-string-transform,
+no-hydration category). In `links()`, `quote.css` is registered
+route-scoped via `?url`, same as `video.css` — the marker is
+article-body-only, so it doesn't belong in `root.tsx`. See
+`app/templates/blogs.$blogHandle.$articleHandle.tsx` for the full wiring
+— it's just an import, one loader line, and a `links()` entry; no new
+state, effect, or portal.
+
+## Markup
+
+```html
+<figure class="quote quote--card">
+  <svg class="quote__mark" ...></svg>
+  <blockquote class="quote__text">"Life is like a sandwich..."</blockquote>
+  <figcaption class="quote__attribution">
+    &mdash; <cite class="quote__name">Max Crunch</cite>
+    <span class="quote__role">, Crunchly Co-founder</span>
+  </figcaption>
+</figure>
+```
+
+`<blockquote>`/`<cite>` are used for real semantic value, not just
+styling hooks. If there's no attribution, the `<figcaption>` is omitted
+entirely rather than rendered empty.
+
+## Styling
+
+BEM classes in `app/assets/quote.css`, themeable via CSS custom
+properties: `--quote-accent-color` (icon + `pull` border), `--quote-card-bg`,
+`--quote-card-border`, `--quote-card-shadow`, `--quote-card-radius`,
+`--quote-text-color`, `--quote-attribution-color`.
+
+## Files
+
+- `app/components/blogs/Quote.tsx` — the component, plus `injectQuoteEmbeds` (server-side marker injection)
+- `app/assets/quote.css` — styles, registered via the route's `links()` export (`?url` import)
+
+
+===== C:\Users\Admin\Shopify\Storefronts\Headless\guides\blogs\recipe-header.md =====
+# Recipe Header
+
+A static, marker-based recipe info card for blog articles — image, prep/cook
+time, servings, and category at a glance, with a one-click "Print recipe"
+button that prints just the card, not the whole page. Editors write a
+`data-recipe-header` marker directly in Shopify's blog HTML source view; the
+loader normalizes it into the finished card at request time.
+
+Like `TwoColumnContent`, this is purely static: no data fetch, no React
+component, no portal. The one interactive piece — printing — is handled with
+a few lines of vanilla JS rather than a hydrated component, because
+`window.print()` needs nothing from the app's React tree (no Router context,
+no fetcher). That's the deciding factor for whether a marker-based feature in
+this codebase needs a portal or not — see `NewsletterForm.tsx` for the
+opposite case, where `useFetcher()` *does* need that context.
+
+## Files
+
+| File | Purpose |
+|---|---|
+| `app/components/blogs/RecipeHeader.tsx` | `injectRecipeHeader()` — the loader-side transform |
+| `app/assets/recipe-header.css` | Card layout + print-isolation styles |
+
+## Wiring it up
+
+**1. Import in `blogs.$blogHandle.$articleHandle.tsx`:**
+
+```tsx
+import {injectRecipeHeader} from '~/components/blogs/RecipeHeader';
+import recipeHeaderStyles from '~/assets/recipe-header.css?url';
+```
+
+**2. Register the stylesheet** (route-scoped, same reasoning as
+`article-toc.css` / `two-column-content.css` — this marker only ever appears
+inside a blog article body):
+
+```tsx
+export function links() {
+  return [
+    {rel: 'stylesheet', href: articleStyles},
+    {rel: 'stylesheet', href: authorSectionStyles},
+    {rel: 'stylesheet', href: twoColumnContentStyles},
+    {rel: 'stylesheet', href: recipeHeaderStyles},
+  ];
+}
+```
+
+**3. Run the transform in `loadCriticalData`.** Order doesn't matter relative
+to the other static passes (two-col, FAQ, newsletter) — none of them touch
+`data-recipe-header` markers or vice versa — but keeping it near the other
+static injections keeps the loader readable:
+
+```tsx
+contentHtml = injectTwoColumnContent(contentHtml);
+contentHtml = injectRecipeHeader(contentHtml);
+contentHtml = injectFaqSections(contentHtml);
+```
+
+No change needed to the article template's `bodyRef` scan effect — this
+component never creates a slot for React to find, since nothing here ever
+needs to hydrate.
+
+## Editor marker syntax
+
+```html
+<div
+  data-recipe-header
+  data-recipe-title="Recipe informations"
+  data-recipe-image="https://cdn.shopify.com/.../frosted-cupcake.jpg"
+  data-recipe-image-alt="Frosted cupcake on a plate"
+  data-recipe-prep-time="10 minutes"
+  data-recipe-cook-time="10 minutes"
+  data-recipe-servings="8 persons"
+  data-recipe-category="Desserts"
+></div>
+```
+
+All attributes are optional except that **at least one** of the four stat
+fields (`prep-time`, `cook-time`, `servings`, `category`) or the `image` must
+be present — otherwise the marker is left untouched (see "Malformed markup"
+below).
+
+| Attribute | Required | Notes |
+|---|---|---|
+| `data-recipe-title` | No | Defaults to `"Recipe informations"` |
+| `data-recipe-image` | No | Full image URL. Omit entirely to show a placeholder box instead of a broken image |
+| `data-recipe-image-alt` | No | Alt text for the image, or the `aria-label` on the placeholder if no image |
+| `data-recipe-prep-time` | No | Free text, e.g. `"10 minutes"` |
+| `data-recipe-cook-time` | No | Free text, e.g. `"25 minutes"` |
+| `data-recipe-servings` | No | Free text, e.g. `"8 persons"` or `"Serves 4–6"` |
+| `data-recipe-category` | No | Free text, e.g. `"Desserts"` |
+
+### Omitting a stat that doesn't apply
+
+Only stats with a value render — no blank rows, no fabricated placeholders.
+A no-bake recipe with no real "cooking time," for example, should simply
+leave that attribute off:
+
+```html
+<div
+  data-recipe-header
+  data-recipe-prep-time="15 minutes"
+  data-recipe-servings="12 bars"
+  data-recipe-category="No-bake desserts"
+></div>
+```
+
+This renders a 3-stat card (no image, no cooking time) — the grid doesn't
+leave a gap or show "Cooking time: —".
+
+## How printing works
+
+The button calls a small global function registered once per article
+(`window.__printRecipeHeader`), even if the article has more than one recipe
+header:
+
+1. Adds a `recipe-printing` class to `<body>`.
+2. Calls `window.print()`.
+3. On the browser's `afterprint` event, removes the class again.
+
+`recipe-header.css` uses the classic **visibility-based** "print only this
+element" trick under `@media print`: everything on the page gets
+`visibility: hidden`, then the recipe card and its children get
+`visibility: visible` again and the card is repositioned to the top of the
+page. This works regardless of what the rest of the page's markup looks like
+— no need to know about the header, nav, footer, or any other article
+content to hide it. A `display: none` approach would need explicit knowledge
+of every sibling to hide, which breaks the moment the surrounding page
+layout changes.
+
+The Print button itself is hidden in the print output
+(`.recipe-header__print { display: none }` inside the print media query) —
+no reason to print a button that does nothing on paper.
+
+### Known limitation
+
+`afterprint` is used instead of removing the class immediately after
+`window.print()` returns, because some mobile browsers treat `print()` as
+non-blocking — removing the class synchronously on those browsers could
+revert the page before the print dialog has actually rendered. `afterprint`
+fires once the dialog is dismissed on every browser that supports printing
+at all, so it's the reliable signal regardless of blocking behavior.
+
+## Malformed markup — what happens
+
+If a `data-recipe-header` marker has none of the four stat attributes **and**
+no `data-recipe-image`, the transform leaves it completely untouched — same
+fail-safe philosophy as the rest of the marker-based components in this
+codebase (shoppable slots with no product ids, two-col blocks without exactly
+two children). An editor who adds the marker but forgets to fill in any
+attributes sees their raw, empty `<div>` in the published article — a
+visible signal something's missing, not a silently blank card.
+
+## Testing
+
+- All four stats + image present → full card renders
+- Only some stats present → only those render, no blank rows
+- No image, at least one stat present → placeholder box renders in its place
+- No stats and no image → marker passed through untouched
+- Two recipe headers in one article → print script registers once, both
+  buttons work
+- Print button click → only the recipe card is visible in the print preview,
+  everything else on the page is hidden
+
+
+===== C:\Users\Admin\Shopify\Storefronts\Headless\guides\blogs\related-blog-posts.md =====
+# Related blog posts — `RelatedBlogPosts.tsx`
+
+A "Related blogs" section shown at the end of an article: a grid of
+cards (image, title, date, "Read more") linking to other articles.
+
+Files:
+- `app/components/blogs/RelatedBlogPosts.tsx` — gating
+  (`isRelatedPostsEnabled`), data resolution (`getRelatedPostsData`),
+  and the presentational component (default export).
+- `app/assets/related-blog-posts.css` — route-scoped styles, matching
+  the reference design (bordered cards, square image, uppercase blue
+  "Read more" button).
+
+## Where this lives: below the article, not a content marker
+
+You asked whether this should be a marker like the gallery/video/FAQ
+blocks, or plain code below the article content. **Below the article,
+as its own fixed section** — same pattern as `AuthorSection`, not the
+marker → inject → portal pattern the other blocks use. Two reasons:
+
+1. **Those markers exist for editor placement.** An editor drops
+   `data-gallery-embed` at a specific spot *inside* the article's rich
+   text because they're choosing where, mid-article, that block
+   appears. Related posts don't have a "where in the paragraph" — they
+   always show as one block after the content, so there's no inline
+   position to mark.
+2. **The data isn't in `contentHtml` at all.** The other blocks parse
+   something the editor already typed into the body (product IDs, FAQ
+   text, image tags). Related posts come from elsewhere — a curated
+   metafield list, or a query across other articles — so there's
+   nothing in the HTML string to find a marker in. It has to be
+   resolved in the loader and passed down as data, exactly like
+   `authorSection` already is.
+
+So `RelatedBlogPosts` follows `AuthorSection`'s shape: resolve data in
+`loadCriticalData`, return it from the loader, render the component
+directly (no `createPortal`, no DOM-scanning effect — it was never
+inside `dangerouslySetInnerHTML` to begin with).
+
+## How posts are picked
+
+`getRelatedPostsData` tries two sources, in order:
+
+1. **Curated** — if the article has a `custom.related_articles`
+   metafield (type `list.article_reference`), those articles are used,
+   in the order the editor picked them. This is the "Picked by
+   relevant further reading" path — an editor explicitly choosing what
+   to surface.
+2. **Tag-based fallback** — if no curated list is set, it ranks a pool
+   of candidate articles (from the same blog) by how many tags they
+   share with the current article, breaking ties by recency, and takes
+   the top 3.
+
+Either way, `RelatedBlogPosts` (the component) doesn't care which path
+produced the list — it just renders `RelatedPost[]`.
+
+## Wiring into the loader
+
+This needs two additions on the data side that live in files this
+session doesn't have visibility into (`ArticleQuery.ts`, the loader in
+`blogs.$blogHandle.$articleHandle.tsx`) — add these yourself:
+
+**1. Extend `ARTICLE_QUERY`** with the curated-list metafield and the
+show/hide flag, following the same shape `layoutVariant` already uses:
+
+```graphql
+metafield(namespace: "custom", key: "show_related_posts") {
+  value
+}
+relatedArticlesField: metafield(namespace: "custom", key: "related_articles") {
+  references(first: 3) {
+    nodes {
+      ... on Article {
+        id
+        title
+        handle
+        publishedAt
+        blog { handle }
+        image {
+          url
+          altText
+          width
+          height
+        }
+      }
+    }
+  }
+}
+```
+
+**2. Add a fallback query** for the tag-based path, run only when the
+curated list is empty — something like:
+
+```graphql
+query RelatedArticlesPool($blogHandle: String!, $first: Int!) @inContext(language: $language) {
+  blog(handle: $blogHandle) {
+    articles(first: $first, sortKey: PUBLISHED_AT, reverse: true) {
+      nodes {
+        id
+        title
+        handle
+        tags
+        publishedAt
+        blog { handle }
+        image {
+          url
+          altText
+          width
+          height
+        }
+      }
+    }
+  }
+}
+```
+
+**3. In `loadCriticalData`**, after `article` is resolved:
+
+```ts
+import RelatedBlogPosts, {
+  getRelatedPostsData,
+  isRelatedPostsEnabled,
+} from '~/components/blogs/RelatedBlogPosts';
+
+// ...inside loadCriticalData, after `const article = blog.articleByHandle;`
+
+let relatedPosts: ReturnType<typeof getRelatedPostsData> = null;
+
+if (isRelatedPostsEnabled(article)) {
+  const curated = article.relatedArticlesField?.references?.nodes;
+
+  // Only run the fallback query when there's no curated list — no
+  // reason to fetch a whole article pool if the editor already picked.
+  const candidatePool = curated?.length
+    ? []
+    : (
+        await context.storefront.query(RELATED_ARTICLES_POOL_QUERY, {
+          variables: {blogHandle, first: 12},
+        })
+      ).blog?.articles.nodes ?? [];
+
+  relatedPosts = getRelatedPostsData(article, candidatePool);
+}
+```
+
+Add `relatedPosts` to the loader's return object alongside
+`authorSection`.
+
+**4. Add the stylesheet** to `links()`:
+
+```ts
+import relatedBlogPostsStyles from '~/assets/related-blog-posts.css?url';
+// ...
+{rel: 'stylesheet', href: relatedBlogPostsStyles},
+```
+
+**5. In the component**, destructure `relatedPosts` from
+`useLoaderData()` and render it right after `AuthorSection`:
+
+```tsx
+{authorSection && <AuthorSection data={authorSection} />}
+{relatedPosts && <RelatedBlogPosts posts={relatedPosts.posts} />}
+```
+
+## Props
+
+| Prop      | Type            | Default            | Notes                                   |
+|-----------|-----------------|---------------------|------------------------------------------|
+| `posts`   | `RelatedPost[]` | —                   | Required.                                |
+| `title`   | `string`        | `"Related blogs"`  | Section heading.                         |
+| `columns` | `2 \| 3 \| 4`    | `3`                 | Collapses to 1 column under 720px.       |
+
+### `RelatedPost`
+
+```ts
+interface RelatedPost {
+  id: string;
+  title: string;
+  handle: string;
+  blogHandle: string;
+  publishedAt: string;
+  image?: {url: string; altText?: string | null; width?: number | null; height?: number | null} | null;
+}
+```
+
+## Default on, opt-out per article
+
+Unlike the table of contents and author section (both off by default),
+related posts default to **on** — an editor turns them off per article
+via `custom.show_related_posts = false` rather than turning them on.
+That's a deliberate call given the goal (more time on site): most
+articles benefit from it, and it's easy to miss enabling a
+metafield on every new article but easy to remember disabling it on
+the rare one where it doesn't fit (a policy page styled as an
+article, for instance).
+
+## Notes / limits
+
+- The tag-based fallback pool is capped at 12 candidates
+  (`first: 12`) to keep the fallback query cheap; raise it if your
+  blogs are large and tag overlap is sparse.
+- If neither a curated list nor any candidates produce results (e.g. a
+  brand-new blog with only one article), `getRelatedPostsData` returns
+  `null` and the section doesn't render — no empty "Related blogs"
+  heading with nothing under it.
+- Cards link to `/blogs/{blogHandle}/{handle}`; adjust if your route
+  structure differs.
+
+
+===== C:\Users\Admin\Shopify\Storefronts\Headless\guides\blogs\social-share.md =====
+# Social share — `SocialShare.tsx`
+
+A "Social sharing" card shown on an article: email, Facebook, X, and
+Pinterest share buttons.
+
+Files:
+- `app/components/blogs/SocialShare.tsx` — the component (default
+  export) plus optional gating (`isSocialShareEnabled`).
+- `app/assets/social-share.css` — route-scoped styles matching the
+  reference design (bordered card, blue heading, circular blue
+  buttons).
+
+## Where this lives
+
+Same placement as `AuthorSection` / `RelatedBlogPosts`: rendered
+directly in the article tree, not a content marker. It's simpler than
+either of those, though, for two reasons worth knowing before you wire
+it in:
+
+1. **No loader data fetch needed.** Its only inputs — the article's
+   title, image, and the page's own URL — are things the route already
+   has. There's no metafield to resolve, no related-articles query,
+   nothing async.
+2. **It works with zero JavaScript.** Every link is a real share-intent
+   URL (`mailto:`, Facebook's sharer, X's intent, Pinterest's
+   pin-create), so the buttons function as plain navigations even
+   before hydration. The `onClick` handlers that open a small popup
+   window are a progressive enhancement on top of hrefs that already
+   work — remove them entirely and the buttons still share correctly,
+   just as a full navigation instead of a popup.
+
+## Wiring in
+
+In `blogs.$blogHandle.$articleHandle.tsx`:
+
+**1. Import and add the stylesheet:**
+
+```ts
+import SocialShare from '~/components/blogs/SocialShare';
+import socialShareStyles from '~/assets/social-share.css?url';
+
+export function links() {
+  return [
+    // ...existing entries
+    {rel: 'stylesheet', href: socialShareStyles},
+  ];
+}
+```
+
+**2. Build the share URL in the loader.** Use the request's own URL
+rather than constructing one by hand, so it's correct in every
+environment (preview, staging, custom domains) without extra config:
+
+```ts
+// inside loadCriticalData, alongside the other resolved data
+const shareUrl = request.url;
+```
+
+Add it to the loader's return object:
+
+```ts
+return {
+  article: {...article, contentHtml},
+  shoppableProducts,
+  tocEnabled,
+  tocHeadings,
+  authorSection,
+  relatedPosts,
+  shareUrl,
+};
+```
+
+**3. Render it in the component**, wherever it should sit relative to
+the other end-of-article sections (the reference design shows it as
+its own card, so most articles will want it near the author section
+and related posts):
+
+```tsx
+const {article, /* ... */ shareUrl} = useLoaderData<typeof loader>();
+
+// ...
+
+<SocialShare
+  url={shareUrl}
+  title={article.title}
+  imageUrl={article.image?.url}
+/>
+{authorSection && <AuthorSection data={authorSection} />}
+{relatedPosts && <RelatedBlogPosts posts={relatedPosts.posts} />}
+```
+
+## Optional: per-article opt-out
+
+`isSocialShareEnabled` follows the same shape as
+`isRelatedPostsEnabled` — on by default, opt out per article via a
+`custom.show_social_share` metafield set to `"false"`. Only worth
+adding if you expect some articles (a policy page styled as an
+article, for instance) shouldn't offer sharing:
+
+```ts
+metafield(namespace: "custom", key: "show_social_share") {
+  value
+}
+```
+
+```tsx
+{isSocialShareEnabled(article) && (
+  <SocialShare url={shareUrl} title={article.title} imageUrl={article.image?.url} />
+)}
+```
+
+If you don't need per-article control, skip this — just render
+`<SocialShare />` unconditionally.
+
+## Props
+
+| Prop       | Type     | Default            | Notes                                            |
+|------------|----------|---------------------|----------------------------------------------------|
+| `url`      | `string` | —                   | Required. The article's canonical/current URL.    |
+| `title`    | `string` | —                   | Required. Used as share text/email subject.        |
+| `imageUrl` | `string` | —                   | Optional. Used for Pinterest's share preview.       |
+| `heading`  | `string` | `"Social sharing"`  | Section heading.                                   |
+
+## Notes / limits
+
+- Facebook and Pinterest's share dialogs pull their own preview
+  (image/title/description) from the target page's Open Graph tags at
+  share time, not from the props passed here — make sure the article
+  route sets `og:title` / `og:image` / `og:url` in `meta()` so shared
+  links look right regardless of which button was clicked.
+- The popup enhancement uses `window.open(...)`, so it only runs in the
+  browser — safe as-is since it's inside an `onClick`, which never
+  executes during SSR.
+- No X/Twitter card requirement beyond the same Open Graph tags above;
+  X falls back to OG tags when its own `twitter:*` tags aren't present.
+
+
+===== C:\Users\Admin\Shopify\Storefronts\Headless\guides\blogs\summary.md =====
+# Summary
+
+A static "Summary" / "Key takeaways" block for blog articles, with four
+selectable layouts (list, numbered, grid, highlight). Editors write a
+`data-summary-embed` marker directly in Shopify's blog HTML source view,
+with their bullet points or paragraphs nested inside it; the loader
+normalizes it into the finished box at request time.
+
+Same family as `TwoColumnContent` and `RecipeHeader`: purely static, no data
+fetch, no React component, no portal. A summary box is just styled text —
+nothing in it needs client state, an event handler, or a fetcher, so there's
+no reason to hydrate it at all.
+
+## Files
+
+| File | Purpose |
+|---|---|
+| `app/components/blogs/Summary.tsx` | `injectSummarySections()` — the loader-side transform |
+| `app/assets/summary.css` | Styles for all four layout variants |
+
+## Wiring it up
+
+**1. Import in `blogs.$blogHandle.$articleHandle.tsx`:**
+
+```tsx
+import {injectSummarySections} from '~/components/blogs/Summary';
+import summaryStyles from '~/assets/summary.css?url';
+```
+
+**2. Register the stylesheet** (route-scoped, same reasoning as
+`article-toc.css` / `two-column-content.css` / `recipe-header.css` — this
+marker only ever appears inside a blog article body):
+
+```tsx
+export function links() {
+  return [
+    {rel: 'stylesheet', href: articleStyles},
+    {rel: 'stylesheet', href: authorSectionStyles},
+    {rel: 'stylesheet', href: twoColumnContentStyles},
+    {rel: 'stylesheet', href: recipeHeaderStyles},
+    {rel: 'stylesheet', href: summaryStyles},
+  ];
+}
+```
+
+**3. Run the transform in `loadCriticalData`.** Order doesn't matter relative
+to the other static passes — none of them touch `data-summary-embed` markers
+or vice versa:
+
+```tsx
+contentHtml = injectTwoColumnContent(contentHtml);
+contentHtml = injectRecipeHeader(contentHtml);
+contentHtml = injectSummarySections(contentHtml);
+contentHtml = injectFaqSections(contentHtml);
+```
+
+No change needed to the article template's `bodyRef` scan effect — like
+`TwoColumnContent` and `RecipeHeader`, this component never creates a slot
+for React to find.
+
+## Editor marker syntax
+
+```html
+<div data-summary-embed data-summary-title="Key takeaways" data-summary-layout="grid">
+  <ul>
+    <li>Point one</li>
+    <li>Point two</li>
+    <li>Point three</li>
+  </ul>
+</div>
+```
+
+| Attribute | Required | Notes |
+|---|---|---|
+| `data-summary-title` | No | Renders as an `<h3>` above the items. Omit for no heading. |
+| `data-summary-layout` | No | One of `list` (default), `numbered`, `grid`, `highlight`. An unrecognized value silently falls back to `list`. |
+
+Items come from `<li>` tags if present inside the marker, or `<p>` tags
+otherwise if there are no `<li>`s — useful for `highlight`, which reads best
+as a sentence or two rather than a bulleted list.
+
+## The four layouts
+
+**`list`** (default) — a plain bulleted list. Best for 3–6 short takeaways.
+
+```html
+<div data-summary-embed data-summary-title="Key takeaways">
+  <ul>
+    <li>Mid-drive motors climb better than hub-drive.</li>
+    <li>Range depends more on terrain and rider weight than the spec sheet.</li>
+  </ul>
+</div>
+```
+
+**`numbered`** — the same list with circular step numbers. Good for
+sequential takeaways ("first check this, then this").
+
+```html
+<div data-summary-embed data-summary-title="Before you buy" data-summary-layout="numbered">
+  <ul>
+    <li>Decide your primary riding use.</li>
+    <li>Check local e-bike class rules.</li>
+    <li>Set a realistic range target.</li>
+  </ul>
+</div>
+```
+
+**`grid`** — items render as compact chips in a responsive grid. Good for
+short, scannable tags rather than full sentences.
+
+```html
+<div data-summary-embed data-summary-title="At a glance" data-summary-layout="grid">
+  <ul>
+    <li>Class 1 only</li>
+    <li>720 Wh battery</li>
+    <li>~40 mile range</li>
+    <li>Mid-drive motor</li>
+  </ul>
+</div>
+```
+
+**`highlight`** — a single emphasized block of text (multiple `<li>`/`<p>`
+items are joined with a space into one block). Good for a single pull-quote
+style takeaway rather than a list.
+
+```html
+<div data-summary-embed data-summary-layout="highlight">
+  <p>The best electric bike is the one that fits your body, your routes, and your storage situation — not the one with the biggest spec sheet.</p>
+</div>
+```
+
+## Malformed markup — what happens
+
+If a `data-summary-embed` marker contains no `<li>` or `<p>` tags at all
+(nothing for `extractItems` to find), the entire marker is **dropped
+silently** — no empty box, no heading with nothing under it. This differs
+slightly from `TwoColumnContent`/`RecipeHeader`, which leave malformed
+markers untouched so editors see a visible signal something's wrong; here,
+an empty summary box would look like a rendering bug on the live page, so
+dropping it is the safer failure mode. Editors previewing the article should
+still visually notice the missing block and can check their marker's
+contents against the syntax above.
+
+## Testing
+
+- Each of the four layouts renders with its correct markup/classes
+- `data-summary-title` omitted → no `<h3>` rendered
+- `data-summary-layout` omitted or invalid → falls back to `list`
+- Marker with `<li>` items → those are used, `<p>` tags (if also present)
+  are ignored
+- Marker with only `<p>` items, no `<li>` → paragraphs are used as items
+- `highlight` layout with multiple items → joined into one text block, not
+  rendered as separate paragraphs
+- Marker with no usable items → dropped entirely, no empty box in the output
+- Nested HTML inside an item (e.g. `<strong>`) → stripped to plain text via
+  `stripTags`, not rendered as HTML (prevents malformed nested markup from
+  breaking the summary box's structure)
+
+===== C:\Users\Admin\Shopify\Storefronts\Headless\guides\blogs\two-column-content.md =====
+# Two Column Content
+
+A static, marker-based two-column layout block for blog articles. Editors write
+a `data-two-col` marker directly in Shopify's blog HTML source view; the loader
+normalizes it into a responsive CSS grid at request time. No client-side JS,
+no hydration, no portal — it's inert HTML from the moment it leaves the loader.
+
+This is the same editor-facing pattern as the existing shoppable-embed
+(`data-shoppable-product`), FAQ (`data-faq`), and newsletter-form
+(`data-newsletter-form`) markers, but simpler: there's no data to fetch and
+nothing needs to become interactive, so it stays a pure string transform.
+
+## Why it's static
+
+Every other marker in this codebase needs *something* live: shoppable embeds
+fetch product data, the newsletter form needs a fetcher for submission. Two
+Column Content has neither requirement — the columns are content the editor
+already typed. Keeping it static means:
+
+- Nothing to hydrate, so no flash-of-static-content while JS loads
+- Works identically with JS disabled
+- No `useEffect` scan added to the article template
+- Cheapest possible version of this feature to maintain
+
+## Files
+
+| File | Purpose |
+|---|---|
+| `app/components/blogs/TwoColumnContent.tsx` | `injectTwoColumnContent()` — the loader-side transform |
+| `app/assets/two-column-content.css` | Grid layout for the normalized markup |
+
+## Wiring it up
+
+**1. Import in `blogs.$blogHandle.$articleHandle.tsx`:**
+
+```tsx
+import {injectTwoColumnContent} from '~/components/blogs/TwoColumnContent';
+import twoColumnContentStyles from '~/assets/two-column-content.css?url';
+```
+
+**2. Register the stylesheet:**
+
+```tsx
+export function links() {
+  return [
+    {rel: 'stylesheet', href: articleStyles},
+    {rel: 'stylesheet', href: authorSectionStyles},
+    {rel: 'stylesheet', href: twoColumnContentStyles},
+  ];
+}
+```
+
+**3. Run the transform in `loadCriticalData`**, after the shoppable-embed
+block (so a shoppable marker nested inside a column is already resolved to
+real product markup before this pass counts div depth):
+
+```tsx
+contentHtml = injectTwoColumnContent(contentHtml);
+contentHtml = injectFaqSections(contentHtml);
+```
+
+## Editor marker syntax
+
+Minimum viable block — two `<div>` children, any content inside:
+
+```html
+<div data-two-col>
+  <div>First column — any rich text/HTML.</div>
+  <div>Second column — any rich text/HTML.</div>
+</div>
+```
+
+### Optional ratio override
+
+Defaults to equal (`1-1`) columns. Override with `data-two-col-ratio`:
+
+```html
+<div data-two-col data-two-col-ratio="2-1">
+  <div>Wider column.</div>
+  <div>Narrower column.</div>
+</div>
+```
+
+Supported values: `1-1` (default), `2-1`, `1-2`.
+
+## Mixing formats
+
+Because each column is just raw HTML, editors aren't limited to plain text —
+any combination works, including nesting another marker inside a column.
+
+### Text + text (most common)
+
+```html
+<div data-two-col>
+  <div>
+    <h3>Hub-drive motors</h3>
+    <p>Steady push, simple, cost-effective. Best for flatter commutes.</p>
+  </div>
+  <div>
+    <h3>Mid-drive motors</h3>
+    <p>More bike-like feel, strong climbing. Best for hills and cargo.</p>
+  </div>
+</div>
+```
+
+### Image + text
+
+```html
+<div data-two-col>
+  <div>
+    <img src="https://cdn.shopify.com/.../mid-drive-diagram.jpg" alt="Mid-drive motor diagram" />
+  </div>
+  <div>
+    <h3>How mid-drive motors work</h3>
+    <p>Mounted at the crank, driving the chain directly — power goes through
+    your gears, so climbing feels more natural than a hub motor's steady push.</p>
+  </div>
+</div>
+```
+
+### Text + nested shoppable embed
+
+```html
+<div data-two-col data-two-col-ratio="1-2">
+  <div>
+    <h3>Our pick for hills</h3>
+    <p>If your commute has real elevation, this is the one we reach for.</p>
+  </div>
+  <div>
+    <div data-shoppable-product="9468552413398"></div>
+  </div>
+</div>
+```
+
+The shoppable-embed transform runs first in the loader, so by the time
+`injectTwoColumnContent` scans this block, the second column already contains
+the resolved product card markup — the depth-counting scanner treats it like
+any other nested HTML and doesn't need to know it's a product embed.
+
+### List + list
+
+```html
+<div data-two-col>
+  <div>
+    <p><strong>Pros</strong></p>
+    <ul>
+      <li>Lightweight frame</li>
+      <li>Great for apartment storage</li>
+    </ul>
+  </div>
+  <div>
+    <p><strong>Cons</strong></p>
+    <ul>
+      <li>Shorter range than full-size folders</li>
+    </ul>
+  </div>
+</div>
+```
+
+## Malformed markup — what happens
+
+If a `data-two-col` block doesn't contain **exactly two** direct child
+`<div>` elements (one child, three children, stray text between them, or an
+unclosed marker), the transform leaves the entire block untouched and passes
+it through as-is. It won't silently drop content or produce broken markup —
+worst case, the editor sees their raw, unstyled HTML in the published
+article, which is a visible, obvious signal something needs fixing, rather
+than a silent content loss.
+
+Common ways to trigger this (avoid these):
+
+- Only one `<div>` inside the marker
+- Any text or a third `<div>` outside/between the two column divs
+- An unclosed `<div data-two-col>` tag
+
+## Testing
+
+Because the div-depth counter is hand-rolled (a plain regex can't safely find
+a wrapping `</div>` when there are nested `<div>`s inside a column), it's
+worth covering with unit tests beyond visual QA:
+
+- Two plain-text columns → normalizes correctly
+- A column containing a nested `<div>` (e.g. an image wrapper) → boundary
+  still resolves correctly
+- A column containing a full nested marker (shoppable embed) → same
+- Ratio attribute present / absent / invalid value → correct class or default
+- One child div only → passed through untouched
+- Three child divs → passed through untouched
+- Unclosed marker → passed through untouched, no infinite loop
+
+
+===== C:\Users\Admin\Shopify\Storefronts\Headless\guides\blogs\video.md =====
+# Video
+
+`app/components/blogs/video.tsx`
+
+A blog content block for embedding video from three sources — the **Shopify
+CDN**, **YouTube**, or **Vimeo** — behind a single, consistent component.
+Built to increase time-on-page for blog posts without hurting page speed:
+nothing heavy loads until the block is in view, and third-party embeds don't
+mount until the reader actually clicks play.
+
+## Why it's built this way
+
+| Concern | How it's handled |
+|---|---|
+| Page speed / Core Web Vitals | YouTube and Vimeo render a lightweight poster + play button ("facade") first. The real `<iframe>` (which drags in the provider's own JS) is only mounted on click. |
+| Off-screen posts | An `IntersectionObserver` defers mounting any embed until the block scrolls near the viewport (`rootMargin: 200px`). |
+| Accessibility | Play button is a real `<button>` with `aria-label`, keyboard-operable (`Enter`/`Space`), visible focus ring. The block is wrapped in a labeled `<figure>`. Native `<video>` supports WebVTT `<track>` captions. |
+| Motion sensitivity | `autoplay` is automatically disabled if the reader has `prefers-reduced-motion: reduce` set, regardless of the prop passed in. |
+| No dependencies | No video SDKs, no `react-youtube`/`react-player`-style packages — plain `<video>` and `<iframe>` only. |
+| Styling | Plain stylesheet at `app/assets/video.css` (imported by the component), BEM-style class names (`video__frame`, `video__play-button`, etc.). Renders as a white bordered card with a centered title header, soft placeholder background, and solid accent-color play button. |
+
+## Usage
+
+```tsx
+import Video from "app/components/blogs/video";
+
+// Shopify CDN (self-hosted mp4/webm)
+<Video
+  source="shopify"
+  src="https://cdn.shopify.com/videos/c/o/v/your-file.mp4"
+  poster="https://cdn.shopify.com/s/files/1/xxxx/thumbnail.jpg"
+  title="Behind the scenes at our workshop"
+  caption="Filmed in our Los Angeles studio."
+  tracks={[
+    { src: "/captions/en.vtt", srcLang: "en", label: "English", default: true },
+  ]}
+/>
+
+// YouTube — full URL or bare ID both work
+<Video
+  src="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  title="How it's made"
+  poster="/images/how-its-made-poster.jpg"
+/>
+
+// Vimeo
+<Video
+  src="https://vimeo.com/76979871"
+  title="Our sustainability story"
+/>
+```
+
+`source` is optional — it's inferred from the URL when omitted. Pass it
+explicitly if you're storing a bare provider ID instead of a full URL.
+
+## Props
+
+| Prop | Type | Default | Notes |
+|---|---|---|---|
+| `src` | `string` | — | **Required.** Full URL (or bare ID for YouTube/Vimeo). |
+| `source` | `"shopify" \| "youtube" \| "vimeo"` | inferred from `src` | Force a source instead of auto-detecting. |
+| `title` | `string` | — | **Required.** Accessible label; also the iframe `title`. |
+| `poster` | `string` | — | Thumbnail shown before playback. Strongly recommended — falls back to a plain gradient panel if omitted. |
+| `caption` | `string` | — | Optional text under the video, rendered as `<figcaption>`. |
+| `tracks` | `VideoCaptionTrack[]` | `[]` | WebVTT caption tracks. Shopify CDN source only. |
+| `aspectRatio` | `number` | `16/9` | e.g. `1` for square, `9/16` for vertical. |
+| `autoplay` | `boolean` | `false` | Shopify CDN only, always muted, disabled under `prefers-reduced-motion`. |
+| `loop` | `boolean` | `false` | Shopify CDN only. |
+| `muted` | `boolean` | `true` | Shopify CDN only. |
+| `controls` | `boolean` | `true` | Shopify CDN only. |
+| `eager` | `boolean` | `false` | Skip the click-to-play facade and mount the real embed immediately. |
+| `showTitle` | `boolean` | `true` | Show the title as a visible bold header above the video card. Set `false` to keep it screen-reader-only. |
+| `className` | `string` | — | Extra class on the root `<figure>`. |
+
+### `VideoCaptionTrack`
+
+```ts
+{
+  src: string;      // .vtt file URL
+  srcLang: string;  // e.g. "en"
+  label: string;    // e.g. "English"
+  default?: boolean;
+}
+```
+
+## Behavior notes
+
+- **ID/URL parsing** — YouTube accepts `watch?v=`, `youtu.be/`, `embed/`, and
+  `shorts/` URL shapes, or a bare 11-character ID. Vimeo accepts
+  `vimeo.com/<id>` or `vimeo.com/video/<id>`, or a bare numeric ID.
+- **YouTube embeds use `youtube-nocookie.com`** for the privacy-enhanced
+  embed domain.
+- Once a YouTube/Vimeo embed is activated, it stays mounted (no unmount on
+  scroll-away) so playback isn't interrupted.
+- If `IntersectionObserver` isn't available in the runtime, the component
+  falls back to treating the block as immediately in view rather than
+  failing to render.
+
+## Embedding in article HTML
+
+`video.tsx` doubles as both the presentational component and the
+marker-injection/slot-hydration glue, following the same pattern as
+`ProductGallery`, `FaqSection`, and `NewsletterForm`. To let editors drop a
+video into an article body via a custom-HTML block:
+
+```html
+<div
+  data-video-embed
+  data-src="https://cdn.shopify.com/videos/c/o/v/example.mp4"
+  data-source="shopify"
+  data-title="Behind the scenes"
+  data-poster="https://cdn.shopify.com/s/files/1/xxxx/poster.jpg"
+  data-caption="Filmed in our LA studio."
+  data-aspect-ratio="16/9"
+  data-autoplay="false"
+  data-loop="false"
+  data-muted="true"
+  data-controls="true"
+  data-show-title="true"
+></div>
+```
+
+Only `data-src` and `data-title` are required — everything else falls back
+to the component's own defaults, and `data-source` can be omitted since
+`<Video>` infers it from the URL.
+
+In the loader, run `injectVideoEmbeds(contentHtml)` alongside the other
+pure-string-transform passes (FAQ, newsletter). In the route component, scan
+the rendered body for `[data-video-slot]`, read each one back with
+`readVideoSlot(el)`, and portal `<Video {...props} />` into it. See
+`app/templates/blogs.$blogHandle.$articleHandle.tsx` for the full wiring.
+
+Because the video only becomes interactive once React hydrates it (the
+pre-activation poster + play button needs the click handler), the slot
+renders empty server-side — there's no meaningful static/no-JS fallback the
+way the newsletter form has one.
+
+## Files
+
+- `app/components/blogs/video.tsx` — the component, plus `injectVideoEmbeds` (server-side marker injection) and `readVideoSlot` (client-side slot parsing) for wiring it into article HTML
+- `app/assets/video.css` — styles (BEM class names, `prefers-reduced-motion` support), registered via the route's `links()` export (`?url` import), not a direct side-effect import
+
