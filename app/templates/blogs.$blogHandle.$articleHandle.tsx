@@ -112,11 +112,11 @@ import galleryStyles from '~/components/blogs/ImagesGallery.css?url';
 import blogButtonStyles from '~/components/blogs/Button.css?url';
 import quoteStyles from '~/assets/quote.css?url';
 import recipeHeaderStyles from '~/components/blogs/RecipeHeader.css?url';
-import newsletterFormStyles from '~/assets/newsletter-form.css?url';
+import newsletterFormStyles from '~/components/blogs/NewsletterForm.css?url';
 import relatedBlogPostsStyles from '~/assets/related-blog-posts.css?url';
 import blogPostCardStyles from '~/assets/blog-post-card.css?url';
 import summaryStyles from '~/components/blogs/Summary.css?url';
-import socialShareStyles from '~/assets/social-share.css?url';
+import socialShareStyles from '~/components/blogs/SocialShare.css?url';
 // newsletter-form.css moved HERE from root.tsx (previously loaded
 // globally there, on the reasoning that the data-newsletter-form
 // marker might be used outside blog articles). In practice the marker
@@ -127,6 +127,13 @@ import socialShareStyles from '~/assets/social-share.css?url';
 // injectNewsletterForm/<NewsletterForm> later, that surface should
 // import newsletter-form.css itself the same way this route does —
 // not force it back onto every route via root.tsx.
+// Now co-located at ~/components/blogs/NewsletterForm.css, same
+// placement convention as Button.css/ImagesGallery.css/
+// RecipeHeader.css next to their components, rather than living
+// under app/assets/ (which has no component counterpart there
+// anymore). Previously app/assets/newsletter-form.css; that file has
+// been removed now that this route and NewsletterForm.tsx both point
+// here instead.
 // article-toc.css is route-scoped for the same "only ever appears on
 // this route" reasoning as AuthorSection.css: <TableOfContents> IS a
 // component directly in this route's React tree (same as
@@ -256,7 +263,12 @@ import socialShareStyles from '~/assets/social-share.css?url';
 // (same as <AuthorSection>/<RelatedBlogPosts>), so it's linked
 // explicitly here rather than via a side-effect import, matching the
 // convention every other directly-rendered block in this route
-// follows.
+// follows. Now co-located at ~/components/blogs/SocialShare.css, same
+// placement convention as Button.css/ImagesGallery.css/
+// RecipeHeader.css/AuthorSection.css next to their components, rather
+// than living under app/assets/. Previously app/assets/social-share.css;
+// that file has been removed now that this route and SocialShare.tsx
+// both point here instead.
 //
 // product-sections.css is NOT linked here, unlike the marker
 // stylesheets above — it's imported directly in root.tsx alongside product-card.css, since
