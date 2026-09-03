@@ -48,8 +48,8 @@ export type NewsletterFormData = {
   subheading: string;
 };
 
-const DEFAULT_HEADING = 'Join the newsletter';
-const DEFAULT_SUBHEADING =
+export const DEFAULT_HEADING = 'Join the newsletter';
+export const DEFAULT_SUBHEADING =
   'New rides, gear guides, and deals. No spam, unsubscribe anytime.';
 
 const MARKER_REGEX = /<div([^>]*\bdata-newsletter-form\b[^>]*)>\s*<\/div>/g;
