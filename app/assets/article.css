@@ -4,9 +4,9 @@
 --------------------------------------------- */
 
 .article {
-  max-width: var(--content-max-width, 1440px);
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 2rem 1.25rem 4rem;
+  padding: 2.5rem 1.5rem 5rem;
   font-family: system-ui, -apple-system, sans-serif;
   color: #1a1a1a;
   line-height: 1.65;
@@ -245,7 +245,7 @@
      (custom.layout_variant), layers on top of hub/spoke
 
    Note: outer container width (max-width) for all three variants
-   is now controlled by article-toc.css via .article-layout, so the
+   is controlled by article-toc.css via .article-layout, so the
    body/TOC grid and the hero/summary/social/author sections above
    and below it share one consistent width per variant. This block
    only sets typography/heading differences between variants.
