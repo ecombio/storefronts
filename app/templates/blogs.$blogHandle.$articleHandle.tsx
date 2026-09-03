@@ -138,7 +138,10 @@ import socialShareStyles from '~/assets/social-share.css?url';
 // inside a blog article body. Unlike video.css, ImagesGallery.css also has
 // to style the STATIC server-rendered grid (see injectImagesGallery),
 // not just the hydrated component, since the grid is visible and
-// functional before any JS runs.
+// functional before any JS runs. It covers all four layout variants
+// (grid / fullscreen / slideshow / carousel) — there's no separate
+// stylesheet per layout, so linking this one file is sufficient
+// regardless of which data-gallery-layout value an editor uses.
 // Button.css is ALSO explicitly linked here rather than relying
 // solely on Button.tsx's own bare side-effect import (`import
 // './Button.css'` at the top of Button.tsx). That side-effect import
@@ -590,16 +593,19 @@ type NewsletterSlot = {
 // carries a full image array rather than two strings).
 //
 // `layout` added here (previously missing) so the visual treatment
-// (grid / fullscreen / slideshow) survives the client-side portal
-// swap instead of silently reverting to the 'grid' default the
+// (grid / fullscreen / slideshow / carousel) survives the client-side
+// portal swap instead of silently reverting to the 'grid' default the
 // moment <ImagesGallery /> hydrates in — readGallerySlot already
 // parsed and returned it, this type just wasn't carrying it through.
+// Kept in sync with ImagesGalleryProps['layout'] in ImagesGallery.tsx
+// — most recently updated to add 'carousel' (renamed from the earlier
+// 'row' layout) alongside grid/fullscreen/slideshow.
 type GallerySlot = {
   el: HTMLElement;
   images: GalleryImage[];
   title?: string;
   columns?: 2 | 3 | 4 | 5;
-  layout?: 'grid' | 'fullscreen' | 'slideshow';
+  layout?: 'grid' | 'fullscreen' | 'slideshow' | 'carousel';
 };
 
 export default function ArticleTemplate() {
