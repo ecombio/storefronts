@@ -42,7 +42,7 @@ import collectionSidebarStyles from '~/assets/collection-sidebar.css?url'; // AD
 import paginatedResourceSectionStyles from '~/assets/paginated-resource-section.css?url';
 import stickyHeaderStyles from '~/assets/sticky-header.css?url';
 import articleCardStyles from '~/assets/article-card.css?url';
-import articleTocStyles from '~/assets/article-toc.css?url'; // ADDED — table-of-contents sidebar/collapsible layout for blog articles; loads after articleCardStyles, the other article-scoped stylesheet
+import articleTocStyles from '~/components/blogs/TableOfContents.css?url'; // ADDED — table-of-contents sidebar/collapsible layout for blog articles; loads after articleCardStyles, the other article-scoped stylesheet
 // newsletter-form.css was removed from here (previously global, on the
 // reasoning that data-newsletter-form might appear outside blog
 // articles). It moved to blogs.$blogHandle.$articleHandle.tsx's
