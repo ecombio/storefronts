@@ -1,0 +1,58 @@
+/* app/components/blogs/RelatedBlogPosts.css
+ *
+ * Styles for RelatedBlogPosts.tsx — the section wrapper and grid
+ * layout ONLY. Per-card styles (.bpc-*) live separately in
+ * blog-post-card.css, since BlogPostCard.tsx was extracted out to be
+ * reusable outside this section; this file no longer needs to know
+ * what a card looks like, only how many of them fit across the row
+ * and how much space surrounds the section.
+ *
+ * Co-located here, same placement convention as Button.css/
+ * ImagesGallery.css/RecipeHeader.css/AuthorSection.css/SocialShare.css
+ * next to their components, rather than living under app/assets/.
+ * Previously app/assets/related-blog-posts.css; that file has been
+ * removed now that the route and RelatedBlogPosts.tsx both point here
+ * instead. blog-post-card.css has also since been co-located to
+ * app/components/blogs/BlogPostCard.css, as a separate move — the two
+ * files don't import from each other, so either could move
+ * independently of the other.
+ */
+
+.rbp-root {
+  /* Larger gap above than below: this section always sits right after
+     the article body, so it needs clear separation from the content
+     above it, but the bottom gap can be small since a footer/next
+     section typically follows. */
+  margin: 3rem 0 1rem;
+}
+
+.rbp-title {
+  margin: 0 0 1.5rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-align: center;
+  /* Slightly tightened tracking is a deliberate look for large/bold
+     headings — keeps bold letterforms from feeling too spaced out. */
+  letter-spacing: -0.01em;
+}
+
+.rbp-grid {
+  list-style: none; /* it's a <ul> in the markup, but visually a card grid, not a list */
+  display: grid;
+  /* Reads the --rbp-columns custom property set inline by the component
+     (RelatedBlogPostsProps.columns); 3 is the CSS-side fallback if that
+     variable is ever missing, matching the component's own default. */
+  grid-template-columns: repeat(var(--rbp-columns, 3), 1fr);
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+}
+
+@media (max-width: 720px) {
+  .rbp-grid {
+    /* Below tablet width, always collapse to a single column regardless
+       of how many columns were requested — 2/3/4-across never has room
+       to breathe on a phone-sized viewport. */
+    grid-template-columns: 1fr;
+  }
+}

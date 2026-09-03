@@ -1,0 +1,130 @@
+/* app/components/blogs/BlogPostCard.css
+ *
+ * Styles for BlogPostCard.tsx. Split out of related-blog-posts.css —
+ * these rules style ONE card (.bpc-*) and know nothing about grids,
+ * sections, or headings, so this file loads wherever <BlogPostCard>
+ * is rendered, independent of which page/section is doing the
+ * rendering. RelatedBlogPosts.css keeps only the section wrapper and
+ * grid layout that's specific to the "related posts" block.
+ *
+ * Co-located here, same placement convention as Button.css/
+ * ImagesGallery.css/RecipeHeader.css/AuthorSection.css/SocialShare.css/
+ * RelatedBlogPosts.css next to their components, rather than living
+ * under app/assets/. Previously app/assets/blog-post-card.css; that
+ * file has been removed now that BlogPostCard.tsx and every route
+ * rendering it point here instead.
+ *
+ * REWRITTEN to match the component's current markup and its
+ * documented redesign (see BlogPostCard.tsx's header comment) — the
+ * previous version of this file still targeted the earlier "SaaS-card
+ * kit" look (bordered card, uppercase tracked-out date, filled pill
+ * "Read more" button, a separate .bpc-image-link anchor) that the
+ * component no longer renders, and never gained the .bpc-title a::after
+ * stretched-link rule the component's own comment already pointed to.
+ * Rules below target the class names the component actually outputs
+ * (.bpc-card, .bpc-image-wrap, .bpc-image, .bpc-image--placeholder,
+ * .bpc-date, .bpc-title) with no leftover rules for markup that no
+ * longer exists (.bpc-image-link, .bpc-card-title, .bpc-read-more).
+ */
+
+.bpc-card {
+  /* position: relative is what lets .bpc-title a's ::after (below)
+     stretch to cover this entire <li>, making the whole card
+     clickable through one link/one accessible name — see
+     BlogPostCard.tsx's header comment for why. */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  /* Cards are separated by whitespace/grid gap (see RelatedBlogPosts.css),
+     not a border — deliberately dropped from the earlier bordered-card
+     design described in BlogPostCard.tsx's header comment. */
+}
+
+.bpc-image-wrap {
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.bpc-image {
+  display: block;
+  width: 100%;
+  /* Belt-and-suspenders with the component's aspectRatio="1/1" prop:
+     this rule also applies to the placeholder <div>, which has no
+     aspectRatio prop of its own, so every card's image slot is the
+     same square height whether or not a post has an image. */
+  aspect-ratio: 1 / 1;
+  object-fit: cover; /* crops rather than distorting non-square source images */
+  transition: transform 0.15s ease;
+}
+
+.bpc-image--placeholder {
+  /* Now holds Shopify's own small "no image" icon (see
+     SHOPIFY_FALLBACK_IMAGE_URL in BlogPostCard.tsx) rather than an
+     empty box, so it's framed as a centered icon — not stretched
+     full-bleed like a real photo, which would look badly pixelated
+     since the source graphic is only 100x100. object-fit: contain
+     keeps it at its own aspect ratio inside the padded square;
+     box-sizing: border-box keeps that padding from pushing the box
+     past its 100% width. */
+  object-fit: contain;
+  background: #f4f3f0;
+  padding: 2.5rem;
+  box-sizing: border-box;
+}
+
+/* The one hover cue for the whole card: a slight lift on the image,
+   rather than a button-style hover state (there is no button anymore
+   — see the header comment on why .bpc-read-more was dropped). */
+@media (hover: hover) {
+  .bpc-card:hover .bpc-image {
+    transform: translateY(-2px);
+  }
+}
+
+.bpc-date {
+  /* Quiet byline treatment, not a tracked-out meta chip — muted color
+     and a small size are enough to keep the eye moving to the title
+     first, without the uppercase/heavy letter-spacing look the
+     previous "SaaS-card kit" design used. */
+  font-size: 0.8rem;
+  color: #9a978f;
+}
+
+.bpc-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.bpc-title a {
+  position: relative;
+  color: inherit;
+  text-decoration: none;
+}
+
+.bpc-title a:hover {
+  text-decoration: underline;
+}
+
+.bpc-title a::after {
+  /* The stretched link: expands the title's click target to cover the
+     entire .bpc-card (its nearest positioned ancestor), so the image
+     and surrounding whitespace are clickable too — without adding a
+     second or third anchor pointing at the same href. See
+     BlogPostCard.tsx's header comment for the accessibility reasoning
+     this replaces (previously: image, title, and a "Read more" link
+     were three separate anchors to the same destination). */
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.bpc-title a:focus-visible {
+  /* Keyboard-focus ring only (focus-visible, not focus) so mouse
+     clicks don't leave a visible outline, but tab navigation still
+     gets a clear, accessible indicator around the whole card. */
+  outline: 2px solid #3b4cf6;
+  outline-offset: 2px;
+}

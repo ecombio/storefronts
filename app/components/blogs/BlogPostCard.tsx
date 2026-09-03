@@ -33,10 +33,39 @@ import {Link} from 'react-router';
  * title, and "Read more" were three separate links to the same URL —
  * a screen-reader user tabbing through the grid hit the same
  * destination three times per card. Below, only the title is a real
- * <a>; a ::after "stretched link" (see blog-post-card.css) makes the
+ * <a>; a ::after "stretched link" (see BlogPostCard.css) makes the
  * whole card clickable without adding more anchors. One link, one
  * accessible name, per post.
  */
+
+// Shopify's own "no image" fallback — this is the asset Shopify's
+// `img_url` Liquid filter itself falls back to for a product/
+// collection with no image (confirmed via Shopify's own
+// shopify/liquid repo). Used here, rather than a fully custom image,
+// so a post with no image still reads as "no image", on-brand with
+// how the rest of Shopify's platform represents the same state.
+//
+// CAVEATS, read before relying on this long-term:
+//   1. This is an internal admin/theme asset, not part of the public
+//      Storefront API or Hydrogen's documented surface — Shopify has
+//      never published or versioned this URL as something external
+//      apps should depend on. It could move or disappear without
+//      notice.
+//   2. It's a 100x100 gif, so it will look soft if stretched large.
+//      Rendered here as a small centered icon (see
+//      .bpc-image--placeholder in BlogPostCard.css), not stretched to
+//      fill the card like a real photo.
+//   3. It does NOT live on Shopify's content CDN path (the one
+//      Hydrogen's <Image>/shopifyLoader knows how to resize via query
+//      params), so it's rendered as a plain <img> below rather than
+//      through <Image data={...}> — passing it through the Hydrogen
+//      loader would just append unsupported resize params.
+//
+// If pixel-perfect/on-brand control matters more than "genuinely from
+// Shopify," swap this for a self-hosted asset imported from
+// app/assets/ instead — same <img> usage below, just a different src.
+const SHOPIFY_FALLBACK_IMAGE_URL =
+  'https://cdn.shopify.com/shopifycloud/shopify/assets/no-image-100-c91dd4bdb56513f2cbf4fc15436ca35e9d4ecd014546c8d421b1aece861dfecf_small.gif';
 
 // The shape one card needs to render. Named generically (not
 // "RelatedPost") since this component has no idea whether the post
@@ -75,7 +104,8 @@ export default function BlogPostCard({post}: BlogPostCardProps) {
           this image doesn't also need to be a link or carry alt text
           that would be announced a second time. Still gets a real
           empty alt (not omitted) so screen readers skip it cleanly
-          rather than falling back to the filename. */}
+          rather than falling back to the filename — same reasoning
+          applies to the no-image fallback below. */}
       <div className="bpc-image-wrap">
         {post.image ? (
           <Image
@@ -97,8 +127,17 @@ export default function BlogPostCard({post}: BlogPostCardProps) {
         ) : (
           // Posts without an image still need a stable card height,
           // so a blank placeholder box fills the same slot the
-          // <Image> would occupy.
-          <div className="bpc-image bpc-image--placeholder" />
+          // <Image> would occupy. Now shows Shopify's own "no image"
+          // graphic instead of a blank box — see
+          // SHOPIFY_FALLBACK_IMAGE_URL above for what this is and its
+          // caveats. Plain <img>, not Hydrogen's <Image>, since this
+          // asset isn't on a path the shopifyLoader can resize.
+          <img
+            src={SHOPIFY_FALLBACK_IMAGE_URL}
+            alt=""
+            loading="lazy"
+            className="bpc-image bpc-image--placeholder"
+          />
         )}
       </div>
 
@@ -110,7 +149,7 @@ export default function BlogPostCard({post}: BlogPostCardProps) {
 
       <h3 className="bpc-title">
         {/* The only real link on the card. Its ::after (see
-            blog-post-card.css .bpc-title a) is positioned to cover
+            BlogPostCard.css .bpc-title a) is positioned to cover
             the full <li>, so clicking anywhere on the image or
             whitespace still navigates — without adding two more
             anchors pointing at the same href. */}

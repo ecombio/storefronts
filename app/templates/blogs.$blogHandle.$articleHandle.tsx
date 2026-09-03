@@ -113,8 +113,8 @@ import blogButtonStyles from '~/components/blogs/Button.css?url';
 import quoteStyles from '~/assets/quote.css?url';
 import recipeHeaderStyles from '~/components/blogs/RecipeHeader.css?url';
 import newsletterFormStyles from '~/components/blogs/NewsletterForm.css?url';
-import relatedBlogPostsStyles from '~/assets/related-blog-posts.css?url';
-import blogPostCardStyles from '~/assets/blog-post-card.css?url';
+import relatedBlogPostsStyles from '~/components/blogs/RelatedBlogPosts.css?url';
+import blogPostCardStyles from '~/components/blogs/BlogPostCard.css?url';
 import summaryStyles from '~/components/blogs/Summary.css?url';
 import socialShareStyles from '~/components/blogs/SocialShare.css?url';
 // newsletter-form.css moved HERE from root.tsx (previously loaded
@@ -236,15 +236,31 @@ import socialShareStyles from '~/components/blogs/SocialShare.css?url';
 // This file now covers ONLY the section wrapper + grid — card-level
 // styles were split out to blog-post-card.css (see below) when
 // BlogPostCard.tsx was extracted into its own reusable component.
+// Now co-located at ~/components/blogs/RelatedBlogPosts.css, same
+// placement convention as Button.css/ImagesGallery.css/
+// RecipeHeader.css/AuthorSection.css/SocialShare.css next to their
+// components, rather than living under app/assets/. Previously
+// app/assets/related-blog-posts.css; that file has been removed now
+// that this route and RelatedBlogPosts.tsx both point here instead.
+// blog-post-card.css has SEPARATELY also been co-located (see its own
+// note below) — that move is independent of this one; either file can
+// move without the other, since neither imports from the other.
 // blog-post-card.css is linked separately (not folded into
-// related-blog-posts.css) for the same reason BlogPostCard.tsx is its
+// RelatedBlogPosts.css) for the same reason BlogPostCard.tsx is its
 // own file and not inlined into RelatedBlogPosts.tsx: <BlogPostCard>
 // is meant to be renderable from other routes/sections later (a blog
 // index page, a "recent posts" widget, etc.), each of which would
-// need this stylesheet without needing related-blog-posts.css's
+// need this stylesheet without needing RelatedBlogPosts.css's
 // section/grid rules. It's linked here because THIS route happens to
 // render it (via <RelatedBlogPosts>) — a future route rendering
 // <BlogPostCard> directly would link it the same way, independently.
+// Now co-located at ~/components/blogs/BlogPostCard.css, same
+// placement convention as Button.css/ImagesGallery.css/
+// RecipeHeader.css/AuthorSection.css/SocialShare.css/
+// RelatedBlogPosts.css next to their components, rather than living
+// under app/assets/. Previously app/assets/blog-post-card.css; that
+// file has been removed now that BlogPostCard.tsx and this route both
+// point here instead.
 // Summary.css is route-scoped for the same "only ever appears on this
 // route" reasoning as related-blog-posts.css/AuthorSection.css.
 // Unlike the marker-based stylesheets above (Button.css,
