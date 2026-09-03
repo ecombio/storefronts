@@ -105,7 +105,7 @@ import {
 import type {ProductCardFragment} from 'storefrontapi.generated';
 import articleStyles from '~/assets/article.css?url';
 import articleTocStyles from '~/components/blogs/TableOfContents.css?url';
-import authorSectionStyles from '~/assets/article-author.css?url';
+import authorSectionStyles from '~/components/blogs/AuthorSection.css?url';
 import twoColumnContentStyles from '~/components/blogs/TwoColumnContent.css?url';
 import videoStyles from '~/assets/video.css?url';
 import galleryStyles from '~/components/blogs/ImagesGallery.css?url';
@@ -128,7 +128,7 @@ import socialShareStyles from '~/assets/social-share.css?url';
 // import newsletter-form.css itself the same way this route does —
 // not force it back onto every route via root.tsx.
 // article-toc.css is route-scoped for the same "only ever appears on
-// this route" reasoning as article-author.css: <TableOfContents> IS a
+// this route" reasoning as AuthorSection.css: <TableOfContents> IS a
 // component directly in this route's React tree (same as
 // <AuthorSection>), so it's linked explicitly here rather than via a
 // side-effect import, matching every other directly-rendered block in
@@ -140,7 +140,7 @@ import socialShareStyles from '~/assets/social-share.css?url';
 // file has been removed now that this route and TableOfContents.tsx
 // both point here instead.
 // TwoColumnContent.css is route-scoped for the same reason as
-// article.css/article-author.css: the data-two-col marker only ever
+// article.css/AuthorSection.css: the data-two-col marker only ever
 // appears inside a blog article body, unlike the newsletter marker.
 // Now co-located at ~/components/blogs/TwoColumnContent.css, same
 // placement convention as Button.css/ImagesGallery.css/RecipeHeader.css
@@ -206,8 +206,19 @@ import socialShareStyles from '~/assets/social-share.css?url';
 // blog article body, and its injector has no component in this
 // route's React tree" reasoning too now that it's scoped here instead
 // of root.tsx — see the note above.
+// AuthorSection.css is route-scoped for the same "only ever appears
+// on this route" reasoning as related-blog-posts.css: <AuthorSection>
+// IS a component directly in this route's React tree, so it's linked
+// explicitly here rather than via a side-effect import, matching
+// every other directly-rendered block in this route. Now co-located
+// at ~/components/blogs/AuthorSection.css, same placement convention
+// as Button.css/ImagesGallery.css/RecipeHeader.css/TwoColumnContent.css
+// next to their components, rather than living under app/assets/ like
+// quote.css (which has no component counterpart). Previously
+// app/assets/article-author.css; that file has been removed now that
+// this route and AuthorSection.tsx both point here instead.
 // related-blog-posts.css is route-scoped for the same "only ever
-// appears on this route" reasoning as article-author.css: unlike the
+// appears on this route" reasoning as AuthorSection.css: unlike the
 // marker-based stylesheets above, <RelatedBlogPosts> IS a component
 // directly in this route's React tree (same as <AuthorSection>), so
 // in principle its styles could be pulled in via a bare side-effect
@@ -228,7 +239,7 @@ import socialShareStyles from '~/assets/social-share.css?url';
 // render it (via <RelatedBlogPosts>) — a future route rendering
 // <BlogPostCard> directly would link it the same way, independently.
 // Summary.css is route-scoped for the same "only ever appears on this
-// route" reasoning as related-blog-posts.css/article-author.css.
+// route" reasoning as related-blog-posts.css/AuthorSection.css.
 // Unlike the marker-based stylesheets above (Button.css,
 // quote.css), the summary box is not rendered via
 // dangerouslySetInnerHTML alongside the rest of the article body — it
@@ -240,7 +251,7 @@ import socialShareStyles from '~/assets/social-share.css?url';
 // along with a component's own side-effect import, same reasoning as
 // Button.css/quote.css.
 // social-share.css is route-scoped for the same "only ever appears on
-// this route" reasoning as related-blog-posts.css/article-author.css.
+// this route" reasoning as related-blog-posts.css/AuthorSection.css.
 // <SocialShare> IS a component directly in this route's React tree
 // (same as <AuthorSection>/<RelatedBlogPosts>), so it's linked
 // explicitly here rather than via a side-effect import, matching the
