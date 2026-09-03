@@ -48,7 +48,7 @@ first.
 | `data-source` | No | inferred from `data-src` | `shopify` \| `youtube` \| `vimeo` — only set this explicitly if auto-detection ever guesses wrong |
 | `data-poster` | No | none | Thumbnail shown before playback. **Strongly recommended** — prevents layout shift and gives YouTube/Vimeo embeds a branded look instead of a plain placeholder box |
 | `data-caption` | No | none | Short blurb rendered under the video as a `<figcaption>` |
-| `data-aspect-ratio` | No | `16/9` | Accepts `"16/9"`-style ratios or a bare number like `"1"` for square |
+| `data-aspect-ratio` | No | `16/9` | Controls the video's **shape**, not its width (see [Sizing](#sizing) below). Accepts `"16/9"`-style ratios or a bare number like `"1"` for square. Use `"9/16"` for portrait/vertical clips (e.g. Shorts/Reels-style content) |
 | `data-autoplay` | No | `false` | `"true"` / `"false"`. **Shopify-hosted only** — ignored for YouTube/Vimeo. Always forced muted when on. Never fires if the visitor has "reduce motion" enabled at the OS level |
 | `data-loop` | No | `false` | `"true"` / `"false"` |
 | `data-muted` | No | `true` | `"true"` / `"false"` |
@@ -57,6 +57,29 @@ first.
 
 Booleans must be the literal strings `"true"` or `"false"` — anything
 else (including omitting the attribute) is treated as the default.
+
+---
+
+## Sizing
+
+**There is currently no way to control the video's width.** The video
+card always renders at 100% of the article body's column width — there
+is no `data-width` or `data-max-width` attribute, and no size variant
+(e.g. `small`/`medium`/`full`). `data-aspect-ratio` only sets the
+*height* relative to that fixed width; it does not make the block
+narrower or smaller overall.
+
+This matters most for **portrait/vertical video** (`data-aspect-ratio="9/16"`).
+Because width is uncapped, a 9/16 clip at full article width renders
+quite tall — for example, at a ~700px-wide article column, a 9/16
+video is roughly 1244px tall. Before embedding a portrait clip,
+consider whether it will visually dominate the article, especially if
+there isn't much surrounding text to break it up.
+
+If you need a smaller or capped-width video, that isn't possible from
+the editor today — it would require a code change (a new `data-max-width`
+or `data-size` attribute wired through the component and its CSS).
+Flag this to whoever maintains `Video.tsx` / `video.css` if it comes up.
 
 ---
 
@@ -135,6 +158,22 @@ Autoplay is always muted regardless of `data-muted`, and never
 triggers for visitors with reduced-motion preferences — no extra
 attribute needed to handle that.
 
+### Portrait/vertical video (Shopify-hosted Shorts-style clip)
+
+```html
+<div
+  data-video-embed
+  data-src="https://cdn.shopify.com/videos/c/o/v/example-shorts.mp4"
+  data-title="Behind the scenes, vertical cut"
+  data-aspect-ratio="9/16"
+></div>
+```
+
+Remember the width is still 100% of the article column (see
+[Sizing](#sizing)) — a 9/16 clip will render tall. Consider placing it
+where there's enough surrounding text/whitespace that it doesn't
+overwhelm the layout.
+
 ---
 
 ## Writing guidance
@@ -154,6 +193,9 @@ attribute needed to handle that.
   other content inside the div — it must stay empty
   (`<div ...></div>`); anything else means it won't be matched and
   will pass through to the live page unrendered.
+- **Think about width before using portrait video.** Since the block
+  always fills the article column and can't be capped narrower today,
+  a 9/16 clip renders quite tall — see [Sizing](#sizing).
 - Nothing heavy loads until a reader actually presses play on a
   YouTube/Vimeo embed (facade pattern), and nothing for any video
   source loads until the block scrolls near the viewport — so adding
@@ -169,4 +211,5 @@ attribute needed to handle that.
 | Video plays but has no thumbnail before clicking | `data-poster` not set (YouTube/Vimeo) |
 | Autoplay doesn't seem to work | Source isn't Shopify-hosted, or the visitor has reduced-motion enabled — both are expected, not a bug |
 | Wrong source detected (e.g. treated as Shopify instead of YouTube) | Set `data-source` explicitly to override auto-detection |
+| Video looks too large / dominates the page, especially with `data-aspect-ratio="9/16"` | Expected — width is always 100% of the article column and cannot currently be capped or reduced (see [Sizing](#sizing)) |
 | Edited attribute values don't seem to apply after saving | Confirm the div is still empty (`<div ...></div>`) — content or whitespace inside it can break the marker match |
