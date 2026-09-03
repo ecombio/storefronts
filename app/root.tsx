@@ -42,6 +42,7 @@ import collectionSidebarStyles from '~/assets/collection-sidebar.css?url'; // AD
 import paginatedResourceSectionStyles from '~/assets/paginated-resource-section.css?url';
 import stickyHeaderStyles from '~/assets/sticky-header.css?url';
 import articleCardStyles from '~/assets/article-card.css?url';
+import articleTocStyles from '~/assets/article-toc.css?url'; // ADDED — table-of-contents sidebar/collapsible layout for blog articles; loads after articleCardStyles, the other article-scoped stylesheet
 import subCollectionStyles from '~/assets/sub-collection.css?url';
 import collectionAfterItemsStyles from '~/assets/collection-after-items.css?url';
 import cartDrawerStyles from '~/assets/cart-drawer.css?url';
@@ -224,6 +225,8 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={paginatedResourceSectionStyles}></link>
         <link rel="stylesheet" href={stickyHeaderStyles}></link>
         <link rel="stylesheet" href={articleCardStyles}></link>
+        {/* ADDED — table-of-contents sidebar/collapsible layout for blog articles */}
+        <link rel="stylesheet" href={articleTocStyles}></link>
         <link rel="stylesheet" href={subCollectionStyles}></link>
         <link rel="stylesheet" href={collectionAfterItemsStyles}></link>
         <link rel="stylesheet" href={cartDrawerStyles}></link>

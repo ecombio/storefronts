@@ -1,0 +1,205 @@
+/*
+ * Table of contents layout for blog articles.
+ * Own file, imported/linked the same way as every other feature
+ * stylesheet in root.tsx (see e.g. collection-sidebar.css) — this
+ * isn't merged into article.css directly, just loaded alongside it.
+ *
+ * Widens .article/.article--hub/.article--feature (defined in
+ * article.css) so the sidebar has room without squeezing the body —
+ * adjust these to taste, they're a starting point, not measured
+ * against your actual reading-width preference.
+ */
+
+.article,
+.article--hub,
+.article--feature {
+  max-width: 960px;
+}
+
+.article--hub {
+  max-width: 1120px;
+}
+
+.article--feature {
+  max-width: 1180px;
+}
+
+/* Two-column grid: body + sidebar. Only the body and TOC sit inside
+   this grid — h1/meta/hero stay full-width above it (set in the
+   template JSX, not here). */
+
+.article-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .article-layout {
+    grid-template-columns: 1fr 240px;
+  }
+
+  .article-toc {
+    order: 2;
+  }
+}
+
+/* The TOC itself: <details> wrapping a <nav>. Below 900px it behaves
+   as a native collapsible (summary visible, content toggles open/
+   closed). At/above 900px, CSS forces it open regardless of the
+   `open` attribute's actual state and hides the summary — this is
+   the same "native element, CSS overrides the breakpoint" trick used
+   for the accordion, just inverted (open-by-default there is
+   author-controlled per item; here it's breakpoint-controlled). */
+
+.article-toc {
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+}
+
+.article-toc summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.95rem;
+  list-style: none;
+}
+
+.article-toc summary::-webkit-details-marker {
+  display: none;
+}
+
+.article-toc nav {
+  display: none;
+  margin-top: 0.85rem;
+}
+
+.article-toc[open] nav {
+  display: block;
+}
+
+.article-toc ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.article-toc__item a {
+  display: block;
+  text-decoration: none;
+  color: #6b6b6b;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  border-left: 2px solid transparent;
+  padding-left: 0.75rem;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.article-toc__item--h3 a {
+  padding-left: 1.5rem;
+  font-size: 0.85rem;
+}
+
+.article-toc__item a:hover {
+  color: #1a1a1a;
+}
+
+.article-toc__item--active a {
+  color: #1a1a1a;
+  font-weight: 600;
+  border-left-color: #1a1a1a;
+}
+
+/* Parent h2 whose section contains the active h3 but isn't itself the
+   active heading — a lighter cue than --active so the two states read
+   as distinct at a glance ("you're inside this section" vs "this is
+   exactly where you are"). */
+.article-toc__item--active-child > .article-toc__row a {
+  color: #1a1a1a;
+  border-left-color: #c9c9c9;
+}
+
+/* Row wrapping an h2 link + its expand/collapse toggle — the two are
+   separate interactive elements on purpose: clicking the text jumps
+   to the section, clicking the chevron only expands/collapses its
+   children, so neither action steps on the other. */
+
+.article-toc__row {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.article-toc__row a {
+  flex: 1;
+}
+
+.article-toc__toggle {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #9a9a9a;
+}
+
+.article-toc__toggle:hover {
+  color: #1a1a1a;
+}
+
+.article-toc__chevron {
+  display: block;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid currentColor;
+  transition: transform 0.15s ease;
+}
+
+.article-toc__toggle--expanded .article-toc__chevron {
+  transform: rotate(180deg);
+}
+
+.article-toc__sublist {
+  list-style: none;
+  margin: 0.4rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+@media (min-width: 900px) {
+  .article-toc {
+    position: sticky;
+    top: 1.5rem; /* match/exceed sticky header height, same as
+                    .collection-filters in collection-sidebar.css */
+  }
+
+  .article-toc summary {
+    display: none;
+  }
+
+  .article-toc nav {
+    display: block !important;
+    margin-top: 0;
+  }
+}
+
+/* Headings need room to clear a sticky header when a TOC link jumps
+   to them — same value used for .accordion__item in article.css. */
+
+.article-body h2,
+.article-body h3 {
+  scroll-margin-top: 6rem;
+}

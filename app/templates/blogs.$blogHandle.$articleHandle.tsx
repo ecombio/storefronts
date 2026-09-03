@@ -1,77 +1,51 @@
 // app/templates/blogs.$blogHandle.$articleHandle.tsx
-//
-// Route: /blogs/:blogHandle/:articleHandle
-// Renders a single blog article, including support for "shoppable"
-// product embeds placed inline inside the article's rich-text HTML.
-
+import {useEffect, useRef, useState} from 'react';
+import {createPortal} from 'react-dom';
 import {useLoaderData} from 'react-router';
 import type {Route} from './+types/blogs.$blogHandle.$articleHandle';
+import {Image} from '@shopify/hydrogen';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {extractShoppableProductIds, injectShoppableProducts} from '~/components/blogs/ProductGallery';
-import {Article} from '~/sections/Article';
+import {injectFaqSections} from '~/components/blogs/FaqSection';
+import {withHeadingIds, TableOfContents} from '~/components/blogs/TableOfContents';
+import {ProductCard} from '~/snippets/ProductCard';
+import {Solo, Duo, Trio} from '~/components/blogs/ProductGallery';
+
 import {ARTICLE_QUERY, SHOPPABLE_PRODUCTS_QUERY} from '~/graphql/blog/ArticleQuery';
 import type {ProductCardFragment} from 'storefrontapi.generated';
 import articleStyles from '~/assets/article.css?url';
 
-// Registers this route's stylesheet with React Router so it's only
-// loaded when this route is active (route-scoped CSS).
 export function links() {
   return [{rel: 'stylesheet', href: articleStyles}];
 }
 
-// Sets the <title> tag using the article title returned by the loader.
-// `data` may be undefined if the loader threw before returning, so the
-// article title is optional-chained with a fallback empty string.
 export const meta: Route.MetaFunction = ({data}) => {
   return [{title: `Hydrogen | ${data?.article.title ?? ''} article`}];
 };
 
 export async function loader(args: Route.LoaderArgs) {
-  // Kick off non-critical ("below the fold") data fetching without
-  // blocking Time To First Byte. Currently a no-op (see below), but
-  // the split is kept so deferred data can be added later without
-  // restructuring the loader.
   const deferredData = loadDeferredData(args);
-
-  // Critical data: everything required to render the initial page.
-  // If this fails, the whole route should error (400/500) rather
-  // than render a broken page.
   const criticalData = await loadCriticalData(args);
-
-  // Merge both into a single loader payload for the component.
   return {...deferredData, ...criticalData};
 }
 
-/**
- * Load data necessary for rendering content above the fold. This is the critical data
- * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
- */
 async function loadCriticalData({context, request, params}: Route.LoaderArgs) {
   const {blogHandle, articleHandle} = params;
 
-  // Defensive guard: route params should always be present given the
-  // file-based route naming, but bail out early with a 404 if not.
   if (!articleHandle || !blogHandle) {
     throw new Response('Not found', {status: 404});
   }
 
-  // Fetch the article. Wrapped in Promise.all so additional parallel
-  // queries can be added later (e.g. related articles) without
-  // serializing requests.
   const [{blog}] = await Promise.all([
     context.storefront.query(ARTICLE_QUERY, {
       variables: {blogHandle, articleHandle},
     }),
-    // Add other queries here, so that they are loaded in parallel
   ]);
 
-  // No matching blog/article for these handles -> 404.
   if (!blog?.articleByHandle) {
     throw new Response(null, {status: 404});
   }
 
-  // If Shopify's canonical handle for this market/locale differs from
-  // the one in the URL, issue a redirect to the correct localized URL.
   redirectIfHandleIsLocalized(
     request,
     {
@@ -86,72 +60,248 @@ async function loadCriticalData({context, request, params}: Route.LoaderArgs) {
 
   const article = blog.articleByHandle;
 
-  // --- Shoppable product embeds ---
-  // Editors can embed inline product callouts in the article body via
-  // `data-shoppable-product` / `data-solo` / `data-duo` / `data-trio`
-  // attributes in the rich-text HTML. Scan the raw HTML for the
-  // (numeric) product IDs referenced by those markers.
   const productIds = extractShoppableProductIds(article.contentHtml);
   let contentHtml = article.contentHtml;
 
-  // Keyed by the same numeric IDs used in the article markup — extract,
-  // inject, ProductRow/StaticProductRow, and Article.tsx's hydration
-  // effect all key their lookups on the numeric ID, not the GID.
-  // shoppableProducts is passed down as entries (not a Map — loader data
-  // must be JSON-serializable) for Article.tsx to rebuild on the client.
   let shoppableProducts: [string, ProductCardFragment][] = [];
 
   if (productIds.length > 0) {
-    // The Storefront API's nodes(ids: $ids) requires full GIDs, not the
-    // plain numeric IDs pulled from the article's data-* markers.
     const gids = productIds.map((id) => `gid://shopify/Product/${id}`);
 
-    // Batch-fetch all referenced products in a single query.
     const {nodes} = await context.storefront.query(SHOPPABLE_PRODUCTS_QUERY, {
       variables: {ids: gids},
     });
 
-    // nodes() preserves input order, so zip back to the numeric IDs
-    // rather than trusting node.id (which comes back as a GID) — this
-    // keeps the numeric ID as the join key end-to-end.
     const productsById = new Map(
       productIds
         .map((id, i) => [id, nodes?.[i]] as const)
-        // Drop entries where the product node came back null (e.g. the
-        // product was deleted or is no longer accessible), and narrow
-        // the type so TypeScript knows the remaining entries are valid.
         .filter(
           (entry): entry is [string, ProductCardFragment] =>
             Boolean(entry[1]),
         ),
     );
 
-    // Replace the data-* markers in the raw HTML with resolved product
-    // markup/placeholders, and keep the resolved map (as entries) so
-    // the client can rehydrate interactive product rows.
     contentHtml = injectShoppableProducts(article.contentHtml, productsById);
     shoppableProducts = [...productsById.entries()];
   }
+  // ...existing shoppable-embed block unchanged...
 
-  // Return the article with its HTML swapped for the shoppable-embed
-  // version, plus the resolved product data needed to hydrate it.
-  return {article: {...article, contentHtml}, shoppableProducts};
+  contentHtml = injectFaqSections(contentHtml); // runs regardless of
+  // whether shoppable products were present, since FAQ injection needs
+  // no async data fetch (unlike the product-embed block above it).
+
+  // Assigns ids to any h2/h3 that doesn't already have one and returns
+  // the flat heading list TableOfContents renders from. Order relative
+  // to the FAQ injection above doesn't matter — injectFaqSections only
+  // ever touches the <script data-faq> marker, never h2/h3 tags, so
+  // there's nothing for this pass to double-process either way.
+  const {html: contentHtmlWithHeadingIds, headings: tocHeadings} =
+    withHeadingIds(contentHtml);
+  contentHtml = contentHtmlWithHeadingIds;
+
+  return {article: {...article, contentHtml}, shoppableProducts, tocHeadings};
 }
 
-/**
- * Load data for rendering content below the fold. This data is deferred and will be
- * fetched after the initial page load. If it's unavailable, the page should still 200.
- * Make sure to not throw any errors here, as it will cause the page to 500.
- */
 function loadDeferredData({context}: Route.LoaderArgs) {
-  // No deferred data yet — placeholder for future below-the-fold
-  // fetches (e.g. related articles, comment counts).
   return {};
 }
 
-// Route component: reads the loader payload and hands it off to the
-// Article section component for rendering.
+// Describes one shoppable-embed slot found in the rendered article
+// body: the DOM node to portal into, what layout it wants (single /
+// solo / duo / trio), and which product IDs it references.
+type ShoppableSlot = {
+  el: HTMLElement;
+  kind: string;
+  ids: string[];
+};
+
 export default function ArticleTemplate() {
-  const {article, shoppableProducts} = useLoaderData<typeof loader>();
-  return <Article article={article} shoppableProducts={shoppableProducts} />;
+  const {article, shoppableProducts = [], tocHeadings} = useLoaderData<typeof loader>();
+  const {title, image, contentHtml, author} = article;
+
+  // Ref to the container the raw article HTML is injected into, so we
+  // can scan its actual DOM for shoppable slots after render.
+  const bodyRef = useRef<HTMLDivElement>(null);
+
+  // The shoppable slots discovered in the DOM (populated by the effect
+  // below), used to know what to portal and where.
+  const [slots, setSlots] = useState<ShoppableSlot[]>([]);
+
+  // Human-readable published date, e.g. "September 2, 2026".
+  const publishedDate = new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(new Date(article.publishedAt));
+
+  // Layout variant resolution:
+  // 1. Which blog this article lives in (hub = "category", spoke = "articles")
+  // 2. An optional per-article metafield override (custom.layout_variant),
+  //    for cases where a single blog needs more than one look (e.g. a
+  //    "feature" article inside the normally-plain "articles" blog).
+  // The metafield, when set, layers on top of - it doesn't replace - the
+  // hub/spoke class, so both can drive CSS at once.
+  const isHub = article.blog?.handle === 'category';
+  const layoutVariant = article.layoutVariant?.value; // e.g. "feature" | undefined
+
+  // Build the wrapper class list: base class, hub/spoke variant, and
+  // an optional extra variant class — falsy entries filtered out so
+  // there's never a stray "article--" or "article--null" in the DOM.
+  const articleClassName = [
+    'article',
+    isHub ? 'article--hub' : 'article--spoke',
+    layoutVariant ? `article--${layoutVariant}` : null,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  // dangerouslySetInnerHTML content lives outside the React tree, so any
+  // <details id="..."> deep-linked via a URL hash (e.g. #faq-range)
+  // needs to be opened imperatively - CSS :target can only fake the visual
+  // state and leaves the item stuck open/unclosable. Re-run when contentHtml
+  // changes (e.g. client-side navigation between articles).
+  useEffect(() => {
+    if (!window.location.hash) return;
+    const target = document.querySelector(window.location.hash);
+    if (target instanceof HTMLDetailsElement) {
+      target.open = true;
+    }
+  }, [contentHtml]);
+
+  // Finds each server-rendered shoppable-embed slot (rendered with the
+  // hook-free Static* components in ~/components/blogs/ProductGallery)
+  // and records it so the real, interactive component can be portaled
+  // into it below.
+  //
+  // Deliberately NOT createRoot(el).render(...) here: that would spin up
+  // a brand-new, disconnected React tree with no access to this app's
+  // context providers (Router context for useNavigate(), the Aside
+  // context for useAside(), cart context for CartForm's fetcher) - any
+  // of those hooks throws immediately, the isolated root unmounts on
+  // error, and the slot goes blank right after it briefly shows the
+  // static SSR markup. createPortal keeps the interactive component
+  // inside *this* component's tree (rendered below, alongside the rest
+  // of this JSX) while still targeting the slot's DOM node, so it
+  // inherits every provider this tree already has (via PageLayout in
+  // root.tsx, which wraps the route's <Outlet />).
+  useEffect(() => {
+    const container = bodyRef.current;
+    if (!container) return;
+
+    const found: ShoppableSlot[] = [];
+
+    // Look for every element the server marked as a shoppable slot.
+    container
+      .querySelectorAll<HTMLElement>('[data-shoppable-slot]')
+      .forEach((el) => {
+        // `data-shoppable-slot` holds the layout kind: single/solo/duo/trio.
+        const kind = el.getAttribute('data-shoppable-slot');
+        // `data-product-ids` holds a comma-separated list of numeric
+        // product IDs for this slot; split and drop empty entries.
+        const ids = (el.getAttribute('data-product-ids') ?? '')
+          .split(',')
+          .filter(Boolean);
+
+        // Skip malformed slots (missing kind, or no product IDs).
+        if (!kind || ids.length === 0) return;
+
+        // Clear the static server-rendered markup - the portal below
+        // renders the live replacement into this same node.
+        el.innerHTML = '';
+        found.push({el, kind, ids});
+      });
+
+    setSlots(found);
+  }, [contentHtml]);
+
+  // Keyed by numeric ID, matching the numeric IDs in each slot's
+  // data-product-ids attribute (not product.id, a GID).
+  const productsById = new Map(shoppableProducts);
+
+  return (
+    <div className={articleClassName}>
+      <h1>{title}</h1>
+      <div className="article-meta">
+        <time dateTime={article.publishedAt}>{publishedDate}</time> &middot;{' '}
+        <address>{author?.name}</address>
+      </div>
+
+      {/* Hero image, eagerly loaded since it's above the fold. */}
+      {image && (
+        <Image
+          data={image}
+          sizes="(min-width: 760px) 720px, 90vw"
+          aspectRatio="16/9"
+          crop="center"
+          loading="eager"
+        />
+      )}
+
+      {/* Body + TOC live in a two-column grid on desktop (see
+          article-toc.css); h1/meta/hero above stay full-width. */}
+      <div className="article-layout">
+        {/* Raw article HTML from Shopify, with shoppable-embed markers
+            already resolved and heading ids assigned by the loader
+            above. bodyRef lets the effects above scan this DOM
+            subtree once it's mounted. */}
+        <div
+          ref={bodyRef}
+          dangerouslySetInnerHTML={{__html: contentHtml}}
+          className="article-body"
+        />
+
+        <TableOfContents headings={tocHeadings} />
+      </div>
+
+      {/* For each discovered slot, build the appropriate interactive
+          component and portal it into that slot's DOM node — replacing
+          the static SSR markup that was cleared above. */}
+      {slots.map(({el, kind, ids}) => {
+        let node: React.ReactNode = null;
+
+        switch (kind) {
+          case 'single': {
+            // A single standalone product card.
+            const product = productsById.get(ids[0]);
+            node = product ? <ProductCard product={product} /> : null;
+            break;
+          }
+          case 'solo':
+            // Single-product row layout (distinct styling from 'single').
+            node = (
+              <Solo productIds={[ids[0]]} productsById={productsById} />
+            );
+            break;
+          case 'duo':
+            // Two-product row layout.
+            node = (
+              <Duo
+                productIds={[ids[0], ids[1]]}
+                productsById={productsById}
+              />
+            );
+            break;
+          case 'trio':
+            // Three-product row layout.
+            node = (
+              <Trio
+                productIds={[ids[0], ids[1], ids[2]]}
+                productsById={productsById}
+              />
+            );
+            break;
+        }
+
+        // Nothing resolved for this slot (unknown kind, or the
+        // product(s) weren't found) — render nothing rather than an
+        // empty portal.
+        if (!node) return null;
+
+        // Portal the live component into the slot's DOM node. A
+        // unique key (kind + ids) keeps portals stable across
+        // re-renders of `slots`.
+        return createPortal(node, el, `${kind}-${ids.join('-')}`);
+      })}
+    </div>
+  );
 }
