@@ -203,3 +203,13 @@
 .article-body h3 {
   scroll-margin-top: 6rem;
 }
+
+/* Smooth-scroll TOC anchor jumps instead of an instant snap.
+   Respects prefers-reduced-motion so it doesn't fight anyone who's
+   opted out of scroll animation at the OS/browser level. */
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}

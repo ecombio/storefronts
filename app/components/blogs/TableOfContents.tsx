@@ -77,6 +77,18 @@ function slugify(text: string): string {
     .replace(/\s+/g, '-');
 }
 
+// CSS identifiers (and therefore unescaped "#id" selectors) can't
+// start with a digit. slugify() alone would happily turn a heading
+// like "2. Understand motor types" into the id "2-understand-motor-
+// types" — a perfectly valid HTML id, but one that breaks the moment
+// anything does document.querySelector('#' + id) instead of
+// getElementById. Rather than relying on every future call site to
+// remember that rule, make the ids safe by construction: prefix with
+// a letter whenever the slug would otherwise start with a digit.
+function toSafeId(base: string): string {
+  return /^\d/.test(base) ? `s-${base}` : base;
+}
+
 function stripTags(html: string): string {
   return html
     .replace(/<[^>]+>/g, '')
@@ -150,9 +162,10 @@ export function withHeadingIds(html: string): {
 
       if (!id) {
         const base = slugify(rawText) || `section-${headings.length + 1}`;
-        const count = seen.get(base) ?? 0;
-        seen.set(base, count + 1);
-        id = count === 0 ? base : `${base}-${count + 1}`;
+        const safeBase = toSafeId(base);
+        const count = seen.get(safeBase) ?? 0;
+        seen.set(safeBase, count + 1);
+        id = count === 0 ? safeBase : `${safeBase}-${count + 1}`;
       }
 
       const labelOverride = attrs.match(LABEL_ATTR_REGEX)?.[1];
