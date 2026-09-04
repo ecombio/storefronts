@@ -1,12 +1,12 @@
 // app/templates/collections.$handle.tsx
 
-import {useEffect, useRef} from 'react';
-import type {CSSProperties} from 'react';
 import {redirect, useLoaderData} from 'react-router';
 import type {Route} from './+types/collections.$handle';
 import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {buildSelfCanonicalUrl} from '~/lib/canonical';
+import {CollectionBanner} from '~/sections/CollectionBanner';
+import type {CollectionBannerTextAlignment} from '~/sections/CollectionBanner';
 import {MainCollection, type CollectionTab} from '~/sections/MainCollection';
 import {PRODUCT_CARD_FRAGMENT} from '~/graphql/ProductCardFragment';
 import {ARTICLE_ITEM_FRAGMENT} from '~/graphql/ArticleItemFragment';
@@ -28,197 +28,14 @@ const PAGE_BY = 48;
 // 250-item-per-connection limit (5 * 48 = 240).
 const MAX_PAGE_LINKS = 5;
 
-// ---------------------------------------------------------------------------
-// CollectionBanner
-//
-// Title + rich-text description, with an optional image column (the
-// collection's own image) plus overlay/position/height/alignment/parallax
-// styling. Every image-related prop is optional — a collection with no
-// image and no styling metafields set renders exactly a plain text-only
-// banner.
-//
-// `image`/`descriptionHtml` come straight off the Collection object. The
-// styling props (overlay, position, height, alignment, parallax) come from
-// collection metafields since a headless storefront has no theme
-// customizer to expose those as merchant-editable section settings.
-//
-// Inlined here (rather than living in ~/sections/) since this route is its
-// only consumer — see app/assets/collection-banner.css for the matching
-// styles, still shared/imported globally in app/root.tsx.
-// ---------------------------------------------------------------------------
-
-interface CollectionBannerImage {
-  url: string;
-  altText?: string | null;
-  width?: number | null;
-  height?: number | null;
-}
-
-type CollectionBannerImagePosition = 'left' | 'right';
-type CollectionBannerImageHeight =
-  | 'extra_small'
-  | 'small'
-  | 'medium'
-  | 'large'
-  | 'extra_large';
-type CollectionBannerTextAlignment = 'left' | 'center' | 'right';
-type CollectionBannerParallaxDirection = 'vertical' | 'horizontal';
-
-interface CollectionBannerProps {
-  title: string;
-  descriptionHtml?: string | null;
-  /** The collection's native image. Omitting it renders the original text-only banner. */
-  image?: CollectionBannerImage | null;
-  /** 0-100. Darkens the image so overlaid text stays legible. Default: 0 (no overlay). */
-  imageOverlayOpacity?: number;
-  /** Which side the image sits on at desktop widths. Default: 'right'. */
-  imagePosition?: CollectionBannerImagePosition;
-  /** Controls the banner's min-height at desktop widths. Default: 'extra_small'. */
-  imageHeight?: CollectionBannerImageHeight;
-  /** Default: 'left' (matches the original text-only banner's layout). */
-  textAlignment?: CollectionBannerTextAlignment;
-  /** Default: false. Automatically skipped for visitors who prefer reduced motion. */
-  enableParallax?: boolean;
-  /** Default: 'vertical'. Only applies when `enableParallax` is true. */
-  parallaxDirection?: CollectionBannerParallaxDirection;
-}
-
-const BANNER_HEIGHT_PX: Record<CollectionBannerImageHeight, number> = {
-  extra_small: 320,
-  small: 400,
-  medium: 480,
-  large: 560,
-  extra_large: 640,
-};
-
-function CollectionBanner({
-  title,
-  descriptionHtml,
-  image,
-  imageOverlayOpacity = 0,
-  imagePosition = 'right',
-  imageHeight = 'extra_small',
-  textAlignment = 'left',
-  enableParallax = false,
-  parallaxDirection = 'vertical',
-}: CollectionBannerProps) {
-  const parallaxRef = useRef<HTMLDivElement>(null);
-  const hasImage = Boolean(image?.url);
-
-  useEffect(() => {
-    if (!hasImage || !enableParallax) return;
-
-    const el = parallaxRef.current;
-    if (!el) return;
-
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    // Parallax is a desktop-only embellishment — skip below the `lg`
-    // breakpoint both to avoid mobile scroll jank and because the image
-    // column collapses to a static stacked block there anyway.
-    const desktopQuery = window.matchMedia('(min-width: 1024px)');
-    if (!desktopQuery.matches) return;
-
-    let rafId = 0;
-
-    function update() {
-      rafId = 0;
-      const rect = el.getBoundingClientRect();
-      const viewportCenter = window.innerHeight / 2;
-      const elementCenter = rect.top + rect.height / 2;
-      // Distance of the banner's center from the viewport's center,
-      // scaled down so the image drifts a few percent rather than
-      // tracking scroll 1:1.
-      const offset = (viewportCenter - elementCenter) * 0.08;
-
-      el.style.transform =
-        parallaxDirection === 'horizontal'
-          ? `translateX(${offset}px)`
-          : `translateY(${offset}px)`;
-    }
-
-    function onScrollOrResize() {
-      if (rafId) return;
-      rafId = requestAnimationFrame(update);
-    }
-
-    update();
-    window.addEventListener('scroll', onScrollOrResize, {passive: true});
-    window.addEventListener('resize', onScrollOrResize);
-
-    return () => {
-      if (rafId) cancelAnimationFrame(rafId);
-      window.removeEventListener('scroll', onScrollOrResize);
-      window.removeEventListener('resize', onScrollOrResize);
-    };
-  }, [hasImage, enableParallax, parallaxDirection]);
-
-  const style = hasImage
-    ? ({
-        '--collection-banner-height': `${BANNER_HEIGHT_PX[imageHeight]}px`,
-      } as CSSProperties)
-    : undefined;
-
-  const className = hasImage
-    ? `collection-banner collection-banner--has-image collection-banner--image-${imagePosition} collection-banner--text-${textAlignment}`
-    : `collection-banner collection-banner--text-${textAlignment}`;
-
-  return (
-    <div className={className} id="collection-banner" style={style}>
-      <div className="collection-banner__text">
-        <h1 className="collection-title">{title}</h1>
-        {descriptionHtml && (
-          <div
-            className="collection-description rte"
-            dangerouslySetInnerHTML={{__html: descriptionHtml}}
-          />
-        )}
-      </div>
-
-      {hasImage && (
-        <div className="collection-banner__image-wrap">
-          <div ref={parallaxRef} className="collection-banner__image-parallax">
-            <img
-              className="collection-banner__image"
-              src={image!.url}
-              alt={image!.altText ?? ''}
-              width={image!.width ?? undefined}
-              height={image!.height ?? undefined}
-              loading="eager"
-              fetchPriority="high"
-            />
-          </div>
-          {imageOverlayOpacity > 0 && (
-            <div
-              className="collection-banner__image-overlay"
-              style={{opacity: imageOverlayOpacity / 100}}
-              aria-hidden="true"
-            />
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Allowed values for the CollectionBanner styling metafields — anything
-// else (unset, mistyped in Admin, etc.) falls through to CollectionBanner's
-// own defaults rather than being passed through as an invalid prop.
-const IMAGE_POSITIONS: CollectionBannerImagePosition[] = ['left', 'right'];
-const IMAGE_HEIGHTS: CollectionBannerImageHeight[] = [
-  'extra_small',
-  'small',
-  'medium',
-  'large',
-  'extra_large',
-];
+// Allowed values for the CollectionBanner text-alignment metafield —
+// anything else (unset, mistyped in Admin, etc.) falls through to
+// CollectionBanner's own default rather than being passed through as an
+// invalid prop.
 const TEXT_ALIGNMENTS: CollectionBannerTextAlignment[] = [
   'left',
   'center',
   'right',
-];
-const PARALLAX_DIRECTIONS: CollectionBannerParallaxDirection[] = [
-  'vertical',
-  'horizontal',
 ];
 
 export const meta: Route.MetaFunction = ({data}) => {
@@ -398,22 +215,6 @@ function buildPageCursors(
 }
 
 /**
- * Clamps a metafield's raw string value to an integer in [min, max].
- * Returns undefined (letting CollectionBanner fall back to its own
- * default) for anything missing or non-numeric.
- */
-function toClampedInt(
-  raw: string | undefined,
-  min: number,
-  max: number,
-): number | undefined {
-  if (!raw) return undefined;
-  const n = Number(raw);
-  if (!Number.isFinite(n)) return undefined;
-  return Math.min(max, Math.max(min, Math.round(n)));
-}
-
-/**
  * Narrows a metafield's raw string value to one of `allowed`. Returns
  * undefined (letting CollectionBanner fall back to its own default) for
  * anything missing or not in the allowed set.
@@ -486,34 +287,13 @@ export default function Collection() {
       }
     : null;
 
-  // CollectionBanner's image and description come straight off the native
-  // Collection object — no metafield needed. Only the *styling* around
-  // that image needs metafields (see comment above CollectionBanner).
-  // Every value below is optional and falls back to CollectionBanner's own
-  // defaults, so a collection with none of these metafields set renders
-  // the original plain text-only banner unchanged.
-  const bannerOverlayOpacity = toClampedInt(
-    collection.bannerOverlayOpacityMetafield?.value,
-    0,
-    100,
-  );
-  const bannerImagePosition = toEnum(
-    collection.bannerImagePositionMetafield?.value,
-    IMAGE_POSITIONS,
-  );
-  const bannerImageHeight = toEnum(
-    collection.bannerImageHeightMetafield?.value,
-    IMAGE_HEIGHTS,
-  );
+  // CollectionBanner's description comes straight off the native Collection
+  // object — no metafield needed. Only text alignment is merchant-editable,
+  // via a metafield, since a headless storefront has no theme customizer to
+  // expose it as a section setting the way a native Shopify theme would.
   const bannerTextAlignment = toEnum(
     collection.bannerTextAlignmentMetafield?.value,
     TEXT_ALIGNMENTS,
-  );
-  const bannerEnableParallax =
-    collection.bannerParallaxEnabledMetafield?.value === 'true';
-  const bannerParallaxDirection = toEnum(
-    collection.bannerParallaxDirectionMetafield?.value,
-    PARALLAX_DIRECTIONS,
   );
 
   return (
@@ -521,13 +301,7 @@ export default function Collection() {
       <CollectionBanner
         title={collection.title}
         descriptionHtml={collection.descriptionHtml}
-        image={collection.image}
-        imageOverlayOpacity={bannerOverlayOpacity}
-        imagePosition={bannerImagePosition}
-        imageHeight={bannerImageHeight}
         textAlignment={bannerTextAlignment}
-        enableParallax={bannerEnableParallax}
-        parallaxDirection={bannerParallaxDirection}
       />
 
       {/* SubCollections renders inside MainCollection -> CollectionFeed,
@@ -565,6 +339,23 @@ export default function Collection() {
       />
     </div>
   );
+}
+
+/**
+ * Clamps a metafield's raw string value to an integer in [min, max].
+ * Returns undefined (letting a component fall back to its own default)
+ * for anything missing or non-numeric. Still used by the sponsored-ads
+ * grid-position metafield above.
+ */
+function toClampedInt(
+  raw: string | undefined,
+  min: number,
+  max: number,
+): number | undefined {
+  if (!raw) return undefined;
+  const n = Number(raw);
+  if (!Number.isFinite(n)) return undefined;
+  return Math.min(max, Math.max(min, Math.round(n)));
 }
 
 const SUB_COLLECTION_ITEM_FRAGMENT = `#graphql
@@ -670,29 +461,7 @@ const COLLECTION_QUERY = `#graphql
       handle
       title
       descriptionHtml
-      image {
-        id
-        url
-        altText
-        width
-        height
-      }
-      bannerOverlayOpacityMetafield: metafield(namespace: "custom", key: "banner_overlay_opacity") {
-        value
-      }
-      bannerImagePositionMetafield: metafield(namespace: "custom", key: "banner_image_position") {
-        value
-      }
-      bannerImageHeightMetafield: metafield(namespace: "custom", key: "banner_image_height") {
-        value
-      }
       bannerTextAlignmentMetafield: metafield(namespace: "custom", key: "banner_text_alignment") {
-        value
-      }
-      bannerParallaxEnabledMetafield: metafield(namespace: "custom", key: "banner_enable_parallax") {
-        value
-      }
-      bannerParallaxDirectionMetafield: metafield(namespace: "custom", key: "banner_parallax_direction") {
         value
       }
       postsMetafield: metafield(namespace: "custom", key: "posts") {

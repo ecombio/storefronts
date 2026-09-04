@@ -1,43 +1,14 @@
 /* app/assets/collection-banner.css */
 
 #collection-banner {
-  /* Full-width, matching the header (which has no max-width cap) —
-     padding alone creates the "content column" look now, rather than
-     a centered fixed-width container. */
   padding-inline: var(--content-padding-mobile);
   padding-block: 2rem 1.5rem;
-}
-
-/* When an image is present the outer element goes edge-to-edge and the
-   padding moves onto .collection-banner__text instead, so the image can
-   bleed to the section's full width/height. */
-#collection-banner.collection-banner--has-image {
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-@media (min-width: 1024px) {
-  #collection-banner.collection-banner--has-image {
-    flex-direction: row;
-    align-items: stretch;
-    min-height: var(--collection-banner-height, 320px);
-  }
-
-  #collection-banner.collection-banner--image-left {
-    flex-direction: row-reverse;
-  }
 }
 
 #collection-banner .collection-banner__text {
   display: flex;
   flex-direction: column;
   justify-content: center;
-}
-
-#collection-banner.collection-banner--has-image .collection-banner__text {
-  flex: 1 1 45%;
-  padding: 2rem var(--content-padding-mobile);
 }
 
 #collection-banner.collection-banner--text-center .collection-banner__text {
@@ -50,55 +21,17 @@
   text-align: right;
 }
 
-#collection-banner .collection-banner__image-wrap {
-  position: relative;
-  flex: 1 1 55%;
-  overflow: hidden;
-  min-height: 220px;
-}
-
-@media (min-width: 1024px) {
-  #collection-banner .collection-banner__image-wrap {
-    min-height: 0;
-  }
-}
-
-#collection-banner .collection-banner__image-parallax {
-  position: absolute;
-  /* Small bleed on every edge so the parallax translation never reveals
-     a gap at the image's boundary. */
-  inset: -5%;
-  will-change: transform;
-}
-
-#collection-banner .collection-banner__image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-#collection-banner .collection-banner__image-overlay {
-  position: absolute;
-  inset: 0;
-  background: #000;
-  pointer-events: none;
-}
-
 #collection-banner .collection-title {
   margin: 0 0 0.75rem;
   font-size: 28px;
-  font-weight: 700; /* was 800 — matches the filters panel title weight */
+  font-weight: 700;
   line-height: 1.2;
-  color: var(--color-ink, #111827); /* was var(--gs-black), which is undefined
-                                        here — that variable is scoped inside
-                                        #collection-filters and never reached
-                                        this element */
+  color: var(--color-ink, #111827);
 }
 
 #collection-banner .collection-description {
   max-width: 60ch;
-  color: var(--color-ink-secondary, #374151); /* was var(--gs-black), same bug */
+  color: var(--color-ink-secondary, #374151);
 }
 
 #collection-banner .collection-description p {
@@ -119,29 +52,15 @@
   margin-bottom: 0;
 }
 
-/* Tablet tier (640–1023px) — see theme.css --bp-sm / --bp-lg */
 @media (min-width: 640px) {
   #collection-banner {
     padding-inline: var(--content-padding-tablet);
   }
-
-  #collection-banner.collection-banner--has-image .collection-banner__text {
-    padding-inline: var(--content-padding-tablet);
-  }
 }
 
-/* Desktop tier (≥1024px) — see theme.css --bp-sm / --bp-lg */
 @media (min-width: 1024px) {
   #collection-banner {
     padding-inline: var(--content-padding-desktop);
-  }
-
-  #collection-banner.collection-banner--has-image {
-    padding-inline: 0;
-  }
-
-  #collection-banner.collection-banner--has-image .collection-banner__text {
-    padding: 3rem var(--content-padding-desktop);
   }
 
   #collection-banner .collection-title {
