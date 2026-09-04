@@ -3,31 +3,6 @@
 /* eslint-disable */
 import type * as StorefrontAPI from '@shopify/hydrogen/storefront-api-types';
 
-export type RelatedPostsCandidatesQueryVariables = StorefrontAPI.Exact<{
-  blogHandle: StorefrontAPI.Scalars['String']['input'];
-  first: StorefrontAPI.Scalars['Int']['input'];
-  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
-  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
-}>;
-
-export type RelatedPostsCandidatesQuery = {
-  blog?: StorefrontAPI.Maybe<{
-    articles: {
-      nodes: Array<
-        Pick<
-          StorefrontAPI.Article,
-          'id' | 'title' | 'handle' | 'tags' | 'publishedAt'
-        > & {
-          blog: Pick<StorefrontAPI.Blog, 'handle'>;
-          image?: StorefrontAPI.Maybe<
-            Pick<StorefrontAPI.Image, 'url' | 'altText' | 'width' | 'height'>
-          >;
-        }
-      >;
-    };
-  }>;
-};
-
 export type MenuCollectionImagesQueryVariables = StorefrontAPI.Exact<{
   ids:
     | Array<StorefrontAPI.Scalars['ID']['input']>
@@ -103,7 +78,7 @@ export type ArticleQuery = {
       articleByHandle?: StorefrontAPI.Maybe<
         Pick<
           StorefrontAPI.Article,
-          'handle' | 'title' | 'contentHtml' | 'publishedAt'
+          'id' | 'handle' | 'title' | 'contentHtml' | 'publishedAt'
         > & {
           author?: StorefrontAPI.Maybe<
             Pick<StorefrontAPI.ArticleAuthor, 'name'>
@@ -142,15 +117,12 @@ export type ArticleQuery = {
             Pick<StorefrontAPI.Metafield, 'value'>
           >;
           showToc?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
-          showRelatedPosts?: StorefrontAPI.Maybe<
-            Pick<StorefrontAPI.Metafield, 'value'>
-          >;
           relatedBlogPosts?: StorefrontAPI.Maybe<{
             references?: StorefrontAPI.Maybe<{
               nodes: Array<
                 Pick<
                   StorefrontAPI.Article,
-                  'handle' | 'title' | 'publishedAt'
+                  'id' | 'handle' | 'title' | 'publishedAt'
                 > & {
                   image?: StorefrontAPI.Maybe<
                     Pick<
@@ -169,6 +141,24 @@ export type ArticleQuery = {
           relatedProducts?: StorefrontAPI.Maybe<{
             references?: StorefrontAPI.Maybe<{
               nodes: Array<Pick<StorefrontAPI.Product, 'id'>>;
+            }>;
+          }>;
+          latestBlogs?: StorefrontAPI.Maybe<{
+            references?: StorefrontAPI.Maybe<{
+              nodes: Array<
+                Pick<
+                  StorefrontAPI.Article,
+                  'id' | 'title' | 'handle' | 'publishedAt'
+                > & {
+                  image?: StorefrontAPI.Maybe<
+                    Pick<
+                      StorefrontAPI.Image,
+                      'url' | 'altText' | 'width' | 'height'
+                    >
+                  >;
+                  blog: Pick<StorefrontAPI.Blog, 'handle'>;
+                }
+              >;
             }>;
           }>;
         }
@@ -1039,6 +1029,35 @@ export type QuickViewQuery = {
   >;
 };
 
+export type BlogTaggedQueryVariables = StorefrontAPI.Exact<{
+  blogHandle: StorefrontAPI.Scalars['String']['input'];
+  query?: StorefrontAPI.InputMaybe<StorefrontAPI.Scalars['String']['input']>;
+  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
+  endCursor?: StorefrontAPI.InputMaybe<
+    StorefrontAPI.Scalars['String']['input']
+  >;
+  first?: StorefrontAPI.InputMaybe<StorefrontAPI.Scalars['Int']['input']>;
+  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
+  last?: StorefrontAPI.InputMaybe<StorefrontAPI.Scalars['Int']['input']>;
+  startCursor?: StorefrontAPI.InputMaybe<
+    StorefrontAPI.Scalars['String']['input']
+  >;
+}>;
+
+export type BlogTaggedQuery = {
+  blog?: StorefrontAPI.Maybe<
+    Pick<StorefrontAPI.Blog, 'title' | 'handle'> & {
+      articles: {
+        pageInfo: Pick<
+          StorefrontAPI.PageInfo,
+          'hasNextPage' | 'hasPreviousPage' | 'startCursor' | 'endCursor'
+        >;
+        nodes: Array<Pick<StorefrontAPI.Article, 'id' | 'title' | 'handle'>>;
+      };
+    }
+  >;
+};
+
 export type BlogsQueryVariables = StorefrontAPI.Exact<{
   country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
   endCursor?: StorefrontAPI.InputMaybe<
@@ -1886,15 +1905,11 @@ export type PredictiveSearchQuery = {
 };
 
 interface GeneratedQueryTypes {
-  '#graphql\n  query RelatedPostsCandidates(\n    $blogHandle: String!\n    $first: Int!\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    blog(handle: $blogHandle) {\n      articles(first: $first, sortKey: PUBLISHED_AT, reverse: true) {\n        nodes {\n          id\n          title\n          handle\n          tags\n          publishedAt\n          blog {\n            handle\n          }\n          image {\n            url\n            altText\n            width\n            height\n          }\n        }\n      }\n    }\n  }\n': {
-    return: RelatedPostsCandidatesQuery;
-    variables: RelatedPostsCandidatesQueryVariables;
-  };
   '#graphql\n  query MenuCollectionImages($ids: [ID!]!, $country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    nodes(ids: $ids) {\n      ... on Collection {\n        id\n        image {\n          url\n          altText\n        }\n      }\n    }\n  }\n': {
     return: MenuCollectionImagesQuery;
     variables: MenuCollectionImagesQueryVariables;
   };
-  '#graphql\n  query Article(\n    $articleHandle: String!\n    $blogHandle: String!\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(language: $language, country: $country) {\n    blog(handle: $blogHandle) {\n      handle\n      articleByHandle(handle: $articleHandle) {\n        handle\n        title\n        contentHtml\n        publishedAt\n        author: authorV2 {\n          name\n        }\n        image {\n          id\n          altText\n          url\n          width\n          height\n        }\n        seo {\n          description\n          title\n        }\n        blog {\n          handle\n        }\n        layoutVariant: metafield(namespace: "custom", key: "layout_variant") {\n          value\n        }\n        # Points at a single "Author" metaobject entry (see README.md\n        # for the metaobject definition: name / bio / avatar fields).\n        # One entry per person, reused across every article they\'re\n        # credited on — edit the metaobject once, every article that\n        # references it picks up the change.\n        authorProfile: metafield(namespace: "custom", key: "author_profile") {\n          reference {\n            ... on Metaobject {\n              name: field(key: "name") {\n                value\n              }\n              bio: field(key: "bio") {\n                value\n              }\n              avatar: field(key: "avatar") {\n                reference {\n                  ... on MediaImage {\n                    image {\n                      url\n                      altText\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n        showAuthorSection: metafield(\n          namespace: "custom"\n          key: "show_author_section"\n        ) {\n          value\n        }\n        showToc: metafield(namespace: "custom", key: "show_toc") {\n          value\n        }\n        # Gates the "Related blogs" section (see RelatedBlogPosts.tsx /\n        # related-blog-posts.md §2). Same "true"/"false" string-value,\n        # off-by-default pattern as showToc/showAuthorSection above —\n        # getRelatedPostsData() checks value === \'true\'.\n        showRelatedPosts: metafield(\n          namespace: "custom"\n          key: "show_related_posts"\n        ) {\n          value\n        }\n        # Editor-curated list of specific articles to feature, merged\n        # with the tag-ranked fallback candidates from\n        # RELATED_POSTS_CANDIDATES_QUERY (see related-blog-posts.md §3\n        # for the merge logic). List-of-article-reference metafield —\n        # field selection below is a best-effort match to what\n        # BlogPostCard likely needs (handle/title/image/blog handle);\n        # confirm against RelatedBlogPosts.tsx / BlogPostCard.tsx and\n        # adjust if the shape doesn\'t match.\n        relatedBlogPosts: metafield(\n          namespace: "custom"\n          key: "related_blog_posts"\n        ) {\n          references(first: 10) {\n            nodes {\n              ... on Article {\n                handle\n                title\n                publishedAt\n                image {\n                  url\n                  altText\n                  width\n                  height\n                }\n                blog {\n                  handle\n                }\n              }\n            }\n          }\n        }\n        # Gates the "Social sharing" card (see SocialShare.tsx /\n        # social-share.md). Same "true"/"false" string-value pattern as\n        # the other show* metafields above — isSocialShareEnabled()\n        # checks value === \'true\' (or, per the route\'s original\n        # comment, may currently default to true when unset — confirm\n        # against SocialShare.tsx\'s actual gating logic once this field\n        # is wired in, since it was previously a no-op with no metafield\n        # to read at all).\n        showSocialShare: metafield(\n          namespace: "custom"\n          key: "show_social_share"\n        ) {\n          value\n        }\n        # "Related products" sidebar (see RelatedProducts.tsx /\n        # RelatedProducts.md). Editor-curated list, NOT an\n        # algorithmic-recommendations lookup — the merchant picks\n        # exactly which products show, in what order, via this\n        # metafield (Settings > Custom data > Articles > "Related\n        # Products", type: List > Product). If the list is empty,\n        # RelatedProducts renders nothing — no separate "enabled"\n        # flag needed, presence of items IS the toggle.\n        #\n        # first: 10 is an arbitrary cap on how many references this\n        # query will resolve — raise it if a merchant needs a longer\n        # list than that.\n        relatedProducts: metafield(\n          namespace: "custom"\n          key: "related_products"\n        ) {\n          references(first: 10) {\n            nodes {\n              ... on Product {\n                id\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n': {
+  '#graphql\n  query Article(\n    $articleHandle: String!\n    $blogHandle: String!\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(language: $language, country: $country) {\n    blog(handle: $blogHandle) {\n      handle\n      articleByHandle(handle: $articleHandle) {\n        id\n        handle\n        title\n        contentHtml\n        publishedAt\n        author: authorV2 {\n          name\n        }\n        image {\n          id\n          altText\n          url\n          width\n          height\n        }\n        seo {\n          description\n          title\n        }\n        blog {\n          handle\n        }\n        layoutVariant: metafield(namespace: "custom", key: "layout_variant") {\n          value\n        }\n        # Points at a single "Author" metaobject entry (see README.md\n        # for the metaobject definition: name / bio / avatar fields).\n        # One entry per person, reused across every article they\'re\n        # credited on — edit the metaobject once, every article that\n        # references it picks up the change.\n        authorProfile: metafield(namespace: "custom", key: "author_profile") {\n          reference {\n            ... on Metaobject {\n              name: field(key: "name") {\n                value\n              }\n              bio: field(key: "bio") {\n                value\n              }\n              avatar: field(key: "avatar") {\n                reference {\n                  ... on MediaImage {\n                    image {\n                      url\n                      altText\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n        showAuthorSection: metafield(\n          namespace: "custom"\n          key: "show_author_section"\n        ) {\n          value\n        }\n        showToc: metafield(namespace: "custom", key: "show_toc") {\n          value\n        }\n        # "Related blogs" section (see RelatedBlogPosts.tsx /\n        # RelatedBlogPosts.md). Editor-curated list, NOT an\n        # algorithmic/tag-ranked lookup — the merchant picks exactly\n        # which posts show, in what order, via this metafield\n        # (Settings > Custom data > Articles > "Related Blog Posts",\n        # type: List > Article). If the list is empty,\n        # RelatedBlogPosts renders nothing — no separate "enabled"\n        # flag needed, presence of items IS the toggle (there used to\n        # be a custom.show_related_posts gating metafield plus a\n        # tag-ranked automatic fallback; both were removed — this\n        # metafield is now the sole source of truth).\n        #\n        # first: 10 is an arbitrary cap on how many references this\n        # query will resolve — raise it if a merchant needs a longer\n        # list than that (and raise the limit option passed to\n        # getRelatedPostsData to match, if you want more than 3 shown).\n        relatedBlogPosts: metafield(\n          namespace: "custom"\n          key: "related_blog_posts"\n        ) {\n          references(first: 10) {\n            nodes {\n              ... on Article {\n                id\n                handle\n                title\n                publishedAt\n                image {\n                  url\n                  altText\n                  width\n                  height\n                }\n                blog {\n                  handle\n                }\n              }\n            }\n          }\n        }\n        # Gates the "Social sharing" card (see SocialShare.tsx /\n        # social-share.md). Same "true"/"false" string-value pattern as\n        # the other show* metafields above — isSocialShareEnabled()\n        # checks value === \'true\' (or, per the route\'s original\n        # comment, may currently default to true when unset — confirm\n        # against SocialShare.tsx\'s actual gating logic once this field\n        # is wired in, since it was previously a no-op with no metafield\n        # to read at all).\n        showSocialShare: metafield(\n          namespace: "custom"\n          key: "show_social_share"\n        ) {\n          value\n        }\n        # "Related products" sidebar (see RelatedProducts.tsx /\n        # RelatedProducts.md). Editor-curated list, NOT an\n        # algorithmic-recommendations lookup — the merchant picks\n        # exactly which products show, in what order, via this\n        # metafield (Settings > Custom data > Articles > "Related\n        # Products", type: List > Product). If the list is empty,\n        # RelatedProducts renders nothing — no separate "enabled"\n        # flag needed, presence of items IS the toggle.\n        #\n        # first: 10 is an arbitrary cap on how many references this\n        # query will resolve — raise it if a merchant needs a longer\n        # list than that.\n        relatedProducts: metafield(\n          namespace: "custom"\n          key: "related_products"\n        ) {\n          references(first: 10) {\n            nodes {\n              ... on Product {\n                id\n              }\n            }\n          }\n        }\n        # "Latest blogs" sidebar (see LatestBlogs.tsx / LatestBlogs.md).\n        # Editor-curated list, NOT the tag-ranked candidate pool —\n        # the merchant picks exactly which posts show, in what order,\n        # via this metafield (Settings > Custom data > Articles >\n        # "Latest Blogs", type: List > Blog post). Empty list = the\n        # component renders nothing, same toggle-by-presence pattern\n        # as relatedProducts above.\n        #\n        # Unlike relatedProducts, no second batch query is needed:\n        # Article nodes resolve fully here — including their own\n        # blog.handle for cross-blog links — directly off this\n        # reference.\n        latestBlogs: metafield(namespace: "custom", key: "latest_blogs") {\n          references(first: 10) {\n            nodes {\n              ... on Article {\n                id\n                title\n                handle\n                publishedAt\n                image {\n                  url\n                  altText\n                  width\n                  height\n                }\n                blog {\n                  handle\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n': {
     return: ArticleQuery;
     variables: ArticleQueryVariables;
   };
@@ -1933,6 +1948,10 @@ interface GeneratedQueryTypes {
   '#graphql\n  query QuickView(\n    $country: CountryCode\n    $handle: String!\n    $language: LanguageCode\n    $selectedOptions: [SelectedOptionInput!]!\n  ) @inContext(country: $country, language: $language) {\n    product(handle: $handle) {\n      ...QuickViewProduct\n    }\n  }\n  #graphql\n  fragment QuickViewProduct on Product {\n    id\n    title\n    vendor\n    handle\n    encodedVariantExistence\n    encodedVariantAvailability\n    images(first: 6) {\n      nodes {\n        id\n        url\n        altText\n        width\n        height\n      }\n    }\n    options {\n      name\n      optionValues {\n        name\n        firstSelectableVariant {\n          ...QuickViewVariant\n        }\n        swatch {\n          color\n          image {\n            previewImage {\n              url\n            }\n          }\n        }\n      }\n    }\n    selectedOrFirstAvailableVariant(selectedOptions: $selectedOptions, ignoreUnknownOptions: true, caseInsensitiveMatch: true) {\n      ...QuickViewVariant\n    }\n    adjacentVariants(selectedOptions: $selectedOptions) {\n      ...QuickViewVariant\n    }\n    reviewsRating: metafield(namespace: "reviews", key: "rating") {\n      value\n    }\n    reviewsCount: metafield(namespace: "reviews", key: "rating_count") {\n      value\n    }\n  }\n  #graphql\n  fragment QuickViewVariant on ProductVariant {\n    availableForSale\n    compareAtPrice {\n      amount\n      currencyCode\n    }\n    id\n    image {\n      id\n      url\n      altText\n      width\n      height\n    }\n    price {\n      amount\n      currencyCode\n    }\n    selectedOptions {\n      name\n      value\n    }\n    sku\n    title\n  }\n\n\n': {
     return: QuickViewQuery;
     variables: QuickViewQueryVariables;
+  };
+  '#graphql\n  query BlogTagged(\n    $blogHandle: String!\n    $query: String\n    $country: CountryCode\n    $endCursor: String\n    $first: Int\n    $language: LanguageCode\n    $last: Int\n    $startCursor: String\n  ) @inContext(country: $country, language: $language) {\n    blog(handle: $blogHandle) {\n      title\n      handle\n      articles(\n        query: $query,\n        first: $first,\n        last: $last,\n        before: $startCursor,\n        after: $endCursor\n      ) {\n        pageInfo {\n          hasNextPage\n          hasPreviousPage\n          startCursor\n          endCursor\n        }\n        nodes {\n          id\n          title\n          handle\n        }\n      }\n    }\n  }\n': {
+    return: BlogTaggedQuery;
+    variables: BlogTaggedQueryVariables;
   };
   '#graphql\n  query Blogs(\n    $country: CountryCode\n    $endCursor: String\n    $first: Int\n    $language: LanguageCode\n    $last: Int\n    $startCursor: String\n  ) @inContext(country: $country, language: $language) {\n    blogs(\n      first: $first,\n      last: $last,\n      before: $startCursor,\n      after: $endCursor\n    ) {\n      pageInfo {\n        hasNextPage\n        hasPreviousPage\n        startCursor\n        endCursor\n      }\n      nodes {\n        title\n        handle\n        seo {\n          title\n          description\n        }\n      }\n    }\n  }\n': {
     return: BlogsQuery;

@@ -96,6 +96,43 @@
   margin: 1.5rem 0 2rem;
 }
 
+/* ---------------------------------------------
+   Hero image is now the FIRST element in the article, ahead of
+   the title block (.article-header, below) — see the route
+   component. It no longer needs the top margin from the generic
+   ".article img" rule above (the container's own top padding
+   already provides that gap), just the bottom gap before the
+   title.
+
+   Specificity note: ".article img" is (class + type) = higher
+   specificity than ".article-hero-image" alone, so it would win
+   the cascade regardless of source order. Selecting
+   "img.article-hero-image" here matches that specificity and
+   wins by appearing later in the file.
+
+   Height: the actual reduction in hero height comes from the
+   route's aspectRatio prop (16/9 -> 21/9), not from CSS — Hydrogen's
+   <Image> derives its intrinsic width/height attributes from that
+   ratio, and width: 100%; height: auto (above) just scales that
+   ratio to the container's width. To go shorter still, change the
+   aspectRatio prop in the route rather than adding a CSS max-height
+   here (a CSS-only max-height would clip/crop unpredictably against
+   the object-fit the <Image> component already applies).
+--------------------------------------------- */
+
+.article img.article-hero-image {
+  margin: 0 0 2rem;
+}
+
+/* Title + meta block, now rendered directly under the hero image
+   rather than above it. No extra margin needed here — the hero's
+   own bottom margin (above) already provides the gap; this wrapper
+   exists purely so the JSX can move image + title as one unit
+   without needing to restyle every child inside it. */
+.article-header {
+  margin: 0;
+}
+
 /* Pros / Cons blocks
    Wrap the two <ul> elements that follow a "Pros"/"Cons" <p>
    in a flex row for a clean side-by-side card look */

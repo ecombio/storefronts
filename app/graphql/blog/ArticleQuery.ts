@@ -13,6 +13,7 @@ export const ARTICLE_QUERY = `#graphql
     blog(handle: $blogHandle) {
       handle
       articleByHandle(handle: $articleHandle) {
+        id
         handle
         title
         contentHtml
@@ -73,24 +74,22 @@ export const ARTICLE_QUERY = `#graphql
         showToc: metafield(namespace: "custom", key: "show_toc") {
           value
         }
-        # Gates the "Related blogs" section (see RelatedBlogPosts.tsx /
-        # related-blog-posts.md §2). Same "true"/"false" string-value,
-        # off-by-default pattern as showToc/showAuthorSection above —
-        # getRelatedPostsData() checks value === 'true'.
-        showRelatedPosts: metafield(
-          namespace: "custom"
-          key: "show_related_posts"
-        ) {
-          value
-        }
-        # Editor-curated list of specific articles to feature, merged
-        # with the tag-ranked fallback candidates from
-        # RELATED_POSTS_CANDIDATES_QUERY (see related-blog-posts.md §3
-        # for the merge logic). List-of-article-reference metafield —
-        # field selection below is a best-effort match to what
-        # BlogPostCard likely needs (handle/title/image/blog handle);
-        # confirm against RelatedBlogPosts.tsx / BlogPostCard.tsx and
-        # adjust if the shape doesn't match.
+        # "Related blogs" section (see RelatedBlogPosts.tsx /
+        # RelatedBlogPosts.md). Editor-curated list, NOT an
+        # algorithmic/tag-ranked lookup — the merchant picks exactly
+        # which posts show, in what order, via this metafield
+        # (Settings > Custom data > Articles > "Related Blog Posts",
+        # type: List > Article). If the list is empty,
+        # RelatedBlogPosts renders nothing — no separate "enabled"
+        # flag needed, presence of items IS the toggle (there used to
+        # be a custom.show_related_posts gating metafield plus a
+        # tag-ranked automatic fallback; both were removed — this
+        # metafield is now the sole source of truth).
+        #
+        # first: 10 is an arbitrary cap on how many references this
+        # query will resolve — raise it if a merchant needs a longer
+        # list than that (and raise the limit option passed to
+        # getRelatedPostsData to match, if you want more than 3 shown).
         relatedBlogPosts: metafield(
           namespace: "custom"
           key: "related_blog_posts"
@@ -98,6 +97,7 @@ export const ARTICLE_QUERY = `#graphql
           references(first: 10) {
             nodes {
               ... on Article {
+                id
                 handle
                 title
                 publishedAt
@@ -148,6 +148,39 @@ export const ARTICLE_QUERY = `#graphql
             nodes {
               ... on Product {
                 id
+              }
+            }
+          }
+        }
+        # "Latest blogs" sidebar (see LatestBlogs.tsx / LatestBlogs.md).
+        # Editor-curated list, NOT the tag-ranked candidate pool —
+        # the merchant picks exactly which posts show, in what order,
+        # via this metafield (Settings > Custom data > Articles >
+        # "Latest Blogs", type: List > Blog post). Empty list = the
+        # component renders nothing, same toggle-by-presence pattern
+        # as relatedProducts above.
+        #
+        # Unlike relatedProducts, no second batch query is needed:
+        # Article nodes resolve fully here — including their own
+        # blog.handle for cross-blog links — directly off this
+        # reference.
+        latestBlogs: metafield(namespace: "custom", key: "latest_blogs") {
+          references(first: 10) {
+            nodes {
+              ... on Article {
+                id
+                title
+                handle
+                publishedAt
+                image {
+                  url
+                  altText
+                  width
+                  height
+                }
+                blog {
+                  handle
+                }
               }
             }
           }

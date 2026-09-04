@@ -18,9 +18,11 @@ import {injectTwoColumnContent} from '~/components/blogs/TwoColumnContent';
 import {withHeadingIds, TableOfContents, isTocEnabled} from '~/components/blogs/TableOfContents';
 import {AuthorSection, getAuthorSectionData} from '~/components/blogs/AuthorSection';
 import SocialShare, {isSocialShareEnabled} from '~/components/blogs/SocialShare';
+// Purely editor-curated off custom.related_blog_posts — no gating
+// metafield, no tag-ranked fallback, no separate candidates query.
+// See RelatedBlogPosts.md.
 import RelatedBlogPosts, {
   getRelatedPostsData,
-  RELATED_POSTS_CANDIDATES_QUERY,
 } from '~/components/blogs/RelatedBlogPosts';
 import {
   injectNewsletterForm,
@@ -41,14 +43,15 @@ import {
   extractSummarySection,
   renderSummary,
 } from '~/components/blogs/Summary';
-// NEW — "Related products" sidebar. Editor-curated list (see
+// "Related products" sidebar. Editor-curated list (see
 // RelatedProducts.md) resolved via the same shoppable-products batch
 // query used for in-body product embeds, not a recommendations call.
 import RelatedProducts, {
   getRelatedProductIds,
 } from '~/components/blogs/RelatedProducts';
-// NEW — "Latest blogs" sidebar. Shares the RelatedBlogPosts candidate
-// pool, no extra query. See LatestBlogs.md.
+// "Latest blogs" sidebar. Editor-curated list (see LatestBlogs.md),
+// resolved directly off the article's custom.latest_blogs metafield —
+// no batch query needed.
 import LatestBlogs, {getLatestBlogsData} from '~/components/blogs/LatestBlogs';
 import type {ProductCardFragment} from 'storefrontapi.generated';
 import articleStyles from '~/assets/article.css?url';
@@ -118,14 +121,15 @@ async function loadCriticalData({context, request, params}: Route.LoaderArgs) {
     throw new Response('Not found', {status: 404});
   }
 
-  const [{blog}, {blog: candidateBlog}] = await Promise.all([
-    context.storefront.query(ARTICLE_QUERY, {
-      variables: {blogHandle, articleHandle},
-    }),
-    context.storefront.query(RELATED_POSTS_CANDIDATES_QUERY, {
-      variables: {blogHandle, first: 20},
-    }),
-  ]);
+  // Only ARTICLE_QUERY is needed now. RELATED_POSTS_CANDIDATES_QUERY
+  // (a parallel Promise.all fetch of a same-blog article pool) has
+  // been removed entirely — RelatedBlogPosts is purely editor-curated
+  // off custom.related_blog_posts now, with no tag-ranked fallback to
+  // rank a candidate pool against, so that second query has no
+  // remaining caller.
+  const {blog} = await context.storefront.query(ARTICLE_QUERY, {
+    variables: {blogHandle, articleHandle},
+  });
 
   if (!blog?.articleByHandle) {
     throw new Response(null, {status: 404});
@@ -147,11 +151,10 @@ async function loadCriticalData({context, request, params}: Route.LoaderArgs) {
 
   const productIds = extractShoppableProductIds(article.contentHtml);
 
-  // NEW — editor-curated "Related products" list off
-  // custom.related_products (see RelatedProducts.tsx). These ids are
-  // merged into the SAME batch query as the in-body shoppable
-  // products below, so the curated sidebar list costs zero extra
-  // round-trips.
+  // Editor-curated "Related products" list off custom.related_products
+  // (see RelatedProducts.tsx). These ids are merged into the SAME
+  // batch query as the in-body shoppable products below, so the
+  // curated sidebar list costs zero extra round-trips.
   const relatedProductGids = getRelatedProductIds(article);
   const relatedProductIds = relatedProductGids.map(
     (gid) => gid.split('/').pop()!,
@@ -238,29 +241,23 @@ async function loadCriticalData({context, request, params}: Route.LoaderArgs) {
 
   const authorSection = getAuthorSectionData(article);
 
-  const relatedPosts = getRelatedPostsData(
-    article,
-    candidateBlog?.articles?.nodes ?? [],
-  );
+  // Purely editor-curated now — no candidate pool, no tag ranking, no
+  // gating metafield. Empty custom.related_blog_posts = null = the
+  // section doesn't render.
+  const relatedPosts = getRelatedPostsData(article);
 
   const canonicalUrl = request.url;
 
   const readingTime = calculateReadingTime(article.contentHtml);
 
-  const relatedPostIds = new Set(
-    (relatedPosts?.posts ?? []).map((post) => post.id),
-  );
-
-  const latestBlogs = getLatestBlogsData(
-    article.id,
-    candidateBlog?.articles?.nodes ?? [],
-    relatedPostIds,
-  );
+  // "Latest blogs" is editor-curated straight off the article's
+  // custom.latest_blogs metafield (see LatestBlogs.md).
+  const latestBlogs = getLatestBlogsData(article);
 
   return {
     article: {...article, contentHtml},
     shoppableProducts,
-    relatedProducts, // NEW
+    relatedProducts,
     tocEnabled,
     tocHeadings,
     authorSection,
@@ -302,7 +299,7 @@ export default function ArticleTemplate() {
   const {
     article,
     shoppableProducts = [],
-    relatedProducts = [], // NEW
+    relatedProducts = [],
     tocEnabled,
     tocHeadings,
     authorSection,
@@ -345,15 +342,15 @@ export default function ArticleTemplate() {
     .join(' ');
 
   const hasToc = tocEnabled;
-  // NEW — RelatedProducts and Latest Blogs now share one right-rail
-  // grid column (see .article-right-rail in article.css), so the
-  // layout class logic only needs to know whether that combined rail
-  // has anything in it at all, not which specific widget(s). Note
-  // RelatedProducts also self-hides when empty (see its component
-  // file) — this flag exists purely for the layout-class math below,
-  // not to gate whether <RelatedProducts /> renders.
+  // RelatedProducts and Latest Blogs share one right-rail grid column
+  // (see .article-right-rail in article.css), so the layout class
+  // logic only needs to know whether that combined rail has anything
+  // in it at all, not which specific widget(s). Both self-hide when
+  // empty (see their component files) — this flag exists purely for
+  // the layout-class math below, not to gate whether either component
+  // renders.
   const hasRelatedProducts = relatedProducts.length > 0;
-  const hasLatestBlogs = latestBlogs.length > 0 && Boolean(blogHandle);
+  const hasLatestBlogs = latestBlogs.length > 0;
   const hasRightRail = hasRelatedProducts || hasLatestBlogs;
 
   const articleLayoutClassName = [
@@ -444,38 +441,47 @@ export default function ArticleTemplate() {
 
   return (
     <div className={articleClassName}>
-      <h1>{title}</h1>
-
-      <div className="article-reading-time">
-        <svg
-          aria-hidden="true"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <circle cx="12" cy="12" r="10" />
-          <polyline points="12 6 12 12 16 14" />
-        </svg>
-        Time to read : {readingTime} minute{readingTime === 1 ? '' : 's'}
-      </div>
-
-      <div className="article-meta">
-        <time dateTime={article.publishedAt}>{publishedDate}</time> &middot;{' '}
-        <address>{author?.name}</address>
-      </div>
-
+      {/* Hero image now leads, ahead of the title block below it.
+          Shortened from 16/9 to 21/9 — same width, less height, no
+          CSS change needed since Hydrogen's <Image> derives its
+          rendered height directly from aspectRatio × the resolved
+          `sizes` width. Adjust this ratio (e.g. "3/1" for even
+          shorter) to taste. */}
       {image && (
         <Image
           data={image}
           sizes="(min-width: 760px) 720px, 90vw"
-          aspectRatio="16/9"
+          aspectRatio="21/9"
           crop="center"
           loading="eager"
+          className="article-hero-image"
         />
       )}
+
+      <div className="article-header">
+        <h1>{title}</h1>
+
+        <div className="article-reading-time">
+          <svg
+            aria-hidden="true"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+          Time to read : {readingTime} minute{readingTime === 1 ? '' : 's'}
+        </div>
+
+        <div className="article-meta">
+          <time dateTime={article.publishedAt}>{publishedDate}</time> &middot;{' '}
+          <address>{author?.name}</address>
+        </div>
+      </div>
 
       {summaryHtml && (
         <div
@@ -500,7 +506,7 @@ export default function ArticleTemplate() {
         {hasRightRail && (
           <div className="article-right-rail">
             <RelatedProducts products={relatedProducts} />
-            <LatestBlogs posts={latestBlogs} blogHandle={blogHandle} />
+            <LatestBlogs posts={latestBlogs} />
           </div>
         )}
       </div>

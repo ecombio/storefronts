@@ -9,6 +9,10 @@
    componentized — no visual changes, same blue border/CTA, 10px/6px
    radii used by RelatedProducts.css so the two widgets read as a
    matched set when stacked together in .article-right-rail.
+
+   NOTE: unchanged by the move from candidate-pool to editor-curated
+   (custom.latest_blogs) data — none of these rules touched the old
+   JS selection logic, only markup/classes, which are identical.
 --------------------------------------------- */
 
 .article-latest-blogs {

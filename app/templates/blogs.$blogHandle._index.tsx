@@ -1,4 +1,6 @@
-import {Link} from 'react-router';
+// app/templates/blogs.$blogHandle._index.tsx
+
+import {Link, useSearchParams} from 'react-router';
 import blogCategoryStyles from '~/assets/blog-category.css?url';
 
 export function links() {
@@ -68,7 +70,23 @@ const CATEGORY_TITLE = 'Category';
 const CATEGORY_TAGS = ['All', 'Buying Guides', 'Brand', 'Guides', 'Tips'];
 
 export default function BlogCategory() {
-  const [featured, ...rest] = PLACEHOLDER_POSTS;
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTag = searchParams.get('tag') ?? 'All';
+
+  const filteredPosts =
+    activeTag === 'All'
+      ? PLACEHOLDER_POSTS
+      : PLACEHOLDER_POSTS.filter((post) => post.tag === activeTag);
+
+  const [featured, ...rest] = filteredPosts;
+
+  function handleTagClick(tag: string) {
+    if (tag === 'All') {
+      setSearchParams({}, {preventScrollReset: true});
+    } else {
+      setSearchParams({tag}, {preventScrollReset: true});
+    }
+  }
 
   return (
     <div className="blog-category">
@@ -78,55 +96,71 @@ export default function BlogCategory() {
         <p>Guides, stories, and updates — placeholder subtitle text.</p>
       </section>
 
-      {/* Category pills (static for now, non-functional) */}
+      {/* Category pills — now functional */}
       <nav className="blog-category__tags" aria-label="Filter by tag">
         {CATEGORY_TAGS.map((tag) => (
-          <span key={tag} className="blog-category__tag">
+          <button
+            key={tag}
+            type="button"
+            className={`blog-category__tag${
+              tag === activeTag ? ' is-active' : ''
+            }`}
+            aria-pressed={tag === activeTag}
+            onClick={() => handleTagClick(tag)}
+          >
             {tag}
-          </span>
+          </button>
         ))}
       </nav>
 
-      {/* Featured post */}
-      <Link
-        to={`/blogs/category/${featured.handle}`}
-        className="featured-post"
-      >
-        <div className="featured-post__image">
-          <img src={featured.image} alt={featured.title} />
-        </div>
-        <div className="featured-post__body">
-          <span className="post-tag">{featured.tag}</span>
-          <h2>{featured.title}</h2>
-          <p>{featured.excerpt}</p>
-          <time dateTime={featured.publishedAt}>
-            {formatDate(featured.publishedAt)}
-          </time>
-        </div>
-      </Link>
-
-      {/* Grid */}
-      <div className="blog-category__grid">
-        {rest.map((post) => (
+      {!featured ? (
+        <p className="blog-category__empty">
+          No posts found for “{activeTag}”.
+        </p>
+      ) : (
+        <>
+          {/* Featured post */}
           <Link
-            key={post.handle}
-            to={`/blogs/category/${post.handle}`}
-            className="post-card"
+            to={`/blogs/category/${featured.handle}`}
+            className="featured-post"
           >
-            <div className="post-card__image">
-              <img src={post.image} alt={post.title} />
+            <div className="featured-post__image">
+              <img src={featured.image} alt={featured.title} />
             </div>
-            <div className="post-card__body">
-              <span className="post-tag">{post.tag}</span>
-              <h3>{post.title}</h3>
-              <p>{post.excerpt}</p>
-              <time dateTime={post.publishedAt}>
-                {formatDate(post.publishedAt)}
+            <div className="featured-post__body">
+              <span className="post-tag">{featured.tag}</span>
+              <h2>{featured.title}</h2>
+              <p>{featured.excerpt}</p>
+              <time dateTime={featured.publishedAt}>
+                {formatDate(featured.publishedAt)}
               </time>
             </div>
           </Link>
-        ))}
-      </div>
+
+          {/* Grid */}
+          <div className="blog-category__grid">
+            {rest.map((post) => (
+              <Link
+                key={post.handle}
+                to={`/blogs/category/${post.handle}`}
+                className="post-card"
+              >
+                <div className="post-card__image">
+                  <img src={post.image} alt={post.title} />
+                </div>
+                <div className="post-card__body">
+                  <span className="post-tag">{post.tag}</span>
+                  <h3>{post.title}</h3>
+                  <p>{post.excerpt}</p>
+                  <time dateTime={post.publishedAt}>
+                    {formatDate(post.publishedAt)}
+                  </time>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
