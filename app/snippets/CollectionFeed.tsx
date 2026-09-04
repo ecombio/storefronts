@@ -1,5 +1,6 @@
 // app/snippets/CollectionFeed.tsx
 
+import {Fragment} from 'react';
 import type {ComponentProps, ChangeEvent} from 'react';
 import {useLocation, useNavigate} from 'react-router';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
@@ -24,6 +25,16 @@ export interface FeedSortOption {
   label: string;
 }
 
+// 0-based position within the current page's product list where the
+// sponsored panel is spliced in — e.g. 4 means "after the 4th product
+// card, before the 5th" (an Amazon-style in-feed sponsored placement).
+// Applies per page: since PaginatedResourceSection's `index` restarts at
+// 0 for each fetched page, the panel will appear at this same relative
+// spot on every page, not just the first. If you only want it on the
+// first page, gate the condition below on the absence of a `cursor`/
+// `direction` URL param instead of (or in addition to) `index`.
+const SPONSORED_ADS_GRID_POSITION = 4;
+
 interface CollectionFeedProps {
   /**
    * Omit on routes with no tab switcher (e.g. /collections/all) — the
@@ -42,11 +53,12 @@ interface CollectionFeedProps {
    */
   subCollections?: SubCollectionItemFragment[];
   /**
-   * Rendered as its own row above the products grid (above subCollections).
-   * On routes with a tab switcher (`activeTab` provided), only shown on the
-   * products panel — never on articles. PromoCarousel itself renders
-   * nothing when sponsoredAds/promoCard/products are missing or empty, so
-   * it's always safe to pass through unconditionally.
+   * Spliced into the products grid itself as an in-feed sponsored item
+   * (see SPONSORED_ADS_GRID_POSITION) rather than rendered as a separate
+   * row. Only appears on the products panel — never on articles.
+   * PromoCarousel renders nothing when sponsoredAds/promoCard/products
+   * are missing or empty, so this is always safe to pass through
+   * unconditionally.
    */
   sponsoredAds?: SponsoredAdsData | null;
   /**
@@ -121,12 +133,18 @@ export function CollectionFeed({
         hasMoreBeyondKnownPages={hasMoreBeyondKnownPages}
       >
         {({node: product, index}) => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            loading={index < 8 ? 'eager' : undefined}
-            showVendor={false}
-          />
+          <Fragment key={product.id}>
+            {sponsoredAds && index === SPONSORED_ADS_GRID_POSITION && (
+              <div className="products-grid__promo-item">
+                <PromoCarousel sponsoredAds={sponsoredAds} />
+              </div>
+            )}
+            <ProductCard
+              product={product}
+              loading={index < 8 ? 'eager' : undefined}
+              showVendor={false}
+            />
+          </Fragment>
         )}
       </PaginatedResourceSection>
     </>
@@ -137,7 +155,6 @@ export function CollectionFeed({
   if (!activeTab) {
     return (
       <div className="collection-feed">
-        <PromoCarousel sponsoredAds={sponsoredAds} />
         {subCollections.length > 0 && (
           <SubCollections collections={subCollections} />
         )}
@@ -154,7 +171,6 @@ export function CollectionFeed({
         aria-labelledby="tab-products"
         hidden={activeTab !== 'products'}
       >
-        <PromoCarousel sponsoredAds={sponsoredAds} />
         {subCollections.length > 0 && (
           <SubCollections collections={subCollections} />
         )}

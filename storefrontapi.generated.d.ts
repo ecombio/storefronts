@@ -1096,6 +1096,96 @@ export type SubCollectionItemFragment = Pick<
   >;
 };
 
+export type PromoCardFragment = Pick<StorefrontAPI.Metaobject, 'id'> & {
+  image?: StorefrontAPI.Maybe<{
+    reference?: StorefrontAPI.Maybe<{
+      image?: StorefrontAPI.Maybe<
+        Pick<StorefrontAPI.Image, 'url' | 'altText' | 'width' | 'height'>
+      >;
+    }>;
+  }>;
+  heading?: StorefrontAPI.Maybe<Pick<StorefrontAPI.MetaobjectField, 'value'>>;
+  linkText?: StorefrontAPI.Maybe<Pick<StorefrontAPI.MetaobjectField, 'value'>>;
+  linkUrl?: StorefrontAPI.Maybe<Pick<StorefrontAPI.MetaobjectField, 'value'>>;
+};
+
+export type SponsoredAdsFragment = Pick<StorefrontAPI.Metaobject, 'id'> & {
+  heading?: StorefrontAPI.Maybe<Pick<StorefrontAPI.MetaobjectField, 'value'>>;
+  subheading?: StorefrontAPI.Maybe<
+    Pick<StorefrontAPI.MetaobjectField, 'value'>
+  >;
+  promoCard?: StorefrontAPI.Maybe<{
+    reference?: StorefrontAPI.Maybe<
+      Pick<StorefrontAPI.Metaobject, 'id'> & {
+        image?: StorefrontAPI.Maybe<{
+          reference?: StorefrontAPI.Maybe<{
+            image?: StorefrontAPI.Maybe<
+              Pick<StorefrontAPI.Image, 'url' | 'altText' | 'width' | 'height'>
+            >;
+          }>;
+        }>;
+        heading?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.MetaobjectField, 'value'>
+        >;
+        linkText?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.MetaobjectField, 'value'>
+        >;
+        linkUrl?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.MetaobjectField, 'value'>
+        >;
+      }
+    >;
+  }>;
+  products?: StorefrontAPI.Maybe<{
+    reference?: StorefrontAPI.Maybe<
+      Pick<StorefrontAPI.Collection, 'id' | 'handle' | 'title'> & {
+        products: {
+          nodes: Array<
+            Pick<
+              StorefrontAPI.Product,
+              'id' | 'handle' | 'title' | 'vendor'
+            > & {
+              featuredImage?: StorefrontAPI.Maybe<
+                Pick<
+                  StorefrontAPI.Image,
+                  'id' | 'url' | 'altText' | 'width' | 'height'
+                >
+              >;
+              priceRange: {
+                minVariantPrice: Pick<
+                  StorefrontAPI.MoneyV2,
+                  'amount' | 'currencyCode'
+                >;
+              };
+              compareAtPriceRange: {
+                minVariantPrice: Pick<
+                  StorefrontAPI.MoneyV2,
+                  'amount' | 'currencyCode'
+                >;
+              };
+              selectedOrFirstAvailableVariant?: StorefrontAPI.Maybe<
+                Pick<StorefrontAPI.ProductVariant, 'id' | 'availableForSale'>
+              >;
+              etaText?: StorefrontAPI.Maybe<
+                Pick<StorefrontAPI.Metafield, 'value'>
+              >;
+              sponsored?: StorefrontAPI.Maybe<
+                Pick<StorefrontAPI.Metafield, 'value'>
+              >;
+              reviewsRating?: StorefrontAPI.Maybe<
+                Pick<StorefrontAPI.Metafield, 'value'>
+              >;
+              reviewsCount?: StorefrontAPI.Maybe<
+                Pick<StorefrontAPI.Metafield, 'value'>
+              >;
+            }
+          >;
+        };
+      }
+    >;
+  }>;
+};
+
 export type CollectionQueryVariables = StorefrontAPI.Exact<{
   handle: StorefrontAPI.Scalars['String']['input'];
   country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
@@ -1190,6 +1280,94 @@ export type CollectionQuery = {
                 | 'Video';
             }
           | ({__typename: 'Page'} & Pick<StorefrontAPI.Page, 'id' | 'body'>)
+        >;
+      }>;
+      sponsoredAdsMetafield?: StorefrontAPI.Maybe<{
+        reference?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.Metaobject, 'id'> & {
+            heading?: StorefrontAPI.Maybe<
+              Pick<StorefrontAPI.MetaobjectField, 'value'>
+            >;
+            subheading?: StorefrontAPI.Maybe<
+              Pick<StorefrontAPI.MetaobjectField, 'value'>
+            >;
+            promoCard?: StorefrontAPI.Maybe<{
+              reference?: StorefrontAPI.Maybe<
+                Pick<StorefrontAPI.Metaobject, 'id'> & {
+                  image?: StorefrontAPI.Maybe<{
+                    reference?: StorefrontAPI.Maybe<{
+                      image?: StorefrontAPI.Maybe<
+                        Pick<
+                          StorefrontAPI.Image,
+                          'url' | 'altText' | 'width' | 'height'
+                        >
+                      >;
+                    }>;
+                  }>;
+                  heading?: StorefrontAPI.Maybe<
+                    Pick<StorefrontAPI.MetaobjectField, 'value'>
+                  >;
+                  linkText?: StorefrontAPI.Maybe<
+                    Pick<StorefrontAPI.MetaobjectField, 'value'>
+                  >;
+                  linkUrl?: StorefrontAPI.Maybe<
+                    Pick<StorefrontAPI.MetaobjectField, 'value'>
+                  >;
+                }
+              >;
+            }>;
+            products?: StorefrontAPI.Maybe<{
+              reference?: StorefrontAPI.Maybe<
+                Pick<StorefrontAPI.Collection, 'id' | 'handle' | 'title'> & {
+                  products: {
+                    nodes: Array<
+                      Pick<
+                        StorefrontAPI.Product,
+                        'id' | 'handle' | 'title' | 'vendor'
+                      > & {
+                        featuredImage?: StorefrontAPI.Maybe<
+                          Pick<
+                            StorefrontAPI.Image,
+                            'id' | 'url' | 'altText' | 'width' | 'height'
+                          >
+                        >;
+                        priceRange: {
+                          minVariantPrice: Pick<
+                            StorefrontAPI.MoneyV2,
+                            'amount' | 'currencyCode'
+                          >;
+                        };
+                        compareAtPriceRange: {
+                          minVariantPrice: Pick<
+                            StorefrontAPI.MoneyV2,
+                            'amount' | 'currencyCode'
+                          >;
+                        };
+                        selectedOrFirstAvailableVariant?: StorefrontAPI.Maybe<
+                          Pick<
+                            StorefrontAPI.ProductVariant,
+                            'id' | 'availableForSale'
+                          >
+                        >;
+                        etaText?: StorefrontAPI.Maybe<
+                          Pick<StorefrontAPI.Metafield, 'value'>
+                        >;
+                        sponsored?: StorefrontAPI.Maybe<
+                          Pick<StorefrontAPI.Metafield, 'value'>
+                        >;
+                        reviewsRating?: StorefrontAPI.Maybe<
+                          Pick<StorefrontAPI.Metafield, 'value'>
+                        >;
+                        reviewsCount?: StorefrontAPI.Maybe<
+                          Pick<StorefrontAPI.Metafield, 'value'>
+                        >;
+                      }
+                    >;
+                  };
+                }
+              >;
+            }>;
+          }
         >;
       }>;
       products: {
@@ -1957,7 +2135,7 @@ interface GeneratedQueryTypes {
     return: BlogsQuery;
     variables: BlogsQueryVariables;
   };
-  '#graphql\n  #graphql\n  fragment ProductCard on Product {\n    id\n    handle\n    title\n    vendor\n    featuredImage {\n      id\n      url\n      altText\n      width\n      height\n    }\n    priceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n    compareAtPriceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n    selectedOrFirstAvailableVariant(\n      selectedOptions: []\n      ignoreUnknownOptions: true\n      caseInsensitiveMatch: true\n    ) {\n      id\n      availableForSale\n    }\n    etaText: metafield(namespace: "custom", key: "eta_text") {\n      value\n    }\n    sponsored: metafield(namespace: "custom", key: "sponsored") {\n      value\n    }\n    reviewsRating: metafield(namespace: "reviews", key: "rating") {\n      value\n    }\n    reviewsCount: metafield(namespace: "reviews", key: "rating_count") {\n      value\n    }\n  }\n\n  #graphql\n  fragment ArticleItem on Article {\n    id\n    handle\n    title\n    excerpt\n    publishedAt\n    blog {\n      handle\n    }\n    image {\n      id\n      url\n      altText\n      width\n      height\n    }\n    readingTime: metafield(namespace: "custom", key: "reading_time") {\n      value\n    }\n  }\n\n  #graphql\n  fragment SubCollectionItem on Collection {\n    id\n    handle\n    title\n    image {\n      id\n      url\n      altText\n      width\n      height\n    }\n  }\n\n  query Collection(\n    $handle: String!\n    $country: CountryCode\n    $language: LanguageCode\n    $filters: [ProductFilter!]\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n  ) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      id\n      handle\n      title\n      descriptionHtml\n      image {\n        id\n        url\n        altText\n        width\n        height\n      }\n      bannerOverlayOpacityMetafield: metafield(namespace: "custom", key: "banner_overlay_opacity") {\n        value\n      }\n      bannerImagePositionMetafield: metafield(namespace: "custom", key: "banner_image_position") {\n        value\n      }\n      bannerImageHeightMetafield: metafield(namespace: "custom", key: "banner_image_height") {\n        value\n      }\n      bannerTextAlignmentMetafield: metafield(namespace: "custom", key: "banner_text_alignment") {\n        value\n      }\n      bannerParallaxEnabledMetafield: metafield(namespace: "custom", key: "banner_enable_parallax") {\n        value\n      }\n      bannerParallaxDirectionMetafield: metafield(namespace: "custom", key: "banner_parallax_direction") {\n        value\n      }\n      postsMetafield: metafield(namespace: "custom", key: "posts") {\n        references(first: 10) {\n          nodes {\n            ... on Article {\n              ...ArticleItem\n            }\n          }\n        }\n      }\n      subCollectionsMetafield: metafield(namespace: "custom", key: "sub_collections") {\n        references(first: 20) {\n          nodes {\n            ... on Collection {\n              ...SubCollectionItem\n            }\n          }\n        }\n      }\n      afterItemsMetafield: metafield(namespace: "custom", key: "after_item_lists") {\n        reference {\n          __typename\n          ... on Page {\n            id\n            body\n          }\n        }\n      }\n      products(\n        first: $first,\n        last: $last,\n        before: $startCursor,\n        after: $endCursor,\n        filters: $filters\n      ) {\n        filters {\n          id\n          label\n          type\n          values {\n            id\n            label\n            count\n            input\n          }\n        }\n        nodes {\n          ...ProductCard\n        }\n        pageInfo {\n          hasPreviousPage\n          hasNextPage\n          endCursor\n          startCursor\n        }\n      }\n    }\n  }\n': {
+  '#graphql\n  #graphql\n  fragment ProductCard on Product {\n    id\n    handle\n    title\n    vendor\n    featuredImage {\n      id\n      url\n      altText\n      width\n      height\n    }\n    priceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n    compareAtPriceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n    selectedOrFirstAvailableVariant(\n      selectedOptions: []\n      ignoreUnknownOptions: true\n      caseInsensitiveMatch: true\n    ) {\n      id\n      availableForSale\n    }\n    etaText: metafield(namespace: "custom", key: "eta_text") {\n      value\n    }\n    sponsored: metafield(namespace: "custom", key: "sponsored") {\n      value\n    }\n    reviewsRating: metafield(namespace: "reviews", key: "rating") {\n      value\n    }\n    reviewsCount: metafield(namespace: "reviews", key: "rating_count") {\n      value\n    }\n  }\n\n  #graphql\n  fragment ArticleItem on Article {\n    id\n    handle\n    title\n    excerpt\n    publishedAt\n    blog {\n      handle\n    }\n    image {\n      id\n      url\n      altText\n      width\n      height\n    }\n    readingTime: metafield(namespace: "custom", key: "reading_time") {\n      value\n    }\n  }\n\n  #graphql\n  fragment SubCollectionItem on Collection {\n    id\n    handle\n    title\n    image {\n      id\n      url\n      altText\n      width\n      height\n    }\n  }\n\n  #graphql\n  #graphql\n  fragment PromoCard on Metaobject {\n    id\n    image: field(key: "image") {\n      reference {\n        ... on MediaImage {\n          image {\n            url\n            altText\n            width\n            height\n          }\n        }\n      }\n    }\n    heading: field(key: "heading") {\n      value\n    }\n    linkText: field(key: "link_text") {\n      value\n    }\n    linkUrl: field(key: "link_url") {\n      value\n    }\n  }\n\n  fragment SponsoredAds on Metaobject {\n    id\n    heading: field(key: "heading") {\n      value\n    }\n    subheading: field(key: "subheading") {\n      value\n    }\n    promoCard: field(key: "promo_card") {\n      reference {\n        ... on Metaobject {\n          ...PromoCard\n        }\n      }\n    }\n    products: field(key: "products") {\n      reference {\n        ... on Collection {\n          id\n          handle\n          title\n          products(first: 6) {\n            nodes {\n              ...ProductCard\n            }\n          }\n        }\n      }\n    }\n  }\n\n  query Collection(\n    $handle: String!\n    $country: CountryCode\n    $language: LanguageCode\n    $filters: [ProductFilter!]\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n  ) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      id\n      handle\n      title\n      descriptionHtml\n      image {\n        id\n        url\n        altText\n        width\n        height\n      }\n      bannerOverlayOpacityMetafield: metafield(namespace: "custom", key: "banner_overlay_opacity") {\n        value\n      }\n      bannerImagePositionMetafield: metafield(namespace: "custom", key: "banner_image_position") {\n        value\n      }\n      bannerImageHeightMetafield: metafield(namespace: "custom", key: "banner_image_height") {\n        value\n      }\n      bannerTextAlignmentMetafield: metafield(namespace: "custom", key: "banner_text_alignment") {\n        value\n      }\n      bannerParallaxEnabledMetafield: metafield(namespace: "custom", key: "banner_enable_parallax") {\n        value\n      }\n      bannerParallaxDirectionMetafield: metafield(namespace: "custom", key: "banner_parallax_direction") {\n        value\n      }\n      postsMetafield: metafield(namespace: "custom", key: "posts") {\n        references(first: 10) {\n          nodes {\n            ... on Article {\n              ...ArticleItem\n            }\n          }\n        }\n      }\n      subCollectionsMetafield: metafield(namespace: "custom", key: "sub_collections") {\n        references(first: 20) {\n          nodes {\n            ... on Collection {\n              ...SubCollectionItem\n            }\n          }\n        }\n      }\n      afterItemsMetafield: metafield(namespace: "custom", key: "after_item_lists") {\n        reference {\n          __typename\n          ... on Page {\n            id\n            body\n          }\n        }\n      }\n      sponsoredAdsMetafield: metafield(namespace: "custom", key: "sponsored_ads") {\n        reference {\n          ... on Metaobject {\n            ...SponsoredAds\n          }\n        }\n      }\n      products(\n        first: $first,\n        last: $last,\n        before: $startCursor,\n        after: $endCursor,\n        filters: $filters\n      ) {\n        filters {\n          id\n          label\n          type\n          values {\n            id\n            label\n            count\n            input\n          }\n        }\n        nodes {\n          ...ProductCard\n        }\n        pageInfo {\n          hasPreviousPage\n          hasNextPage\n          endCursor\n          startCursor\n        }\n      }\n    }\n  }\n': {
     return: CollectionQuery;
     variables: CollectionQueryVariables;
   };

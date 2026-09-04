@@ -122,3 +122,15 @@
     flex: 0 0 130px;
   }
 }
+
+/* In-feed placement inside .products-grid (CollectionFeed) -------------- */
+/* .products-grid is assumed to be a CSS grid (per product-card.css /
+   paginated-resource-section.css). If it's actually flexbox instead,
+   swap `grid-column: 1 / -1;` for `flex: 1 0 100%;`. */
+.products-grid__promo-item {
+  grid-column: 1 / -1;
+}
+
+.products-grid__promo-item .promo-carousel {
+  margin-block-end: 0;
+}
