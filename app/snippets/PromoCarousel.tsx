@@ -42,6 +42,14 @@ export interface SponsoredAdsData {
   id: string;
   heading?: string | null;
   subheading?: string | null;
+  /**
+   * 0-based index within the current page's product grid to splice this
+   * panel after (0 = before the first product). Merchant-set via the
+   * promo_carousel metaobject's "Grid Position" field (key:
+   * grid_position). Null/undefined means the merchant hasn't set one —
+   * CollectionFeed falls back to its own default position in that case.
+   */
+  position?: number | null;
   promoCard?: PromoCardData | null;
   products: ProductCardFragment[];
 }

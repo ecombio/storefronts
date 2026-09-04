@@ -9,10 +9,11 @@ import type {
   ProductFilter,
   Filter,
 } from '@shopify/hydrogen/storefront-api-types';
-import type {ComponentProps, ChangeEvent} from 'react';
+import type {ChangeEvent} from 'react';
 import {buildSelfCanonicalUrl} from '~/lib/canonical';
 import {PRODUCT_CARD_FRAGMENT} from '~/graphql/ProductCardFragment';
-import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
+import {PaginationSection} from '~/components/pagination';
+import type {PaginationConnection} from '~/components/pagination';
 import {ProductCard} from '~/snippets/ProductCard';
 import type {ProductCardFragment} from 'storefrontapi.generated';
 
@@ -21,6 +22,15 @@ const PAGE_BY = 48;
 // How many page numbers we're willing to make directly clickable.
 // Capped so MAX_PAGE_LINKS * PAGE_BY stays under the Storefront API's
 // 250-item-per-connection limit.
+//
+// NOTE: pageCursors/totalKnownPages/hasMoreBeyondKnownPages (and the
+// PRODUCTS_PAGE_CURSORS_QUERY lookahead below that builds them) are no
+// longer consumed by the UI — this route now uses Hydrogen's <Pagination>
+// with a single accumulating "Load more" button (see InlineCollectionFeed),
+// same as CollectionFeed.tsx, instead of numbered page links. Left the
+// loader computing them rather than deleting silently; ask if you'd like
+// this lookahead query + buildPageCursors removed too, mirroring the note
+// left in collections.$handle.tsx.
 const MAX_PAGE_LINKS = 5;
 
 // Shopify auto-generates an "All products" collection with this handle on
@@ -50,9 +60,7 @@ const SORT_OPTIONS: SortOption[] = [
 
 const DEFAULT_SORT = 'relevance';
 
-type ProductsConnection = ComponentProps<
-  typeof PaginatedResourceSection<ProductCardFragment>
->['connection'];
+type ProductsConnection = PaginationConnection<ProductCardFragment>;
 
 /**
  * Each selected filter is its own `filter` URL param, JSON-encoded to
@@ -169,9 +177,8 @@ export async function loader({context, request}: Route.LoaderArgs) {
         reverse: sort.reverse,
       },
     }),
-    // Lightweight lookahead query (cursors only) that powers the numbered
-    // page links — see buildPageCursors below. Uses the same filter/sort
-    // so page counts reflect the filtered set.
+    // Lightweight lookahead query (cursors only) — see the note on
+    // MAX_PAGE_LINKS above re: this being unconsumed by the UI now.
     storefront.query(PRODUCTS_PAGE_CURSORS_QUERY, {
       variables: {
         handle: ALL_PRODUCTS_COLLECTION_HANDLE,
@@ -209,8 +216,8 @@ export async function loader({context, request}: Route.LoaderArgs) {
 }
 
 /**
- * Turns a flat list of item cursors into a "page number -> cursor" map
- * for the numbered pagination links.
+ * Turns a flat list of item cursors into a "page number -> cursor" map.
+ * Currently unconsumed — see note on MAX_PAGE_LINKS above.
  *
  * A page is only added if there's at least one item *beyond* its starting
  * boundary — otherwise, when the result count is an exact multiple of
@@ -240,14 +247,7 @@ function buildPageCursors(
 }
 
 export default function CollectionAll() {
-  const {
-    products,
-    pageCursors,
-    totalKnownPages,
-    hasMoreBeyondKnownPages,
-    availableFilters,
-    sort,
-  } = useLoaderData<typeof loader>();
+  const {products, availableFilters, sort} = useLoaderData<typeof loader>();
 
   return (
     <div className="collection">
@@ -258,9 +258,6 @@ export default function CollectionAll() {
         <InlineCollectionFeed
           products={products}
           sort={{value: sort, options: SORT_OPTIONS}}
-          pageCursors={pageCursors}
-          totalKnownPages={totalKnownPages}
-          hasMoreBeyondKnownPages={hasMoreBeyondKnownPages}
         />
       </div>
     </div>
@@ -271,21 +268,18 @@ export default function CollectionAll() {
 // Feed — inlined directly in this file (no shared CollectionFeed import).
 // No activeTab/articles here since /collections/all has no tab switcher;
 // see snippets/CollectionFeed.tsx for the tabbed version used by
-// collections.$handle.tsx.
+// collections.$handle.tsx. Pagination pattern (accumulating nodes, single
+// "Load more" link, first-8-eager) matches CollectionFeed.tsx exactly —
+// previously both routes shared PaginatedResourceSection for this, now
+// each inlines it since the shared component was deleted.
 // ---------------------------------------------------------------------------
 
 function InlineCollectionFeed({
   products,
   sort,
-  pageCursors,
-  totalKnownPages,
-  hasMoreBeyondKnownPages,
 }: {
   products: ProductsConnection;
   sort: {value: string; options: SortOption[]};
-  pageCursors?: Record<number, string>;
-  totalKnownPages?: number;
-  hasMoreBeyondKnownPages?: boolean;
 }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -312,22 +306,17 @@ function InlineCollectionFeed({
         </select>
       </div>
 
-      <PaginatedResourceSection<ProductCardFragment>
+      <PaginationSection<ProductCardFragment>
         connection={products}
-        resourcesClassName="products-grid"
-        pageCursors={pageCursors}
-        totalKnownPages={totalKnownPages}
-        hasMoreBeyondKnownPages={hasMoreBeyondKnownPages}
-      >
-        {({node: product, index}) => (
+        itemsClassName="products-grid"
+        renderItem={(product, index) => (
           <ProductCard
-            key={product.id}
             product={product}
             loading={index < 8 ? 'eager' : undefined}
             showVendor={false}
           />
         )}
-      </PaginatedResourceSection>
+      />
     </div>
   );
 }

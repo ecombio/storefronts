@@ -22,7 +22,7 @@ import type {
   CustomerOrdersFragment,
   OrderItemFragment,
 } from 'customer-accountapi.generated';
-import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
+import {PaginationSection} from '~/components/pagination';
 
 type OrdersLoaderData = {
   customer: CustomerOrdersFragment;
@@ -82,9 +82,10 @@ function OrdersTable({
   return (
     <div className="acccount-orders" aria-live="polite">
       {orders?.nodes.length ? (
-        <PaginatedResourceSection connection={orders}>
-          {({node: order}) => <OrderItem key={order.id} order={order} />}
-        </PaginatedResourceSection>
+        <PaginationSection
+          connection={orders}
+          renderItem={(order) => <OrderItem key={order.id} order={order} />}
+        />
       ) : (
         <EmptyOrders hasFilters={hasFilters} />
       )}

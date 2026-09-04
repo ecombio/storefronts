@@ -1,20 +1,21 @@
 /* app/assets/promo-carousel.css
    Sponsored-brand style panel: promo card on the left, horizontally
-   scrollable product row on the right. Matches the layout shown in the
-   Amazon "sponsored brands" reference (orange-bordered panel, brand image
-   + heading on the left, shoppable product cards on the right).
+   scrollable product row on the right.
+
+   Previously styled as a standalone Amazon "sponsored brands" panel
+   (orange border, rounded corners, generous internal padding) that stood
+   apart from the surrounding grid. Restyled here to sit flush with
+   collection-feed.css's tight, edge-to-edge grid instead — same 2px gap
+   rhythm, no card-level border/radius wrapping the whole panel, so it
+   reads as part of the grid rather than an inserted ad unit.
    ============================================================ */
 
 .promo-carousel {
   display: flex;
   flex-wrap: nowrap;
   align-items: stretch;
-  gap: 1.5rem;
-  border: 2px solid #e0762b; /* swap for your brand accent color */
-  border-radius: 8px;
-  padding: 1.25rem;
-  margin-block-end: 2rem;
-  overflow: hidden;
+  gap: 2px; /* matches .products-grid's gap, not an arbitrary spacing value */
+  background: #fff;
 }
 
 /* Left panel: brand image + heading/subheading + CTA ------------------- */
@@ -23,14 +24,15 @@
   flex-direction: column;
   flex: 0 0 280px;
   gap: 0.75rem;
+  padding: 12px; /* matches .product-card__body's padding */
+  background: #F9FAFB; /* matches .product-card__img-zone's background */
 }
 
 .promo-carousel__panel-media {
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1; /* matches .product-card__img-zone so panel height lines up with the product row beside it */
   overflow: hidden;
-  border-radius: 6px;
-  background: #f4f4f4;
+  background: #F3F4F6;
 }
 
 .promo-carousel__panel-image {
@@ -47,51 +49,52 @@
 }
 
 .promo-carousel__heading {
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 0.85rem; /* matches .product-card__title */
+  font-weight: 600;
+  color: #111827; /* matches --product-card-text */
   margin: 0;
 }
 
 .promo-carousel__subheading {
-  font-size: 0.875rem;
-  color: #555;
+  font-size: 0.7rem; /* matches .product-card__vendor */
+  color: #6B7280; /* matches --product-card-text-secondary */
   margin: 0;
 }
 
 .promo-carousel__panel-heading {
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #6B7280;
   margin: 0;
 }
 
 .promo-carousel__cta {
   display: inline-block;
-  margin-top: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: #e0762b;
+  margin-top: 0.35rem;
+  padding: 8px 10px; /* matches .product-card__atc-btn */
+  background: #111827; /* matches product-card's dark action color, not the old orange accent */
   color: #fff;
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.8rem;
+  font-weight: 700;
   text-decoration: none;
-  border-radius: 4px;
+  border-radius: 6px; /* matches .product-card__atc-btn */
   text-align: center;
   width: fit-content;
 }
 
 .promo-carousel__cta:hover {
-  background: #c9631f;
+  background: #333;
 }
 
 /* Right side: scrollable product row ------------------------------------ */
 .promo-carousel__products {
   display: flex;
-  gap: 1rem;
+  gap: 2px; /* matches .products-grid's gap */
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   flex: 1 1 auto;
-  padding-block: 0.25rem;
 }
 
 .promo-carousel__products::-webkit-scrollbar {
@@ -99,7 +102,7 @@
 }
 
 .promo-carousel__product {
-  flex: 0 0 160px;
+  flex: 0 0 220px;
   scroll-snap-align: start;
 }
 
@@ -107,19 +110,14 @@
 @media (max-width: 768px) {
   .promo-carousel {
     flex-direction: column;
-    padding: 1rem;
   }
 
   .promo-carousel__panel {
     flex: 0 0 auto;
   }
 
-  .promo-carousel__panel-media {
-    aspect-ratio: 16 / 9;
-  }
-
   .promo-carousel__product {
-    flex: 0 0 130px;
+    flex: 0 0 160px;
   }
 }
 

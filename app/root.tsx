@@ -40,7 +40,8 @@ import slideshowStyles from '~/assets/slideshow.css?url';
 import collectionBannerStyles from '~/assets/collection-banner.css?url';
 import mainCollectionStyles from '~/assets/main-collection.css?url';
 import collectionSidebarStyles from '~/assets/collection-sidebar.css?url'; // ADDED — sidebar filter layout for collections.all; loads after mainCollectionStyles so it can override/extend
-import paginatedResourceSectionStyles from '~/assets/paginated-resource-section.css?url';
+import collectionFeedStyles from '~/assets/collection-feed.css?url'; // ADDED — file existed on disk but was never imported; .products-grid had no `display: grid` at all, so the number of cards per row drifted with browser zoom instead of being fixed by breakpoint. Loads after mainCollectionStyles/collectionSidebarStyles so `.collection-feed`'s max-width: none can win, and after productCardStyles so the grid gap isn't fighting card margins.
+import paginationStyles from '~/assets/pagination.css?url'; // ADDED — was missing entirely; PaginationSection's Load More button/observer wrapper (pagination__load-more, pagination__load-more-btn--*) had no styles linked anywhere. Used by CollectionFeed, collections.all, and (after the PaginatedResourceSection/LoadMoreTrigger consolidation) blogs.$blogHandle.tagged.$tag, blogs._index, collections._index, and account.orders._index. Loads after collectionFeedStyles since it's the more generic/shared stylesheet of the two.
 import stickyHeaderStyles from '~/assets/sticky-header.css?url';
 import articleCardStyles from '~/assets/article-card.css?url';
 import articleTocStyles from '~/components/blogs/TableOfContents.css?url'; // ADDED — table-of-contents sidebar/collapsible layout for blog articles; loads after articleCardStyles, the other article-scoped stylesheet
@@ -232,7 +233,15 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={collectionBannerStyles}></link>
         <link rel="stylesheet" href={mainCollectionStyles}></link>
         <link rel="stylesheet" href={collectionSidebarStyles}></link>
-        <link rel="stylesheet" href={paginatedResourceSectionStyles}></link>
+        <link rel="stylesheet" href={collectionFeedStyles}></link>
+        {/* ADDED — file was on disk but never linked; this is the fix for
+            the zoom/column-drift bug (see import comment above) and adds
+            the full-bleed fixed-column .products-grid layout. */}
+        <link rel="stylesheet" href={paginationStyles}></link>
+        {/* ADDED — styles PaginationSection's Load More button/observer
+            wrapper (app/components/pagination.tsx). PaginatedResourceSection
+            and LoadMoreTrigger have been removed; every pagination surface
+            in the app now goes through PaginationSection and needs this. */}
         <link rel="stylesheet" href={stickyHeaderStyles}></link>
         <link rel="stylesheet" href={articleCardStyles}></link>
         {/* ADDED — table-of-contents sidebar/collapsible layout for blog articles */}

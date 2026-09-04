@@ -1,9 +1,9 @@
 // app/snippets/CollectionFeed.tsx
 
-import {Fragment} from 'react';
-import type {ComponentProps, ChangeEvent} from 'react';
+import type {ChangeEvent} from 'react';
 import {useLocation, useNavigate} from 'react-router';
-import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
+import {PaginationSection} from '~/components/pagination';
+import type {PaginationConnection} from '~/components/pagination';
 import {ProductCard} from '~/snippets/ProductCard';
 import {ArticleItem} from '~/snippets/ArticleItem';
 import {SubCollections} from '~/snippets/SubCollections';
@@ -16,24 +16,19 @@ import type {
 } from 'storefrontapi.generated';
 import type {CollectionTab} from '~/sections/MainCollection';
 
-export type ProductsConnection = ComponentProps<
-  typeof PaginatedResourceSection<ProductCardFragment>
->['connection'];
+export type ProductsConnection = PaginationConnection<ProductCardFragment>;
 
 export interface FeedSortOption {
   value: string;
   label: string;
 }
 
-// 0-based position within the current page's product list where the
-// sponsored panel is spliced in — e.g. 4 means "after the 4th product
-// card, before the 5th" (an Amazon-style in-feed sponsored placement).
-// Applies per page: since PaginatedResourceSection's `index` restarts at
-// 0 for each fetched page, the panel will appear at this same relative
-// spot on every page, not just the first. If you only want it on the
-// first page, gate the condition below on the absence of a `cursor`/
-// `direction` URL param instead of (or in addition to) `index`.
-const SPONSORED_ADS_GRID_POSITION = 4;
+// Fallback 0-based position within the accumulated product list where the
+// sponsored panel is spliced in — used only when the promo_carousel
+// metaobject's "Grid Position" field is unset for a given collection.
+// With Load More accumulating nodes rather than replacing them per page,
+// this applies ONCE across the whole growing list, not once per page.
+const DEFAULT_SPONSORED_ADS_GRID_POSITION = 4;
 
 interface CollectionFeedProps {
   /**
@@ -54,27 +49,34 @@ interface CollectionFeedProps {
   subCollections?: SubCollectionItemFragment[];
   /**
    * Spliced into the products grid itself as an in-feed sponsored item
-   * (see SPONSORED_ADS_GRID_POSITION) rather than rendered as a separate
-   * row. Only appears on the products panel — never on articles.
-   * PromoCarousel renders nothing when sponsoredAds/promoCard/products
-   * are missing or empty, so this is always safe to pass through
-   * unconditionally.
+   * rather than rendered as a separate row. Only appears on the products
+   * panel — never on articles. PromoCarousel renders nothing when
+   * sponsoredAds/promoCard/products are missing or empty, so this is
+   * always safe to pass through unconditionally.
    */
   sponsoredAds?: SponsoredAdsData | null;
   /**
-   * Omit to render with no sort dropdown (collections.$handle.tsx doesn't
-   * currently offer one). Pass `{value, options}` to show one — selecting
-   * an option resets pagination and updates the `sort` URL param.
+   * Omit to render with no sort dropdown. Pass `{value, options}` to show
+   * one — selecting an option resets pagination and updates the `sort`
+   * URL param.
    */
   sort?: {
     value: string;
     options: FeedSortOption[];
   };
-  /** Precomputed "page number -> cursor" map for numbered pagination links. */
+  /**
+   * @deprecated No longer used — pagination renders a single accumulating
+   * "Load more" button instead of numbered page links, so arbitrary
+   * page-jumping no longer applies. Left in the prop type so
+   * collections.$handle.tsx (which still computes and passes these)
+   * doesn't need to change. Ask if you'd like the now-unused server-side
+   * lookahead queries (buildPageCursors, COLLECTION_PAGE_CURSORS_QUERY)
+   * removed too — they still run on every request for nothing.
+   */
   pageCursors?: Record<number, string>;
-  /** How many page numbers can be linked to directly. */
+  /** @deprecated See pageCursors above. */
   totalKnownPages?: number;
-  /** Whether pages exist beyond `totalKnownPages` (shown as an ellipsis). */
+  /** @deprecated See pageCursors above. */
   hasMoreBeyondKnownPages?: boolean;
 }
 
@@ -85,18 +87,19 @@ export function CollectionFeed({
   subCollections = [],
   sponsoredAds,
   sort,
-  pageCursors,
-  totalKnownPages,
-  hasMoreBeyondKnownPages,
 }: CollectionFeedProps) {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Merchant-set via the promo_carousel metaobject's "Grid Position" field
+  // when present; otherwise falls back to the sitewide default above.
+  const sponsoredAdsPosition =
+    sponsoredAds?.position ?? DEFAULT_SPONSORED_ADS_GRID_POSITION;
+
   function handleSortChange(event: ChangeEvent<HTMLSelectElement>) {
     const params = new URLSearchParams(location.search);
     // Any sort change alters ordering, so pagination state from the old
-    // ordering is no longer valid — same reasoning as resetPagination
-    // elsewhere in this route family.
+    // ordering is no longer valid.
     params.delete('cursor');
     params.delete('direction');
     params.delete('p');
@@ -125,16 +128,23 @@ export function CollectionFeed({
           </select>
         </div>
       )}
-      <PaginatedResourceSection<ProductCardFragment>
+
+      {/*
+        PaginationSection (app/components/pagination.tsx) handles the
+        accumulating list, the eager-load-first-8 behavior, and the Load
+        more button + infinite-scroll trigger — same shared component used
+        by collections.all.tsx and blogs.$blogHandle.tagged.$tag.tsx.
+
+        renderItem is called with the index within the FULL accumulated
+        list (not per-page), which is what lets the sponsored promo panel
+        splice in ONCE across the whole list rather than once per page.
+      */}
+      <PaginationSection<ProductCardFragment>
         connection={products}
-        resourcesClassName="products-grid"
-        pageCursors={pageCursors}
-        totalKnownPages={totalKnownPages}
-        hasMoreBeyondKnownPages={hasMoreBeyondKnownPages}
-      >
-        {({node: product, index}) => (
-          <Fragment key={product.id}>
-            {sponsoredAds && index === SPONSORED_ADS_GRID_POSITION && (
+        itemsClassName="products-grid"
+        renderItem={(product, index) => (
+          <>
+            {sponsoredAds && index === sponsoredAdsPosition && (
               <div className="products-grid__promo-item">
                 <PromoCarousel sponsoredAds={sponsoredAds} />
               </div>
@@ -144,9 +154,9 @@ export function CollectionFeed({
               loading={index < 8 ? 'eager' : undefined}
               showVendor={false}
             />
-          </Fragment>
+          </>
         )}
-      </PaginatedResourceSection>
+      />
     </>
   );
 

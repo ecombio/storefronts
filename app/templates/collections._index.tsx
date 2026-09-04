@@ -3,7 +3,7 @@ import {useLoaderData, Link} from 'react-router';
 import type {Route} from './+types/collections._index';
 import {getPaginationVariables, Image} from '@shopify/hydrogen';
 import type {CollectionFragment} from 'storefrontapi.generated';
-import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
+import {PaginationSection} from '~/components/pagination';
 import {CollectionCarousel} from '~/sections/CollectionCarousel';
 
 export async function loader(args: Route.LoaderArgs) {
@@ -63,18 +63,17 @@ export default function Collections() {
       />
 
       <h1>Collections</h1>
-      <PaginatedResourceSection<CollectionFragment>
+      <PaginationSection<CollectionFragment>
         connection={collections}
-        resourcesClassName="collections-grid"
-      >
-        {({node: collection, index}) => (
+        itemsClassName="collections-grid"
+        renderItem={(collection, index) => (
           <CollectionItem
             key={collection.id}
             collection={collection}
             index={index}
           />
         )}
-      </PaginatedResourceSection>
+      />
     </div>
   );
 }

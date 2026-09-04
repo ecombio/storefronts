@@ -1,7 +1,7 @@
 import {Link, useLoaderData} from 'react-router';
 import type {Route} from './+types/blogs._index';
 import {getPaginationVariables} from '@shopify/hydrogen';
-import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
+import {PaginationSection} from '~/components/pagination';
 import type {BlogsQuery} from 'storefrontapi.generated';
 
 type BlogNode = BlogsQuery['blogs']['nodes'][0];
@@ -56,25 +56,23 @@ export default function Blogs() {
   return (
     <div className="blogs">
       <h1>Blogs</h1>
-      <div className="blogs-grid">
-        <PaginatedResourceSection<BlogNode> connection={blogs}>
-          {({node: blog}) => (
-            <Link
-              className="blog"
-              key={blog.handle}
-              prefetch="intent"
-              to={`/blogs/${blog.handle}`}
-            >
-              <h2>{blog.title}</h2>
-            </Link>
-          )}
-        </PaginatedResourceSection>
-      </div>
+      <PaginationSection<BlogNode>
+        connection={blogs}
+        itemsClassName="blogs-grid"
+        renderItem={(blog) => (
+          <Link className="blog" prefetch="intent" to={`/blogs/${blog.handle}`}>
+            <h2>{blog.title}</h2>
+          </Link>
+        )}
+      />
     </div>
   );
 }
 
 // NOTE: https://shopify.dev/docs/api/storefront/latest/objects/blog
+// `id` was ADDED to this query — PaginationSection<T> requires
+// `T extends {id: string}` (it keys accumulated list items by id), and
+// the original query only ever selected title/handle/seo.
 const BLOGS_QUERY = `#graphql
   query Blogs(
     $country: CountryCode
@@ -97,6 +95,7 @@ const BLOGS_QUERY = `#graphql
         endCursor
       }
       nodes {
+        id
         title
         handle
         seo {

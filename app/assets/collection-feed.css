@@ -1,0 +1,76 @@
+/* app/assets/collection-feed.css
+   ============================================================
+   Previously existed on disk but was NEVER imported in root.tsx
+   (no `import` line, no <link> tag) and was empty besides. As a
+   result, .products-grid had no `display: grid` at all — product
+   cards fell back to default block flow with whatever width they
+   picked up from theme.css/Tailwind defaults, so the number of
+   cards that fit per row drifted with browser zoom instead of
+   being fixed by breakpoint. This file fixes that AND implements
+   the full-bleed, fixed-column Gymshark-style layout.
+
+   Requires: this file must be imported + linked in root.tsx,
+   loading AFTER main-collection.css / collection-sidebar.css
+   (so max-width: none can win against any container cap) and
+   after product-card.css (so grid gap isn't fighting card
+   margins). See root.tsx changes.
+
+   Pairs with product-card.css's
+   `.product-card__img-zone { aspect-ratio: 1 }`, which already
+   locks every card's image to a consistent footprint regardless
+   of the source image's native dimensions.
+   ============================================================ */
+
+.collection-feed {
+  width: 100%;
+  max-width: none; /* full-bleed — breaks out of any centered container */
+}
+
+.collection-feed__sort {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* ---------- Product grid ----------
+   Fixed column count per breakpoint tier, NOT auto-fill/minmax and NOT
+   inherited from unconstrained flow. This is what makes column count
+   depend only on viewport width TIER (desktop/tablet/mobile), never on
+   browser zoom level or how many fixed-width boxes happen to fit.
+
+   --grid-columns defaults to 4 (Gymshark reference). If/when this needs
+   to be merchant-configurable per collection (mirroring the old Liquid
+   theme's `section.settings.columns`), set this custom property inline
+   on `.products-grid` from a collection metafield — no other change
+   needed here.
+*/
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-columns, 4), 1fr);
+  gap: 2px;
+}
+
+@media (max-width: 1023px) {
+  .products-grid {
+    grid-template-columns: repeat(min(var(--grid-columns, 4), 3), 1fr);
+  }
+}
+
+@media (max-width: 639px) {
+  .products-grid {
+    grid-template-columns: repeat(min(var(--grid-columns, 4), 2), 1fr);
+    gap: 1px;
+  }
+}
+
+/* .products-grid__promo-item's in-feed layout (full-row span) now lives
+   in promo-carousel.css, alongside its companion margin-block-end
+   override — see that file. Kept out of here to avoid two files
+   independently defining the same selector. */
+
+/* Load More button/trigger styles moved to app/assets/pagination.css,
+   alongside app/components/pagination.tsx — that pair is now shared by
+   this file, collections.all.tsx, and blogs.$blogHandle.tagged.$tag.tsx,
+   with selectable button skins, so it no longer makes sense to keep
+   those styles fixed here under collection-feed-specific class names. */

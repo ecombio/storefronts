@@ -3,8 +3,7 @@
 import {Link, useLoaderData} from 'react-router';
 import type {Route} from './+types/blogs.$blogHandle.tagged.$tag';
 import {getPaginationVariables} from '@shopify/hydrogen';
-import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
-import type {ArticleItemFragment} from 'storefrontapi.generated';
+import {PaginationSection} from '~/components/pagination';
 
 export const meta: Route.MetaFunction = ({params}) => {
   return [{title: `Hydrogen | ${params.blogHandle} | ${params.tag}`}];
@@ -58,22 +57,28 @@ export default function BlogTagged() {
         <p>Showing posts tagged “{tag}”</p>
       </section>
 
-      <div className="blog-category__grid">
-        <PaginatedResourceSection<ArticleItemFragment>
-          connection={blog.articles}
-        >
-          {({node: article}) => (
-            <Link
-              key={article.id}
-              className="post-card"
-              prefetch="intent"
-              to={`/blogs/${blog.handle}/${article.handle}`}
-            >
-              <h3>{article.title}</h3>
-            </Link>
-          )}
-        </PaginatedResourceSection>
-      </div>
+      {/*
+        Migrated off the old inline <Pagination> + <LoadMoreTrigger>
+        (previously wrapped the now-deleted <PaginatedResourceSection>).
+        Same accumulating-list + single "Load more" button pattern used
+        in CollectionFeed.tsx and collections.all.tsx — see
+        app/components/pagination.tsx. Uses PaginationSection's own
+        pagination__load-more* classes now (pagination.css), rather than
+        collection-feed.css's button styles.
+      */}
+      <PaginationSection
+        connection={blog.articles}
+        itemsClassName="blog-category__grid"
+        renderItem={(article) => (
+          <Link
+            className="post-card"
+            prefetch="intent"
+            to={`/blogs/${blog.handle}/${article.handle}`}
+          >
+            <h3>{article.title}</h3>
+          </Link>
+        )}
+      />
     </div>
   );
 }

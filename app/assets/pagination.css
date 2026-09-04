@@ -1,0 +1,85 @@
+/* app/assets/pagination.css
+   ============================================================
+   Styles for app/components/pagination.tsx's <PaginationSection>
+   Load More control. Previously this lived as a fixed set of
+   classes at the bottom of collection-feed.css (paginated-
+   resource-section.css before that) — split out into its own
+   file now that the component itself is shared/generic across
+   collections, /collections/all, and the blog tagged-articles
+   page, with multiple selectable skins instead of one fixed look.
+
+   Requires: imported + linked in root.tsx. Load order doesn't
+   matter relative to collection-feed.css (no shared selectors
+   between the two anymore), but keep it after product-card.css
+   for consistency with the rest of the collection/pagination
+   stylesheets.
+   ============================================================ */
+
+.pagination__load-more {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0;
+}
+
+/* ---------- Button skins ----------
+   Pass `skin="solid" | "outline" | "text"` to <PaginationSection>.
+   Default is "solid", matching the original fixed pill-button look.
+*/
+
+.pagination__load-more-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 180px;
+  height: 44px;
+  padding: 0 28px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease, opacity 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.pagination__load-more-btn--solid {
+  border: 1px solid var(--color-ink, #111827);
+  background: var(--color-ink, #111827);
+  color: var(--color-surface, #ffffff);
+}
+
+a.pagination__load-more-btn--solid:hover {
+  background: #333; /* matches .promo-carousel__cta:hover */
+}
+
+.pagination__load-more-btn--outline {
+  border: 1px solid var(--color-ink, #111827);
+  background: transparent;
+  color: var(--color-ink, #111827);
+}
+
+a.pagination__load-more-btn--outline:hover {
+  background: var(--color-ink, #111827);
+  color: var(--color-surface, #ffffff);
+}
+
+.pagination__load-more-btn--text {
+  min-width: 0;
+  height: auto;
+  padding: 8px 4px;
+  border: none;
+  border-bottom: 1px solid currentColor;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-ink, #111827);
+}
+
+a.pagination__load-more-btn--text:hover {
+  opacity: 0.6;
+}
+
+.pagination__load-more-btn[aria-disabled='true'] {
+  opacity: 0.6;
+  pointer-events: none;
+  cursor: default;
+}

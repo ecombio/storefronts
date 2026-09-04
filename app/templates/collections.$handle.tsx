@@ -8,7 +8,6 @@ import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {buildSelfCanonicalUrl} from '~/lib/canonical';
 import {MainCollection, type CollectionTab} from '~/sections/MainCollection';
-import {PromoCarousel} from '~/snippets/PromoCarousel';
 import {PRODUCT_CARD_FRAGMENT} from '~/graphql/ProductCardFragment';
 import {ARTICLE_ITEM_FRAGMENT} from '~/graphql/ArticleItemFragment';
 import type {ProductFilter} from '@shopify/hydrogen/storefront-api-types';
@@ -453,16 +452,23 @@ export default function Collection() {
   // (promo_carousel type). Its "products" field is itself a single
   // Collection reference (confirmed in Admin: Type = "One" -> "Collection")
   // — NOT a list of individual products — so we pull that collection's
-  // own products for the shoppable row. Renders an Amazon-style sponsored
-  // panel above the banner — see ~/snippets/PromoCarousel.tsx. Every field
-  // below is optional; PromoCarousel itself renders nothing if promoCard
-  // or products end up empty.
+  // own products for the shoppable row. Rendered as an Amazon-style
+  // sponsored panel spliced into the products grid — see MainCollection ->
+  // CollectionFeed -> ~/snippets/PromoCarousel.tsx. Every field below is
+  // optional; PromoCarousel itself renders nothing if promoCard or
+  // products end up empty.
   const sponsoredAdsRef = collection.sponsoredAdsMetafield?.reference ?? null;
   const sponsoredAds = sponsoredAdsRef
     ? {
         id: sponsoredAdsRef.id,
         heading: sponsoredAdsRef.heading?.value ?? null,
         subheading: sponsoredAdsRef.subheading?.value ?? null,
+        // 0-based index within the current page's product list to splice
+        // the panel after (0 = before the first product). Merchant-set via
+        // the promo_carousel metaobject's "Grid Position" field; clamped to
+        // stay within a single page (PAGE_BY - 1) and falls back to
+        // CollectionFeed's own default when unset.
+        position: toClampedInt(sponsoredAdsRef.position?.value, 0, PAGE_BY - 1) ?? null,
         promoCard: sponsoredAdsRef.promoCard?.reference
           ? {
               id: sponsoredAdsRef.promoCard.reference.id,
@@ -512,8 +518,6 @@ export default function Collection() {
 
   return (
     <div className="collection">
-      <PromoCarousel sponsoredAds={sponsoredAds} />
-
       <CollectionBanner
         title={collection.title}
         descriptionHtml={collection.descriptionHtml}
@@ -528,13 +532,17 @@ export default function Collection() {
 
       {/* SubCollections renders inside MainCollection -> CollectionFeed,
           as a row above the products grid (products panel only), instead of
-          as its own section here. */}
+          as its own section here. sponsoredAds is passed through the same
+          way: CollectionFeed splices <PromoCarousel /> into the products
+          grid itself (see products-grid__promo-item), so it's no longer
+          rendered standalone above the banner. */}
       <MainCollection
         activeTab={activeTab}
         filters={collection.products.filters}
         products={collection.products}
         articles={articles}
         subCollections={subCollections}
+        sponsoredAds={sponsoredAds}
         pageCursors={pageCursors}
         totalKnownPages={totalKnownPages}
         hasMoreBeyondKnownPages={hasMoreBeyondKnownPages}
@@ -612,6 +620,9 @@ const SPONSORED_ADS_FRAGMENT = `#graphql
       value
     }
     subheading: field(key: "subheading") {
+      value
+    }
+    position: field(key: "grid_position") {
       value
     }
     promoCard: field(key: "promo_card") {
