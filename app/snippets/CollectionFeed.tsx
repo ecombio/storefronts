@@ -5,9 +5,13 @@ import {useLocation, useNavigate} from 'react-router';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 import {ProductCard} from '~/snippets/ProductCard';
 import {ArticleItem} from '~/snippets/ArticleItem';
+import {SubCollections} from '~/snippets/SubCollections';
+import {PromoCarousel} from '~/snippets/PromoCarousel';
+import type {SponsoredAdsData} from '~/snippets/PromoCarousel';
 import type {
   ProductCardFragment,
   ArticleItemFragment,
+  SubCollectionItemFragment,
 } from 'storefrontapi.generated';
 import type {CollectionTab} from '~/sections/MainCollection';
 
@@ -32,6 +36,20 @@ interface CollectionFeedProps {
   /** Only relevant when `activeTab` is provided. */
   articles?: ArticleItemFragment[];
   /**
+   * Rendered as its own row above the products grid. On routes with a tab
+   * switcher (`activeTab` provided), only shown on the products panel —
+   * never on articles.
+   */
+  subCollections?: SubCollectionItemFragment[];
+  /**
+   * Rendered as its own row above the products grid (above subCollections).
+   * On routes with a tab switcher (`activeTab` provided), only shown on the
+   * products panel — never on articles. PromoCarousel itself renders
+   * nothing when sponsoredAds/promoCard/products are missing or empty, so
+   * it's always safe to pass through unconditionally.
+   */
+  sponsoredAds?: SponsoredAdsData | null;
+  /**
    * Omit to render with no sort dropdown (collections.$handle.tsx doesn't
    * currently offer one). Pass `{value, options}` to show one — selecting
    * an option resets pagination and updates the `sort` URL param.
@@ -52,6 +70,8 @@ export function CollectionFeed({
   activeTab,
   products,
   articles = [],
+  subCollections = [],
+  sponsoredAds,
   sort,
   pageCursors,
   totalKnownPages,
@@ -115,7 +135,15 @@ export function CollectionFeed({
   // No activeTab means this route has no tab switcher (/collections/all) —
   // render the grid directly. No tabpanel semantics, no articles markup.
   if (!activeTab) {
-    return <div className="collection-feed">{productGrid}</div>;
+    return (
+      <div className="collection-feed">
+        <PromoCarousel sponsoredAds={sponsoredAds} />
+        {subCollections.length > 0 && (
+          <SubCollections collections={subCollections} />
+        )}
+        {productGrid}
+      </div>
+    );
   }
 
   return (
@@ -126,6 +154,10 @@ export function CollectionFeed({
         aria-labelledby="tab-products"
         hidden={activeTab !== 'products'}
       >
+        <PromoCarousel sponsoredAds={sponsoredAds} />
+        {subCollections.length > 0 && (
+          <SubCollections collections={subCollections} />
+        )}
         {productGrid}
       </div>
 

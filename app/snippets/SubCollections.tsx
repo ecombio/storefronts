@@ -1,4 +1,4 @@
-// app/sections/SubCollections.tsx
+// app/snippets/SubCollections.tsx
 
 import {useRef, useState, useEffect, useCallback} from 'react';
 import {Link} from 'react-router';

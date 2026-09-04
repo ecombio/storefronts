@@ -7,8 +7,8 @@ import type {Route} from './+types/collections.$handle';
 import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {buildSelfCanonicalUrl} from '~/lib/canonical';
-import {SubCollections} from '~/sections/SubCollections';
 import {MainCollection, type CollectionTab} from '~/sections/MainCollection';
+import {PromoCarousel} from '~/snippets/PromoCarousel';
 import {PRODUCT_CARD_FRAGMENT} from '~/graphql/ProductCardFragment';
 import {ARTICLE_ITEM_FRAGMENT} from '~/graphql/ArticleItemFragment';
 import type {ProductFilter} from '@shopify/hydrogen/storefront-api-types';
@@ -449,6 +449,37 @@ export default function Collection() {
   // injected as markup via dangerouslySetInnerHTML, not rendered as text.
   const afterItemsPage = collection.afterItemsMetafield?.reference ?? null;
 
+  // "custom.sponsored_ads" is a single metaobject_reference metafield
+  // (promo_carousel type). Its "products" field is itself a single
+  // Collection reference (confirmed in Admin: Type = "One" -> "Collection")
+  // — NOT a list of individual products — so we pull that collection's
+  // own products for the shoppable row. Renders an Amazon-style sponsored
+  // panel above the banner — see ~/snippets/PromoCarousel.tsx. Every field
+  // below is optional; PromoCarousel itself renders nothing if promoCard
+  // or products end up empty.
+  const sponsoredAdsRef = collection.sponsoredAdsMetafield?.reference ?? null;
+  const sponsoredAds = sponsoredAdsRef
+    ? {
+        id: sponsoredAdsRef.id,
+        heading: sponsoredAdsRef.heading?.value ?? null,
+        subheading: sponsoredAdsRef.subheading?.value ?? null,
+        promoCard: sponsoredAdsRef.promoCard?.reference
+          ? {
+              id: sponsoredAdsRef.promoCard.reference.id,
+              image:
+                sponsoredAdsRef.promoCard.reference.image?.reference?.image ??
+                null,
+              heading: sponsoredAdsRef.promoCard.reference.heading?.value ?? null,
+              linkText:
+                sponsoredAdsRef.promoCard.reference.linkText?.value ?? null,
+              linkUrl:
+                sponsoredAdsRef.promoCard.reference.linkUrl?.value ?? null,
+            }
+          : null,
+        products: sponsoredAdsRef.products?.reference?.products?.nodes ?? [],
+      }
+    : null;
+
   // CollectionBanner's image and description come straight off the native
   // Collection object — no metafield needed. Only the *styling* around
   // that image needs metafields (see comment above CollectionBanner).
@@ -481,6 +512,8 @@ export default function Collection() {
 
   return (
     <div className="collection">
+      <PromoCarousel sponsoredAds={sponsoredAds} />
+
       <CollectionBanner
         title={collection.title}
         descriptionHtml={collection.descriptionHtml}
@@ -493,16 +526,15 @@ export default function Collection() {
         parallaxDirection={bannerParallaxDirection}
       />
 
-      {/* Collection-level content, not part of the products/articles feed —
-          rendered as its own section directly below the banner rather than
-          inside MainCollection. */}
-      <SubCollections collections={subCollections} />
-
+      {/* SubCollections renders inside MainCollection -> CollectionFeed,
+          as a row above the products grid (products panel only), instead of
+          as its own section here. */}
       <MainCollection
         activeTab={activeTab}
         filters={collection.products.filters}
         products={collection.products}
         articles={articles}
+        subCollections={subCollections}
         pageCursors={pageCursors}
         totalKnownPages={totalKnownPages}
         hasMoreBeyondKnownPages={hasMoreBeyondKnownPages}
@@ -542,11 +574,76 @@ const SUB_COLLECTION_ITEM_FRAGMENT = `#graphql
   }
 ` as const;
 
+// Promo Card field keys set to best-guess defaults: image, heading,
+// link_text, link_url. If the dev build errors with a GraphQL
+// "field not found" naming a different key, swap it in here.
+const PROMO_CARD_FRAGMENT = `#graphql
+  fragment PromoCard on Metaobject {
+    id
+    image: field(key: "image") {
+      reference {
+        ... on MediaImage {
+          image {
+            url
+            altText
+            width
+            height
+          }
+        }
+      }
+    }
+    heading: field(key: "heading") {
+      value
+    }
+    linkText: field(key: "link_text") {
+      value
+    }
+    linkUrl: field(key: "link_url") {
+      value
+    }
+  }
+` as const;
+
+const SPONSORED_ADS_FRAGMENT = `#graphql
+  ${PROMO_CARD_FRAGMENT}
+  fragment SponsoredAds on Metaobject {
+    id
+    heading: field(key: "heading") {
+      value
+    }
+    subheading: field(key: "subheading") {
+      value
+    }
+    promoCard: field(key: "promo_card") {
+      reference {
+        ... on Metaobject {
+          ...PromoCard
+        }
+      }
+    }
+    products: field(key: "products") {
+      reference {
+        ... on Collection {
+          id
+          handle
+          title
+          products(first: 6) {
+            nodes {
+              ...ProductCard
+            }
+          }
+        }
+      }
+    }
+  }
+` as const;
+
 // NOTE: https://shopify.dev/docs/api/storefront/2022-04/objects/collection
 const COLLECTION_QUERY = `#graphql
   ${PRODUCT_CARD_FRAGMENT}
   ${ARTICLE_ITEM_FRAGMENT}
   ${SUB_COLLECTION_ITEM_FRAGMENT}
+  ${SPONSORED_ADS_FRAGMENT}
   query Collection(
     $handle: String!
     $country: CountryCode
@@ -611,6 +708,13 @@ const COLLECTION_QUERY = `#graphql
           ... on Page {
             id
             body
+          }
+        }
+      }
+      sponsoredAdsMetafield: metafield(namespace: "custom", key: "sponsored_ads") {
+        reference {
+          ... on Metaobject {
+            ...SponsoredAds
           }
         }
       }

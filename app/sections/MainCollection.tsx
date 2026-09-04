@@ -3,10 +3,11 @@
 import {useEffect, useRef} from 'react';
 import {Link, useLocation} from 'react-router';
 import type {Filter} from '@shopify/hydrogen/storefront-api-types';
-import type {ArticleItemFragment} from 'storefrontapi.generated';
+import type {ArticleItemFragment, SubCollectionItemFragment} from 'storefrontapi.generated';
 import {CollectionFilter} from '~/snippets/CollectionFilter';
 import {CollectionFeed} from '~/snippets/CollectionFeed';
 import type {ProductsConnection} from '~/snippets/CollectionFeed';
+import type {SponsoredAdsData} from '~/snippets/PromoCarousel';
 
 const TAB_PARAM_NAME = 'tab';
 
@@ -40,11 +41,13 @@ interface MainCollectionProps {
   filters: Filter[];
   products: ProductsConnection;
   articles: ArticleItemFragment[];
+  /** Rendered as a row above the products grid, products panel only. */
+  subCollections?: SubCollectionItemFragment[];
+  /** Rendered as a row above the products grid, products panel only. */
+  sponsoredAds?: SponsoredAdsData | null;
   /** Precomputed "page number -> cursor" map for numbered pagination links; see collections.$handle.tsx. */
   pageCursors?: Record<number, string>;
-  /** How many page numbers can be linked to directly. */
   totalKnownPages?: number;
-  /** Whether pages exist beyond `totalKnownPages` (shown as an ellipsis). */
   hasMoreBeyondKnownPages?: boolean;
 }
 
@@ -53,6 +56,8 @@ export function MainCollection({
   filters,
   products,
   articles,
+  subCollections,
+  sponsoredAds,
   pageCursors,
   totalKnownPages,
   hasMoreBeyondKnownPages,
@@ -69,6 +74,8 @@ export function MainCollection({
             activeTab={activeTab}
             products={products}
             articles={articles}
+            subCollections={subCollections}
+            sponsoredAds={sponsoredAds}
             pageCursors={pageCursors}
             totalKnownPages={totalKnownPages}
             hasMoreBeyondKnownPages={hasMoreBeyondKnownPages}
