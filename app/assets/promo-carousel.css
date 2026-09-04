@@ -3,11 +3,12 @@
    scrollable product row on the right.
 
    Previously styled as a standalone Amazon "sponsored brands" panel
-   (orange border, rounded corners, generous internal padding) that stood
-   apart from the surrounding grid. Restyled here to sit flush with
-   collection-feed.css's tight, edge-to-edge grid instead — same 2px gap
-   rhythm, no card-level border/radius wrapping the whole panel, so it
-   reads as part of the grid rather than an inserted ad unit.
+   (orange border, rounded corners, generous internal padding) that
+   stood apart from the surrounding grid. Restyled here to sit flush
+   with main-collection.css's tight, edge-to-edge product grid instead
+   — same 2px gap rhythm, no card-level border/radius wrapping the
+   whole panel, so it reads as part of the grid rather than an
+   inserted ad unit.
    ============================================================ */
 
 .promo-carousel {
@@ -122,9 +123,8 @@
 }
 
 /* In-feed placement inside .products-grid (CollectionFeed) -------------- */
-/* .products-grid is assumed to be a CSS grid (per product-card.css /
-   paginated-resource-section.css). If it's actually flexbox instead,
-   swap `grid-column: 1 / -1;` for `flex: 1 0 100%;`. */
+/* .products-grid is a CSS grid (see main-collection.css), so spanning
+   the full row here just needs grid-column: 1 / -1. */
 .products-grid__promo-item {
   grid-column: 1 / -1;
 }

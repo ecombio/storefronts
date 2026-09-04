@@ -1,18 +1,16 @@
 /* app/assets/pagination.css
    ============================================================
    Styles for app/components/pagination.tsx's <PaginationSection>
-   Load More control. Previously this lived as a fixed set of
-   classes at the bottom of collection-feed.css (paginated-
-   resource-section.css before that) — split out into its own
-   file now that the component itself is shared/generic across
-   collections, /collections/all, and the blog tagged-articles
-   page, with multiple selectable skins instead of one fixed look.
+   Load More control. Previously these styles lived as a fixed set
+   of classes inside the old collection feed stylesheet (since
+   removed) — split out into its own file now that the component
+   itself is shared/generic across collections, /collections/all,
+   and the blog tagged-articles page, with multiple selectable
+   skins instead of one fixed look.
 
-   Requires: imported + linked in root.tsx. Load order doesn't
-   matter relative to collection-feed.css (no shared selectors
-   between the two anymore), but keep it after product-card.css
-   for consistency with the rest of the collection/pagination
-   stylesheets.
+   Requires: imported + linked in root.tsx. Keep it linked after
+   product-card.css for consistency with the rest of the
+   collection/pagination stylesheets.
    ============================================================ */
 
 .pagination__load-more {
@@ -52,7 +50,7 @@ a.pagination__load-more-btn--solid:hover {
   background: #333; /* matches .promo-carousel__cta:hover */
 }
 
-.pagination__load-more-btn--outline {
+.pagination__load-more-btn--outline{
   border: 1px solid var(--color-ink, #111827);
   background: transparent;
   color: var(--color-ink, #111827);
