@@ -25,9 +25,24 @@
   max-width: 1180px;
 }
 
-/* Two-column grid: body + sidebar. Only the body and TOC sit inside
-   this grid — h1/meta/hero stay full-width above it (set in the
-   template JSX, not here). */
+/* The 960/1120/1180px caps above were sized for the 2-column
+   body+TOC reading grid. Once Latest Blogs occupies a third (or
+   right-only) column, that budget is no longer just "comfortable
+   reading width" — it's now squeezing an entire extra sidebar into
+   it too, leaving unused space between the grid and the edge of the
+   wider .article container. Uncap max-width for those two states so
+   the grid fills the full .article width instead. Matched in
+   specificity to the hub/feature rules above (two class selectors
+   each) and placed after them, so it wins for hub/feature articles
+   too, not just the default/spoke case. */
+.article-layout.article-layout--both-sidebars,
+.article-layout.article-layout--right-sidebar {
+  max-width: none;
+}
+
+/* Two-column grid: body + sidebar. Only the body and sidebar sit
+   inside this grid — h1/meta/hero stay full-width above it (set in
+   the template JSX, not here). */
 
 .article-layout {
   display: grid;
@@ -41,14 +56,46 @@
     grid-template-columns: 240px 1fr;
   }
 
-  .article-toc {
+  /* .article-body stays first in the DOM (main content before
+     sidebar in reading/tab order), so the TOC sidebar is visually
+     pulled into the left 240px column via order, rather than the
+     grid's natural left-to-right = DOM-order placement. This targets
+     .article-sidebar (the actual direct grid child) rather than
+     .article-toc, since the TOC itself is nested one level deeper
+     and order has no effect on non-grid-item descendants. */
+  .article-sidebar {
     order: -1;
+  }
+
+  /* Latest Blogs (.article-latest-blogs) is a separate, independent
+     grid child from the TOC sidebar — it sits on the right instead
+     of stacking under the TOC on the left. It needs no explicit
+     order: it's last in the DOM, and with .article-sidebar pulled to
+     order: -1, the default order: 0 items (.article-body then
+     .article-latest-blogs, in that DOM sequence) naturally fall in
+     left-to-right DOM order after it — body second, latest blogs
+     third — matching the 3-column template below with no extra
+     ordering rules needed. */
+
+  /* TOC + Latest Blogs both present: three columns, TOC | body |
+     latest blogs. */
+  .article-layout--both-sidebars {
+    grid-template-columns: 240px 1fr 280px;
+  }
+
+  /* Latest Blogs present, TOC absent/disabled: two columns, but
+     unlike the TOC-only default above, the sidebar here comes AFTER
+     the body in both DOM and visual order — no .article-sidebar
+     element exists in this state to need pulling left, so no order
+     override is needed here either. */
+  .article-layout--right-sidebar {
+    grid-template-columns: 1fr 280px;
   }
 }
 
-/* Applied when the TOC is toggled off (or the article has no h2/h3
-   headings to list) — collapses backto a single column instead of
-   reserving an empty 240px sidebar gutter next to the body. */
+/* Applied when the TOC AND the Latest Blogs widget are both absent —
+   collapses back to a single column instead of reserving an empty
+   240px sidebar gutter next to the body. */
 
 @media (min-width: 900px) {
   .article-layout--no-toc {

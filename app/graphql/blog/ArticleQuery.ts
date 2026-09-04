@@ -128,6 +128,30 @@ export const ARTICLE_QUERY = `#graphql
         ) {
           value
         }
+        # "Related products" sidebar (see RelatedProducts.tsx /
+        # RelatedProducts.md). Editor-curated list, NOT an
+        # algorithmic-recommendations lookup — the merchant picks
+        # exactly which products show, in what order, via this
+        # metafield (Settings > Custom data > Articles > "Related
+        # Products", type: List > Product). If the list is empty,
+        # RelatedProducts renders nothing — no separate "enabled"
+        # flag needed, presence of items IS the toggle.
+        #
+        # first: 10 is an arbitrary cap on how many references this
+        # query will resolve — raise it if a merchant needs a longer
+        # list than that.
+        relatedProducts: metafield(
+          namespace: "custom"
+          key: "related_products"
+        ) {
+          references(first: 10) {
+            nodes {
+              ... on Product {
+                id
+              }
+            }
+          }
+        }
       }
     }
   }

@@ -25,6 +25,22 @@
  * (.bpc-card, .bpc-image-wrap, .bpc-image, .bpc-image--placeholder,
  * .bpc-date, .bpc-title) with no leftover rules for markup that no
  * longer exists (.bpc-image-link, .bpc-card-title, .bpc-read-more).
+ *
+ * .bpc-image--placeholder was UPDATED again since: it previously
+ * rendered Shopify's own internal "no image" fallback graphic (a
+ * circle-slash icon with baked-in "No image" text) inside a padded
+ * box — that read as an error/blocked state rather than "no photo
+ * yet." It now styles the inline SVG icon the component renders
+ * directly, as a quiet centered icon on a muted tile instead of a
+ * padded graphic-in-a-box.
+ *
+ * .bpc-card gained a border + padding again after that: each card
+ * now has its own visible boundary (rather than relying on grid gap
+ * alone to separate cards), with inner padding so the border doesn't
+ * hug the image edge-to-edge. The whole card is still one click
+ * target — the border is a visual boundary only, not a second
+ * interactive affordance — via the same .bpc-title a::after stretched
+ * link described below.
  */
 
 .bpc-card {
@@ -36,9 +52,10 @@
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  /* Cards are separated by whitespace/grid gap (see RelatedBlogPosts.css),
-     not a border — deliberately dropped from the earlier bordered-card
-     design described in BlogPostCard.tsx's header comment. */
+  padding: 0.9rem;
+  border: 1px solid #e4e1d8;
+  border-radius: 6px;
+  transition: border-color 0.15s ease;
 }
 
 .bpc-image-wrap {
@@ -50,35 +67,37 @@
   display: block;
   width: 100%;
   /* Belt-and-suspenders with the component's aspectRatio="1/1" prop:
-     this rule also applies to the placeholder <div>, which has no
+     this rule also applies to the placeholder tile, which has no
      aspectRatio prop of its own, so every card's image slot is the
      same square height whether or not a post has an image. */
   aspect-ratio: 1 / 1;
   object-fit: cover; /* crops rather than distorting non-square source images */
-  transition: transform 0.15s ease;
 }
 
 .bpc-image--placeholder {
-  /* Now holds Shopify's own small "no image" icon (see
-     SHOPIFY_FALLBACK_IMAGE_URL in BlogPostCard.tsx) rather than an
-     empty box, so it's framed as a centered icon — not stretched
-     full-bleed like a real photo, which would look badly pixelated
-     since the source graphic is only 100x100. object-fit: contain
-     keeps it at its own aspect ratio inside the padded square;
-     box-sizing: border-box keeps that padding from pushing the box
-     past its 100% width. */
-  object-fit: contain;
+  /* A quiet tile, not an error graphic: muted fill, a small
+     single-color icon at low contrast, sized well below the card so
+     it reads as a restrained placeholder rather than the focal
+     point. Renders the inline SVG icon the component outputs. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: #f4f3f0;
-  padding: 2.5rem;
-  box-sizing: border-box;
+  color: #c7c3b8;
 }
 
-/* The one hover cue for the whole card: a slight lift on the image,
+.bpc-image--placeholder svg {
+  width: 22%;
+  height: 22%;
+}
+
+/* The one hover cue for the whole card: the border darkens slightly,
    rather than a button-style hover state (there is no button anymore
-   — see the header comment on why .bpc-read-more was dropped). */
+   — see the header comment on why .bpc-read-more was dropped) or a
+   second, separate image-lift effect competing with it. */
 @media (hover: hover) {
-  .bpc-card:hover .bpc-image {
-    transform: translateY(-2px);
+  .bpc-card:hover {
+    border-color: #c7c3b8;
   }
 }
 
@@ -99,7 +118,13 @@
 }
 
 .bpc-title a {
-  position: relative;
+  /* No position here on purpose: if this element were positioned,
+     it would become the containing block for its own ::after below,
+     which would then only stretch to cover the link's own (small,
+     text-sized) box instead of reaching out to .bpc-card. Leaving
+     this un-positioned lets ::after skip past it and anchor to
+     .bpc-card (the nearest positioned ancestor) instead, which is
+     what makes the whole card clickable. */
   color: inherit;
   text-decoration: none;
 }

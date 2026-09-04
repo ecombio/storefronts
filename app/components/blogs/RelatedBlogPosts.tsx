@@ -1,3 +1,4 @@
+import {useCallback, useEffect, useRef, useState} from 'react';
 import BlogPostCard, {type BlogPostCardData} from './BlogPostCard';
 
 /**
@@ -25,7 +26,7 @@ import BlogPostCard, {type BlogPostCardData} from './BlogPostCard';
  *     since it's not hydrating into markup that came from
  *     dangerouslySetInnerHTML). Renders one `<BlogPostCard>` per post
  *     (see BlogPostCard.tsx) — this file only owns the section
- *     wrapper and grid, not the card markup itself.
+ *     wrapper and carousel track, not the card markup itself.
  *
  * Curated + fallback are MERGED, not either/or: editor picks (from
  * custom.related_blog_posts, a list.article_reference metafield)
@@ -33,6 +34,16 @@ import BlogPostCard, {type BlogPostCardData} from './BlogPostCard';
  * slots left over (including all of them, if nothing was picked) are
  * filled by tag-ranked candidates from the same blog. See
  * getRelatedPostsData below for the exact merge logic.
+ *
+ * CAROUSEL, not a static grid: the component previously rendered
+ * `posts` as a plain CSS grid (see RelatedBlogPosts.css's old
+ * .rbp-grid). It now renders them in a horizontally-scrolling,
+ * scroll-snap track with prev/next buttons. Native scroll + snap
+ * (rather than a JS-driven slide animation) means touch/trackpad
+ * swiping works for free on mobile, and the buttons just nudge that
+ * same scroll position by one card at a time. `getRelatedPostsData`,
+ * `isRelatedPostsEnabled`, and the candidates query are all unchanged
+ * — only the presentational default export below changed.
  */
 
 // The shape one card needs — now defined in BlogPostCard.tsx (the
@@ -101,7 +112,7 @@ export interface RelatedBlogPostsProps {
   posts: RelatedPost[];
   /** Defaults to "Related blogs" */
   title?: string;
-  /** Grid columns at desktop width. Defaults to 3. */
+  /** Visible cards at desktop width. Defaults to 3. */
   columns?: 2 | 3 | 4;
 }
 
@@ -110,24 +121,122 @@ export default function RelatedBlogPosts({
   title = 'Related blogs',
   columns = 3,
 }: RelatedBlogPostsProps) {
+  const trackRef = useRef<HTMLUListElement>(null);
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
+
+  // Re-checked on scroll and on resize (columns-per-view — and so
+  // whether the track even overflows — changes at the mobile
+  // breakpoint). An 8px slop avoids the buttons flickering
+  // enabled/disabled from sub-pixel scroll rounding at the very ends.
+  const updateScrollState = useCallback(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    setCanScrollPrev(track.scrollLeft > 8);
+    setCanScrollNext(
+      track.scrollLeft + track.clientWidth < track.scrollWidth - 8,
+    );
+  }, []);
+
+  useEffect(() => {
+    updateScrollState();
+    const track = trackRef.current;
+    if (!track) return;
+    track.addEventListener('scroll', updateScrollState, {passive: true});
+    window.addEventListener('resize', updateScrollState);
+    return () => {
+      track.removeEventListener('scroll', updateScrollState);
+      window.removeEventListener('resize', updateScrollState);
+    };
+    // Re-run when the post list itself changes (e.g. a different
+    // article's related posts swap in via client-side navigation),
+    // since scrollWidth depends on how many cards are in the track.
+  }, [updateScrollState, posts]);
+
+  const scrollByCards = (direction: 1 | -1) => {
+    const track = trackRef.current;
+    if (!track) return;
+    // Scroll by roughly one card's width (including its gap) rather
+    // than a full page, so a card that's only partially visible at
+    // the edge becomes the natural next stop instead of jumping past
+    // it. Falls back to the track's own width if a card can't be
+    // measured (e.g. an empty track, though that case never renders).
+    const card = track.querySelector<HTMLElement>('.bpc-card');
+    const amount = card
+      ? card.getBoundingClientRect().width + 20
+      : track.clientWidth;
+    const prefersReducedMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    ).matches;
+    track.scrollBy({
+      left: amount * direction,
+      behavior: prefersReducedMotion ? 'auto' : 'smooth',
+    });
+  };
+
   // Nothing to show (empty curated list AND empty fallback pool, or the
   // section is disabled upstream) — render nothing rather than an empty
-  // heading + empty grid. Mirrors the "null means don't render" contract
+  // heading + empty track. Mirrors the "null means don't render" contract
   // that getRelatedPostsData follows in the loader.
   if (!posts || posts.length === 0) return null;
 
   return (
     <section className="rbp-root" aria-labelledby="rbp-heading">
-      <h2 className="rbp-title" id="rbp-heading">
-        {title}
-      </h2>
+      <div className="rbp-header">
+        <h2 className="rbp-title" id="rbp-heading">
+          {title}
+        </h2>
+
+        {/* Buttons only nudge the same native scroll position the user
+            could reach by swiping/dragging — there's no separate "current
+            slide" state to keep in sync with them. */}
+        <div className="rbp-nav">
+          <button
+            type="button"
+            className="rbp-nav-btn"
+            onClick={() => scrollByCards(-1)}
+            disabled={!canScrollPrev}
+            aria-label="Previous related posts"
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path
+                d="M15 5l-7 7 7 7"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+          <button
+            type="button"
+            className="rbp-nav-btn"
+            onClick={() => scrollByCards(1)}
+            disabled={!canScrollNext}
+            aria-label="Next related posts"
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path
+                d="M9 5l7 7-7 7"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
 
       <ul
-        className="rbp-grid"
+        className="rbp-track"
+        ref={trackRef}
         // Columns are passed through as a CSS custom property rather than
-        // a className switch (e.g. "rbp-grid--cols-3"), so the stylesheet
-        // only needs one grid-template-columns rule that reads
-        // var(--rbp-columns) instead of one rule per column count.
+        // a className switch (e.g. "rbp-track--cols-3"), so the stylesheet
+        // only needs one flex-basis rule that reads var(--rbp-columns)
+        // instead of one rule per column count.
         style={{['--rbp-columns' as string]: columns}}
       >
         {posts.map((post) => (

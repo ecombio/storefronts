@@ -1,21 +1,22 @@
 /* app/components/blogs/RelatedBlogPosts.css
  *
- * Styles for RelatedBlogPosts.tsx — the section wrapper and grid
- * layout ONLY. Per-card styles (.bpc-*) live separately in
- * blog-post-card.css, since BlogPostCard.tsx was extracted out to be
- * reusable outside this section; this file no longer needs to know
- * what a card looks like, only how many of them fit across the row
- * and how much space surrounds the section.
+ * Styles for RelatedBlogPosts.tsx — the section wrapper and carousel
+ * track ONLY. Per-card styles (.bpc-*) live separately in
+ * BlogPostCard.css, since BlogPostCard.tsx is extracted out to be
+ * reusable outside this section; this file doesn't need to know what
+ * a card looks like, only how the track scrolls and how much space
+ * surrounds the section.
  *
  * Co-located here, same placement convention as Button.css/
  * ImagesGallery.css/RecipeHeader.css/AuthorSection.css/SocialShare.css
  * next to their components, rather than living under app/assets/.
- * Previously app/assets/related-blog-posts.css; that file has been
- * removed now that the route and RelatedBlogPosts.tsx both point here
- * instead. blog-post-card.css has also since been co-located to
- * app/components/blogs/BlogPostCard.css, as a separate move — the two
- * files don't import from each other, so either could move
- * independently of the other.
+ *
+ * CAROUSEL, not a static grid: .rbp-grid (a CSS grid) is gone, replaced
+ * by .rbp-track (a horizontally-scrolling flex row with scroll-snap)
+ * plus .rbp-header/.rbp-nav/.rbp-nav-btn for the heading + prev/next
+ * controls sitting above it. See RelatedBlogPosts.tsx's header comment
+ * for why: native scroll + snap gives touch/trackpad swiping for free,
+ * and the buttons just nudge that same scroll position.
  */
 
 .rbp-root {
@@ -26,8 +27,16 @@
   margin: 3rem 0 1rem;
 }
 
-.rbp-title {
+.rbp-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
   margin: 0 0 1.5rem;
+}
+
+.rbp-title {
+  margin: 0;
   font-size: 1.4rem;
   font-weight: 700;
   text-align: center;
@@ -36,23 +45,89 @@
   letter-spacing: -0.01em;
 }
 
-.rbp-grid {
-  list-style: none; /* it's a <ul> in the markup, but visually a card grid, not a list */
-  display: grid;
-  /* Reads the --rbp-columns custom property set inline by the component
-     (RelatedBlogPostsProps.columns); 3 is the CSS-side fallback if that
-     variable is ever missing, matching the component's own default. */
-  grid-template-columns: repeat(var(--rbp-columns, 3), 1fr);
+.rbp-nav {
+  /* Pinned to the header's right edge rather than taking up flex space
+     next to the (centered) title, so the title stays visually centered
+     over the track regardless of how wide the nav controls are. */
+  position: absolute;
+  right: 0;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.rbp-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 1px solid #e4e1d8;
+  border-radius: 999px;
+  background: #fff;
+  color: #57544c;
+  cursor: pointer;
+  transition: border-color 0.15s ease, opacity 0.15s ease;
+}
+
+.rbp-nav-btn:hover:not(:disabled) {
+  border-color: #c7c3b8;
+}
+
+.rbp-nav-btn:disabled {
+  /* Dimmed rather than removed from the layout — keeps the two-button
+     pair from jumping around as scroll position reaches either end. */
+  opacity: 0.35;
+  cursor: default;
+}
+
+.rbp-nav-btn:focus-visible {
+  outline: 2px solid #3b4cf6;
+  outline-offset: 2px;
+}
+
+.rbp-track {
+  list-style: none; /* it's a <ul> in the markup, but visually a card row, not a list */
+  display: flex;
   gap: 1.25rem;
   margin: 0;
-  padding: 0;
+  padding: 0 0 0.25rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  /* Native scrollbar hidden since the prev/next buttons above are the
+     primary control — the track still scrolls fine via touch/trackpad/
+     keyboard, this just avoids a second, redundant scrollbar UI. */
+  scrollbar-width: none;
+}
+
+.rbp-track::-webkit-scrollbar {
+  display: none;
+}
+
+.rbp-track > .bpc-card {
+  /* Reads the --rbp-columns custom property set inline by the component
+     (RelatedBlogPostsProps.columns); 3 is the CSS-side fallback if that
+     variable is ever missing, matching the component's own default.
+     flex-basis (not width) so each card still respects its own gap in
+     the total-width math below. */
+  flex: 0 0
+    calc(
+      (100% - (var(--rbp-columns, 3) - 1) * 1.25rem) / var(--rbp-columns, 3)
+    );
+  scroll-snap-align: start;
 }
 
 @media (max-width: 720px) {
-  .rbp-grid {
-    /* Below tablet width, always collapse to a single column regardless
-       of how many columns were requested — 2/3/4-across never has room
-       to breathe on a phone-sized viewport. */
-    grid-template-columns: 1fr;
+  .rbp-track > .bpc-card {
+    /* Below tablet width, one big card plus a sliver of the next one —
+       signals "there's more to scroll to" without needing a separate
+       peek/preview treatment. */
+    flex-basis: 82%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rbp-track {
+    scroll-behavior: auto;
   }
 }

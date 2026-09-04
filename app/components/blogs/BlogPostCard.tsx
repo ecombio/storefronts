@@ -36,36 +36,17 @@ import {Link} from 'react-router';
  * <a>; a ::after "stretched link" (see BlogPostCard.css) makes the
  * whole card clickable without adding more anchors. One link, one
  * accessible name, per post.
+ *
+ * No-image placeholder: renders a small inline icon on a muted tile
+ * rather than an external asset. Previously used Shopify's own
+ * internal "no image" fallback graphic (a circle-slash icon with
+ * baked-in "No image" text) — that graphic reads as an error/blocked
+ * state rather than "no photo yet," and it's an undocumented internal
+ * theme asset Shopify has never published as something apps should
+ * depend on. The inline SVG below has no external dependency, no
+ * text baked into the graphic, and is styleable via BlogPostCard.css
+ * to match the rest of the card.
  */
-
-// Shopify's own "no image" fallback — this is the asset Shopify's
-// `img_url` Liquid filter itself falls back to for a product/
-// collection with no image (confirmed via Shopify's own
-// shopify/liquid repo). Used here, rather than a fully custom image,
-// so a post with no image still reads as "no image", on-brand with
-// how the rest of Shopify's platform represents the same state.
-//
-// CAVEATS, read before relying on this long-term:
-//   1. This is an internal admin/theme asset, not part of the public
-//      Storefront API or Hydrogen's documented surface — Shopify has
-//      never published or versioned this URL as something external
-//      apps should depend on. It could move or disappear without
-//      notice.
-//   2. It's a 100x100 gif, so it will look soft if stretched large.
-//      Rendered here as a small centered icon (see
-//      .bpc-image--placeholder in BlogPostCard.css), not stretched to
-//      fill the card like a real photo.
-//   3. It does NOT live on Shopify's content CDN path (the one
-//      Hydrogen's <Image>/shopifyLoader knows how to resize via query
-//      params), so it's rendered as a plain <img> below rather than
-//      through <Image data={...}> — passing it through the Hydrogen
-//      loader would just append unsupported resize params.
-//
-// If pixel-perfect/on-brand control matters more than "genuinely from
-// Shopify," swap this for a self-hosted asset imported from
-// app/assets/ instead — same <img> usage below, just a different src.
-const SHOPIFY_FALLBACK_IMAGE_URL =
-  'https://cdn.shopify.com/shopifycloud/shopify/assets/no-image-100-c91dd4bdb56513f2cbf4fc15436ca35e9d4ecd014546c8d421b1aece861dfecf_small.gif';
 
 // The shape one card needs to render. Named generically (not
 // "RelatedPost") since this component has no idea whether the post
@@ -105,7 +86,7 @@ export default function BlogPostCard({post}: BlogPostCardProps) {
           that would be announced a second time. Still gets a real
           empty alt (not omitted) so screen readers skip it cleanly
           rather than falling back to the filename — same reasoning
-          applies to the no-image fallback below. */}
+          applies to the no-image placeholder below. */}
       <div className="bpc-image-wrap">
         {post.image ? (
           <Image
@@ -125,19 +106,25 @@ export default function BlogPostCard({post}: BlogPostCardProps) {
             className="bpc-image"
           />
         ) : (
-          // Posts without an image still need a stable card height,
-          // so a blank placeholder box fills the same slot the
-          // <Image> would occupy. Now shows Shopify's own "no image"
-          // graphic instead of a blank box — see
-          // SHOPIFY_FALLBACK_IMAGE_URL above for what this is and its
-          // caveats. Plain <img>, not Hydrogen's <Image>, since this
-          // asset isn't on a path the shopifyLoader can resize.
-          <img
-            src={SHOPIFY_FALLBACK_IMAGE_URL}
-            alt=""
-            loading="lazy"
-            className="bpc-image bpc-image--placeholder"
-          />
+          // Posts without an image still need a stable card height, so
+          // a quiet placeholder tile fills the same slot the <Image>
+          // would occupy — a simple icon, not an error-style graphic,
+          // since a missing photo isn't a failure state. aria-hidden
+          // since it's decorative (same reasoning as the real image's
+          // empty alt above).
+          <div className="bpc-image bpc-image--placeholder" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3.5" y="5" width="17" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+              <circle cx="8.5" cy="9.5" r="1.25" stroke="currentColor" strokeWidth="1.3" />
+              <path
+                d="M4.5 16.5l4.4-4.2a1.3 1.3 0 0 1 1.75 0L15 16m0 0 2-2a1.3 1.3 0 0 1 1.75 0l1.75 1.7"
+                stroke="currentColor"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
         )}
       </div>
 

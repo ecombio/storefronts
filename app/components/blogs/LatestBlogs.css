@@ -1,0 +1,73 @@
+/* ---------------------------------------------
+   LatestBlogs.css
+   Own file, imported/linked the same way as every other feature
+   stylesheet in root.tsx / the article route's links() (see e.g.
+   AuthorSection.css, RelatedProducts.css) — loaded alongside
+   article.css, not merged into it.
+
+   Rules moved verbatim out of article.css when this widget was
+   componentized — no visual changes, same blue border/CTA, 10px/6px
+   radii used by RelatedProducts.css so the two widgets read as a
+   matched set when stacked together in .article-right-rail.
+--------------------------------------------- */
+
+.article-latest-blogs {
+  border: 1px solid #2563eb;
+  border-radius: 10px;
+  padding: 1.25rem;
+}
+
+.article-latest-blogs__heading {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 1.25rem;
+}
+
+.article-latest-blogs__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.article-latest-blogs__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.article-latest-blogs__thumb {
+  width: 100%;
+  border-radius: 6px;
+  object-fit: cover;
+  margin: 0 0 0.75rem;
+}
+
+.article-latest-blogs__title {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 0.75rem;
+}
+
+.article-latest-blogs__cta {
+  display: inline-block;
+  padding: 0.5rem 1.25rem;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.article-latest-blogs__cta:hover {
+  background: #1d4ed8;
+}

@@ -34,6 +34,30 @@
   font-size: 0.9rem;
 }
 
+/* ---------------------------------------------
+   Time to read badge
+   Rendered right below the title, above .article-meta.
+   Value is calculated server-side in the route loader
+   (word count / 200wpm) — see calculateReadingTime.
+--------------------------------------------- */
+
+.article-reading-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 1rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #2563eb;
+  border-radius: 999px;
+  color: #2563eb;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.article-reading-time svg {
+  flex-shrink: 0;
+}
+
 /* Body typography */
 
 .article-body h2 {
@@ -128,7 +152,7 @@
 
 .shoppable-embed:hover {
   border-color: #c9c9c9;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 6px rgba(0, 0, 0,0.06);
 }
 
 .shoppable-embed img {
@@ -205,7 +229,7 @@
 }
 
 .article-body .accordion__icon::before,
-.article-body .accordion__icon::after {
+.article-body .accordion__icon::after{
   content: '';
   position: absolute;
   top: 50%;
@@ -220,7 +244,7 @@
   height: 2px;
 }
 
-.article-body .accordion__icon::after {
+.article-body .accordion__icon::after{
   width: 2px;
   height: 1rem;
 }
@@ -235,6 +259,73 @@
   color: var(--accordion-text-hover);
   font-size: 0.95rem;
   line-height: 1.65;
+}
+
+/* ---------------------------------------------
+   Sidebar column (TOC)
+   .article-sidebar wraps the TOC widget; the grid/column split
+   itself lives in TableOfContents.css via .article-layout, this
+   file only styles what's stacked inside the sidebar column.
+--------------------------------------------- */
+
+.article-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* ---------------------------------------------
+   Right rail (Product sidebar + Latest blogs)
+   Stacks whichever of the two widgets are present into the
+   grid's right-hand column. The column itself (280px, both-
+   sidebars/right-sidebar variants) is defined in
+   TableOfContents.css and is agnostic to what fills it — this
+   wrapper is what lets two independent widgets share that one
+   grid column without any changes to the grid template.
+--------------------------------------------- */
+
+.article-right-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* ---------------------------------------------
+   Latest blogs
+   "Related products" styling has moved into its own componentized
+   stylesheet — see RelatedProducts.css.
+--------------------------------------------- */
+
+/* ---------------------------------------------
+   Right rail styling ("Related products" and "Latest blogs" widget
+   styles now live in their own componentized stylesheets — see
+   RelatedProducts.css and LatestBlogs.css.
+--------------------------------------------- */
+
+/* ---------------------------------------------
+   Go back button
+   Static <Link>, bottom of the article, after related posts.
+--------------------------------------------- */
+
+.article-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+  padding: 0.75rem 1.5rem;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.article-back-button:hover {
+  background: #1d4ed8;
 }
 
 /* ---------------------------------------------
@@ -292,5 +383,22 @@
 
   .article-body .pros-cons {
     flex-direction: column;
+  }
+
+  .article-reading-time {
+    font-size: 0.8rem;
+  }
+
+  .article-back-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .article-sidebar {
+    margin-top: 2.5rem;
+  }
+
+  .article-right-rail {
+    margin-top: 2.5rem;
   }
 }
