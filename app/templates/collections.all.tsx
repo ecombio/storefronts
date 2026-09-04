@@ -265,11 +265,11 @@ export default function CollectionAll() {
 }
 
 // ---------------------------------------------------------------------------
-// Feed — inlined directly in this file (no shared CollectionFeed import).
+// Feed — inlined directly in this file (no shared feed component import).
 // No activeTab/articles here since /collections/all has no tab switcher;
-// see snippets/CollectionFeed.tsx for the tabbed version used by
+// see sections/MainCollection.tsx for the tabbed version used by
 // collections.$handle.tsx. Pagination pattern (accumulating nodes, single
-// "Load more" link, first-8-eager) matches CollectionFeed.tsx exactly —
+// "Load more" link, first-8-eager) matches MainCollection.tsx's approach —
 // previously both routes shared PaginatedResourceSection for this, now
 // each inlines it since the shared component was deleted.
 // ---------------------------------------------------------------------------
