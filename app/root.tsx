@@ -37,7 +37,6 @@ import collectionCarouselStyles from '~/assets/collection-carousel.css?url';
 import imageCardStyles from '~/assets/image-card.css?url';
 import imageCarouselStyles from '~/assets/image-carousel.css?url';
 import slideshowStyles from '~/assets/slideshow.css?url';
-import collectionBannerStyles from '~/assets/collection-banner.css?url';
 import mainCollectionStyles from '~/assets/main-collection.css?url';
 import paginationStyles from '~/assets/pagination.css?url'; // ADDED — was missing entirely; PaginationSection's Load More button/observer wrapper (pagination__load-more, pagination__load-more-btn--*) had no styles linked anywhere. Used by CollectionFeed, collections.all, and (after the PaginatedResourceSection/LoadMoreTrigger consolidation) blogs.$blogHandle.tagged.$tag, blogs._index, collections._index, and account.orders._index. Loads after mainCollectionStyles since it's the more generic/shared stylesheet of the two.
 import stickyHeaderStyles from '~/assets/sticky-header.css?url';
@@ -228,7 +227,6 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={imageCardStyles}></link>
         <link rel="stylesheet" href={imageCarouselStyles}></link>
         <link rel="stylesheet" href={slideshowStyles}></link>
-        <link rel="stylesheet" href={collectionBannerStyles}></link>
         <link rel="stylesheet" href={mainCollectionStyles}></link>
         <link rel="stylesheet" href={paginationStyles}></link>
         {/* ADDED — styles PaginationSection's Load More button/observer
