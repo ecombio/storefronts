@@ -20,11 +20,6 @@ import type {SponsoredAdsData} from '~/snippets/PromoCarousel';
 const TAB_PARAM_NAME = 'tab';
 const FILTER_URL_PARAM_NAME = 'filter';
 
-// `cursor`/`direction` are written by Hydrogen's getPaginationVariables/
-// <Pagination> (see https://shopify.dev/docs/api/hydrogen/utilities/getpaginationvariables).
-// `p` is PaginatedResourceSection's own display-only page-number param.
-// Shared by the tab switcher and the filter sidebar below — both change
-// which items are shown, so both must reset pagination the same way.
 const PAGINATION_PARAM_NAMES = ['cursor', 'direction', 'p'];
 
 export type CollectionTab = 'products' | 'articles';
@@ -34,11 +29,6 @@ const TABS: {id: CollectionTab; label: string}[] = [
   {id: 'articles', label: 'Expert Advice'},
 ];
 
-// Fallback 0-based position within the accumulated product list where the
-// sponsored panel is spliced in — used only when the promo_carousel
-// metaobject's "Grid Position" field is unset for a given collection.
-// With Load More accumulating nodes rather than replacing them per page,
-// this applies ONCE across the whole growing list, not once per page.
 const DEFAULT_SPONSORED_ADS_GRID_POSITION = 4;
 
 export type ProductsConnection = PaginationConnection<ProductCardFragment>;
@@ -48,17 +38,49 @@ export interface FeedSortOption {
   label: string;
 }
 
-/**
- * Strips pagination state from a set of params. Any link that changes
- * which items are shown (a tab switch) must reset pagination — a cursor
- * is only valid for the exact query context (filters, sort, tab) it was
- * issued under. Reusing it against a changed context can return an empty
- * page or an error from the Storefront API.
- */
 function resetPagination(params: URLSearchParams): URLSearchParams {
   const next = new URLSearchParams(params);
   PAGINATION_PARAM_NAMES.forEach((name) => next.delete(name));
   return next;
+}
+
+// ---------------------------------------------------------------------------
+// Banner — inlined from the former app/sections/CollectionBanner.tsx.
+// ---------------------------------------------------------------------------
+
+export type CollectionBannerTextAlignment = 'left' | 'center' | 'right';
+
+interface CollectionBannerProps {
+  title: string;
+  descriptionHtml?: string | null;
+  /** Default: 'left'. */
+  textAlignment?: CollectionBannerTextAlignment;
+}
+
+/**
+ * Collection page banner: title + rich-text description, text-only.
+ */
+export function CollectionBanner({
+  title,
+  descriptionHtml,
+  textAlignment = 'left',
+}: CollectionBannerProps) {
+  return (
+    <div
+      id="collection-banner"
+      className={`collection-banner collection-banner--text-${textAlignment}`}
+    >
+      <div className="collection-banner__text">
+        <h1 className="collection-title">{title}</h1>
+        {descriptionHtml && (
+          <div
+            className="collection-description rte"
+            dangerouslySetInnerHTML={{__html: descriptionHtml}}
+          />
+        )}
+      </div>
+    </div>
+  );
 }
 
 interface MainCollectionProps {
@@ -285,9 +307,6 @@ function PriceRangeFilterGroup({
   const [min, setMin] = useState(existingPriceFilter?.price?.min?.toString() ?? '');
   const [max, setMax] = useState(existingPriceFilter?.price?.max?.toString() ?? '');
 
-  // Keep the inputs in sync if the active price filter changes from under
-  // us — e.g. browser back/forward navigation, or a "Clear all" click —
-  // since useState's initializer only runs once, on mount.
   useEffect(() => {
     setMin(existingPriceFilter?.price?.min?.toString() ?? '');
     setMax(existingPriceFilter?.price?.max?.toString() ?? '');
@@ -308,11 +327,6 @@ function PriceRangeFilterGroup({
       let minNum = min ? Number(min) : undefined;
       let maxNum = max ? Number(max) : undefined;
 
-      // Guard against a reversed range (e.g. min=100, max=10), which the
-      // Storefront API would otherwise silently interpret as "no matches"
-      // rather than raising an error the user could act on. Swapping is
-      // the least surprising fix — it preserves both values the user
-      // typed instead of dropping one.
       if (minNum !== undefined && maxNum !== undefined && minNum > maxNum) {
         [minNum, maxNum] = [maxNum, minNum];
         setMin(String(minNum));
@@ -500,15 +514,11 @@ function CollectionFeed({
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Merchant-set via the promo_carousel metaobject's "Grid Position" field
-  // when present; otherwise falls back to the sitewide default above.
   const sponsoredAdsPosition =
     sponsoredAds?.position ?? DEFAULT_SPONSORED_ADS_GRID_POSITION;
 
   function handleSortChange(event: ChangeEvent<HTMLSelectElement>) {
     const params = new URLSearchParams(location.search);
-    // Any sort change alters ordering, so pagination state from the old
-    // ordering is no longer valid.
     params.delete('cursor');
     params.delete('direction');
     params.delete('p');
@@ -538,16 +548,6 @@ function CollectionFeed({
         </div>
       )}
 
-      {/*
-        PaginationSection (app/components/pagination.tsx) handles the
-        accumulating list, the eager-load-first-8 behavior, and the Load
-        more button + infinite-scroll trigger — same shared component used
-        by collections.all.tsx and blogs.$blogHandle.tagged.$tag.tsx.
-
-        renderItem is called with the index within the FULL accumulated
-        list (not per-page), which is what lets the sponsored promo panel
-        splice in ONCE across the whole list rather than once per page.
-      */}
       <PaginationSection<ProductCardFragment>
         connection={products}
         itemsClassName="products-grid"
@@ -569,8 +569,6 @@ function CollectionFeed({
     </>
   );
 
-  // No activeTab means this route has no tab switcher (/collections/all) —
-  // render the grid directly. No tabpanel semantics, no articles markup.
   if (!activeTab) {
     return (
       <div className="collection-feed">

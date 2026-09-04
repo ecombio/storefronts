@@ -5,9 +5,12 @@ import type {Route} from './+types/collections.$handle';
 import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {buildSelfCanonicalUrl} from '~/lib/canonical';
-import {CollectionBanner} from '~/sections/CollectionBanner';
-import type {CollectionBannerTextAlignment} from '~/sections/CollectionBanner';
-import {MainCollection, type CollectionTab} from '~/sections/MainCollection';
+import {
+  CollectionBanner,
+  MainCollection,
+  type CollectionBannerTextAlignment,
+  type CollectionTab,
+} from '~/sections/MainCollection';
 import {PRODUCT_CARD_FRAGMENT} from '~/graphql/ProductCardFragment';
 import {ARTICLE_ITEM_FRAGMENT} from '~/graphql/ArticleItemFragment';
 import type {ProductFilter} from '@shopify/hydrogen/storefront-api-types';
