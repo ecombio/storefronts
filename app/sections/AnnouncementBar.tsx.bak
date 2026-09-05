@@ -1,0 +1,596 @@
+// app/sections/Header.tsx
+import {Suspense, useEffect, useRef, useState} from 'react';
+import {Await, Link, NavLink, useAsyncValue} from 'react-router';
+import {ChevronLeft, ChevronRight, Heart, Scale, ShoppingBag, User, X} from 'lucide-react';
+import {
+  type CartViewPayload,
+  useAnalytics,
+  useOptimisticCart,
+} from '@shopify/hydrogen';
+import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
+import {useAside} from '~/components/Aside';
+import {HeaderSearch} from '~/snippets/HeaderSearch';
+import {HeaderMenu} from '~/snippets/HeaderMenu';
+export {HeaderMenu} from '~/snippets/HeaderMenu';
+import {HeaderUtility} from '~/snippets/HeaderUtility';
+export {HeaderUtility} from '~/snippets/HeaderUtility';
+import type {CollectionImage} from '~/config/Header.constants';
+import {
+  ACTIVE_HEADER_STYLE,
+  type HeaderStyle,
+  SHOW_WISHLIST_CTA,
+  SHOW_COMPARE_CTA,
+  ANNOUNCEMENT_AUTOROTATE,
+  ANNOUNCEMENT_AUTOROTATE_SPEED_MS,
+  ANNOUNCEMENT_ENABLE_CLOSE,
+  ANNOUNCEMENT_SLIDES,
+  type AnnouncementSlideConfig,
+} from '~/config/Header.constants';
+import wordmarkSrc from '~/assets/wordmark.svg';
+import {useHeaderHeightSync} from '~/hooks/useHeaderHeightSync';
+import {type WishlistEntry, WISHLIST_KEY, readWishlist} from '~/lib/wishlist';
+import {type CompareEntry, COMPARE_KEY, COMPARE_MAX, readCompareList} from '~/lib/compare';
+
+import type {HeaderLayoutProps} from './header-styles/types';
+import {HeaderLayoutLaunchpad} from './header-styles/HeaderLayoutLaunchpad';
+import {HeaderLayoutStorefront} from './header-styles/HeaderLayoutStorefront';
+import {HeaderLayoutMarketplace} from './header-styles/HeaderLayoutMarketplace';
+
+const HEADER_LAYOUTS: Record<HeaderStyle, React.ComponentType<HeaderLayoutProps>> = {
+  launchpad: HeaderLayoutLaunchpad,
+  storefront: HeaderLayoutStorefront,
+  marketplace: HeaderLayoutMarketplace,
+};
+
+const ANNOUNCEMENT_DISMISS_KEY = 'announcement_bar_dismissed';
+
+export interface HeaderProps {
+  header: HeaderQuery;
+  cart: Promise<CartApiQueryFragment | null>;
+  isLoggedIn: Promise<boolean>;
+  publicStoreDomain: string;
+  collectionImages?: Record<string, CollectionImage>;
+  customer?: Promise<{firstName: string | null} | null>;
+}
+
+export type Viewport = 'desktop' | 'mobile';
+
+export function Header({
+  header,
+  isLoggedIn,
+  cart,
+  publicStoreDomain,
+  collectionImages,
+  customer,
+}: HeaderProps) {
+  const {shop, menu} = header;
+  const [hidden, setHidden] = useState(false);
+  const lastScrollY = useRef(0);
+  const headerRef = useRef<HTMLElement>(null);
+
+  useHeaderHeightSync(headerRef, hidden);
+
+  useEffect(() => {
+    lastScrollY.current = window.scrollY;
+
+    function onScroll() {
+      const currentY = window.scrollY;
+      const delta = currentY - lastScrollY.current;
+
+      if (currentY < 80) {
+        setHidden(false);
+      } else if (delta > 5) {
+        setHidden(true);
+      } else if (delta < -5) {
+        setHidden(false);
+      }
+
+      lastScrollY.current = currentY;
+    }
+
+    window.addEventListener('scroll', onScroll, {passive: true});
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const Layout = HEADER_LAYOUTS[ACTIVE_HEADER_STYLE];
+
+  return (
+    <header
+      ref={headerRef}
+      className="sticky top-0 z-50 w-full [transform:translateZ(0)] [backface-visibility:hidden]"
+    >
+      <div
+        className={`w-full bg-white font-sans shadow-[0_4px_20px_rgba(0,0,0,0.10)] transition-transform duration-300 ${
+          hidden ? '-translate-y-full' : 'translate-y-0'
+        }`}
+      >
+        <AnnouncementBar />
+        <HeaderUtility />
+
+        <Layout
+          logo={
+            <NavLink prefetch="intent" to="/" end className="shrink-0" aria-label={`${shop.name} — home`}>
+              <img src={wordmarkSrc} alt={shop.name} width={140} height={28} className="h-8 w-auto sm:h-9" />
+            </NavLink>
+          }
+          menu={
+            <HeaderMenu
+              menu={menu}
+              viewport="desktop"
+              primaryDomainUrl={header.shop.primaryDomain.url}
+              publicStoreDomain={publicStoreDomain}
+              collectionImages={collectionImages}
+            />
+          }
+          search={<HeaderSearch size="compact" />}
+          ctas={<HeaderCtas isLoggedIn={isLoggedIn} cart={cart} customer={customer} />}
+          mobileToggle={<HeaderMenuMobileToggle />}
+          mobileSearch={<HeaderSearch />}
+        />
+      </div>
+    </header>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Announcement bar (inlined from ./AnnouncementBar)                   */
+/* ------------------------------------------------------------------ */
+
+function AnnouncementBar() {
+  const slides = ANNOUNCEMENT_SLIDES;
+  const [dismissed, setDismissed] = useState(false);
+  const [index, setIndex] = useState(0);
+  const rotateTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (ANNOUNCEMENT_ENABLE_CLOSE && sessionStorage.getItem(ANNOUNCEMENT_DISMISS_KEY) === 'true') {
+      setDismissed(true);
+    }
+  }, []);
+
+  function stopAuto() {
+    if (rotateTimer.current) clearInterval(rotateTimer.current);
+  }
+
+  function startAuto() {
+    if (ANNOUNCEMENT_AUTOROTATE && slides.length > 1) {
+      rotateTimer.current = setInterval(() => {
+        setIndex((i) => (i + 1) % slides.length);
+      }, ANNOUNCEMENT_AUTOROTATE_SPEED_MS);
+    }
+  }
+
+  useEffect(() => {
+    startAuto();
+    return stopAuto;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slides.length]);
+
+  function goTo(next: number) {
+    stopAuto();
+    setIndex((next + slides.length) % slides.length);
+    startAuto();
+  }
+
+  function handleClose() {
+    stopAuto();
+    setDismissed(true);
+    if (ANNOUNCEMENT_ENABLE_CLOSE) sessionStorage.setItem(ANNOUNCEMENT_DISMISS_KEY, 'true');
+  }
+
+  if (dismissed || slides.length === 0) return null;
+
+  const slide = slides[index];
+
+  return (
+    <div className="bg-[#0b2559] text-sm text-white">
+      {/* Full width, no max-width cap — matches the header content row
+          and HeaderUtility, which were updated the same way. */}
+      <div className="relative mx-auto flex max-w-[var(--content-max-width)] items-center px-4 py-2">
+        {slides.length > 1 && (
+          <button
+            aria-label="Previous announcement"
+            onClick={() => goTo(index - 1)}
+            className="shrink-0 rounded p-1 hover:bg-white/10"
+          >
+            <ChevronLeft size={16} />
+          </button>
+        )}
+
+        <div className="flex flex-1 items-center justify-center gap-3 font-semibold tracking-wide">
+          <AnnouncementSlideContent slide={slide} />
+        </div>
+
+        <div className="flex shrink-0 items-center gap-1">
+          {slides.length > 1 && (
+            <button
+              aria-label="Next announcement"
+              onClick={() => goTo(index + 1)}
+              className="rounded p-1 hover:bg-white/10"
+            >
+              <ChevronRight size={16} />
+            </button>
+          )}
+          {ANNOUNCEMENT_ENABLE_CLOSE && (
+            <button aria-label="Dismiss" onClick={handleClose} className="rounded p-1 hover:bg-white/10">
+              <X size={16} />
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AnnouncementSlideContent({slide}: {slide: AnnouncementSlideConfig}) {
+  if (slide.type === 'announcement') {
+    return slide.link ? (
+      <a href={slide.link} className="border-b border-white/40 hover:border-white">
+        {slide.text}
+      </a>
+    ) : (
+      <p className="m-0">{slide.text}</p>
+    );
+  }
+  return <CountdownContent slide={slide} />;
+}
+
+function CountdownContent({
+  slide,
+}: {
+  slide: Extract<AnnouncementSlideConfig, {type: 'countdown'}>;
+}) {
+  const remainingMs = useCountdown(slide);
+
+  // FIX: previously returned `null` while remainingMs was null (true on
+  // initial SSR paint, before the client-side timer effect runs). That
+  // made the announcement bar render with an empty content row on first
+  // paint, then grow taller a moment later once the countdown populated
+  // client-side — a real layout shift right at the point where the
+  // white line was reported. Rendering an invisible placeholder of the
+  // same shape reserves the final height from the very first paint, so
+  // there's nothing for the countdown's arrival to shift.
+  if (remainingMs === null) {
+    return (
+      <span className="invisible flex items-center gap-1" aria-hidden="true">
+        {slide.label && <span>{slide.label}</span>}
+        <Unit value="00" label="d" />
+        <Sep />
+        <Unit value="00" label="h" />
+        <Sep />
+        <Unit value="00" label="m" />
+        <Sep />
+        <Unit value="00" label="s" />
+        {slide.buttonLabel && (
+          <span className="ml-1 whitespace-nowrap rounded-full border px-3.5 py-1 text-xs font-semibold">
+            {slide.buttonLabel}
+          </span>
+        )}
+      </span>
+    );
+  }
+
+  const totalSeconds = Math.max(0, Math.floor(remainingMs / 1000));
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const pad = (n: number) => String(n).padStart(2, '0');
+
+  return (
+    <>
+      {slide.label && <span>{slide.label}</span>}
+      <span className="flex items-center gap-1">
+        <Unit value={pad(days)} label="d" />
+        <Sep />
+        <Unit value={pad(hours)} label="h" />
+        <Sep />
+        <Unit value={pad(minutes)} label="m" />
+        <Sep />
+        <Unit value={pad(seconds)} label="s" />
+      </span>
+      {slide.buttonLabel && slide.buttonLink && (
+        
+          href={slide.buttonLink}
+          className="ml-1 whitespace-nowrap rounded-full border border-white/60 px-3.5 py-1 text-xs font-semibold hover:border-white hover:bg-white/15"
+        >
+          {slide.buttonLabel}
+        </a>
+      )}
+    </>
+  );
+}
+
+function Unit({value, label}: {value: string; label: string}) {
+  return (
+    <span>
+      {value}
+      <em className="ml-px text-[0.625rem] not-italic uppercase opacity-70">{label}</em>
+    </span>
+  );
+}
+
+function Sep() {
+  return <span className="mx-0.5 opacity-60">:</span>;
+}
+
+function useCountdown(slide: Extract<AnnouncementSlideConfig, {type: 'countdown'}>) {
+  const endMsRef = useRef<number | null>(null);
+  const [remainingMs, setRemainingMs] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (slide.countdownType === 'fixed') {
+      endMsRef.current = slide.endDate
+        ? new Date(slide.endDate.replace(/\//g, '-')).getTime()
+        : null;
+    } else {
+      const storageKey = `ann_countdown_${slide.evergreenMinutes}`;
+      const saved = sessionStorage.getItem(storageKey);
+      const endMs = saved ? parseInt(saved, 10) : Date.now() + (slide.evergreenMinutes ?? 0) * 60_000;
+      sessionStorage.setItem(storageKey, String(endMs));
+      endMsRef.current = endMs;
+    }
+
+    function tick() {
+      if (endMsRef.current === null) {
+        setRemainingMs(null);
+        return;
+      }
+      const diff = endMsRef.current - Date.now();
+      setRemainingMs(diff > 0 ? diff : null);
+    }
+
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slide.countdownType, slide.endDate, slide.evergreenMinutes]);
+
+  return remainingMs;
+}
+
+/* ------------------------------------------------------------------ */
+/* Header CTAs (menu/wishlist/compare/cart)                            */
+/* ------------------------------------------------------------------ */
+
+function HeaderCtas({
+  isLoggedIn,
+  cart,
+  customer,
+}: Pick<HeaderProps, 'isLoggedIn' | 'cart' | 'customer'>) {
+  return (
+    <nav className="flex shrink-0 items-center gap-3 sm:gap-6" role="navigation">
+      <HeaderAccount isLoggedIn={isLoggedIn} customer={customer} />
+      {SHOW_WISHLIST_CTA && <WishlistToggle />}
+      {SHOW_COMPARE_CTA && <CompareToggle />}
+      <CartToggle cart={cart} />
+    </nav>
+  );
+}
+
+function HeaderMenuMobileToggle() {
+  const {open} = useAside();
+  return (
+    <button
+      aria-label="Open menu"
+      className="shrink-0 rounded p-1 text-gray-800 hover:text-gray-950 lg:hidden"
+      onClick={() => open('mobile')}
+    >
+      <span className="text-lg">☰</span>
+    </button>
+  );
+}
+
+function HeaderAccount({
+  isLoggedIn,
+  customer,
+}: {
+  isLoggedIn: Promise<boolean>;
+  customer?: Promise<{firstName: string | null} | null>;
+}) {
+  return (
+    <NavLink
+      prefetch="intent"
+      to="/account"
+      className="flex items-center gap-1.5 text-sm font-medium text-gray-800 hover:text-gray-950"
+      aria-label="Account"
+    >
+      <Suspense fallback={<AccountContent label="Sign in/ Register" />}>
+        <Await
+          resolve={isLoggedIn}
+          errorElement={<AccountContent label="Sign in/ Register" />}
+        >
+          {(loggedIn) => {
+            if (!loggedIn) {
+              return <AccountContent label="Sign in/ Register" />;
+            }
+            if (!customer) {
+              return <AccountContent label="Account" />;
+            }
+            return (
+              <Suspense fallback={<AccountContent label="Account" />}>
+                <Await
+                  resolve={customer}
+                  errorElement={<AccountContent label="Account" />}
+                >
+                  {(customerData) => (
+                    <AccountContent
+                      label={
+                        customerData?.firstName
+                          ? `Hi, ${customerData.firstName}`
+                          : 'Account'
+                      }
+                    />
+                  )}
+                </Await>
+              </Suspense>
+            );
+          }}
+        </Await>
+      </Suspense>
+    </NavLink>
+  );
+}
+
+function AccountContent({label}: {label: string}) {
+  return (
+    <>
+      <User size={28} aria-hidden="true" />
+    </>
+  );
+}
+
+function CartBadge({count = 0}: {count?: number}) {
+  const {open} = useAside();
+  const {publish, shop, cart, prevCart} = useAnalytics();
+
+  return (
+    <Link
+      to="/cart"
+      onClick={(e) => {
+        e.preventDefault();
+        open('cart');
+        publish('cart_viewed', {
+          cart,
+          prevCart,
+          shop,
+          url: window.location.href || '',
+        } as CartViewPayload);
+      }}
+      className="group flex items-center gap-1.5 text-sm font-medium text-gray-900 transition hover:text-gray-600"
+      aria-label={`Cart, ${count} item${count === 1 ? '' : 's'}`}
+    >
+      <span className="relative">
+        <ShoppingBag size={28} className="shrink-0" aria-hidden="true" />
+        {count > 0 && (
+          <span
+            className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-gray-900 text-[9px] font-semibold leading-none text-white"
+            aria-hidden="true"
+          >
+            {count}
+          </span>
+        )}
+      </span>
+    </Link>
+  );
+}
+
+function CartToggle({cart}: Pick<HeaderProps, 'cart'>) {
+  return (
+    <Suspense fallback={<CartBadge count={0} />}>
+      <Await resolve={cart}>
+        <CartBanner />
+      </Await>
+    </Suspense>
+  );
+}
+
+function CartBanner() {
+  const originalCart = useAsyncValue() as CartApiQueryFragment | null;
+  const cart = useOptimisticCart(originalCart);
+  return <CartBadge count={cart?.totalQuantity ?? 0} />;
+}
+
+function WishlistBadge({count = 0}: {count?: number}) {
+  return (
+    <Link
+      to="/wishlist"
+      className="group flex items-center gap-1.5 text-sm font-medium text-gray-900 transition hover:text-gray-600"
+      aria-label={`Wishlist, ${count} item${count === 1 ? '' : 's'}`}
+    >
+      <span className="relative">
+        <Heart size={17} className="shrink-0" aria-hidden="true" />
+        {count > 0 && (
+          <span
+            className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-gray-900 text-[9px] font-semibold leading-none text-white"
+            aria-hidden="true"
+          >
+            {count}
+          </span>
+        )}
+      </span>
+      <span className="hidden sm:inline" aria-hidden="true">
+        Wishlist
+      </span>
+    </Link>
+  );
+}
+
+function WishlistToggle() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    setCount(readWishlist().length);
+
+    function onWishlistUpdated(e: Event) {
+      const detail = (e as CustomEvent<{items: WishlistEntry[]}>).detail;
+      setCount(detail?.items?.length ?? readWishlist().length);
+    }
+
+    function onStorage(e: StorageEvent) {
+      if (e.key !== WISHLIST_KEY) return;
+      setCount(readWishlist().length);
+    }
+
+    document.addEventListener('wishlist:updated', onWishlistUpdated);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      document.removeEventListener('wishlist:updated', onWishlistUpdated);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
+
+  return <WishlistBadge count={count} />;
+}
+
+function CompareBadge({count = 0}: {count?: number}) {
+  return (
+    <Link
+      to="/compare"
+      className="group flex items-center gap-1.5 text-sm font-medium text-gray-900 transition hover:text-gray-600"
+      aria-label={`Compare, ${count} of ${COMPARE_MAX} item${count === 1 ? '' : 's'}`}
+    >
+      <span className="relative">
+        <Scale size={17} className="shrink-0" aria-hidden="true" />
+        {count > 0 && (
+          <span
+            className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-gray-900 text-[9px] font-semibold leading-none text-white"
+            aria-hidden="true"
+          >
+            {count}
+          </span>
+        )}
+      </span>
+      <span className="hidden sm:inline" aria-hidden="true">
+        Compare
+      </span>
+    </Link>
+  );
+}
+
+function CompareToggle() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    setCount(readCompareList().length);
+
+    function onCompareUpdated(e: Event) {
+      const detail = (e as CustomEvent<{items: CompareEntry[]}>).detail;
+      setCount(detail?.items?.length ?? readCompareList().length);
+    }
+
+    function onStorage(e: StorageEvent) {
+      if (e.key !== COMPARE_KEY) return;
+      setCount(readCompareList().length);
+    }
+
+    document.addEventListener('compare:updated', onCompareUpdated);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      document.removeEventListener('compare:updated', onCompareUpdated);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
+
+  return <CompareBadge count={count} />;
+}

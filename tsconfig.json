@@ -9,7 +9,7 @@
     "*.d.ts",
     ".graphqlrc.ts",
     ".react-router/types/**/*"
-  ],
+, "app/sections/AnnouncementBar.tsx.bak"  ],
   "exclude": ["node_modules", "dist", "build", "packages/**/dist/**/*"],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2022"],

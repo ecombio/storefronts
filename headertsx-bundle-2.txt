@@ -1,0 +1,1946 @@
+===== app\sections\header-styles\types.ts =====
+
+// app/sections/header-styles/types.ts
+//
+// Every HeaderLayout* component implements this exact same prop
+// contract. They only ever change ARRANGEMENT (flex direction, row
+// breaks, spacing, borders) — never re-implement what's inside each
+// slot. That's what lets you add a new style without risking the
+// kind of prop-mismatch bugs (algolia vs collectionImages, etc.)
+// that come from re-wiring search/menu/cart logic per-style.
+
+import type {ReactNode} from 'react';
+
+export interface HeaderLayoutProps {
+  /** Store wordmark/logo, already wrapped in its NavLink to "/". */
+  logo: ReactNode;
+  /** Desktop primary nav (<HeaderMenu viewport="desktop" .../>). */
+  menu: ReactNode;
+  /** Search input — layouts choose whether to render it at all. */
+  search: ReactNode;
+  /** Account / wishlist / compare / cart cluster (<HeaderCtas .../>). */
+  ctas: ReactNode;
+  /** Hamburger button that opens the mobile drawer. */
+  mobileToggle: ReactNode;
+  /** Full-width mobile search row — most layouts render this below
+   *  everything else, hidden at lg+. Optional since a layout could
+   *  choose to fold search into the mobile toggle row instead. */
+  mobileSearch?: ReactNode;
+}
+
+
+===== app\sections\header-styles\HeaderLayoutLaunchpad.tsx =====
+
+// app/sections/header-styles/HeaderLayoutLaunchpad.tsx
+//
+// Single row (desktop, lg+): logo — centered nav menu — compact
+// search + account/cart, mirroring Nike's header where search shares
+// a row with the primary nav instead of the menu living in its own
+// row underneath.
+//
+// Mobile (<lg): hamburger + logo + cart on top, full-width search on
+// its own row below. Nav menu lives in the mobile drawer, not inline.
+//
+// No data-header-menu-row here — there's no second row to anchor a
+// mega-menu backdrop to, so HeaderMenu's updatePanelTop() will just
+// fall back to its default top offset for this layout.
+
+import type {HeaderLayoutProps} from './types';
+
+export function HeaderLayoutLaunchpad({
+  logo,
+  menu,
+  search,
+  ctas,
+  mobileToggle,
+  mobileSearch,
+}: HeaderLayoutProps) {
+  return (
+    <div data-header-row className="relative">
+      <div className="mx-auto flex max-w-[var(--content-max-width)] items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6 lg:gap-6 lg:px-8">
+        {mobileToggle}
+        {logo}
+
+        {/* [&>*]:!w-auto forces the menu's root element to shrink to
+            its content instead of stretching to fill this flex-1
+            wrapper, so justify-center has room to actually center it. */}
+        <div className="hidden flex-1 justify-center lg:flex [&>*]:!w-auto">
+          {menu}
+        </div>
+
+        {/* Mobile has no centered menu (it lives in the drawer) — this
+            spacer keeps the same logo-left / ctas-right split. */}
+        <div className="flex-1 lg:hidden" />
+
+        <div className="hidden items-center gap-4 lg:flex">
+          {search}
+          {ctas}
+        </div>
+
+        <div className="lg:hidden">{ctas}</div>
+      </div>
+
+      {mobileSearch && <div className="w-full py-2 lg:hidden">{mobileSearch}</div>}
+    </div>
+  );
+}
+
+
+
+===== app\sections\header-styles\HeaderLayoutStorefront.tsx =====
+
+// app/sections/header-styles/HeaderLayoutStorefront.tsx
+//
+// Single row (desktop, lg+): logo — centered nav menu — search +
+// account/cart cluster on the right. Merged from the previous two-row
+// layout (nav menu used to sit on its own row below, separated by a
+// hairline border) into one row, with the menu centered between logo
+// and the search/ctas cluster — mirrors HeaderLayoutLaunchpad's
+// arrangement.
+//
+// Mobile (<lg): unchanged — hamburger + logo + cart on top, full-width
+// search on its own row below. Nav menu lives in the mobile drawer.
+//
+// No data-header-menu-row here anymore — there's no second row to
+// anchor a mega-menu backdrop to, so HeaderMenu's updatePanelTop()
+// will just fall back to its default top offset, same as Launchpad.
+
+import type {HeaderLayoutProps} from './types';
+
+export function HeaderLayoutStorefront({
+  logo,
+  menu,
+  search,
+  ctas,
+  mobileToggle,
+  mobileSearch,
+}: HeaderLayoutProps) {
+  return (
+    <div data-header-row className="relative">
+      <div className="mx-auto flex max-w-[var(--content-max-width)] items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6 lg:gap-6 lg:px-8">
+        {mobileToggle}
+        {logo}
+
+        {/* [&>*]:!w-auto forces the menu's root element to shrink to
+            its content instead of stretching to fill this flex-1
+            wrapper, so justify-center has room to actually center it. */}
+        <div className="hidden flex-1 justify-center lg:flex [&>*]:!w-auto">
+          {menu}
+        </div>
+
+        {/* Mobile has no centered menu (it lives in the drawer) — this
+            spacer keeps the same logo-left / ctas-right split. */}
+        <div className="flex-1 lg:hidden" />
+
+        <div className="hidden items-center gap-4 lg:flex">
+          <div className="w-[160px] shrink-0">{search}</div>
+          {ctas}
+        </div>
+
+        <div className="lg:hidden">{ctas}</div>
+      </div>
+
+      {mobileSearch && <div className="w-full py-2 lg:hidden">{mobileSearch}</div>}
+    </div>
+  );
+}
+
+
+
+===== app\sections\header-styles\HeaderLayoutMarketplace.tsx =====
+
+// app/sections/header-styles/HeaderLayoutMarketplace.tsx
+//
+// Single row (desktop, lg+): logo + nav menu inline together on the
+// left, search + account/cart cluster pinned right — denser, more
+// left-weighted than the Nike layout's centered menu.
+//
+// Mobile (<lg): unchanged — hamburger + logo + cart on top, full-width
+// search on its own row below. Nav menu lives in the mobile drawer.
+//
+// No data-header-menu-row here, same reasoning as the Nike layout —
+// menu and logo share row 1, there's no second row to anchor to.
+//
+// NOTE: this is a structural starting point (left-aligned logo+menu,
+// right-aligned search+ctas). It hasn't been checked against a real
+// Gymshark screenshot — swap in their actual spacing/typography once
+// you've got a reference to match against.
+
+import type {HeaderLayoutProps} from './types';
+
+export function HeaderLayoutMarketplace({
+  logo,
+  menu,
+  search,
+  ctas,
+  mobileToggle,
+  mobileSearch,
+}: HeaderLayoutProps) {
+  return (
+    <div data-header-row className="relative">
+      <div className="mx-auto flex max-w-[var(--content-max-width)] items-center gap-6 px-4 py-3 sm:gap-4 sm:px-6 lg:gap-8 lg:px-8">
+        {mobileToggle}
+        {logo}
+
+        <div className="hidden lg:flex [&>*]:!w-auto">{menu}</div>
+
+        <div className="flex-1" />
+
+        <div className="hidden items-center gap-4 lg:flex">
+          {search}
+          {ctas}
+        </div>
+
+        <div className="lg:hidden">{ctas}</div>
+      </div>
+
+      {mobileSearch && <div className="w-full py-2 lg:hidden">{mobileSearch}</div>}
+    </div>
+  );
+}
+
+
+
+===== app\snippets\MenuDrawer.tsx =====
+
+// app/snippets/MenuDrawer.tsx
+import {useEffect, useState} from 'react';
+import {createPortal} from 'react-dom';
+import {NavLink} from 'react-router';
+import {Bike, Clock, Gift, RotateCcw, ShieldCheck, Sparkles, Tag, Truck} from 'lucide-react';
+import {
+  resolveUrl,
+  SHOWCASE_SEE_ALL,
+  SHOWCASE_TIPS,
+  type CollectionImage,
+  type MenuItem,
+} from '~/config/Header.constants';
+
+export function MenuDrawer({
+  item,
+  top,
+  publicStoreDomain,
+  primaryDomainUrl,
+  collectionImages,
+  onClose,
+}: {
+  item: MenuItem | undefined;
+  top: number;
+  publicStoreDomain: string;
+  primaryDomainUrl: string;
+  collectionImages?: Record<string, CollectionImage>;
+  onClose: () => void;
+}) {
+  const tips = item ? SHOWCASE_TIPS[item.title] : undefined;
+  const hasContent = Boolean(item && ((tips?.length ?? 0) > 0 || item.items?.length));
+
+  return (
+    <>
+      <DrawerBackdrop open={hasContent} top={top} onClose={onClose} />
+      {hasContent && item && (
+        <DrawerPanel
+          item={item}
+          tips={tips}
+          publicStoreDomain={publicStoreDomain}
+          primaryDomainUrl={primaryDomainUrl}
+          collectionImages={collectionImages}
+          onLinkClick={onClose}
+        />
+      )}
+    </>
+  );
+}
+
+function DrawerBackdrop({
+  open,
+  top,
+  onClose,
+}: {
+  open: boolean;
+  top: number;
+  onClose: () => void;
+}) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+
+  return createPortal(
+    <div
+      aria-hidden="true"
+      onClick={onClose}
+      style={{top}}
+      className={`fixed inset-x-0 bottom-0 z-30 bg-black/40 backdrop-blur-[6px] transition-opacity duration-200 ease-out ${
+        open ? 'opacity-100' : 'pointer-events-none opacity-0'
+      }`}
+    />,
+    document.body,
+  );
+}
+
+function DrawerPanel({
+  item,
+  tips,
+  publicStoreDomain,
+  primaryDomainUrl,
+  collectionImages,
+  onLinkClick,
+}: {
+  item: MenuItem;
+  tips: (typeof SHOWCASE_TIPS)[string] | undefined;
+  publicStoreDomain: string;
+  primaryDomainUrl: string;
+  collectionImages?: Record<string, CollectionImage>;
+  onLinkClick: () => void;
+}) {
+  const categories = item.items ?? [];
+  const seeAllConfig = SHOWCASE_SEE_ALL[item.title];
+  const seeAllUrl =
+    seeAllConfig?.link ?? (item.url ? resolveUrl(item.url, publicStoreDomain, primaryDomainUrl) : undefined);
+  const seeAllLabel = seeAllConfig?.label ?? 'See all';
+
+  return (
+    <div className="absolute inset-x-0 top-full z-40 max-h-[75vh] overflow-y-auto border-t border-gray-100 bg-white shadow-sm">
+      <div className="mx-auto flex max-w-[1400px] gap-10 px-4 py-8">
+        {tips && tips.length > 0 && (
+          <div className="w-56 shrink-0 rounded-xl bg-gray-50 p-5">
+            <p className="mb-3.5 text-sm font-bold text-gray-900">Good to know</p>
+            <ul className="flex flex-col gap-4">
+              {tips.map((tip, i) => (
+                <li key={i} className="flex items-start gap-2.5">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-200 text-gray-900">
+                    <TipIcon name={tip.icon} />
+                  </span>
+                  <span className="text-[13px] leading-snug text-gray-700">
+                    <strong className="mb-0.5 block text-gray-900">{tip.heading}</strong>
+                    {tip.body}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {categories.length > 0 && (
+          <div className="flex-1">
+            <div className="mb-4 flex items-baseline justify-between">
+              <p className="text-sm font-bold text-gray-900">Categories</p>
+              {seeAllUrl && (
+                <NavLink
+                  to={seeAllUrl}
+                  onClick={onLinkClick}
+                  className="text-sm font-semibold text-gray-900 underline hover:text-gray-600"
+                >
+                  {seeAllLabel}
+                </NavLink>
+              )}
+            </div>
+            <div className="grid grid-cols-5 gap-6">
+              {categories.map((sub) => {
+                if (!sub.url) return null;
+                const url = resolveUrl(sub.url, publicStoreDomain, primaryDomainUrl);
+                const liveImage = sub.resourceId ? collectionImages?.[sub.resourceId] : undefined;
+                // Live Shopify CDN image only — no static/hardcoded
+                // fallback URL. If a collection has no image set in
+                // Admin, or resourceId isn't a Collection, we fall
+                // through to the generic <Bike> icon below instead of
+                // a second, independently-stale URL source.
+                const imageSrc = liveImage?.url;
+                const imageAlt = liveImage?.altText ?? sub.title;
+                return (
+                  <NavLink
+                    key={sub.id}
+                    to={url}
+                    prefetch="intent"
+                    onClick={onLinkClick}
+                    className="group"
+                  >
+                    <div className="mb-2 flex aspect-square items-center justify-center overflow-hidden rounded-lg bg-gray-100 text-gray-400 group-hover:bg-gray-200">
+                      {imageSrc ? (
+                        <img
+                          src={imageSrc}
+                          alt={imageAlt}
+                          width={150}
+                          height={150}
+                          loading="lazy"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <Bike size={32} aria-hidden="true" />
+                      )}
+                    </div>
+                    <p className="text-sm font-semibold text-gray-900">{sub.title}</p>
+                  </NavLink>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function TipIcon({name}: {name?: string}) {
+  const props = {size: 16, 'aria-hidden': true as const};
+  switch (name) {
+    case 'truck':
+      return <Truck {...props} />;
+    case 'shield':
+      return <ShieldCheck {...props} />;
+    case 'gift':
+      return <Gift {...props} />;
+    case 'clock':
+      return <Clock {...props} />;
+    case 'return':
+    case 'refresh':
+      return <RotateCcw {...props} />;
+    case 'tag':
+      return <Tag {...props} />;
+    default:
+      return <Sparkles {...props} />;
+  }
+}
+
+
+===== app\snippets\Highlight.tsx =====
+
+// app/snippets/Highlight.tsx
+import {NavLink} from 'react-router';
+
+export function isOnSaleItem(title: string) {
+  return title.trim().toLowerCase() === 'on sale';
+}
+
+function StarIcon({className}: {className?: string}) {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" className={className}>
+      <path
+        d="M6 0L7.854 4.146L12 6L7.854 7.854L6 12L4.146 7.854L0 6L4.146 4.146L6 0Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
+export function HighlightLink({
+  to,
+  title,
+  isActive,
+  onMouseEnter,
+  onFocus,
+}: {
+  to: string;
+  title: string;
+  isActive: boolean;
+  onMouseEnter?: () => void;
+  onFocus?: () => void;
+}) {
+  return (
+    <NavLink
+      end
+      prefetch="intent"
+      to={to}
+      onMouseEnter={onMouseEnter}
+      onFocus={onFocus}
+      aria-expanded={isActive}
+      className="nav-item nav-item--highlight shrink-0 transition"
+    >
+      {title}
+      <StarIcon className="nav-item__star nav-item__star--1" />
+      <StarIcon className="nav-item__star nav-item__star--2" />
+      <StarIcon className="nav-item__star nav-item__star--3" />
+    </NavLink>
+  );
+}
+
+
+===== app\snippets\RegionPicker.tsx =====
+
+import {useEffect, useRef, useState} from 'react';
+import {createPortal} from 'react-dom';
+import {Search, X} from 'lucide-react';
+import {COUNTRIES, CURRENT_COUNTRY, CURRENT_LANGUAGE} from '~/config/Header.constants';
+
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+function flagUrl(isoCode: string) {
+  return `https://cdn.shopify.com/shopifycloud/preview-bar/assets/${isoCode.toLowerCase()}.svg`;
+}
+
+export function RegionPicker() {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [position, setPosition] = useState<{top: number; left: number} | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => setMounted(true), []);
+
+  function updatePosition() {
+    const trigger = triggerRef.current;
+    if (!trigger) return;
+    const rect = trigger.getBoundingClientRect();
+    const width = 320;
+    const left = Math.max(8, Math.min(rect.right - width, window.innerWidth - width - 8));
+    setPosition({top: rect.bottom + 6, left});
+  }
+
+  function openPicker() {
+    updatePosition();
+    setOpen(true);
+  }
+
+  function closePicker() {
+    setOpen(false);
+    setQuery('');
+  }
+
+  useEffect(() => {
+    if (!open) return;
+    searchRef.current?.focus();
+
+    function onScroll() {
+      closePicker();
+    }
+    function onResize() {
+      updatePosition();
+    }
+    function onClickOutside(e: MouseEvent) {
+      const target = e.target as Node;
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(target) &&
+        !triggerRef.current?.contains(target)
+      ) {
+        closePicker();
+      }
+    }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        closePicker();
+        triggerRef.current?.focus();
+        return;
+      }
+      if (e.key === 'Tab' && dropdownRef.current) {
+        const focusable = Array.from(dropdownRef.current.querySelectorAll<HTMLElement>(FOCUSABLE));
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+
+    window.addEventListener('scroll', onScroll, {passive: true});
+    window.addEventListener('resize', onResize, {passive: true});
+    document.addEventListener('mousedown', onClickOutside);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onResize);
+      document.removeEventListener('mousedown', onClickOutside);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [open]);
+
+  const current = COUNTRIES.find((c) => c.isoCode === CURRENT_COUNTRY) ?? COUNTRIES[0];
+  const results = COUNTRIES.filter(
+    (c) => c.isoCode !== current.isoCode && c.name.toLowerCase().includes(query.trim().toLowerCase()),
+  );
+
+  function selectCountry(isoCode: string) {
+    console.log('select country', isoCode);
+    closePicker();
+  }
+
+  return (
+    <>
+      <button
+        ref={triggerRef}
+        type="button"
+        aria-expanded={open}
+        aria-label={`Choose location: ${current.name}`}
+        onClick={() => (open ? closePicker() : openPicker())}
+        className="flex h-8 items-center gap-1.5 pl-2.5 text-gray-700 hover:text-gray-950"
+      >
+        <img src={flagUrl(current.isoCode)} alt="" width={16} height={11} className="rounded-[2px]" />
+        <span className="whitespace-nowrap">
+          {CURRENT_LANGUAGE} ({current.isoCode})
+        </span>
+        <ChevronDown open={open} />
+      </button>
+
+      {mounted &&
+        open &&
+        position &&
+        createPortal(
+          <div
+            ref={dropdownRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Choose location"
+            style={{top: position.top, left: position.left}}
+            className="fixed z-[2147483647] w-80 rounded-lg border border-gray-200 bg-white p-5 pb-2 shadow-2xl"
+          >
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-[15px] font-semibold text-gray-900">Choose location</p>
+              <button
+                aria-label="Close location picker"
+                onClick={() => {
+                  closePicker();
+                  triggerRef.current?.focus();
+                }}
+                className="rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+              >
+                <X size={14} />
+              </button>
+            </div>
+
+            <p className="mb-3.5 text-xs leading-relaxed text-gray-500">
+              Changing your location might affect your delivery address options, price, product
+              availability, and currency.
+            </p>
+
+            <div className="relative mb-4">
+              <input
+                ref={searchRef}
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search your country"
+                aria-label="Search countries"
+                autoComplete="off"
+                className="h-[38px] w-full rounded-md border border-gray-200 bg-gray-50 pl-3 pr-9 text-sm text-gray-900 outline-none focus:border-gray-900 focus:bg-white"
+              />
+              <Search
+                size={14}
+                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+              />
+            </div>
+
+            <p className="mb-2.5 text-[10.5px] font-semibold uppercase tracking-wide text-gray-500">
+              Current country &amp; language
+            </p>
+
+            <div className="mb-3 flex items-center gap-2.5">
+              <img src={flagUrl(current.isoCode)} alt="" width={20} height={14} className="rounded-[2px]" />
+              <span className="flex-1 text-sm font-semibold text-gray-900">{current.name}</span>
+              <span className="text-[11.5px] text-gray-500">
+                {CURRENT_LANGUAGE} ({current.isoCode})
+              </span>
+            </div>
+
+            <div className="mb-3 h-px bg-gray-100" />
+
+            <ul role="list" className="max-h-60 space-y-0.5 overflow-y-auto">
+              {results.map((country) => (
+                <li key={country.isoCode}>
+                  <button
+                    type="button"
+                    onClick={() => selectCountry(country.isoCode)}
+                    className="flex w-full items-center gap-2.5 rounded-md px-1.5 py-2 text-left hover:bg-gray-100"
+                  >
+                    <img
+                      src={flagUrl(country.isoCode)}
+                      alt=""
+                      width={20}
+                      height={14}
+                      className="rounded-[2px]"
+                    />
+                    <span className="flex-1 text-sm text-gray-900">{country.name}</span>
+                    <span className="whitespace-nowrap text-[11.5px] text-gray-500">
+                      {CURRENT_LANGUAGE} ({country.isoCode})
+                    </span>
+                  </button>
+                </li>
+              ))}
+              {results.length === 0 && (
+                <li className="py-3 text-center text-sm text-gray-500">No countries found.</li>
+              )}
+            </ul>
+          </div>,
+          document.body,
+        )}
+    </>
+  );
+}
+
+function ChevronDown({open}: {open: boolean}) {
+  return (
+    <svg
+      width={9}
+      height={9}
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={`transition-transform ${open ? 'rotate-180' : ''}`}
+      aria-hidden="true"
+    >
+      <path d="M5 8l5 5 5-5" />
+    </svg>
+  );
+}
+
+
+===== app\snippets\AiSearchBar.tsx =====
+
+import { forwardRef, useState, useEffect, useRef, useCallback } from "react";
+// Icon path data lives alongside this file in snippets/.
+import svgPaths from "./ai-search-svg-paths";
+
+const DEFAULT_SUGGESTIONS = ["anything with AI", "iPhone 17", "Robot Vacuum", "LG Qned AI"];
+
+type Size = "default" | "compact";
+
+// Per-size tuning. "default" is the original full pill (centerpiece of
+// its own row). "compact" is sized to sit inline next to nav links and
+// icons, mirroring Nike's header where search shares a row with the
+// primary nav instead of owning the whole row.
+const SIZE_CONFIG: Record<
+  Size,
+  {
+    height: string;
+    // Full width class, including the sizing strategy. Both variants
+    // now fill whatever definite-width ancestor they're given (w-full,
+    // "default" additionally capped by its own max-w). That ancestor
+    // MUST actually resolve to a real width — a flex-1 + min-w-0 chain
+    // up to something with real bounds (the page, a sized container),
+    // not a shrink-to-fit flex row — because everything inside this
+    // pill is absolutely positioned (see the content row below), so
+    // there's no in-flow content to size it independently. If a
+    // caller places "compact" inside a shrink-to-fit ancestor with no
+    // flex-grow, it will collapse toward 0 width; give it an explicit
+    // width wrapper at that call site instead.
+    widthClass: string;
+    paddingX: string;
+    gap: string;
+    iconSize: number;
+    itemHeight: number;
+    fontSize: number;
+    lineHeight: string;
+    clearSize: number;
+  }
+> = {
+  default: {
+    height: "h-[64px]",
+    widthClass: "w-full max-w-[620px]",
+    paddingX: "px-[28px]",
+    gap: "gap-[8px]",
+    iconSize: 24,
+    itemHeight: 22,
+    fontSize: 16,
+    lineHeight: "18px",
+    clearSize: 24,
+  },
+  compact: {
+    height: "h-[40px]",
+    // CHANGED from a hardcoded "w-[260px] shrink-0". That fixed width
+    // permanently capped compact at 260px regardless of how much room
+    // a parent layout (e.g. HeaderLayoutBackMarket) tries to give it
+    // via flex-1. Now it fills its parent instead — see the widthClass
+    // comment above for what the parent chain needs to provide for
+    // this to actually take effect.
+    widthClass: "w-full min-w-0",
+    paddingX: "px-[14px]",
+    gap: "gap-[6px]",
+    iconSize: 18,
+    itemHeight: 17,
+    fontSize: 13,
+    lineHeight: "16px",
+    clearSize: 16,
+  },
+};
+
+function AISearchIcon({ size }: { size: number }) {
+  return (
+    <div className="overflow-clip relative shrink-0" style={{ width: size, height: size }}>
+      <div className="absolute inset-[12.77%_12.61%_12.5%_12.5%]">
+        <svg
+          className="absolute block inset-0 size-full"
+          fill="none"
+          preserveAspectRatio="none"
+          viewBox="0 0 17.9726 17.9354"
+        >
+          <path d={svgPaths.p3f87f980} fill="#666F7F" />
+        </svg>
+      </div>
+      <div className="absolute inset-[4.17%_8.33%_83.33%_79.17%]">
+        <svg
+          className="absolute block inset-0 size-full"
+          fill="none"
+          preserveAspectRatio="none"
+          viewBox="0 0 3 3"
+        >
+          <path d={svgPaths.p20021000} fill="#666F7F" />
+        </svg>
+      </div>
+      <div
+        className="absolute bottom-[58.33%] flex items-center justify-center left-1/2 right-[16.67%] top-[8.33%]"
+        style={{ containerType: "size" }}
+      >
+        <div className="flex-none h-[100cqh] rotate-180 w-[100cqw]">
+          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 8 8">
+            <path d={svgPaths.p3872200} fill="#666F7F" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CloseIconSvg() {
+  return (
+    <svg
+      className="block size-full"
+      fill="none"
+      preserveAspectRatio="none"
+      viewBox="0 0 13.5 13.5"
+    >
+      <path
+        d={svgPaths.pd9eea00}
+        stroke="#666F7F"
+        strokeLinecap="round"
+        strokeWidth="1.5"
+      />
+    </svg>
+  );
+}
+
+function BlinkingCursor({ compact }: { compact: boolean }) {
+  return (
+    <span
+      className={`inline-block shrink-0 rounded-[1px] bg-[#559bf1] ${
+        compact ? "w-[1.5px] h-[14px]" : "w-[2px] h-[18px]"
+      }`}
+      style={{ animation: "blink 1s step-end infinite" }}
+    />
+  );
+}
+
+function AnimatedPlaceholder({
+  index,
+  suggestions,
+  itemHeight,
+  fontSize,
+  lineHeight,
+}: {
+  index: number;
+  suggestions: string[];
+  itemHeight: number;
+  fontSize: number;
+  lineHeight: string;
+}) {
+  return (
+    // Was `shrink-0`, which told flexbox to never shrink this below its
+    // natural content width — so a suggestion wider than the available
+    // pill space (compact mode especially) just bled out past the pill
+    // edge instead of being constrained. `min-w-0 flex-1` lets it take
+    // only the space actually left after the "Search" label, and
+    // `overflow-hidden` + each item's `text-ellipsis` below then clip
+    // anything still too long, with "…" instead of a hard cutoff.
+    <div className="overflow-hidden min-w-0 flex-1" style={{ height: itemHeight }}>
+      <div
+        className="transition-transform duration-500 ease-in-out"
+        style={{ transform: `translateY(-${index * itemHeight}px)` }}
+      >
+        {suggestions.map((s) => (
+          <div
+            key={s}
+            className="flex items-center overflow-hidden whitespace-nowrap text-ellipsis"
+            style={{
+              height: itemHeight,
+              fontFamily: "'Rubik', sans-serif",
+              fontSize,
+              lineHeight,
+              color: "#7f8999",
+              fontWeight: 400,
+            }}
+          >
+            {s}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const pillBg = {
+  backgroundImage:
+    "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 620 64' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0'height='100%' width='100%' fill='url(%23grad)' opacity='0.11999999731779099'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse'cx='0' cy='0' r='10' gradientTransform='matrix(36.141 -3.4171e-14 8.2601e-14 12.373 310 32)'><stop stop-color='rgba(255,255,255,0)' offset='0.45'/><stop stop-color='rgba(255,255,255,1)' offset='1'/></radialGradient></defs></svg>\"), linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.2) 100%), linear-gradient(180deg, rgba(0, 0, 0, 0.053) 0%, rgba(188, 182, 237, 0.22) 100%)",
+};
+
+interface AiSearchBarProps {
+  /** Controlled input value — lift this to the same state SearchPanel reads as `term`. */
+  value: string;
+  /** Called on every keystroke. Wire this to the same setter you pass SearchPanel as `onTermChange`. */
+  onQueryChange: (value: string) => void;
+  /** Called when the user submits a search query (Enter key). Wire this to what you pass SearchPanel as `onNavigate`. */
+  onSearch: (query: string) => void;
+  /** Optional — fires when the input gains focus. Use this to open SearchPanel. */
+  onFocus?: () => void;
+  /** Optional external ref for imperative focus (e.g. SearchPanel's own copy of the bar). */
+  inputRef?: React.RefObject<HTMLInputElement>;
+  /** Placeholder suggestions to cycle through */
+  suggestions?: string[];
+  className?: string;
+  /**
+   * "default" — full pill, the centerpiece of its own row.
+   * "compact" — sized to sit inline next to nav links/icons, e.g. in a
+   * single Nike-style header row. Defaults to "default" so existing
+   * standalone usage (mobile row, SearchPanel's own input) is untouched.
+   */
+  size?: Size;
+}
+
+/**
+ * Forwards a ref to the root div (not the inner <input>) so a parent
+ * (HeaderSearch) can use it for click-outside detection via
+ * SearchPanel's `triggerRef` prop — mirrors SearchBar's forwardRef.
+ */
+export const AiSearchBar = forwardRef<HTMLDivElement, AiSearchBarProps>(
+  function AiSearchBar(
+    {
+      value,
+      onQueryChange,
+      onSearch,
+      onFocus,
+      inputRef: externalInputRef,
+      suggestions = DEFAULT_SUGGESTIONS,
+      className = "",
+      size = "default",
+    },
+    ref,
+  ) {
+    const [focused, setFocused] = useState(false);
+    const [suggestionIndex, setSuggestionIndex] = useState(0);
+    const internalInputRef = useRef<HTMLInputElement>(null);
+    const inputRef = externalInputRef ?? internalInputRef;
+    const cfg = SIZE_CONFIG[size];
+    const compact = size === "compact";
+
+    useEffect(() => {
+      if (value.length > 0) return;
+      const id = setInterval(() => {
+        setSuggestionIndex((i) => (i + 1) % suggestions.length);
+      }, 2200);
+      return () => clearInterval(id);
+    }, [value, suggestions.length]);
+
+    const handleClear = useCallback(
+      (e: React.MouseEvent) => {
+        e.preventDefault();
+        onQueryChange("");
+        inputRef.current?.focus();
+      },
+      [inputRef, onQueryChange],
+    );
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter" && value.trim()) {
+        onSearch(value.trim());
+      }
+      if (e.key === "Escape") {
+        onQueryChange("");
+        inputRef.current?.blur();
+      }
+    };
+
+    const isTyping = value.length > 0;
+    const showX = focused || isTyping;
+
+    return (
+      <div
+        ref={ref}
+        className={`relative cursor-text ${cfg.height} ${cfg.widthClass} ${className}`}
+        onClick={() => inputRef.current?.focus()}
+      >
+        {/* Pill background layers */}
+        <div className="absolute inset-0 rounded-[999px]" style={pillBg} />
+        <div
+          aria-hidden
+          className="absolute border-2 border-[rgba(193,193,193,0.6)] border-solid inset-0 rounded-[999px]"
+          style={{
+            boxShadow: compact
+              ? "0px 2px 6px 0px rgba(16,24,40,0.06)"
+              : "0px 7px 15px 0px rgba(176,194,250,0.2), 0px 4px 10.3px 0px rgba(0,0,0,0.03), 0px 17px 25.8px 0px rgba(0,0,0,0.06), 0px 4px 6px 0px rgba(255,255,255,0.32)",
+          }}
+        />
+        <div
+          className="absolute inset-0 rounded-[999px]"
+          style={{
+            boxShadow:
+              "inset 0px -1px 18px 0px rgba(255,255,255,0.4), inset 0px -1px 14px 0px rgba(255,255,255,0.56), inset 0px 0px 16px 0px rgba(0,0,0,0.02), inset 0px -4px 8px 0px rgba(0,0,0,0.03), inset 0px -1px 2px 0px rgba(0,0,0,0.02), inset 0px -0.5px 0.5px 0px rgba(0,0,0,0.04), inset 0px 10px 12px 0px rgba(0,0,0,0.04)",
+          }}
+        />
+
+        {/* Content row */}
+        <div className={`absolute inset-0 flex items-center ${cfg.paddingX} ${cfg.gap}`}>
+          <AISearchIcon size={cfg.iconSize} />
+
+          {/* Text zone */}
+          <div className="relative flex-1 flex items-center min-w-0 gap-[1px]">
+            {isTyping ? (
+              <>
+                <span
+                  className="whitespace-nowrap shrink-0"
+                  style={{
+                    fontFamily: "'Rubik', sans-serif",
+                    fontSize: cfg.fontSize,
+                    lineHeight: cfg.lineHeight,
+                    color: "#0b0c0e",
+                    fontWeight: 400,
+                  }}
+                >
+                  {value}
+                </span>
+                {focused && <BlinkingCursor compact={compact} />}
+              </>
+            ) : (
+              <>
+                {focused ? (
+                  <BlinkingCursor compact={compact} />
+                ) : (
+                  <span
+                    className="whitespace-nowrap shrink-0 mr-[4px]"
+                    style={{
+                      fontFamily: "'Rubik', sans-serif",
+                      fontSize: cfg.fontSize,
+                      lineHeight: cfg.lineHeight,
+                      color: "#7f8999",
+                      fontWeight: 400,
+                    }}
+                  >
+                    Search
+                  </span>
+                )}
+                {/* Was gated behind `!compact`, which silently disabled the
+                    animated/cycling placeholder whenever this bar rendered
+                    in compact mode (e.g. the single-row desktop header) —
+                    that gate has been removed so the animation renders at
+                    both sizes. */}
+                {/* Typewriter temporarily disabled — was <AnimatedPlaceholder .../> here */}
+              </>
+            )}
+
+            {/* Real input (invisible, captures keyboard) */}
+            <input
+              ref={inputRef}
+              type="text"
+              value={value}
+              onChange={(e) => onQueryChange(e.target.value)}
+              onFocus={() => {
+                setFocused(true);
+                onFocus?.();
+              }}
+              onBlur={() => setFocused(false)}
+              onKeyDown={handleKeyDown}
+              aria-label="AI Search"
+              className="absolute inset-0 opacity-0 cursor-text w-full bg-transparent"
+              style={{ caretColor: "transparent" }}
+            />
+          </div>
+
+          {/* Clear button */}
+          <button
+            className={`relative shrink-0 cursor-pointer overflow-hidden transition-opacity duration-150 ${
+              showX ? "opacity-100" : "opacity-0 pointer-events-none"
+            }`}
+            style={{ width: cfg.clearSize, height: cfg.clearSize }}
+            onMouseDown={handleClear}
+            aria-label="Clear search"
+            tabIndex={showX ? 0 : -1}
+          >
+            <div className="absolute inset-1/4">
+              <div className="absolute inset-[-6.25%]">
+                <CloseIconSvg />
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+    );
+  },
+);
+
+
+
+===== app\sections\SearchPanel.tsx =====
+
+import {useEffect, useRef, useState, useCallback} from 'react';
+import {createPortal} from 'react-dom';
+import {Link, useFetcher} from 'react-router';
+import {
+  RotateCcw,
+  Search,
+  Tag,
+  LayoutGrid,
+  Info,
+  Heart,
+  ArrowUpLeft,
+  ImageOff,
+} from 'lucide-react';
+import {TRENDING_SEARCH_TERMS} from '~/config/Header.constants';
+import {SearchBar} from '~/snippets/SearchBar';
+
+// A single product match returned by the predictive-search API.
+type PredictiveSearchHit = {
+  objectID: string;
+  title: string;
+  handle: string;
+  image_url: string | null;
+  price: number | null;
+  compare_at_price: number | null;
+  is_eco: boolean;
+  vendor?: string | null;
+};
+
+// A collection (category) match returned by the predictive-search API.
+type PredictiveCollection = {
+  id: string;
+  title: string;
+  handle: string;
+  image_url: string | null;
+};
+
+// A blog article match returned by the predictive-search API.
+type PredictiveArticle = {
+  id: string;
+  title: string;
+  handle: string;
+  blog_handle: string;
+  image_url: string | null;
+  published_at: string;
+};
+
+// A static page match returned by the predictive-search API.
+type PredictivePage = {
+  id: string;
+  title: string;
+  handle: string;
+};
+
+// Shape of the full JSON payload returned by /api/predictive-search.
+type PredictiveSearchResponse = {
+  hits: PredictiveSearchHit[];
+  querySuggestions: string[];
+  vendors: string[];
+  collections: PredictiveCollection[];
+  articles: PredictiveArticle[];
+  pages: PredictivePage[];
+  error?: string;
+};
+
+// localStorage key under which the user's recent search terms are persisted.
+const RECENT_SEARCHES_KEY = 'ecombio:recent-searches';
+// Cap on how many recent searches we keep/show.
+export const MAX_RECENT_SEARCHES = 5;
+
+// Formats a numeric amount as a USD currency string, or null if no amount.
+function formatMoney(amount: number | null | undefined): string | null {
+  if (amount == null) return null;
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(amount);
+}
+
+// Formats an ISO date string as "Month YYYY" (e.g. "January 2024") for article bylines.
+function formatArticleDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', {
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+// Renders `text` with the first case-insensitive occurrence of `query` bolded.
+// Used to visually highlight why a suggestion matched what the user typed.
+function HighlightedText({text, query}: {text: string; query: string}) {
+  const q = query.trim();
+  if (!q) return <span>{text}</span>;
+  const idx = text.toLowerCase().indexOf(q.toLowerCase());
+  if (idx === -1) return <span>{text}</span>;
+  const before = text.slice(0, idx);
+  const match = text.slice(idx, idx + q.length);
+  const after = text.slice(idx + q.length);
+  return (
+    <span>
+      {before}
+      <span className="font-bold text-gray-950">{match}</span>
+      {after}
+    </span>
+  );
+}
+
+// Reads the saved recent-search terms from localStorage.
+// Returns an empty array on the server, or if parsing/reading fails.
+export function readRecentSearches(): string[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = window.localStorage.getItem(RECENT_SEARCHES_KEY);
+    return raw ? (JSON.parse(raw) as string[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+// Persists the given list of recent-search terms to localStorage.
+// Silently no-ops if storage is unavailable (e.g. private browsing, quota exceeded).
+export function writeRecentSearches(terms: string[]) {
+  try {
+    window.localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(terms));
+  } catch {
+    // no-op
+  }
+}
+
+// The slide-down search overlay: input box, predictive suggestions, and
+// product/article results, rendered into a portal so it can sit above
+// everything else in the page regardless of where it's mounted.
+export function SearchPanel({
+  open,
+  onClose,
+  triggerRef,
+  term,
+  onTermChange,
+  onNavigate,
+}: {
+  open: boolean;
+  onClose: () => void;
+  triggerRef: React.RefObject<HTMLElement>;
+  term: string;
+  onTermChange: (value: string) => void;
+  onNavigate: (value: string) => void;
+}) {
+  // Fetcher used to call the predictive-search API without a full navigation.
+  const fetcher = useFetcher<PredictiveSearchResponse>();
+
+  // Recent searches loaded from localStorage (client-only, so it starts empty).
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+
+  // Refresh recent searches from storage each time the panel is opened,
+  // in case they changed since the last time it was open.
+  useEffect(() => {
+    if (open) setRecentSearches(readRecentSearches());
+  }, [open]);
+
+  // Debounced fetch of predictive-search results: wait 250ms after the user
+  // stops typing before hitting the API, to avoid firing a request per keystroke.
+  useEffect(() => {
+    if (!term) return;
+    const timeout = setTimeout(() => {
+      fetcher.load(`/api/predictive-search?q=${encodeURIComponent(term)}`);
+    }, 250);
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [term]);
+
+  // Derive the various result buckets from the fetcher's last response.
+  // Everything collapses to empty when there's no active search term, so
+  // stale results don't flash after the input is cleared.
+  const hits: PredictiveSearchHit[] = term ? fetcher.data?.hits ?? [] : [];
+  const querySuggestions = term ? fetcher.data?.querySuggestions ?? [] : [];
+  const vendors = term ? fetcher.data?.vendors ?? [] : [];
+  const collections = term ? fetcher.data?.collections ?? [] : [];
+  const articles = term ? fetcher.data?.articles ?? [] : [];
+  const pages = term ? fetcher.data?.pages ?? [] : [];
+  const error = fetcher.data?.error ?? null;
+
+  // Only show a loading state when there's an actual query in flight.
+  const state: 'idle' | 'loading' =
+    term && (fetcher.state === 'loading' || fetcher.state === 'submitting')
+      ? 'loading'
+      : 'idle';
+
+  // Recent searches that also match what's currently typed, so they can be
+  // shown alongside live suggestions instead of only when the box is empty.
+  const matchingRecent = term
+    ? recentSearches.filter((r) =>
+        r.toLowerCase().includes(term.toLowerCase()),
+      )
+    : [];
+
+  // Whether the left-hand "Suggestions" rail has anything to show at all.
+  const hasSuggestions =
+    matchingRecent.length > 0 ||
+    querySuggestions.length > 0 ||
+    vendors.length > 0 ||
+    collections.length > 0 ||
+    pages.length > 0;
+
+  // First matching collection, used to label the product results
+  // (e.g. "Products In Men's Shoes").
+  const primaryCollection = collections[0] ?? null;
+
+  // Ref to the panel container, used to detect outside clicks.
+  const panelRef = useRef<HTMLDivElement>(null);
+  // Ref to the search input inside the panel, so we can focus it programmatically.
+  const panelInputRef = useRef<HTMLInputElement>(null);
+
+  // Portals require a browser DOM, so we defer rendering until after mount
+  // to avoid a server/client mismatch.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  // Autofocus the input whenever the panel opens.
+  useEffect(() => {
+    if (open) panelInputRef.current?.focus();
+  }, [open]);
+
+  // Clears the search term and closes the panel (used by "Cancel" and
+  // whenever the user navigates away from a search result).
+  function closeSearch() {
+    onTermChange('');
+    onClose();
+  }
+
+  // Fills the input with a clicked suggestion and refocuses it, so the user
+  // can keep refining the search without an extra click.
+  function applySuggestion(value: string) {
+    onTermChange(value);
+    panelInputRef.current?.focus();
+  }
+
+  // Close the panel when the user clicks outside it (and outside the
+  // trigger button that opened it), or presses Escape.
+  useEffect(() => {
+    if (!open) return;
+    function onClickOutside(e: MouseEvent) {
+      const target = e.target as Node;
+      if (
+        panelRef.current &&
+        !panelRef.current.contains(target) &&
+        !triggerRef.current?.contains(target)
+      ) {
+        onClose();
+      }
+    }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    }
+    document.addEventListener('mousedown', onClickOutside);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onClickOutside);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [open, onClose, triggerRef]);
+
+  // Also close the panel if the page is scrolled while it's open, so it
+  // doesn't stay pinned over content the user is trying to view.
+  useEffect(() => {
+    if (!open) return;
+    function onScroll() {
+      onClose();
+    }
+    window.addEventListener('scroll', onScroll, {passive: true});
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [open, onClose]);
+
+  const total = hits.length;
+  // Reserved for offsetting the panel below a fixed header; currently unused (0).
+  const topOffset = 0;
+
+  // Don't render anything until we're safely on the client (see `mounted` above).
+  if (!mounted) return null;
+
+  return createPortal(
+    <>
+      {/* Semi-transparent backdrop behind the panel; clicking it closes the search */}
+      <div
+        aria-hidden="true"
+        onClick={onClose}
+        style={{top: topOffset}}
+        className={`fixed inset-x-0 bottom-0 z-[900] bg-black/40 backdrop-blur-[6px] transition-opacity duration-200 ease-out ${
+          open ? 'opacity-100' : 'pointer-events-none opacity-0'
+        }`}
+      />
+      {/* Main panel. Uses a CSS grid-rows trick (0fr -> 1fr) to animate open/close
+          height without needing to know the content's actual height in advance. */}
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Search"
+        style={{top: topOffset}}
+        className={`fixed inset-x-0 z-[901] grid max-h-[calc(100vh-var(--sp-top,0px))] border-b border-gray-200 bg-white shadow-2xl transition-[grid-template-rows] duration-300 ease-out ${
+          open ? 'grid-rows-[1fr]' : 'pointer-events-none grid-rows-[0fr]'
+        }`}
+      >
+        <div className="overflow-hidden">
+          <div className="mx-auto max-h-[80vh] max-w-[1080px] overflow-y-auto px-6 py-5">
+            {/* Search input + Cancel button */}
+            <div className="search-bar flex items-center gap-3">
+              <SearchBar
+                inputRef={panelInputRef}
+                className="flex-1"
+                value={term}
+                onQueryChange={onTermChange}
+                onSearch={onNavigate}
+              />
+              <button
+                type="button"
+                onClick={closeSearch}
+                aria-label="Close search"
+                className="shrink-0 text-sm font-semibold text-gray-950 transition hover:text-gray-600"
+              >
+                Cancel
+              </button>
+            </div>
+
+            {/* Results area: which branch renders depends on whether there's a
+                query, whether it's loading, errored, empty, or has results. */}
+            <div className="mt-4">
+              {!term ? (
+                // No query yet: show trending/popular search terms.
+                <PopularSearches
+                  terms={TRENDING_SEARCH_TERMS}
+                  onSelect={onTermChange}
+                />
+              ) : state === 'loading' ? (
+                // Query in flight: show placeholder skeleton cards.
+                <SearchResultsSkeleton />
+              ) : error ? (
+                // API returned an error: show the message plus a fallback to
+                // popular searches so the user isn't stuck.
+                <div>
+                  <p className="text-sm text-red-600">{error}</p>
+                  <div className="mt-7">
+                    <PopularSearches
+                      terms={TRENDING_SEARCH_TERMS}
+                      onSelect={onTermChange}
+                    />
+                  </div>
+                </div>
+              ) : !total && !hasSuggestions ? (
+                // Query resolved but nothing matched at all.
+                <div>
+                  <p className="text-sm text-gray-500">
+                    No results found for <q>{term}</q>
+                  </p>
+                  <div className="mt-7">
+                    <PopularSearches
+                      terms={TRENDING_SEARCH_TERMS}
+                      onSelect={onTermChange}
+                    />
+                  </div>
+                </div>
+              ) : (
+                // Normal case: two-column layout — suggestions rail on the
+                // left, product/article results on the right.
+                <div className="grid grid-cols-1 gap-8 md:grid-cols-[260px_1fr]">
+                  {hasSuggestions && (
+                    <SuggestionsRail
+                      term={term}
+                      recent={matchingRecent}
+                      queries={querySuggestions}
+                      vendors={vendors}
+                      collections={collections}
+                      pages={pages}
+                      onSelectTerm={applySuggestion}
+                    />
+                  )}
+                  <div className="min-w-0">
+                    {/* Product results, shown as a horizontally-scrolling carousel */}
+                    {total > 0 && (
+                      <div>
+                        <p className="mb-4 text-sm text-gray-400">
+                          Products
+                          {primaryCollection && (
+                            <span className="ml-1.5 font-semibold text-gray-800">
+                              In {primaryCollection.title}
+                            </span>
+                          )}
+                        </p>
+                        <ProductHitsCarousel hits={hits} onNavigate={closeSearch} />
+                        <div className="mt-6 flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onNavigate(term);
+                              onClose();
+                            }}
+                            className="inline-flex items-center justify-center rounded-sm bg-gray-950 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-gray-800"
+                          >
+                            See all results for &ldquo;{term}&rdquo;
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    {/* Article results: show up to 2 as small preview cards */}
+                    {articles.length > 0 && (
+                      <div className={total > 0 ? 'mt-8' : ''}>
+                        <div className="mb-4 flex items-center justify-between">
+                          <p className="text-sm text-gray-400">Articles</p>
+                          <Link
+                            to={`/search?q=${encodeURIComponent(term)}&type=article`}
+                            onClick={closeSearch}
+                            className="text-sm font-semibold text-gray-900 underline decoration-gray-300 underline-offset-4 hover:decoration-gray-900"
+                          >
+                            See all
+                          </Link>
+                        </div>
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                          {articles.slice(0, 2).map((article) => (
+                            <Link
+                              key={article.id}
+                              to={`/blogs/${article.blog_handle}/${article.handle}`}
+                              onClick={closeSearch}
+                              className="group flex items-center gap-3 rounded-xl border border-gray-100 p-2.5 transition hover:border-gray-200 hover:bg-gray-50"
+                            >
+                              <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-gray-100">
+                                {article.image_url ? (
+                                  <img
+                                    src={article.image_url}
+                                    alt={article.title}
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="flex h-full w-full items-center justify-center">
+                                    <ImageOff size={16} className="text-gray-300" aria-hidden="true" />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="line-clamp-2 text-sm font-semibold leading-snug text-gray-900 group-hover:text-gray-950">
+                                  {article.title}
+                                </p>
+                                <p className="mt-1 text-xs text-gray-500">
+                                  Published{' '}
+                                  {formatArticleDate(article.published_at)}
+                                </p>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>,
+    // Render into document.body so the overlay/panel isn't clipped or
+    // affected by any ancestor's positioning/overflow/z-index.
+    document.body,
+  );
+}
+
+// Max total number of suggestion rows shown across all categories combined
+// (recent searches, query suggestions, vendors, collections, pages).
+const MAX_SUGGESTIONS = 8;
+
+// Left-hand rail listing mixed suggestion types (recent searches, query
+// autocompletions, vendors, collections, pages), capped at MAX_SUGGESTIONS
+// total and filled in that priority order.
+function SuggestionsRail({
+  term,
+  recent,
+  queries,
+  vendors,
+  collections,
+  pages,
+  onSelectTerm,
+}: {
+  term: string;
+  recent: string[];
+  queries: string[];
+  vendors: string[];
+  collections: PredictiveCollection[];
+  pages: PredictivePage[];
+  onSelectTerm: (term: string) => void;
+}) {
+  // Shared "budget" of remaining suggestion slots, consumed in priority
+  // order by each category below via `take`.
+  let remaining = MAX_SUGGESTIONS;
+  const take = <T,>(items: T[]): T[] => {
+    if (remaining <= 0) return [];
+    const slice = items.slice(0, remaining);
+    remaining -= slice.length;
+    return slice;
+  };
+  const shownRecent = take(recent);
+  const shownQueries = take(queries);
+  const shownVendors = take(vendors);
+  const shownCollections = take(collections);
+  const shownPages = take(pages);
+
+  return (
+    <div className="border-b border-gray-100 pb-6 md:border-b-0 md:border-r md:border-gray-100 md:pb-0 md:pr-6">
+      <p className="mb-4 text-sm text-gray-400">Suggestions</p>
+      <div className="flex flex-col gap-1.5">
+        {/* Recent searches the user has previously made that match the current term */}
+        {shownRecent.map((value) => (
+          <SuggestionRow
+            key={`recent-${value}`}
+            icon={<RotateCcw size={15} aria-hidden="true" />}
+            label={value}
+            query={term}
+            onClick={() => onSelectTerm(value)}
+          />
+        ))}
+        {/* Autocompleted query suggestions from the search API */}
+        {shownQueries.map((value) => (
+          <SuggestionRow
+            key={`query-${value}`}
+            icon={<Search size={15} aria-hidden="true" />}
+            label={value}
+            query={term}
+            onClick={() => onSelectTerm(value)}
+          />
+        ))}
+        {/* Matching vendor/brand names */}
+        {shownVendors.map((value) => (
+          <SuggestionRow
+            key={`vendor-${value}`}
+            icon={<Tag size={15} aria-hidden="true" />}
+            label={value}
+            query={term}
+            onClick={() => onSelectTerm(value)}
+          />
+        ))}
+        {/* Matching collections — these link directly to the collection page
+            rather than re-running a search, so they're plain <Link>s */}
+        {shownCollections.map((collection) => (
+          <Link
+            key={collection.id}
+            to={`/collections/${collection.handle}`}
+            className="group flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm text-gray-800 transition hover:bg-gray-50"
+          >
+            <span className="text-gray-400">
+              <LayoutGrid size={15} aria-hidden="true" />
+            </span>
+            <span className="min-w-0 flex-1 leading-snug">
+              <HighlightedText text={collection.title} query={term} />
+            </span>
+          </Link>
+        ))}
+        {/* Matching static pages — also link directly rather than re-searching */}
+        {shownPages.map((page) => (
+          <Link
+            key={page.id}
+            to={`/pages/${page.handle}`}
+            className="group flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm text-gray-800 transition hover:bg-gray-50"
+          >
+            <span className="text-gray-400">
+              <Info size={15} aria-hidden="true" />
+            </span>
+            <span className="min-w-0 flex-1 leading-snug">
+              <HighlightedText text={page.title} query={term} />
+            </span>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// A single clickable row in the suggestions rail: an icon, the (highlighted)
+// label text, and an arrow that appears on hover. Used for suggestion types
+// that fill in the search box rather than navigating directly (recent
+// searches, query suggestions, vendors).
+function SuggestionRow({
+  icon,
+  label,
+  query,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  query: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm text-gray-800 transition hover:bg-gray-50"
+    >
+      <span className="text-gray-400">{icon}</span>
+      <span className="min-w-0 flex-1 leading-snug">
+        <HighlightedText text={label} query={query} />
+      </span>
+      <span className="shrink-0 text-gray-300 opacity-0 transition group-hover:opacity-100">
+        <ArrowUpLeft size={14} aria-hidden="true" />
+      </span>
+    </button>
+  );
+}
+
+// Horizontally-scrolling row of product result cards, with prev/next arrow
+// buttons that appear once there's overflow content in that direction.
+function ProductHitsCarousel({
+  hits,
+  onNavigate,
+}: {
+  hits: PredictiveSearchHit[];
+  onNavigate: () => void;
+}) {
+  // Ref to the scrollable track, used both to scroll it programmatically
+  // and to read its current scroll position.
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
+
+  // Recomputes whether the prev/next arrows should be shown, based on the
+  // track's current scroll position relative to its scrollable width.
+  const updateScrollState = useCallback(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    setCanScrollPrev(el.scrollLeft > 1);
+    setCanScrollNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
+  }, []);
+
+  // Keep the arrow visibility in sync with scrolling and with size changes
+  // (e.g. window resize, or the number of hits changing).
+  useEffect(() => {
+    updateScrollState();
+    const el = trackRef.current;
+    if (!el) return;
+    el.addEventListener('scroll', updateScrollState, {passive: true});
+    const ro = new ResizeObserver(updateScrollState);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener('scroll', updateScrollState);
+      ro.disconnect();
+    };
+  }, [updateScrollState, hits.length]);
+
+  // Scrolls the track by roughly one card's width (plus its gap) in the
+  // given direction; falls back to 80% of the visible width if no card
+  // is found (e.g. empty carousel).
+  function scrollByDirection(direction: 1 | -1) {
+    const el = trackRef.current;
+    if (!el) return;
+    const card = el.querySelector<HTMLElement>('[data-carousel-item]');
+    const styles = card ? getComputedStyle(el) : null;
+    const gap = styles ? parseFloat(styles.columnGap || styles.gap || '0') : 0;
+    const step = card ? card.offsetWidth + gap : el.clientWidth * 0.8;
+    el.scrollBy({left: step * direction, behavior: 'smooth'});
+  }
+
+  if (!hits.length) return null;
+
+  return (
+    <div className="relative">
+      {/* Scroll-snapping track; scrollbar is hidden since we provide our
+          own prev/next buttons instead */}
+      <div
+        ref={trackRef}
+        role="group"
+        aria-label="Product results"
+        className="flex gap-5 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {hits.map((hit) => (
+          <div
+            key={hit.objectID}
+            data-carousel-item
+            className="w-[45%] shrink-0 snap-start sm:w-[31%] lg:w-[23%]"
+          >
+            <ProductHit hit={hit} onNavigate={onNavigate} />
+          </div>
+        ))}
+      </div>
+      {/* Prev arrow: only rendered once there's content scrolled past on the left */}
+      {canScrollPrev && (
+        <button
+          type="button"
+          onClick={() => scrollByDirection(-1)}
+          aria-label="Scroll to previous products"
+          className="absolute left-0 top-1/2 hidden -translate-x-3 -translate-y-1/2 items-center justify-center rounded-full bg-white p-2 text-gray-700 shadow-md ring-1 ring-gray-200 transition hover:bg-gray-50 sm:flex"
+        >
+          <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <path
+              d="M11 4.5 6.5 9l4.5 4.5"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      )}
+      {/* Next arrow: only rendered once there's more content to scroll to on the right */}
+      {canScrollNext && (
+        <button
+          type="button"
+          onClick={() => scrollByDirection(1)}
+          aria-label="Scroll to next products"
+          className="absolute right-0 top-1/2 hidden translate-x-3 -translate-y-1/2 items-center justify-center rounded-full bg-white p-2 text-gray-700 shadow-md ring-1 ring-gray-200 transition hover:bg-gray-50 sm:flex"
+        >
+          <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <path
+              d="M7 4.5 11.5 9 7 13.5"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      )}
+    </div>
+  );
+}
+
+// A single product card within the carousel: image (with sale/eco badges),
+// vendor, title, price, and a wishlist heart button overlaid on top.
+function ProductHit({
+  hit,
+  onNavigate,
+}: {
+  hit: PredictiveSearchHit;
+  onNavigate: () => void;
+}) {
+  const price = formatMoney(hit.price);
+  const compareAtPrice = formatMoney(hit.compare_at_price);
+  // "On sale" means there's a compare-at price higher than the current price.
+  const onSale =
+    hit.compare_at_price != null &&
+    hit.price != null &&
+    hit.compare_at_price > hit.price;
+  // Discount percentage, rounded, only computed when actually on sale.
+  const percentOff =
+    onSale && hit.price != null && hit.compare_at_price != null
+      ? Math.round((1 - hit.price / hit.compare_at_price) * 100)
+      : null;
+
+  return (
+    <div className="group relative">
+      <Link to={`/products/${hit.handle}`} onClick={onNavigate}>
+        <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-gray-100 ring-1 ring-transparent transition group-hover:ring-gray-200">
+          {hit.image_url ? (
+            <img
+              src={hit.image_url}
+              alt={hit.title}
+              className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.04]"
+            />
+          ) : (
+            // Fallback placeholder when the product has no image.
+            <div className="flex h-full w-full items-center justify-center">
+              <ImageOff size={22} className="text-gray-300" aria-hidden="true" />
+            </div>
+          )}
+          {/* Badges (eco-friendly / sale percentage) overlaid on the top-left of the image */}
+          <div className="absolute left-2 top-2 flex flex-col items-start gap-1">
+            {hit.is_eco && (
+              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">
+                ECO
+              </span>
+            )}
+            {percentOff !== null && percentOff > 0 && (
+              <span className="rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-semibold text-white">
+                -{percentOff}% OFF
+              </span>
+            )}
+          </div>
+        </div>
+        {hit.vendor && (
+          <p className="mt-2.5 text-[10px] font-medium uppercase tracking-wider text-gray-400">
+            {hit.vendor}
+          </p>
+        )}
+        <p className="mt-1 line-clamp-2 text-[15px] leading-snug text-gray-900 group-hover:text-gray-950">
+          {hit.title}
+        </p>
+        <div className="mt-1.5 flex items-baseline gap-2">
+          {price && (
+            <span className="text-[15px] font-semibold text-gray-900">
+              {price}
+            </span>
+          )}
+          {/* Original price shown struck-through only when on sale */}
+          {onSale && compareAtPrice && (
+            <span className="text-[13px] text-gray-400 line-through">
+              {compareAtPrice}
+            </span>
+          )}
+        </div>
+      </Link>
+      {/* Wishlist button sits on top of the (otherwise fully clickable) card;
+          preventDefault stops it from triggering the underlying Link navigation */}
+      <button
+        type="button"
+        aria-label={`Add ${hit.title} to wishlist`}
+        onClick={(e) => e.preventDefault()}
+        className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow transition hover:bg-white"
+      >
+        <Heart size={14} aria-hidden="true" />
+      </button>
+    </div>
+  );
+}
+
+// Row of pill-shaped buttons for trending/popular search terms, shown as
+// the default state before the user has typed anything.
+function PopularSearches({
+  terms,
+  onSelect,
+}: {
+  terms: string[];
+  onSelect: (term: string) => void;
+}) {
+  if (!terms.length) return null;
+  return (
+    <div>
+      <p className="search-title text-sm text-gray-400">Popular Search Terms</p>
+      <div className="search-terms flex flex-wrap">
+        {terms.map((term) => (
+          <button
+            key={term}
+            type="button"
+            onClick={() => onSelect(term)}
+            className="rounded-full bg-gray-100 px-4 py-2 text-sm font-medium text-gray-800 transition hover:bg-gray-200"
+          >
+            {term}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Placeholder loading state shown while a predictive-search request is in
+// flight: a fixed grid of pulsing gray blocks shaped like product cards.
+function SearchResultsSkeleton() {
+  return (
+    <div className="grid grid-cols-2 gap-5 sm:grid-cols-3">
+      {Array.from({length: 6}).map((_, i) => (
+        <div key={i} className="animate-pulse">
+          <div className="aspect-square w-full rounded-xl bg-gray-100" />
+          <div className="mt-2.5 h-3.5 w-4/5 rounded bg-gray-100" />
+          <div className="mt-2 h-3.5 w-1/3 rounded bg-gray-100" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+
+===== app\assets\search-bar.css =====
+
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500&display=swap');
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+
+

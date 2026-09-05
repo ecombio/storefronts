@@ -1187,6 +1187,40 @@ export type SponsoredAdsFragment = Pick<StorefrontAPI.Metaobject, 'id'> & {
   }>;
 };
 
+export type LayoutVariantValueFragment = {
+  variant?: StorefrontAPI.Maybe<Pick<StorefrontAPI.MetaobjectField, 'value'>>;
+};
+
+export type PromoBannerFragment = Pick<StorefrontAPI.Metaobject, 'id'> & {
+  variant?: StorefrontAPI.Maybe<{
+    reference?: StorefrontAPI.Maybe<{
+      variant?: StorefrontAPI.Maybe<
+        Pick<StorefrontAPI.MetaobjectField, 'value'>
+      >;
+    }>;
+  }>;
+  heading?: StorefrontAPI.Maybe<Pick<StorefrontAPI.MetaobjectField, 'value'>>;
+  subheading?: StorefrontAPI.Maybe<
+    Pick<StorefrontAPI.MetaobjectField, 'value'>
+  >;
+  image?: StorefrontAPI.Maybe<{
+    reference?: StorefrontAPI.Maybe<{
+      image?: StorefrontAPI.Maybe<
+        Pick<StorefrontAPI.Image, 'url' | 'altText' | 'width' | 'height'>
+      >;
+    }>;
+  }>;
+  linkText?: StorefrontAPI.Maybe<Pick<StorefrontAPI.MetaobjectField, 'value'>>;
+  linkUrl?: StorefrontAPI.Maybe<Pick<StorefrontAPI.MetaobjectField, 'value'>>;
+  backgroundColor?: StorefrontAPI.Maybe<
+    Pick<StorefrontAPI.MetaobjectField, 'value'>
+  >;
+  textAlignment?: StorefrontAPI.Maybe<
+    Pick<StorefrontAPI.MetaobjectField, 'value'>
+  >;
+  position?: StorefrontAPI.Maybe<Pick<StorefrontAPI.MetaobjectField, 'value'>>;
+};
+
 export type CollectionQueryVariables = StorefrontAPI.Exact<{
   handle: StorefrontAPI.Scalars['String']['input'];
   country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
@@ -1356,6 +1390,50 @@ export type CollectionQuery = {
           }
         >;
       }>;
+      promoBannerMetafield?: StorefrontAPI.Maybe<{
+        reference?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.Metaobject, 'id'> & {
+            variant?: StorefrontAPI.Maybe<{
+              reference?: StorefrontAPI.Maybe<{
+                variant?: StorefrontAPI.Maybe<
+                  Pick<StorefrontAPI.MetaobjectField, 'value'>
+                >;
+              }>;
+            }>;
+            heading?: StorefrontAPI.Maybe<
+              Pick<StorefrontAPI.MetaobjectField, 'value'>
+            >;
+            subheading?: StorefrontAPI.Maybe<
+              Pick<StorefrontAPI.MetaobjectField, 'value'>
+            >;
+            image?: StorefrontAPI.Maybe<{
+              reference?: StorefrontAPI.Maybe<{
+                image?: StorefrontAPI.Maybe<
+                  Pick<
+                    StorefrontAPI.Image,
+                    'url' | 'altText' | 'width' | 'height'
+                  >
+                >;
+              }>;
+            }>;
+            linkText?: StorefrontAPI.Maybe<
+              Pick<StorefrontAPI.MetaobjectField, 'value'>
+            >;
+            linkUrl?: StorefrontAPI.Maybe<
+              Pick<StorefrontAPI.MetaobjectField, 'value'>
+            >;
+            backgroundColor?: StorefrontAPI.Maybe<
+              Pick<StorefrontAPI.MetaobjectField, 'value'>
+            >;
+            textAlignment?: StorefrontAPI.Maybe<
+              Pick<StorefrontAPI.MetaobjectField, 'value'>
+            >;
+            position?: StorefrontAPI.Maybe<
+              Pick<StorefrontAPI.MetaobjectField, 'value'>
+            >;
+          }
+        >;
+      }>;
       products: {
         filters: Array<
           Pick<StorefrontAPI.Filter, 'id' | 'label' | 'type'> & {
@@ -1411,29 +1489,6 @@ export type CollectionQuery = {
       };
     }
   >;
-};
-
-export type CollectionPageCursorsQueryVariables = StorefrontAPI.Exact<{
-  handle: StorefrontAPI.Scalars['String']['input'];
-  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
-  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
-  filters?: StorefrontAPI.InputMaybe<
-    Array<StorefrontAPI.ProductFilter> | StorefrontAPI.ProductFilter
-  >;
-  first: StorefrontAPI.Scalars['Int']['input'];
-}>;
-
-export type CollectionPageCursorsQuery = {
-  collection?: StorefrontAPI.Maybe<{
-    products: {
-      edges: Array<
-        Pick<StorefrontAPI.ProductEdge, 'cursor'> & {
-          node: Pick<StorefrontAPI.Product, 'id'>;
-        }
-      >;
-      pageInfo: Pick<StorefrontAPI.PageInfo, 'hasNextPage'>;
-    };
-  }>;
 };
 
 export type CollectionFragment = Pick<
@@ -2121,13 +2176,9 @@ interface GeneratedQueryTypes {
     return: BlogsQuery;
     variables: BlogsQueryVariables;
   };
-  '#graphql\n  #graphql\n  fragment ProductCard on Product {\n    id\n    handle\n    title\n    vendor\n    featuredImage {\n      id\n      url\n      altText\n      width\n      height\n    }\n    priceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n    compareAtPriceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n    selectedOrFirstAvailableVariant(\n      selectedOptions: []\n      ignoreUnknownOptions: true\n      caseInsensitiveMatch: true\n    ) {\n      id\n      availableForSale\n    }\n    etaText: metafield(namespace: "custom", key: "eta_text") {\n      value\n    }\n    sponsored: metafield(namespace: "custom", key: "sponsored") {\n      value\n    }\n    reviewsRating: metafield(namespace: "reviews", key: "rating") {\n      value\n    }\n    reviewsCount: metafield(namespace: "reviews", key: "rating_count") {\n      value\n    }\n  }\n\n  #graphql\n  fragment ArticleItem on Article {\n    id\n    handle\n    title\n    excerpt\n    publishedAt\n    blog {\n      handle\n    }\n    image {\n      id\n      url\n      altText\n      width\n      height\n    }\n    readingTime: metafield(namespace: "custom", key: "reading_time") {\n      value\n    }\n  }\n\n  #graphql\n  fragment SubCollectionItem on Collection {\n    id\n    handle\n    title\n    image {\n      id\n      url\n      altText\n      width\n      height\n    }\n  }\n\n  #graphql\n  #graphql\n  fragment PromoCard on Metaobject {\n    id\n    image: field(key: "image") {\n      reference {\n        ... on MediaImage {\n          image {\n            url\n            altText\n            width\n            height\n          }\n        }\n      }\n    }\n    heading: field(key: "heading") {\n      value\n    }\n    linkText: field(key: "link_text") {\n      value\n    }\n    linkUrl: field(key: "link_url") {\n      value\n    }\n  }\n\n  fragment SponsoredAds on Metaobject {\n    id\n    heading: field(key: "heading") {\n      value\n    }\n    subheading: field(key: "subheading") {\n      value\n    }\n    position: field(key: "grid_position") {\n      value\n    }\n    promoCard: field(key: "promo_card") {\n      reference {\n        ... on Metaobject {\n          ...PromoCard\n        }\n      }\n    }\n    products: field(key: "products") {\n      reference {\n        ... on Collection {\n          id\n          handle\n          title\n          products(first: 6) {\n            nodes {\n              ...ProductCard\n            }\n          }\n        }\n      }\n    }\n  }\n\n  query Collection(\n    $handle: String!\n    $country: CountryCode\n    $language: LanguageCode\n    $filters: [ProductFilter!]\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n  ) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      id\n      handle\n      title\n      descriptionHtml\n      bannerTextAlignmentMetafield: metafield(namespace: "custom", key: "banner_text_alignment") {\n        value\n      }\n      postsMetafield: metafield(namespace: "custom", key: "posts") {\n        references(first: 10) {\n          nodes {\n            ... on Article {\n              ...ArticleItem\n            }\n          }\n        }\n      }\n      subCollectionsMetafield: metafield(namespace: "custom", key: "sub_collections") {\n        references(first: 20) {\n          nodes {\n            ... on Collection {\n              ...SubCollectionItem\n            }\n          }\n        }\n      }\n      afterItemsMetafield: metafield(namespace: "custom", key: "after_item_lists") {\n        reference {\n          __typename\n          ... on Page {\n            id\n            body\n          }\n        }\n      }\n      sponsoredAdsMetafield: metafield(namespace: "custom", key: "sponsored_ads") {\n        reference {\n          ... on Metaobject {\n            ...SponsoredAds\n          }\n        }\n      }\n      products(\n        first: $first,\n        last: $last,\n        before: $startCursor,\n        after: $endCursor,\n        filters: $filters\n      ) {\n        filters {\n          id\n          label\n          type\n          values {\n            id\n            label\n            count\n            input\n          }\n        }\n        nodes {\n          ...ProductCard\n        }\n        pageInfo {\n          hasPreviousPage\n          hasNextPage\n          endCursor\n          startCursor\n        }\n      }\n    }\n  }\n': {
+  '#graphql\n  #graphql\n  fragment ProductCard on Product {\n    id\n    handle\n    title\n    vendor\n    featuredImage {\n      id\n      url\n      altText\n      width\n      height\n    }\n    priceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n    compareAtPriceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n    selectedOrFirstAvailableVariant(\n      selectedOptions: []\n      ignoreUnknownOptions: true\n      caseInsensitiveMatch: true\n    ) {\n      id\n      availableForSale\n    }\n    etaText: metafield(namespace: "custom", key: "eta_text") {\n      value\n    }\n    sponsored: metafield(namespace: "custom", key: "sponsored") {\n      value\n    }\n    reviewsRating: metafield(namespace: "reviews", key: "rating") {\n      value\n    }\n    reviewsCount: metafield(namespace: "reviews", key: "rating_count") {\n      value\n    }\n  }\n\n  #graphql\n  fragment ArticleItem on Article {\n    id\n    handle\n    title\n    excerpt\n    publishedAt\n    blog {\n      handle\n    }\n    image {\n      id\n      url\n      altText\n      width\n      height\n    }\n    readingTime: metafield(namespace: "custom", key: "reading_time") {\n      value\n    }\n  }\n\n  #graphql\n  fragment SubCollectionItem on Collection {\n    id\n    handle\n    title\n    image {\n      id\n      url\n      altText\n      width\n      height\n    }\n  }\n\n  #graphql\n  #graphql\n  fragment PromoCard on Metaobject {\n    id\n    image: field(key: "image") {\n      reference {\n        ... on MediaImage {\n          image {\n            url\n            altText\n            width\n            height\n          }\n        }\n      }\n    }\n    heading: field(key: "heading") {\n      value\n    }\n    linkText: field(key: "link_text") {\n      value\n    }\n    linkUrl: field(key: "link_url") {\n      value\n    }\n  }\n\n  fragment SponsoredAds on Metaobject {\n    id\n    heading: field(key: "heading") {\n      value\n    }\n    subheading: field(key: "subheading") {\n      value\n    }\n    position: field(key: "grid_position") {\n      value\n    }\n    promoCard: field(key: "promo_card") {\n      reference {\n        ... on Metaobject {\n          ...PromoCard\n        }\n      }\n    }\n    products: field(key: "products") {\n      reference {\n        ... on Collection {\n          id\n          handle\n          title\n          products(first: 8) {\n            nodes {\n              ...ProductCard\n            }\n          }\n        }\n      }\n    }\n  }\n\n  #graphql\n  #graphql\n  fragment LayoutVariantValue on Metaobject {\n    variant: field(key: "variant") {\n      value\n    }\n  }\n\n  fragment PromoBanner on Metaobject {\n    id\n    variant: field(key: "layout") {\n      reference {\n        ... on Metaobject {\n          ...LayoutVariantValue\n        }\n      }\n    }\n    heading: field(key: "heading") {\n      value\n    }\n    subheading: field(key: "subheading") {\n      value\n    }\n    image: field(key: "image") {\n      reference {\n        ... on MediaImage {\n          image {\n            url\n            altText\n            width\n            height\n          }\n        }\n      }\n    }\n    linkText: field(key: "link_text") {\n      value\n    }\n    linkUrl: field(key: "link_url") {\n      value\n    }\n    backgroundColor: field(key: "background_color") {\n      value\n    }\n    textAlignment: field(key: "text_alignment") {\n      value\n    }\n    position: field(key: "grid_position") {\n      value\n    }\n  }\n\n  query Collection(\n    $handle: String!\n    $country: CountryCode\n    $language: LanguageCode\n    $filters: [ProductFilter!]\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n  ) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      id\n      handle\n      title\n      descriptionHtml\n      bannerTextAlignmentMetafield: metafield(namespace: "custom", key: "banner_text_alignment") {\n        value\n      }\n      postsMetafield: metafield(namespace: "custom", key: "posts") {\n        references(first: 10) {\n          nodes {\n            ... on Article {\n              ...ArticleItem\n            }\n          }\n        }\n      }\n      subCollectionsMetafield: metafield(namespace: "custom", key: "sub_collections") {\n        references(first: 20) {\n          nodes {\n            ... on Collection {\n              ...SubCollectionItem\n            }\n          }\n        }\n      }\n      afterItemsMetafield: metafield(namespace: "custom", key: "after_item_lists") {\n        reference {\n          __typename\n          ... on Page {\n            id\n            body\n          }\n        }\n      }\n      sponsoredAdsMetafield: metafield(namespace: "custom", key: "sponsored_ads") {\n        reference {\n          ... on Metaobject {\n            ...SponsoredAds\n          }\n        }\n      }\n      promoBannerMetafield: metafield(namespace: "custom", key: "promo_banner") {\n        reference {\n          ... on Metaobject {\n            ...PromoBanner\n          }\n        }\n      }\n      products(\n        first: $first,\n        last: $last,\n        before: $startCursor,\n        after: $endCursor,\n        filters: $filters\n      ) {\n        filters {\n          id\n          label\n          type\n          values {\n            id\n            label\n            count\n            input\n          }\n        }\n        nodes {\n          ...ProductCard\n        }\n        pageInfo {\n          hasPreviousPage\n          hasNextPage\n          endCursor\n          startCursor\n        }\n      }\n    }\n  }\n': {
     return: CollectionQuery;
     variables: CollectionQueryVariables;
-  };
-  '#graphql\n  query CollectionPageCursors(\n    $handle: String!\n    $country: CountryCode\n    $language: LanguageCode\n    $filters: [ProductFilter!]\n    $first: Int!\n  ) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      products(first: $first, filters: $filters) {\n        edges {\n          cursor\n          node {\n            id\n          }\n        }\n        pageInfo {\n          hasNextPage\n        }\n      }\n    }\n  }\n': {
-    return: CollectionPageCursorsQuery;
-    variables: CollectionPageCursorsQueryVariables;
   };
   '#graphql\n  fragment Collection on Collection {\n    id\n    title\n    handle\n    image {\n      id\n      url\n      altText\n      width\n      height\n    }\n  }\n  query StoreCollections(\n    $country: CountryCode\n    $endCursor: String\n    $first: Int\n    $language: LanguageCode\n    $last: Int\n    $startCursor: String\n  ) @inContext(country: $country, language: $language) {\n    collections(\n      first: $first,\n      last: $last,\n      before: $startCursor,\n      after: $endCursor\n    ) {\n      nodes {\n        ...Collection\n      }\n      pageInfo {\n        hasNextPage\n        hasPreviousPage\n        startCursor\n        endCursor\n      }\n    }\n  }\n': {
     return: StoreCollectionsQuery;
