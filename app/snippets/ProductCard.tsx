@@ -5,7 +5,7 @@
 // to-cart form. Used directly in collection/search grids, and portaled
 // into shoppable-embed slots inside blog articles (see Article.tsx).
 
-import {useEffect, useState} from 'react';
+import {useMemo, useState} from 'react';
 import {Link, useNavigate} from 'react-router';
 import {Image, Money, CartForm, type OptimisticCartLineInput} from '@shopify/hydrogen';
 import type {FetcherWithComponents} from 'react-router';
@@ -13,6 +13,8 @@ import type {ProductCardFragment} from 'storefrontapi.generated';
 import {SaleBadge} from '~/snippets/SaleBadge';
 import {StarRating} from '~/snippets/StarRating';
 import {useAside} from '~/components/Aside';
+import {hasDiscount} from '~/lib/pricing';
+import {useListMembership} from '~/hooks/useListMembership';
 import {
   type CompareEntry,
   COMPARE_KEY,
@@ -93,62 +95,40 @@ export function ProductCard({product, showVendor = true, loading = 'lazy'}: Prod
   // Optional custom metafields/extras this card conditionally renders.
   const etaText = product.etaText?.value;
   const isSponsored = product.sponsored?.value === 'true';
-  const averageScore = parseRating(product.reviewsRating?.value);
-  const totalReviews = parseCount(product.reviewsCount?.value);
 
-  const [isComparing, setIsComparing] = useState(false);
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  // Memoized: JSON.parse + parseFloat on every render was wasted work
+  // since these metafield values only change when `product` itself
+  // does (a new product entirely — this card never gets a live patch
+  // to just the review fields).
+  const averageScore = useMemo(
+    () => parseRating(product.reviewsRating?.value),
+    [product.reviewsRating?.value],
+  );
+  const totalReviews = useMemo(
+    () => parseCount(product.reviewsCount?.value),
+    [product.reviewsCount?.value],
+  );
+
+  // Compare/wishlist membership + cross-tab/cross-component sync,
+  // previously ~40 lines of duplicated useEffect logic — see
+  // hooks/useListMembership.ts.
+  const [isComparing, setIsComparing] = useListMembership<CompareEntry>(
+    product.id,
+    COMPARE_KEY,
+    'compare:updated',
+    readCompareList,
+  );
+  const [isWishlisted, setIsWishlisted] = useListMembership<WishlistEntry>(
+    product.id,
+    WISHLIST_KEY,
+    'wishlist:updated',
+    readWishlist,
+  );
+
   // Shown briefly on the compare checkbox when COMPARE_MAX is hit, since
   // silently un-checking the box with no explanation (the old behavior)
   // left the user guessing why nothing happened.
   const [compareLimitHit, setCompareLimitHit] = useState(false);
-
-  // Sync on mount AND whenever compare/wishlist changes from anywhere
-  // else — another card, CompareBar's remove buttons, the /compare or
-  // /wishlist pages, or another tab via the native `storage` event.
-  // Previously this only ran once on mount, so toggling a product off
-  // from CompareBar (for example) left this card's checkbox showing
-  // checked until the page rerendered or navigated.
-  useEffect(() => {
-    // Initial sync from localStorage-backed compare/wishlist lists.
-    setIsComparing(readCompareList().some((entry) => entry.id === product.id));
-    setIsWishlisted(readWishlist().some((entry) => entry.id === product.id));
-
-    // Custom events fired by compare.ts/wishlist.ts mutators (or other
-    // components) whenever either list changes, anywhere in the app.
-    function onCompareUpdated(e: Event) {
-      const detail = (e as CustomEvent<{items: CompareEntry[]}>).detail;
-      const list = detail?.items ?? readCompareList();
-      setIsComparing(list.some((entry) => entry.id === product.id));
-    }
-
-    function onWishlistUpdated(e: Event) {
-      const detail = (e as CustomEvent<{items: WishlistEntry[]}>).detail;
-      const list = detail?.items ?? readWishlist();
-      setIsWishlisted(list.some((entry) => entry.id === product.id));
-    }
-
-    // Cross-tab sync: the native `storage` event fires in *other* tabs
-    // when localStorage changes in this one, so a compare/wishlist
-    // change in one tab reflects in cards open in another.
-    function onStorage(e: StorageEvent) {
-      if (e.key === COMPARE_KEY) {
-        setIsComparing(readCompareList().some((entry) => entry.id === product.id));
-      }
-      if (e.key === WISHLIST_KEY) {
-        setIsWishlisted(readWishlist().some((entry) => entry.id === product.id));
-      }
-    }
-
-    document.addEventListener('compare:updated', onCompareUpdated);
-    document.addEventListener('wishlist:updated', onWishlistUpdated);
-    window.addEventListener('storage', onStorage);
-    return () => {
-      document.removeEventListener('compare:updated', onCompareUpdated);
-      document.removeEventListener('wishlist:updated', onWishlistUpdated);
-      window.removeEventListener('storage', onStorage);
-    };
-  }, [product.id]);
 
   // Handles the compare checkbox toggling on/off.
   function handleCompareChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -283,11 +263,18 @@ export function ProductCard({product, showVendor = true, loading = 'lazy'}: Prod
             averageScore={averageScore}
             totalReviews={totalReviews}
             onReviewsClick={() => navigate(`${url}#reviews`)}
+            hideWriteReview
           />
         </div>
 
         <div className="product-card__pricing">
-          {compareAtPrice && (
+          {/* FIXED: was a bare truthy check on `compareAtPrice`, which
+              is an object with amount "0.00" (not null) when Shopify
+              has no real compare-at price set — that rendered a
+              nonsensical struck-through "$0.00". hasDiscount() checks
+              the object exists AND its amount actually exceeds price,
+              matching the same check SaleBadge.tsx already used. */}
+          {hasDiscount(price, compareAtPrice) && (
             <span className="product-card__price product-card__price--compare">
               <s><Money data={compareAtPrice} /></s>
             </span>

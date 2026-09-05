@@ -238,8 +238,10 @@
 
 .product-card__pricing {
   display: flex;
-  flex-direction: column;
-  gap: 3px;
+  flex-direction: row;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .product-card__price {
@@ -282,7 +284,15 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 10px;
+  /* auto (not a fixed value) pins this row to the bottom of
+     .product-card__body regardless of how much variable-height
+     content sits above it (the optional compare-price line, the
+     optional ETA text) — otherwise a 1-line vs 2-line price block
+     alone shifts the button down by the difference, so Add to Cart
+     lands at a different height card-to-card. padding-top keeps a
+     minimum gap above it when content is tall enough to touch it. */
+  margin-top: auto;
+  padding-top: 10px;
 }
 
 /* Hardened: the class selector alone was losing to a later-loaded

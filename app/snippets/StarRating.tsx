@@ -9,7 +9,7 @@ import {useId} from 'react';
  * reviews — see app/lib/yotpo.server.ts for why. Data comes from
  * Yotpo's Bottomline API, fetched server-side in the product loader.
  *
- * Styled to match Yotpo's own widget output (gold stars, score, divider,
+ * Styled to match Yotpo's own widget output (gold stars, score,divider,
  * review count) so it's visually consistent with the reviews widget
  * below it on the page. Static styling lives in
  * app/assets/star-rating.css (linked globally in app/root.tsx, matching
@@ -22,6 +22,7 @@ export function StarRating({
   totalReviews,
   onReviewsClick,
   onWriteReviewClick,
+  hideWriteReview = false,
 }: {
   averageScore: number;
   totalReviews: number;
@@ -29,6 +30,12 @@ export function StarRating({
   onReviewsClick?: () => void;
   /** Optional: separate handler for the empty-state "Write a review" button. Fallsback to onReviewsClick if omitted. */
   onWriteReviewClick?: () => void;
+  /** Suppress the empty-state "Write a review" button entirely — used
+   * in compact contexts (e.g. ProductCard) where there's nowhere on
+   * that surface for a review to actually be written. The full
+   * product page's reviews section should leave this false/default so
+   * the button still shows there. */
+  hideWriteReview?: boolean;
 }) {
   const hasReviews = totalReviews > 0;
 
@@ -78,7 +85,7 @@ export function StarRating({
         </span>
       </button>
 
-      {!hasReviews && (
+      {!hasReviews && !hideWriteReview && (
         <button
           type="button"
           onClick={onWriteReviewClick ?? onReviewsClick}
@@ -91,8 +98,8 @@ export function StarRating({
   );
 }
 
-// Returns 0–100: how much of star index `i` (0-based) should be filled,
-// so a score like 4.3 renders star 5 as ~30% filled rather than snapping
+// Returns 0–100: how much of star index `i` (0-based) should befilled,
+// so a score like 4.3 renders star 5 as ~30% filled rather thansnapping
 // to whole stars only.
 function getFillPercent(score: number, starIndex: number): number {
   const diff = score - starIndex;
@@ -110,10 +117,10 @@ function getFillPercent(score: number, starIndex: number): number {
 // hydration, causing a hydration mismatch. `uid` is what keeps this
 // safe for SSR (stable per component instance across server/client),
 // and combining it with `index` is what keeps ids unique when more
-// than one StarRating instance renders on the same page — index alone
+// than one StarRating instance renders on the same page — indexalone
 // was only unique within a single instance.
 //
-// fillPercent (the gradient <stop> offsets) is the one piece of this
+// fillPercent (the gradient <stop> offsets) is the one piece ofthis
 // component's visual output that's genuinely per-render dynamic, so
 // it's the one piece that stays as an inline SVG attribute rather than
 // moving into star-rating.css — there's no static class that could
@@ -138,7 +145,7 @@ function Star({fillPercent, index, uid}: {fillPercent: number; index: number; ui
       </defs>
       <path
         style={{pointerEvents: 'none'}}
-        d="M9 14.118L14.562 17.475L13.086 11.148L18 6.891L11.529 6.342L9 0.375L6.471 6.342L0 6.891L4.914 11.148L3.438 17.475L9 14.118Z"
+        d="M9 14.118L14.562 17.475L13.086 11.148L18 6.891L11.5296.342L9 0.375L6.471 6.342L0 6.891L4.914 11.148L3.438 17.475L9 14.118Z"
         stroke="#FFE000"
         fill={`url(#${id})`}
       />

@@ -1,4 +1,5 @@
 import type {MoneyV2} from '@shopify/hydrogen/storefront-api-types';
+import {hasDiscount, percentOff} from '~/lib/pricing';
 
 /**
  * "Save X%" badge, shown above the product title when the selected
@@ -12,16 +13,10 @@ export function SaleBadge({
   price?: MoneyV2 | null;
   compareAtPrice?: MoneyV2 | null;
 }) {
-  if (!price || !compareAtPrice) return null;
+  if (!hasDiscount(price, compareAtPrice)) return null;
 
-  const priceAmount = parseFloat(price.amount);
-  const compareAmount = parseFloat(compareAtPrice.amount);
+  const pct = percentOff(price!, compareAtPrice);
+  if (pct <= 0) return null;
 
-  if (!(compareAmount > priceAmount)) return null;
-
-  const percentOff = Math.round((1 - priceAmount / compareAmount) * 100);
-
-  if (percentOff <= 0) return null;
-
-  return <span className="sale-badge">Save {percentOff}%</span>;
+  return <span className="sale-badge">Save {pct}%</span>;
 }
