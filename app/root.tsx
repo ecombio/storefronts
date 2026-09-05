@@ -33,6 +33,7 @@ import productSectionsStyles from '~/components/blogs/product-sections.css?url';
 import productCarouselStyles from '~/assets/product-carousel.css?url';
 import promoCarouselStyles from '~/assets/promo-carousel.css?url'; // ADDED — was missing entirely; PromoCarousel.tsx rendered with no styles applied
 import promoCardStyles from '~/assets/promo-card.css?url'; // ADDED — panel styles split out of promo-carousel.css alongside the PromoCard.tsx/PromoCarousel.tsx component split
+import promoBannerStyles from '~/assets/promo-banner.css?url'; // ADDED — was missing entirely; PromoBanner.tsx rendered with no styles applied (no split/full-bleed/minimal layout, no responsive stacking, and no min-width: 0 grid containment on products-grid__banner-item — same class of bug promo-carousel.css had below)
 import collectionCardStyles from '~/assets/collection-card.css?url';
 import collectionCarouselStyles from '~/assets/collection-carousel.css?url';
 import imageCardStyles from '~/assets/image-card.css?url';
@@ -225,6 +226,10 @@ export function Layout({children}: {children?: React.ReactNode}) {
         {/* ADDED — was missing entirely; this is why PromoCarousel had no layout/styling */}
         <link rel="stylesheet" href={promoCardStyles}></link>
         {/* ADDED — panel styles split out alongside the PromoCard.tsx component split */}
+        <link rel="stylesheet" href={promoBannerStyles}></link>
+        {/* ADDED — was missing entirely; this is why PromoBanner had no layout/styling
+            (all 4 variants unstyled, no responsive stacking, and no min-width: 0
+            grid containment on products-grid__banner-item) */}
         <link rel="stylesheet" href={collectionCardStyles}></link>
         <link rel="stylesheet" href={collectionCarouselStyles}></link>
         <link rel="stylesheet" href={imageCardStyles}></link>

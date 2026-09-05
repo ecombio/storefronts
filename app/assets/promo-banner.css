@@ -1,0 +1,241 @@
+/* app/assets/promo-banner.css
+   Styles for ~/snippets/PromoBanner.tsx — a wide, single in-feed
+   promotional banner (no products of its own), distinct from
+   promo-carousel.css's shoppable-row panel.
+
+   Four variants, selected via .promo-banner--<variant>:
+     split-left   — image left, text right (default)
+     split-right  — image right, text left
+     full-bleed   — image fills the banner, text overlaid via a scrim
+     minimal      — no image; solid color-block background, text only
+
+   Grid containment: same min-width: 0 treatment PromoCarousel needed
+   (see promo-carousel.css's file-header comment for the full mechanism)
+   is applied here too on .products-grid__banner-item, since this banner
+   is spliced into the same CSS grid the same way.
+
+   STATUS: STATIC / PRESENTATIONAL ONLY — see the matching STATUS comment
+   at the top of PromoBanner.tsx. This stylesheet has nothing to do with
+   metafields itself, but it exists to support a component that's
+   currently rendered from hardcoded demo data (PROMO_BANNER_DEMO_DATA in
+   PromoBanner.tsx), not live merchant data. Layout/variant work against
+   these rules should happen now, against the demo data, before any
+   GraphQL/metaobject wiring is added on the component side.
+   ============================================================ */
+
+.promo-banner {
+  --promo-banner-bg: #f3f4f6; /* overridden inline per-instance via banner.backgroundColor */
+
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  background: var(--promo-banner-bg);
+  min-height: 220px;
+}
+
+/* ---------------------------------------------------------------------
+   split-left / split-right — image + text side by side
+   --------------------------------------------------------------------- */
+
+.promo-banner--split-left,
+.promo-banner--split-right {
+  align-items: stretch;
+}
+
+.promo-banner--split-right {
+  flex-direction: row-reverse;
+}
+
+.promo-banner--split-left .promo-banner__media,
+.promo-banner--split-right .promo-banner__media {
+  flex: 0 0 50%;
+  min-width: 0;
+}
+
+.promo-banner--split-left .promo-banner__text,
+.promo-banner--split-right .promo-banner__text {
+  flex: 1 1 50%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2rem 2.5rem;
+}
+
+/* ---------------------------------------------------------------------
+   full-bleed — image fills the banner, text overlaid on a scrim
+   --------------------------------------------------------------------- */
+
+.promo-banner--full-bleed {
+  min-height: 320px;
+}
+
+.promo-banner--full-bleed .promo-banner__media {
+  position: absolute;
+  inset: 0;
+}
+
+.promo-banner--full-bleed .promo-banner__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.55) 0%,
+    rgba(0, 0, 0, 0.15) 60%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
+.promo-banner--full-bleed .promo-banner__text {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2.5rem;
+  max-width: 560px;
+  color: #fff;
+}
+
+.promo-banner--full-bleed .promo-banner__subheading {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* ---------------------------------------------------------------------
+   minimal — no image, solid color-block background
+   --------------------------------------------------------------------- */
+
+.promo-banner--minimal {
+  min-height: 160px;
+  align-items: center;
+  justify-content: center;
+}
+
+.promo-banner--minimal .promo-banner__text {
+  padding: 2rem;
+  max-width: 640px;
+}
+
+/* ---------------------------------------------------------------------
+   Text alignment — applies within whichever text block is present.
+   Only meaningful for full-bleed and minimal (split variants already
+   have a fixed side); harmless no-op on the split variants otherwise.
+   --------------------------------------------------------------------- */
+
+.promo-banner--text-center .promo-banner__text {
+  align-items: center;
+  text-align: center;
+}
+
+.promo-banner--text-right .promo-banner__text {
+  align-items: flex-end;
+  text-align: right;
+}
+
+/* ---------------------------------------------------------------------
+   Shared media/text element styles
+   --------------------------------------------------------------------- */
+
+.promo-banner__media {
+  overflow: hidden;
+}
+
+.promo-banner__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.promo-banner__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.promo-banner__heading {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: inherit;
+}
+
+.promo-banner__subheading {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #6b7280;
+  line-height: 1.5;
+  max-width: 46ch;
+}
+
+.promo-banner__cta {
+  display: inline-block;
+  margin-top: 0.75rem;
+  padding: 10px 20px;
+  background: #111827;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 6px;
+  width: fit-content;
+  transition: background 0.15s ease;
+}
+
+.promo-banner--full-bleed .promo-banner__cta {
+  background: #fff;
+  color: #111827;
+}
+
+.promo-banner__cta:hover {
+  background: #333;
+}
+
+.promo-banner--full-bleed .promo-banner__cta:hover {
+  background: #f3f4f6;
+}
+
+/* ---------------------------------------------------------------------
+   Responsive — split variants stack image-above-text below 768px, since
+   a 50/50 side-by-side split reads as too cramped on mobile widths.
+   --------------------------------------------------------------------- */
+
+@media (max-width: 768px) {
+  .promo-banner--split-left,
+  .promo-banner--split-right {
+    flex-direction: column;
+  }
+
+  .promo-banner--split-left .promo-banner__media,
+  .promo-banner--split-right .promo-banner__media {
+    flex: 0 0 auto;
+    aspect-ratio: 16 / 9;
+  }
+
+  .promo-banner--split-left .promo-banner__text,
+  .promo-banner--split-right .promo-banner__text {
+    padding: 1.5rem;
+  }
+
+  .promo-banner--full-bleed {
+    min-height: 260px;
+  }
+
+  .promo-banner--full-bleed .promo-banner__text {
+    max-width: none;
+    padding: 1.5rem;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   In-feed placement inside .products-grid (CollectionFeed) — same
+   pattern as .products-grid__promo-item in promo-carousel.css.
+   --------------------------------------------------------------------- */
+
+.products-grid__banner-item {
+  grid-column: 1 / -1;
+  min-width: 0; /* see promo-carousel.css's file-header comment for why
+                   this is required on any full-row grid item wrapping
+                   a flex layout with fixed-ish children */
+}

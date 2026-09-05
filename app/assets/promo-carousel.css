@@ -14,9 +14,18 @@
    Navigation: the product row previously used native overflow-x: auto
    scrolling, which left a partially-cut-off trailing card visible at
    rest to hint "there's more, swipe me". That's replaced here with
-   hover-revealed prev/next arrow buttons — the track uses
-   overflow-x: hidden (Element.scrollBy() still works on it) so no
-   partial card peeks out and there's no native scrollbar/drag-to-scroll.
+   hover-revealed prev/next arrow buttons.
+
+   FIX (trackpad/touch scroll not working): the track originally used
+   overflow-x: hidden on the reasoning that Element.scrollBy() still
+   works on a hidden-overflow element — true for the arrow buttons,
+   but overflow-x: hidden also blocks ALL native scroll input, not
+   just the visible scrollbar: trackpad two-finger swipe and touch
+   drag both stopped working as a result. Switched to overflow-x: auto
+   (scrolling re-enabled) with the scrollbar hidden purely visually
+   (see the ::-webkit-scrollbar/scrollbar-width rules below), so the
+   "no visible scrollbar" look is preserved while trackpad/touch swipe
+   and the arrow buttons all work side by side.
 
    FIX (min-width overflow): every flex/grid item defaults to
    min-width: auto, which resolves to that item's own min-content size
@@ -58,11 +67,20 @@
 .promo-carousel__products {
   display: flex;
   gap: 2px; /* matches .products-grid's gap */
-  overflow-x: hidden; /* clips exactly at the edge — no partial-card peek */
+  overflow-x: auto; /* FIX — re-enables trackpad swipe/touch drag; was `hidden`, which blocked all native scroll input, not just the scrollbar */
   scroll-behavior: smooth;
   scroll-snap-type: x mandatory;
   width: 100%;
   min-width: 0; /* FIX — see file header comment */
+
+  /* Scrollbar hidden purely visually — scrolling itself stays fully
+     functional via trackpad/touch/arrow buttons. */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* old Edge/IE */
+}
+
+.promo-carousel__products::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, newer Edge */
 }
 
 /* Fixed at exactly 3 cards visible per view — the promo panel occupies
@@ -100,6 +118,23 @@
 
 .promo-carousel__arrow:hover {
   background: #fff;
+}
+
+/* Greyed out + inert when there's nothing left to scroll in that
+   direction (see PromoCarousel.tsx's scroll-position tracking, which
+   toggles the native `disabled` attribute at each end of the track).
+   Only changes appearance/interactivity — visibility itself still
+   follows the same hover-reveal opacity toggle as an enabled arrow. */
+.promo-carousel__arrow:disabled {
+  background: rgba(255, 255, 255, 0.6);
+  color: #9ca3af;
+  box-shadow: none;
+  cursor: default;
+  pointer-events: none;
+}
+
+.promo-carousel__arrow:disabled:hover {
+  background: rgba(255, 255, 255, 0.6);
 }
 
 .promo-carousel__arrow--prev {

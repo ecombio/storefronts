@@ -1,7 +1,7 @@
 // app/templates/collections.$handle.tsx
 
 import {useEffect, useRef, useState} from 'react';
-import type {ChangeEvent, FormEvent} from 'react';
+import type {ChangeEvent, FormEvent, ReactNode} from 'react';
 import {Link, redirect, useLoaderData, useLocation, useNavigate} from 'react-router';
 import type {Route} from './+types/collections.$handle';
 import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
@@ -22,6 +22,8 @@ import {ArticleItem} from '~/snippets/ArticleItem';
 import {SubCollections} from '~/snippets/SubCollections';
 import {PromoCarousel} from '~/snippets/PromoCarousel';
 import type {SponsoredAdsData} from '~/snippets/PromoCarousel';
+import {PromoBanner} from '~/snippets/PromoBanner';
+import type {PromoBannerData} from '~/snippets/PromoBanner';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -41,6 +43,12 @@ const TABS: {id: CollectionTab; label: string}[] = [
 ];
 
 const DEFAULT_SPONSORED_ADS_GRID_POSITION = 4;
+
+// Deliberately different from the carousel's default position so two
+// unconfigured in-feed items don't collide out of the box — a banner
+// reads naturally as a top-of-grid hero, so it defaults to the very
+// first slot rather than sharing the carousel's mid-grid default.
+const DEFAULT_PROMO_BANNER_GRID_POSITION = 0;
 
 // Products per page (mirrors the `pageBy` passed to getPaginationVariables).
 const PAGE_BY = 48;
@@ -212,8 +220,8 @@ function toEnum<T extends string>(
 /**
  * Clamps a metafield's raw string value to an integer in [min, max].
  * Returns undefined (letting a component fall back to its own default)
- * for anything missing or non-numeric. Still used by the sponsored-ads
- * grid-position metafield above.
+ * for anything missing or non-numeric. Used by both the sponsored-ads
+ * and promo-banner grid-position metafields above.
  */
 function toClampedInt(
   raw: string | undefined,
@@ -291,6 +299,43 @@ export default function Collection() {
       }
     : null;
 
+  // "custom.promo_banner" is a single metaobject_reference metafield
+  // (promo_banner type), confirmed live in Admin with fields: image,
+  // link_url, grid_position, and layout (a metaobject_reference to a
+  // separate "Layout Variant" metaobject — see PROMO_BANNER_FRAGMENT's
+  // FIELD-KEY NOTE below for why `variant` requires an extra hop).
+  // heading, subheading, link_text, background_color, and text_alignment
+  // do not exist as fields in Admin yet, so those resolve to null until
+  // added — PromoBanner.tsx already handles all of these safely as
+  // optional. Rendered as a full-row grid item spliced into the products
+  // grid — see CollectionFeed -> ~/snippets/PromoBanner.tsx.
+  // PromoBanner itself renders nothing if heading and image are both
+  // missing, so this is always safe to pass through unconditionally.
+  const promoBannerRef = collection.promoBannerMetafield?.reference ?? null;
+  const promoBanner: PromoBannerData | null = promoBannerRef
+    ? {
+        id: promoBannerRef.id,
+        // Two-hop reference resolved via LAYOUT_VARIANT_FRAGMENT below:
+        // promo_banner.layout -> Layout Variant metaobject entry -> that
+        // entry's own `variant` field, which holds the actual string
+        // ('split-left' | 'split-right' | 'full-bleed' | 'minimal').
+        // Falls back to null (and PromoBanner.tsx's toEnum then falls
+        // back to 'split-left') if the reference or nested field is
+        // unset on a given entry.
+        variant: promoBannerRef.variant?.reference?.variant?.value ?? null,
+        heading: promoBannerRef.heading?.value ?? null,
+        subheading: promoBannerRef.subheading?.value ?? null,
+        image: promoBannerRef.image?.reference?.image ?? null,
+        linkText: promoBannerRef.linkText?.value ?? null,
+        linkUrl: promoBannerRef.linkUrl?.value ?? null,
+        backgroundColor: promoBannerRef.backgroundColor?.value ?? null,
+        textAlignment: promoBannerRef.textAlignment?.value ?? null,
+        // Same [0, PAGE_BY - 1] convention as sponsoredAds.position above.
+        position:
+          toClampedInt(promoBannerRef.position?.value, 0, PAGE_BY - 1) ?? null,
+      }
+    : null;
+
   // CollectionBanner's description comes straight off the native Collection
   // object — no metafield needed. Only text alignment is merchant-editable,
   // via a metafield, since a headless storefront has no theme customizer to
@@ -310,10 +355,10 @@ export default function Collection() {
 
       {/* SubCollections renders inside CollectionFeed, as a row above the
           products grid (products panel only), instead of as its own section
-          here. sponsoredAds is passed through the same way: CollectionFeed
-          splices <PromoCarousel /> into the products grid itself (see
-          products-grid__promo-item), so it's no longer rendered standalone
-          above the banner. */}
+          here. sponsoredAds and promoBanner are passed through the same
+          way: CollectionFeed splices them into the products grid itself
+          (see products-grid__promo-item / products-grid__banner-item), so
+          neither is rendered standalone above the banner. */}
       <div className="main-collection">
         <CollectionToolbar activeTab={activeTab} />
 
@@ -327,6 +372,7 @@ export default function Collection() {
               articles={articles}
               subCollections={subCollections}
               sponsoredAds={sponsoredAds}
+              promoBanner={promoBanner}
             />
           </div>
         </div>
@@ -770,6 +816,16 @@ interface CollectionFeedProps {
    */
   sponsoredAds?: SponsoredAdsData | null;
   /**
+   * Rendered as its own full-row grid item, same in-feed splice pattern
+   * as sponsoredAds. Only appears on the products panel — never on
+   * articles. If both sponsoredAds and promoBanner resolve to the same
+   * grid position, both render at that slot — banner first, then
+   * carousel (see buildInFeedItems). PromoBanner renders nothing when
+   * heading and image are both missing, so this is always safe to pass
+   * through unconditionally.
+   */
+  promoBanner?: PromoBannerData | null;
+  /**
    * Omit to render with no sort dropdown. Pass `{value, options}` to show
    * one — selecting an option resets pagination and updates the `sort`
    * URL param.
@@ -780,19 +836,94 @@ interface CollectionFeedProps {
   };
 }
 
+/**
+ * A single spliced-in item (promo banner, promo carousel, or any future
+ * in-feed type) at a specific 0-based grid index. `buildInFeedItems`
+ * produces a flat list of these; `CollectionFeed`'s renderItem then
+ * filters by index per product rather than checking one hardcoded
+ * position at a time, so this scales past two item types without another
+ * rewrite of the splice logic itself.
+ */
+interface InFeedItem {
+  position: number;
+  /**
+   * Tie-break order when two items resolve to the same position — lower
+   * renders first. Keeping this explicit (rather than relying on the
+   * order items happen to be pushed in buildInFeedItems) means the
+   * banner-before-carousel rule survives even if that function is later
+   * reordered for unrelated reasons.
+   */
+  order: number;
+  /**
+   * Takes the React key rather than having a wrapper applied around the
+   * result — the returned element (products-grid__banner-item /
+   * products-grid__promo-item) must land as a DIRECT child of
+   * .products-grid for its `grid-column: 1 / -1` + `min-width: 0` rules
+   * to apply. Any extra wrapping div here is not a grid item and has
+   * neither rule, which reintroduces the exact min-content grid-blowout
+   * bug documented in promo-carousel.css's file header (one column
+   * force-widened to its content's min-content size, squeezing/
+   * distorting the rest of the grid).
+   */
+  render: (key: string) => ReactNode;
+}
+
+/**
+ * Builds the flat, position-keyed list of items to splice into the
+ * products grid. On a position collision (both items resolve to the same
+ * index), both render at that slot, ordered by `order` — currently
+ * banner (0) before carousel (1) — immediately before the product that
+ * would otherwise occupy that index.
+ */
+function buildInFeedItems({
+  promoBanner,
+  sponsoredAds,
+}: {
+  promoBanner?: PromoBannerData | null;
+  sponsoredAds?: SponsoredAdsData | null;
+}): InFeedItem[] {
+  const items: InFeedItem[] = [];
+
+  if (promoBanner) {
+    items.push({
+      position: promoBanner.position ?? DEFAULT_PROMO_BANNER_GRID_POSITION,
+      order: 0,
+      render: (key) => (
+        <div className="products-grid__banner-item" key={key}>
+          <PromoBanner banner={promoBanner} />
+        </div>
+      ),
+    });
+  }
+
+  if (sponsoredAds) {
+    items.push({
+      position: sponsoredAds.position ?? DEFAULT_SPONSORED_ADS_GRID_POSITION,
+      order: 1,
+      render: (key) => (
+        <div className="products-grid__promo-item" key={key}>
+          <PromoCarousel sponsoredAds={sponsoredAds} />
+        </div>
+      ),
+    });
+  }
+
+  return items;
+}
+
 function CollectionFeed({
   activeTab,
   products,
   articles = [],
   subCollections = [],
   sponsoredAds,
+  promoBanner,
   sort,
 }: CollectionFeedProps) {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const sponsoredAdsPosition =
-    sponsoredAds?.position ?? DEFAULT_SPONSORED_ADS_GRID_POSITION;
+  const inFeedItems = buildInFeedItems({promoBanner, sponsoredAds});
 
   function handleSortChange(event: ChangeEvent<HTMLSelectElement>) {
     const params = new URLSearchParams(location.search);
@@ -830,11 +961,10 @@ function CollectionFeed({
         itemsClassName="products-grid"
         renderItem={(product, index) => (
           <>
-            {sponsoredAds && index === sponsoredAdsPosition && (
-              <div className="products-grid__promo-item">
-                <PromoCarousel sponsoredAds={sponsoredAds} />
-              </div>
-            )}
+            {inFeedItems
+              .filter((item) => item.position === index)
+              .sort((a, b) => a.order - b.order)
+              .map((item, i) => item.render(`in-feed-${index}-${i}`))}
             <ProductCard
               product={product}
               loading={index < 8 ? 'eager' : undefined}
@@ -981,12 +1111,84 @@ const SPONSORED_ADS_FRAGMENT = `#graphql
   }
 ` as const;
 
+// FIELD-KEY NOTE: `promo_banner` metaobject fields confirmed live in
+// Admin as of this pass: image, link_url, grid_position, layout. heading,
+// subheading, link_text, background_color, and text_alignment do NOT
+// exist yet — those fragment fields below will simply resolve to null
+// until added in Admin, which the loader and PromoBanner.tsx both
+// already handle safely as optional.
+//
+// `layout` is a metaobject_reference field pointing at a separate
+// "Layout Variant" metaobject definition (NOT a plain string field), so
+// getting the actual variant string ('split-left' | 'split-right' |
+// 'full-bleed' | 'minimal') takes an extra hop: promo_banner.layout ->
+// Layout Variant metaobject entry -> that entry's own `variant` field.
+// LAYOUT_VARIANT_FRAGMENT resolves that second hop; aliased back to
+// `variant` here so nothing downstream (the loader mapping in the route
+// component above, PromoBanner.tsx's toEnum call) needs to know about
+// the extra hop at all.
+const LAYOUT_VARIANT_FRAGMENT = `#graphql
+  fragment LayoutVariantValue on Metaobject {
+    variant: field(key: "variant") {
+      value
+    }
+  }
+` as const;
+
+const PROMO_BANNER_FRAGMENT = `#graphql
+  ${LAYOUT_VARIANT_FRAGMENT}
+  fragment PromoBanner on Metaobject {
+    id
+    variant: field(key: "layout") {
+      reference {
+        ... on Metaobject {
+          ...LayoutVariantValue
+        }
+      }
+    }
+    heading: field(key: "heading") {
+      value
+    }
+    subheading: field(key: "subheading") {
+      value
+    }
+    image: field(key: "image") {
+      reference {
+        ... on MediaImage {
+          image {
+            url
+            altText
+            width
+            height
+          }
+        }
+      }
+    }
+    linkText: field(key: "link_text") {
+      value
+    }
+    linkUrl: field(key: "link_url") {
+      value
+    }
+    backgroundColor: field(key: "background_color") {
+      value
+    }
+    textAlignment: field(key: "text_alignment") {
+      value
+    }
+    position: field(key: "grid_position") {
+      value
+    }
+  }
+` as const;
+
 // NOTE: https://shopify.dev/docs/api/storefront/2022-04/objects/collection
 const COLLECTION_QUERY = `#graphql
   ${PRODUCT_CARD_FRAGMENT}
   ${ARTICLE_ITEM_FRAGMENT}
   ${SUB_COLLECTION_ITEM_FRAGMENT}
   ${SPONSORED_ADS_FRAGMENT}
+  ${PROMO_BANNER_FRAGMENT}
   query Collection(
     $handle: String!
     $country: CountryCode
@@ -1036,6 +1238,13 @@ const COLLECTION_QUERY = `#graphql
         reference {
           ... on Metaobject {
             ...SponsoredAds
+          }
+        }
+      }
+      promoBannerMetafield: metafield(namespace: "custom", key: "promo_banner") {
+        reference {
+          ... on Metaobject {
+            ...PromoBanner
           }
         }
       }
