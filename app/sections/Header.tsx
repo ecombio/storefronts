@@ -1,6 +1,18 @@
 // app/sections/Header.tsx
+//
+// Merged file: Header.constants.ts, useHeaderHeightSync.ts, and
+// ai-search-svg-paths.ts have been inlined below, since none of them
+// are consumed anywhere else in the app. `~/components/Aside`,
+// `~/lib/wishlist`, and `~/lib/compare` remain external imports on
+// purpose — they are each a single source of truth shared by other
+// components (CartDrawer/QuickView/MenuDrawer for Aside; ProductCard
+// and the /wishlist page for wishlist; ProductCard, CompareBar, and
+// the /compare page for compare). Inlining those would silently fork
+// that shared state/logic — see conversation notes if this ever needs
+// revisiting.
+
 import {Suspense, forwardRef, useCallback, useEffect, useRef, useState} from 'react';
-import svgPaths from '~/snippets/ai-search-svg-paths';
+import type {ReactNode, RefObject} from 'react';
 import {createPortal} from 'react-dom';
 import {Await, Link, NavLink, useAsyncValue, useFetcher, useNavigate} from 'react-router';
 import {
@@ -33,35 +45,476 @@ import {
 import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
 import {useAside} from '~/components/Aside';
 import '~/assets/search-bar.css';
-import type {CollectionImage} from '~/config/Header.constants';
-import {
-  ACTIVE_HEADER_STYLE,
-  type HeaderStyle,
-  SHOW_WISHLIST_CTA,
-  SHOW_COMPARE_CTA,
-  ANNOUNCEMENT_AUTOROTATE,
-  ANNOUNCEMENT_AUTOROTATE_SPEED_MS,
-  ANNOUNCEMENT_ENABLE_CLOSE,
-  ANNOUNCEMENT_SLIDES,
-  type AnnouncementSlideConfig,
-  COUNTRIES,
-  CURRENT_COUNTRY,
-  CURRENT_LANGUAGE,
-  FALLBACK_HEADER_MENU,
-  MEGA_MENU_CLOSE_DELAY,
-  resolveUrl,
-  SHOWCASE_SEE_ALL,
-  SHOWCASE_TIPS,
-  type MenuItem,
-  TRENDING_SEARCH_TERMS,
-  UTILITY_LINKS,
-} from '~/config/Header.constants';
 import wordmarkSrc from '~/assets/wordmark.svg';
-import {useHeaderHeightSync} from '~/hooks/useHeaderHeightSync';
 import {type WishlistEntry, WISHLIST_KEY, readWishlist} from '~/lib/wishlist';
 import {type CompareEntry, COMPARE_KEY, COMPARE_MAX, readCompareList} from '~/lib/compare';
 
-import type {ReactNode} from 'react';
+/* ════════════════════════════════════════════════════════════════════════
+ * Inlined from app/config/Header.constants.ts
+ * ════════════════════════════════════════════════════════════════════════
+ * NOTE: the original file imported `HeaderProps` from this same
+ * Header.tsx to derive `MenuItem` (a type-only circular import, which
+ * TS tolerates). Now that both live in one file, `MenuItem` below
+ * simply references `HeaderProps`, which is declared further down —
+ * that's fine for TypeScript type/interface declarations regardless
+ * of source order.
+ *
+ * NOTE: `LOGO_SRC` below does not appear to be used anywhere in this
+ * file — the logo is rendered via the imported `wordmarkSrc` asset
+ * instead. Kept as-is rather than removed; flag for cleanup if it's
+ * confirmed dead.
+ * ════════════════════════════════════════════════════════════════════════ */
+
+// Wordmark asset used by the live Liquid theme.
+const LOGO_SRC =
+  '//ecombio.com/cdn/shop/files/wordmark.svg?v=1781367807&width=140';
+
+// ─────────────────────────────────────────────────────────────────────────
+// Header layout style
+// Controls which arrangement Header renders below. Swap this to change
+// the layout site-wide. Ideally becomes a Shopify theme setting or
+// metafield down the line so merchandising can switch it without a
+// deploy — a constant is the simplest starting point.
+// ─────────────────────────────────────────────────────────────────────────
+type HeaderStyle = 'launchpad' | 'storefront' | 'marketplace';
+
+const ACTIVE_HEADER_STYLE: HeaderStyle = 'storefront';
+
+// ─────────────────────────────────────────────────────────────────────────
+// Header CTA feature flags
+// Toggles Wishlist/Compare icons in the header CTAs cluster on/off
+// without removing the underlying components, badges, and localStorage
+// sync logic (WishlistToggle/CompareToggle below) — flip back to true
+// whenever these are ready to ship again.
+// ─────────────────────────────────────────────────────────────────────────
+const SHOW_WISHLIST_CTA = false;
+const SHOW_COMPARE_CTA = false;
+
+// ─────────────────────────────────────────────────────────────────────────
+// Header menu item shape + URL resolution
+// Shared by HeaderMenu (top-level nav) and MenuDrawer (the mega-menu
+// panel).
+// ─────────────────────────────────────────────────────────────────────────
+type MenuItem = HeaderProps['header']['menu'] extends {items: (infer T)[]}
+  ? T
+  : never;
+
+function resolveUrl(url: string, publicStoreDomain: string, primaryDomainUrl: string) {
+  return url.includes('myshopify.com') ||
+    url.includes(publicStoreDomain) ||
+    url.includes(primaryDomainUrl)
+    ? new URL(url).pathname
+    : url;
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Announcement bar
+// Stand-in for sections/announcement-bar.liquid's ann_1..ann_5 settings.
+// Swap for a metaobject/Storefront API query if merchants need to edit
+// this without a deploy.
+// ─────────────────────────────────────────────────────────────────────────
+type AnnouncementSlideConfig =
+  | {type: 'announcement'; text: string; link?: string}
+  | {
+      type: 'countdown';
+      label?: string;
+      countdownType: 'fixed' | 'evergreen';
+      endDate?: string; // 'YYYY/MM/DD HH:MM', fixed only
+      evergreenMinutes?: number; // evergreen only
+      buttonLabel?: string;
+      buttonLink?: string;
+    };
+
+// Order matches the live site: countdown first (with its "Countdown timer"
+// label), then the shipping-promo message.
+const ANNOUNCEMENT_SLIDES: AnnouncementSlideConfig[] = [
+  {
+    type: 'countdown',
+    label: 'Countdown timer',
+    countdownType: 'evergreen',
+    evergreenMinutes: 720,
+  },
+  {
+    type: 'announcement',
+    text: '✌️ Free Express Shipping on orders $500!',
+  },
+];
+
+const ANNOUNCEMENT_ENABLE_CLOSE = true;
+const ANNOUNCEMENT_AUTOROTATE = true;
+const ANNOUNCEMENT_AUTOROTATE_SPEED_MS = 5000;
+
+// ─────────────────────────────────────────────────────────────────────────
+// Utility bar
+// Stand-in for sections/utility-bar.liquid's link_1..link_3 settings.
+// ─────────────────────────────────────────────────────────────────────────
+interface UtilityLink {
+  label: string;
+  url: string;
+  icon?: string;
+}
+
+const UTILITY_LINKS: UtilityLink[] = [
+  {label: 'Track Order', url: '/apps/track'},
+  {label: 'Store Locator', url: '/pages/stores'},
+];
+
+// ─────────────────────────────────────────────────────────────────────────
+// Region / language picker
+// Stand-in for `localization.available_countries` / `.available_languages`.
+// Replace with a real Storefront API / root-loader query when wiring this
+// up to Hydrogen's actual localization flow.
+// ─────────────────────────────────────────────────────────────────────────
+interface Country {
+  name: string;
+  isoCode: string;
+}
+
+const CURRENT_COUNTRY = 'US';
+const CURRENT_LANGUAGE = 'English';
+
+const COUNTRIES: Country[] = [
+  {name: 'United States', isoCode: 'US'},
+  {name: 'Australia', isoCode: 'AU'},
+  {name: 'Austria', isoCode: 'AT'},
+  {name: 'Belgium', isoCode: 'BE'},
+  {name: 'Canada', isoCode: 'CA'},
+  {name: 'Czechia', isoCode: 'CZ'},
+  {name: 'Denmark', isoCode: 'DK'},
+  {name: 'Finland', isoCode: 'FI'},
+  {name: 'France', isoCode: 'FR'},
+  {name: 'Germany', isoCode: 'DE'},
+  {name: 'Ireland', isoCode: 'IE'},
+  {name: 'Italy', isoCode: 'IT'},
+  {name: 'Japan', isoCode: 'JP'},
+  {name: 'Mexico', isoCode: 'MX'},
+  {name: 'Netherlands', isoCode: 'NL'},
+  {name: 'New Zealand', isoCode: 'NZ'},
+  {name: 'Norway', isoCode: 'NO'},
+  {name: 'Poland', isoCode: 'PL'},
+  {name: 'Portugal', isoCode: 'PT'},
+  {name: 'Spain', isoCode: 'ES'},
+  {name: 'Sweden', isoCode: 'SE'},
+  {name: 'Switzerland', isoCode: 'CH'},
+  {name: 'United Kingdom', isoCode: 'GB'},
+];
+
+// Animated search placeholder — cycles through these like the live site's typewriter.
+const TRENDING_SEARCH_TERMS = [
+  'electric scooters',
+  'electric bikes',
+  'electric skateboards',
+  'electric cargo bikes',
+  'electric city bikes',
+  'electric fat bikes',
+  'electric folding bikes',
+  'electric mountain bikes',
+  'commuter electric scooters',
+  'off-road electric scooters',
+  'performance electric scooters',
+  'youth electric scooters',
+];
+
+// How long to wait before closing the mega menu after the pointer leaves,
+// so moving diagonally from the link down into the panel doesn't close it.
+const MEGA_MENU_CLOSE_DELAY = 150;
+
+// ─────────────────────────────────────────────────────────────────────────
+// Submenu images — real collection images, fetched by resourceId
+// ─────────────────────────────────────────────────────────────────────────
+// Menu items already carry a `resourceId` (see the `PAGE` entry in
+// FALLBACK_HEADER_MENU below) whenever the Shopify Admin menu editor links
+// them directly to a resource — a Collection, in the "Electric Bikes"
+// submenu's case. Query those collections' real images by id in the root
+// loader (alongside the header menu query) and pass the result down as the
+// `collectionImages` prop threaded through Header -> HeaderMenu. That's now
+// the primary image source for the showcase panel's category cards.
+//
+// Example root loader wiring:
+//
+//   const collectionIds = menu.items
+//     .flatMap((item) => item.items ?? [])
+//     .map((item) => item.resourceId)
+//     .filter((id): id is string => Boolean(id) && id.includes('/Collection/'));
+//
+//   const collectionImages = collectionIds.length
+//     ? await context.storefront
+//         .query(MENU_COLLECTION_IMAGES_QUERY, {variables: {ids: collectionIds}})
+//         .then((data) =>
+//           Object.fromEntries(
+//             data.nodes
+//               .filter((n): n is {id: string; image: CollectionImage | null} => n != null && 'image' in n)
+//               .filter((n) => n.image)
+//               .map((n) => [n.id, n.image as CollectionImage]),
+//           ),
+//         )
+//     : {};
+//
+// Then: <Header ... collectionImages={collectionImages} />
+const MENU_COLLECTION_IMAGES_QUERY = `#graphql
+  query MenuCollectionImages($ids: [ID!]!, $country: CountryCode, $language: LanguageCode)
+    @inContext(country: $country, language: $language) {
+    nodes(ids: $ids) {
+      ... on Collection {
+        id
+        image {
+          url
+          altText
+        }
+      }
+    }
+  }
+` as const;
+
+interface CollectionImage {
+  url: string;
+  altText: string | null;
+}
+
+// Static fallback, keyed by menu item title — used only when a submenu
+// item doesn't resolve to a live collection image (a custom link, a page,
+// or a collection with no image set in the Admin).
+const SUBMENU_IMAGES: Record<string, string> = {
+  'Electric Cargo Bikes':
+    '//ecombio.com/cdn/shop/collections/fiido-t3-two-people-riding_1.webp?v=1784397522&width=300',
+  'Electric City Bikes':
+    '//ecombio.com/cdn/shop/collections/i.shgcdn_76ba479e-f743-477d-8a9f-eb9a6e6b73f2.webp?v=1784397588&width=300',
+  'Electric Fat Bikes':
+    '//ecombio.com/cdn/shop/collections/alpine-fat-tire-ebike-8093206.webp?v=1784397812&width=300',
+  'Electric Folding Bikes':
+    '//ecombio.com/cdn/shop/collections/Brompton-P-Line-D.webp?v=1784397680&width=300',
+  'Electric Mountain Bikes':
+    '//ecombio.com/cdn/shop/collections/electric-mountain-bikes_s.jpg?v=1784397360&width=300',
+  'Commuter Electric Scooters':
+    '//ecombio.com/cdn/shop/collections/Commuter_E-Scooters.png?v=1780540373&width=300',
+  'Off-Road Electric Scooters':
+    '//ecombio.com/cdn/shop/collections/Off-Road_E-Scooters.png?v=1780540359&width=300',
+  'Performance Electric Scooters':
+    '//ecombio.com/cdn/shop/collections/Performance_E-Scooters.png?v=1780540346&width=300',
+  'Electric Scooter for Kids':
+    '//ecombio.com/cdn/shop/collections/Youth_E-Scooters.png?v=1780540329&width=300',
+};
+
+// "Good to know" sidebar tips shown in a showcase panel, keyed by the
+// top-level menu item title. Mirrors sections/showcase-block.liquid's
+// tip_1..tip_3 (icon/heading/body) settings.
+interface ShowcaseTip {
+  icon?: string; // 'truck' | 'shield' | 'gift' | 'clock' | 'return' | 'tag' | ...
+  heading: string;
+  body?: string;
+}
+
+const SHOWCASE_TIPS: Record<string, ShowcaseTip[]> = {
+  'Electric Scooters': [
+    {
+      icon: 'tag',
+      heading: 'Trade-in',
+      body: 'Get up to $700 for your old device',
+    },
+  ],
+};
+
+// Optional "See all" link override per top-level item, keyed by title.
+// Falls back to the item's own resolved url + a generic "See all" label
+// when not set here, mirroring showcase-block.liquid's see_all_link /
+// see_all_label settings.
+const SHOWCASE_SEE_ALL: Record<string, {label?: string; link?: string}> = {};
+
+const FALLBACK_HEADER_MENU = {
+  id: 'gid://shopify/Menu/199655587896',
+  items: [
+    {
+      id: 'gid://shopify/MenuItem/461609500001',
+      resourceId: null,
+      tags: [],
+      title: 'Single Link',
+      type: 'HTTP',
+      url: '/pages/electric-bikes#',
+      items: [],
+    },
+    {
+      id: 'gid://shopify/MenuItem/461609500728',
+      resourceId: null,
+      tags: [],
+      title: 'Electric Bicycles',
+      type: 'HTTP',
+      url: '/pages/electric-bikes',
+      items: [
+        {
+          id: 'gid://shopify/MenuItem/461609500728-1',
+          resourceId: null,
+          tags: [],
+          title: 'Electric Cargo Bikes',
+          type: 'HTTP',
+          url: '/collections/electric-cargo-bikes',
+          items: [],
+        },
+        {
+          id: 'gid://shopify/MenuItem/461609500728-2',
+          resourceId: null,
+          tags: [],
+          title: 'Electric City Bikes',
+          type: 'HTTP',
+          url: '/collections/electric-city-bikes',
+          items: [],
+        },
+        {
+          id: 'gid://shopify/MenuItem/461609500728-3',
+          resourceId: null,
+          tags: [],
+          title: 'Electric Fat Bikes',
+          type: 'HTTP',
+          url: '/collections/electric-fat-bikes',
+          items: [],
+        },
+        {
+          id: 'gid://shopify/MenuItem/461609500728-4',
+          resourceId: null,
+          tags: [],
+          title: 'Electric Folding Bikes',
+          type: 'HTTP',
+          url: '/collections/electric-folding-bikes',
+          items: [],
+        },
+        {
+          id: 'gid://shopify/MenuItem/461609500728-5',
+          resourceId: null,
+          tags: [],
+          title: 'Electric Mountain Bikes',
+          type: 'HTTP',
+          url: '/collections/electric-mountain-bikes',
+          items: [],
+        },
+      ],
+    },
+    {
+      id: 'gid://shopify/MenuItem/461609533496',
+      resourceId: null,
+      tags: [],
+      title: 'Electric Scooters',
+      type: 'HTTP',
+      url: '/pages/electric-scooters',
+      items: [
+        {
+          id: 'gid://shopify/MenuItem/461609533496-1',
+          resourceId: null,
+          tags: [],
+          title: 'Commuter Electric Scooters',
+          type: 'HTTP',
+          url: '/collections/commuter-electric-scooters',
+          items: [],
+        },
+        {
+          id: 'gid://shopify/MenuItem/461609533496-2',
+          resourceId: null,
+          tags: [],
+          title: 'Off-Road Electric Scooters',
+          type: 'HTTP',
+          url: '/collections/off-road-electric-scooters',
+          items: [],
+        },
+        {
+          id: 'gid://shopify/MenuItem/461609533496-3',
+          resourceId: null,
+          tags: [],
+          title: 'Performance Electric Scooters',
+          type: 'HTTP',
+          url: '/collections/performance-electric-scooters',
+          items: [],
+        },
+        {
+          id: 'gid://shopify/MenuItem/461609533496-4',
+          resourceId: null,
+          tags: [],
+          title: 'Electric Scooter for Kids',
+          type: 'HTTP',
+          url: '/collections/electric-scooter-for-kids',
+          items: [],
+        },
+      ],
+    },
+    {
+      id: 'gid://shopify/MenuItem/461609566264',
+      resourceId: null,
+      tags: [],
+      title: 'Electric Skateboards',
+      type: 'HTTP',
+      url: '/pages/electric-skateboards',
+      items: [],
+    },
+    {
+      id: 'gid://shopify/MenuItem/461609599032',
+      resourceId: 'gid://shopify/Page/92591030328',
+      tags: [],
+      title: 'Accessories & Parts',
+      type: 'PAGE',
+      url: '/collections/accessories',
+      items: [],
+    },
+    {
+      id: 'gid://shopify/MenuItem/461609599033',
+      resourceId: null,
+      tags: [],
+      title: 'More',
+      type: 'HTTP',
+      url: '/pages/electric-bikes#',
+      items: [],
+    },
+  ],
+};
+
+/* ════════════════════════════════════════════════════════════════════════
+ * Inlined from app/snippets/ai-search-svg-paths.ts
+ * ════════════════════════════════════════════════════════════════════════ */
+const svgPaths = {
+  p20021000: "M1.76446 0.0757267C1.68512 0.0262361 1.5935 9.00731e-08 1.5 9.00731e-08C1.39566 -6.2543e-05 1.29392 0.0325406 1.20905 0.0932382C1.12417 0.153936 1.06041 0.239684 1.02671 0.338459L0.851784 0.851897L0.33901 1.02688L0.280035 1.05087C0.191154 1.0944 0.117191 1.16334 0.0675194 1.24896C0.0178475 1.33457 -0.00529696 1.43301 0.00101927 1.5318C0.00733551 1.63059 0.0428278 1.72528 0.102999 1.80387C0.163169 1.88246 0.24531 1.94142 0.33901 1.97326L0.852284 2.14824L1.02721 2.66118L1.0512 2.71967C1.09466 2.80859 1.16354 2.88261 1.2491 2.93233C1.33466 2.98206 1.43305 3.00526 1.53181 2.999C1.63056 2.99273 1.72523 2.95729 1.80383 2.89715C1.88242 2.83701 1.9414 2.75488 1.97329 2.66118L2.14822 2.14774L2.66099 1.97276L2.71996 1.94876C2.80885 1.90524 2.88281 1.8363 2.93248 1.75068C2.98215 1.66506 3.0053 1.56662 2.99898 1.46783C2.99266 1.36904 2.95717 1.27435 2.897 1.19576C2.83683 1.11717 2.75469 1.05822 2.66099 1.02638L2.14772 0.851397L1.97279 0.338459L1.9488 0.279966C1.90766 0.195978 1.8438 0.125217 1.76446 0.0757267Z",
+  p3872200: "M4.70523 0.201938C4.49366 0.0699628 4.24933 2.40195e-07 4 2.40195e-07C3.72177 -0.000166781 3.45046 0.0867751 3.22412 0.248635C2.99778 0.410495 2.82775 0.639157 2.73789 0.902558L2.27142 2.27173L0.904025 2.73834L0.746761 2.80233C0.509745 2.91839 0.31251 3.10223 0.180052 3.33055C0.0475932 3.55886 -0.0141252 3.82137 0.00271806 4.08481C0.0195614 4.34825 0.114208 4.60076 0.274663 4.81033C0.435118 5.0199 0.654159 5.17711 0.904025 5.26203L2.27276 5.72864L2.73922 7.09647L2.80319 7.25245C2.9191 7.48958 3.10278 7.68695 3.33094 7.81956C3.5591 7.95216 3.82147 8.01403 4.08482 7.99733C4.34816 7.98062 4.60062 7.88609 4.81021 7.72572C5.01979 7.56535 5.17707 7.34635 5.26211 7.09647L5.72858 5.72731L7.09597 5.2607L7.25324 5.1967C7.49025 5.08064 7.68749 4.8968 7.81995 4.66848C7.95241 4.44017 8.01412 4.17766 7.99728 3.91422C7.98044 3.65078 7.88579 3.39828 7.72534 3.1887C7.56488 2.97913 7.34584 2.82192 7.09597 2.737L5.72724 2.27039L5.26078 0.902558L5.19681 0.746577C5.0871 0.522607 4.91679 0.333913 4.70523 0.201938Z",
+  p3f87f980: "M7.47266 0C7.2069 0.657052 7.04443 1.36712 7.00781 2.11035C5.84189 2.38525 4.76406 2.97813 3.90332 3.83887C2.68433 5.05785 2 6.71164 2 8.43555L2.00781 8.75781C2.0875 10.3644 2.76051 11.8894 3.90332 13.0322C5.12231 14.2512 6.77609 14.9355 8.5 14.9355C10.2239 14.9355 11.8777 14.2512 13.0967 13.0322C14.2388 11.8901 14.9109 10.3663 14.9912 8.76074C15.708 8.59241 16.378 8.30561 16.9814 7.92188C16.9918 8.09248 17 8.26366 17 8.43555C17 10.3602 16.345 12.2159 15.1621 13.71L17.6797 16.2285C18.0702 16.619 18.0702 17.2521 17.6797 17.6426C17.2891 18.0329 16.6561 18.033 16.2656 17.6426L13.7441 15.1211C12.2552 16.289 10.4118 16.9355 8.5 16.9355C6.24566 16.9355 4.08332 16.0403 2.48926 14.4463C0.895199 12.8522 0 10.6899 0 8.43555C0 6.18121 0.895199 4.01886 2.48926 2.4248C3.83918 1.07488 5.5969 0.228312 7.47266 0Z",
+  pd9eea00: "M12.75 0.750049L0.750051 12.75M0.75 0.75L12.75 12.75",
+};
+
+/* ════════════════════════════════════════════════════════════════════════
+ * Inlined from app/hooks/useHeaderHeightSync.ts
+ * ════════════════════════════════════════════════════════════════════════
+ * NOTE: this hook writes to `document.documentElement` (the <html> tag)
+ * directly — it's a deliberate global side-effect, not scoped to the
+ * header DOM node, so route templates (CollectionFilters,
+ * CollectionToolbar) can read `--header-height` / `.header-hidden`
+ * without prop drilling across the route boundary. Easy to miss now
+ * that it's folded into this file — see the usage note below.
+ *
+ * Usage (see the `Header` component further down):
+ *   const headerRef = useRef<HTMLElement>(null);
+ *   useHeaderHeightSync(headerRef, hidden);
+ *   return <header ref={headerRef} ...>
+ * ════════════════════════════════════════════════════════════════════════ */
+function useHeaderHeightSync(
+  ref: RefObject<HTMLElement | null>,
+  hidden: boolean,
+) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const resizeObserver = new ResizeObserver(([entry]) => {
+      document.documentElement.style.setProperty(
+        '--header-height',
+        `${entry.contentRect.height}px`,
+      );
+    });
+    resizeObserver.observe(el);
+
+    return () => resizeObserver.disconnect();
+  }, [ref]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('header-hidden', hidden);
+  }, [hidden]);
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+ * Header.tsx original content
+ * ════════════════════════════════════════════════════════════════════════ */
 
 interface HeaderLayoutProps {
   logo: ReactNode;
