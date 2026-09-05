@@ -32,6 +32,7 @@ import productCardStyles from '~/assets/product-card.css?url';
 import productSectionsStyles from '~/components/blogs/product-sections.css?url'; // grid/gallery/focus/text layout for ProductSections.tsx shoppable embeds; loads after productCardStyles so its [data-columns] rules can lay out the cards it styles
 import productCarouselStyles from '~/assets/product-carousel.css?url';
 import promoCarouselStyles from '~/assets/promo-carousel.css?url'; // ADDED — was missing entirely; PromoCarousel.tsx rendered with no styles applied
+import promoCardStyles from '~/assets/promo-card.css?url'; // ADDED — panel styles split out of promo-carousel.css alongside the PromoCard.tsx/PromoCarousel.tsx component split
 import collectionCardStyles from '~/assets/collection-card.css?url';
 import collectionCarouselStyles from '~/assets/collection-carousel.css?url';
 import imageCardStyles from '~/assets/image-card.css?url';
@@ -222,6 +223,8 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={productCarouselStyles}></link>
         <link rel="stylesheet" href={promoCarouselStyles}></link>
         {/* ADDED — was missing entirely; this is why PromoCarousel had no layout/styling */}
+        <link rel="stylesheet" href={promoCardStyles}></link>
+        {/* ADDED — panel styles split out alongside the PromoCard.tsx component split */}
         <link rel="stylesheet" href={collectionCardStyles}></link>
         <link rel="stylesheet" href={collectionCarouselStyles}></link>
         <link rel="stylesheet" href={imageCardStyles}></link>

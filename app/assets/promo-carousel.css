@@ -1,6 +1,7 @@
 /* app/assets/promo-carousel.css
-   Sponsored-brand style panel: promo card on the left, horizontally
-   scrollable product row on the right.
+   Sponsored-brand style panel: promo card on the left (styles in
+   promo-card.css — see ~/snippets/PromoCard.tsx), arrow-navigable
+   product row on the right (styles below).
 
    Previously styled as a standalone Amazon "sponsored brands" panel
    (orange border, rounded corners, generous internal padding) that
@@ -9,6 +10,32 @@
    — same 2px gap rhythm, no card-level border/radius wrapping the
    whole panel, so it reads as part of the grid rather than an
    inserted ad unit.
+
+   Navigation: the product row previously used native overflow-x: auto
+   scrolling, which left a partially-cut-off trailing card visible at
+   rest to hint "there's more, swipe me". That's replaced here with
+   hover-revealed prev/next arrow buttons — the track uses
+   overflow-x: hidden (Element.scrollBy() still works on it) so no
+   partial card peeks out and there's no native scrollbar/drag-to-scroll.
+
+   FIX (min-width overflow): every flex/grid item defaults to
+   min-width: auto, which resolves to that item's own min-content size
+   unless explicitly overridden. Without the min-width: 0 overrides
+   below, ProductCard's intrinsic content (image, price, button) was
+   setting a min-content floor that bubbled all the way up through
+   .promo-carousel__product -> .promo-carousel__products ->
+   .promo-carousel__products-viewport -> .promo-carousel (a flex row)
+   -> .products-grid__promo-item (a grid item spanning grid-column:
+   1 / -1). Because a grid item also defaults to min-width: auto, that
+   last element refused to shrink to its track's actual width, forcing
+   .products-grid — and the page — wider than the viewport (visible as
+   a horizontal scrollbar and product images bleeding past the right
+   edge). overflow-x: hidden on .promo-carousel__products only clips
+   content within an element that has already settled on a constrained
+   size; it can't fix an ancestor several levels up that was never
+   constrained in the first place. Adding min-width: 0 at every
+   flex/grid container in the chain lets each one shrink to fit its
+   actual available space instead of its content's min-content size.
    ============================================================ */
 
 .promo-carousel {
@@ -17,94 +44,85 @@
   align-items: stretch;
   gap: 2px; /* matches .products-grid's gap, not an arbitrary spacing value */
   background: #fff;
+  min-width: 0; /* FIX — see file header comment */
 }
 
-/* Left panel: brand image + heading/subheading + CTA ------------------- */
-.promo-carousel__panel {
+/* Right side: arrow-navigable product row -------------------------------- */
+.promo-carousel__products-viewport {
+  position: relative;
+  flex: 1 1 auto;
   display: flex;
-  flex-direction: column;
-  flex: 0 0 280px;
-  gap: 0.75rem;
-  padding: 12px; /* matches .product-card__body's padding */
-  background: #F9FAFB; /* matches .product-card__img-zone's background */
+  min-width: 0; /* FIX — allow this flex item to shrink below its content's min-content width */
 }
 
-.promo-carousel__panel-media {
-  width: 100%;
-  aspect-ratio: 1; /* matches .product-card__img-zone so panel height lines up with the product row beside it */
-  overflow: hidden;
-  background: #F3F4F6;
-}
-
-.promo-carousel__panel-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.promo-carousel__panel-text {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.promo-carousel__heading {
-  font-size: 0.85rem; /* matches .product-card__title */
-  font-weight: 600;
-  color: #111827; /* matches --product-card-text */
-  margin: 0;
-}
-
-.promo-carousel__subheading {
-  font-size: 0.7rem; /* matches .product-card__vendor */
-  color: #6B7280; /* matches --product-card-text-secondary */
-  margin: 0;
-}
-
-.promo-carousel__panel-heading {
-  font-size: 0.78rem;
-  font-weight: 500;
-  color: #6B7280;
-  margin: 0;
-}
-
-.promo-carousel__cta {
-  display: inline-block;
-  margin-top: 0.35rem;
-  padding: 8px 10px; /* matches .product-card__atc-btn */
-  background: #111827; /* matches product-card's dark action color, not the old orange accent */
-  color: #fff;
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-decoration: none;
-  border-radius: 6px; /* matches .product-card__atc-btn */
-  text-align: center;
-  width: fit-content;
-}
-
-.promo-carousel__cta:hover {
-  background: #333;
-}
-
-/* Right side: scrollable product row ------------------------------------ */
 .promo-carousel__products {
   display: flex;
   gap: 2px; /* matches .products-grid's gap */
-  overflow-x: auto;
+  overflow-x: hidden; /* clips exactly at the edge — no partial-card peek */
+  scroll-behavior: smooth;
   scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0; /* FIX — see file header comment */
 }
 
-.promo-carousel__products::-webkit-scrollbar {
-  display: none;
-}
-
+/* Fixed at exactly 3 cards visible per view — the promo panel occupies
+   the "4th column" of the 4-column products-grid, so the remaining
+   width here should read as the other 3 columns, not an arbitrary
+   fixed-px card width unrelated to the grid it sits inside. 2 gaps of
+   2px sit between the 3 visible cards. */
 .promo-carousel__product {
-  flex: 0 0 220px;
+  flex: 0 0 calc((100% - 4px) / 3);
   scroll-snap-align: start;
+  min-width: 0; /* FIX — let individual cards shrink/clip instead of forcing the row wider */
+}
+
+/* Prev/next arrow buttons ------------------------------------------------ */
+.promo-carousel__arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  color: #111827;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease, background 0.15s ease;
+  z-index: 2;
+}
+
+.promo-carousel__arrow:hover {
+  background: #fff;
+}
+
+.promo-carousel__arrow--prev {
+  left: 8px;
+}
+
+.promo-carousel__arrow--next {
+  right: 8px;
+}
+
+/* Arrows are hidden until the row is hovered... */
+.promo-carousel__products-viewport:hover .promo-carousel__arrow {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ...but hover has no meaning on touch devices, so keep them visible and
+   tappable there instead of hidden behind an unreachable hover state. */
+@media (hover: none) {
+  .promo-carousel__arrow {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 
 /* Responsive ------------------------------------------------------------ */
@@ -117,8 +135,15 @@
     flex: 0 0 auto;
   }
 
+  /* Stacked layout on mobile — 2 cards per view instead of 3, since the
+     panel now sits above (full width) rather than beside the row. */
   .promo-carousel__product {
-    flex: 0 0 160px;
+    flex: 0 0 calc((100% - 2px) / 2);
+  }
+
+  .promo-carousel__arrow {
+    width: 32px;
+    height: 32px;
   }
 }
 
@@ -127,6 +152,10 @@
    the full row here just needs grid-column: 1 / -1. */
 .products-grid__promo-item {
   grid-column: 1 / -1;
+  min-width: 0; /* FIX — see file header comment: grid items default to
+                   min-width: auto too, so without this override the
+                   spanning item refused to shrink to its track's actual
+                   width and forced .products-grid wider than the page. */
 }
 
 .products-grid__promo-item .promo-carousel {

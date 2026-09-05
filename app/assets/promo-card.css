@@ -1,0 +1,85 @@
+/* app/assets/promo-card.css
+   Styles for the ~/snippets/PromoCard.tsx panel used inside
+   PromoCarousel: brand image, heading/subheading, and an optional CTA.
+
+   Split out of promo-carousel.css alongside the PromoCard.tsx/
+   PromoCarousel.tsx component split — kept as its own stylesheet so the
+   CSS file boundary matches the component file boundary. Must load
+   after tokens are available (loads after themeStyles in root.tsx, same
+   as promo-carousel.css) since colors here should eventually move to
+   the shared --color-* tokens noted in theme.css rather than the
+   hardcoded hex values below (carried over as-is from the original
+   promo-carousel.css — not changed as part of this split).
+
+   Mobile responsive override for .promo-carousel__panel (flex: 0 0 auto
+   at <=768px) stays in promo-carousel.css, since it's the parent
+   .promo-carousel row's flex-direction: column switch that drives it,
+   not something specific to the panel in isolation.
+   ============================================================ */
+
+.promo-carousel__panel {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 280px;
+  gap: 0.75rem;
+  padding: 12px; /* matches .product-card__body's padding */
+  background: #F9FAFB; /* matches .product-card__img-zone's background */
+}
+
+.promo-carousel__panel-media {
+  width: 100%;
+  aspect-ratio: 1; /* matches .product-card__img-zone so panel height lines up with the product row beside it */
+  overflow: hidden;
+  background: #F3F4F6;
+}
+
+.promo-carousel__panel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.promo-carousel__panel-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.promo-carousel__heading {
+  font-size: 0.85rem; /* matches .product-card__title */
+  font-weight: 600;
+  color: #111827; /* matches --product-card-text */
+  margin: 0;
+}
+
+.promo-carousel__subheading {
+  font-size: 0.7rem; /* matches .product-card__vendor */
+  color: #6B7280; /* matches --product-card-text-secondary */
+  margin: 0;
+}
+
+.promo-carousel__panel-heading {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #6B7280;
+  margin: 0;
+}
+
+.promo-carousel__cta {
+  display: inline-block;
+  margin-top: 0.35rem;
+  padding: 8px 10px; /* matches .product-card__atc-btn */
+  background: #111827; /* matches product-card's dark action color, not the old orange accent */
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 6px; /* matches .product-card__atc-btn */
+  text-align: center;
+  width: fit-content;
+}
+
+.promo-carousel__cta:hover {
+  background: #333;
+}
