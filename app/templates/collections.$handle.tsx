@@ -22,14 +22,6 @@ const DEFAULT_TAB: CollectionTab = 'products';
 
 // Products per page (mirrors the `pageBy` passed to getPaginationVariables).
 const PAGE_BY = 48;
-// How many page numbers we're willing to make directly clickable. Cursor-
-// based connections can't jump to an arbitrary page, so we look ahead this
-// many pages' worth of cursors up front; beyond this window, users still
-// get correct Previous/Next (Hydrogen's Pagination component tracks that
-// live), they just can't jump straight to e.g. page 40.
-// Capped so MAX_PAGE_LINKS * PAGE_BY stays under the Storefront API's
-// 250-item-per-connection limit (5 * 48 = 240).
-const MAX_PAGE_LINKS = 5;
 
 // Allowed values for the CollectionBanner text-alignment metafield —
 // anything else (unset, mistyped in Admin, etc.) falls through to
@@ -104,17 +96,10 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
     throw redirect('/collections');
   }
 
-  const [{collection}, pageCursorsResult] = await Promise.all([
-    storefront.query(COLLECTION_QUERY, {
-      variables: {handle, filters, ...paginationVariables},
-      // Add other queries here, so that they are loaded in parallel
-    }),
-    // Lightweight lookahead query (cursors only, no product fields) that
-    // powers the numbered page links — see buildPageCursors below.
-    storefront.query(COLLECTION_PAGE_CURSORS_QUERY, {
-      variables: {handle, filters, first: MAX_PAGE_LINKS * PAGE_BY},
-    }),
-  ]);
+  const {collection} = await storefront.query(COLLECTION_QUERY, {
+    variables: {handle, filters, ...paginationVariables},
+    // Add other queries here, so that they are loaded in parallel
+  });
 
   if (!collection) {
     throw new Response(`Collection ${handle} not found`, {
@@ -125,20 +110,11 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   // The API handle might be localized, so redirect to the localized handle
   redirectIfHandleIsLocalized(request, {handle, data: collection});
 
-  const {pageCursors, totalKnownPages, hasMoreBeyondKnownPages} =
-    buildPageCursors(
-      pageCursorsResult.collection?.products.edges ?? [],
-      pageCursorsResult.collection?.products.pageInfo?.hasNextPage ?? false,
-    );
-
   return {
     collection,
     activeTab,
     canonicalUrl,
     shouldNoIndex,
-    pageCursors,
-    totalKnownPages,
-    hasMoreBeyondKnownPages,
   };
 }
 
@@ -183,41 +159,6 @@ function parseActiveTab(url: URL): CollectionTab {
 }
 
 /**
- * Turns a flat list of item cursors (from the lookahead query) into a map
- * of "page number -> cursor to use as the `after` param to load that page
- * directly", plus how many pages we can confidently link to and whether
- * more pages exist beyond that window.
- *
- * Page 1 needs no cursor (it's the default `first: PAGE_BY` fetch), so the
- * map starts at page 2: the cursor for page N is the cursor of the last
- * item on page N-1, i.e. index `(N-1) * PAGE_BY - 1`.
- */
-function buildPageCursors(
-  edges: Array<{cursor: string}>,
-  hasNextPage: boolean,
-): {
-  pageCursors: Record<number, string>;
-  totalKnownPages: number;
-  hasMoreBeyondKnownPages: boolean;
-} {
-  const pageCursors: Record<number, string> = {};
-
-  for (let page = 2; page <= MAX_PAGE_LINKS; page++) {
-    const edge = edges[(page - 1) * PAGE_BY - 1];
-    if (!edge) break;
-    pageCursors[page] = edge.cursor;
-  }
-
-  const totalKnownPages = 1 + Object.keys(pageCursors).length;
-  // We only know there's more beyond our window if we actually filled the
-  // whole lookahead window AND the API still reports a next page.
-  const hasMoreBeyondKnownPages =
-    hasNextPage && edges.length === MAX_PAGE_LINKS * PAGE_BY;
-
-  return {pageCursors, totalKnownPages, hasMoreBeyondKnownPages};
-}
-
-/**
  * Narrows a metafield's raw string value to one of `allowed`. Returns
  * undefined (letting CollectionBanner fall back to its own default) for
  * anything missing or not in the allowed set.
@@ -230,13 +171,7 @@ function toEnum<T extends string>(
 }
 
 export default function Collection() {
-  const {
-    collection,
-    activeTab,
-    pageCursors,
-    totalKnownPages,
-    hasMoreBeyondKnownPages,
-  } = useLoaderData<typeof loader>();
+  const {collection, activeTab} = useLoaderData<typeof loader>();
 
   const articles = (collection.postsMetafield?.references?.nodes ?? []).filter(
     (node): node is NonNullable<typeof node> => Boolean(node),
@@ -320,9 +255,6 @@ export default function Collection() {
         articles={articles}
         subCollections={subCollections}
         sponsoredAds={sponsoredAds}
-        pageCursors={pageCursors}
-        totalKnownPages={totalKnownPages}
-        hasMoreBeyondKnownPages={hasMoreBeyondKnownPages}
       />
 
       {afterItemsPage?.body && (
@@ -527,37 +459,6 @@ const COLLECTION_QUERY = `#graphql
           hasNextPage
           endCursor
           startCursor
-        }
-      }
-    }
-  }
-` as const;
-
-/**
- * Deliberately minimal: fetches only cursors (and the bare-minimum `id`
- * every connection edge needs to select under `node`), not full product
- * fields — this runs alongside the main COLLECTION_QUERY purely to build
- * the numbered-pagination cursor map in buildPageCursors above, so it
- * should stay as cheap as possible even though it fetches more items.
- */
-const COLLECTION_PAGE_CURSORS_QUERY = `#graphql
-  query CollectionPageCursors(
-    $handle: String!
-    $country: CountryCode
-    $language: LanguageCode
-    $filters: [ProductFilter!]
-    $first: Int!
-  ) @inContext(country: $country, language: $language) {
-    collection(handle: $handle) {
-      products(first: $first, filters: $filters) {
-        edges {
-          cursor
-          node {
-            id
-          }
-        }
-        pageInfo {
-          hasNextPage
         }
       }
     }

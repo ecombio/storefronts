@@ -423,3 +423,7 @@ html.header-hidden #collection-filters .collection-filters__scroll {
     gap: 1px;
   }
 }
+.collection {
+  max-width: var(--content-max-width);
+  margin-inline: auto;
+}
