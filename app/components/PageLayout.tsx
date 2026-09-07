@@ -3,17 +3,17 @@ import {Link} from 'react-router';
 import {useId} from 'react';
 import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
 import {Aside} from '~/components/Aside';
-import {Footer, type FooterQueryData} from '~/sections/Footer';
-import {Header, HeaderMenu} from '~/sections/Header';
-import {CartDrawer} from '~/sections/CartDrawer';
+import {Footer, type FooterQueryData} from '~/components/Footer';
+import {Header, HeaderMenu} from '~/components/Header';
+import {CartDrawer} from '~/components/CartDrawer';
 import {
   SEARCH_ENDPOINT,
   SearchFormPredictive,
-} from '~/snippets/SearchFormPredictive';
-import {SearchResultsPredictive} from '~/snippets/SearchResultsPredictive';
-import {QuickView} from '~/snippets/QuickView'; // ADDED
-import {CompareBar} from '~/snippets/CompareBar'; // ADDED
-import type {CollectionImage} from '~/config/Header.constants'; // ADDED — for collectionImages prop typing
+} from '~/components/SearchFormPredictive';
+import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
+import {QuickView} from '~/components/QuickView'; // ADDED
+import {CompareBar} from '~/components/CompareBar'; // ADDED
+import type {CollectionImage} from '~/lib/Header.constants'; // ADDED — for collectionImages prop typing
 
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;

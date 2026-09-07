@@ -3,6 +3,35 @@
 /* eslint-disable */
 import type * as StorefrontAPI from '@shopify/hydrogen/storefront-api-types';
 
+export type FlatMenuItemFragment = Pick<
+  StorefrontAPI.MenuItem,
+  'id' | 'title' | 'url'
+>;
+
+export type FooterMenuQueryVariables = StorefrontAPI.Exact<{
+  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
+  footerMenuHandle: StorefrontAPI.Scalars['String']['input'];
+  policiesMenuHandle: StorefrontAPI.Scalars['String']['input'];
+  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
+}>;
+
+export type FooterMenuQuery = {
+  menu?: StorefrontAPI.Maybe<
+    Pick<StorefrontAPI.Menu, 'id'> & {
+      items: Array<
+        Pick<StorefrontAPI.MenuItem, 'id' | 'title' | 'url'> & {
+          items: Array<Pick<StorefrontAPI.MenuItem, 'id' | 'title' | 'url'>>;
+        }
+      >;
+    }
+  >;
+  policiesMenu?: StorefrontAPI.Maybe<
+    Pick<StorefrontAPI.Menu, 'id'> & {
+      items: Array<Pick<StorefrontAPI.MenuItem, 'id' | 'title' | 'url'>>;
+    }
+  >;
+};
+
 export type MenuCollectionImagesQueryVariables = StorefrontAPI.Exact<{
   ids:
     | Array<StorefrontAPI.Scalars['ID']['input']>
@@ -653,35 +682,6 @@ export type ProductRecommendationsQuery = {
         >;
       }
     >
-  >;
-};
-
-export type FlatMenuItemFragment = Pick<
-  StorefrontAPI.MenuItem,
-  'id' | 'title' | 'url'
->;
-
-export type FooterMenuQueryVariables = StorefrontAPI.Exact<{
-  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
-  footerMenuHandle: StorefrontAPI.Scalars['String']['input'];
-  policiesMenuHandle: StorefrontAPI.Scalars['String']['input'];
-  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
-}>;
-
-export type FooterMenuQuery = {
-  menu?: StorefrontAPI.Maybe<
-    Pick<StorefrontAPI.Menu, 'id'> & {
-      items: Array<
-        Pick<StorefrontAPI.MenuItem, 'id' | 'title' | 'url'> & {
-          items: Array<Pick<StorefrontAPI.MenuItem, 'id' | 'title' | 'url'>>;
-        }
-      >;
-    }
-  >;
-  policiesMenu?: StorefrontAPI.Maybe<
-    Pick<StorefrontAPI.Menu, 'id'> & {
-      items: Array<Pick<StorefrontAPI.MenuItem, 'id' | 'title' | 'url'>>;
-    }
   >;
 };
 
@@ -2124,6 +2124,10 @@ export type PredictiveSearchQuery = {
 };
 
 interface GeneratedQueryTypes {
+  '#graphql\n  fragment FlatMenuItem on MenuItem {\n    id\n    title\n    url\n  }\n  query FooterMenu(\n    $country: CountryCode\n    $footerMenuHandle: String!\n    $policiesMenuHandle: String!\n    $language: LanguageCode\n  ) @inContext(language: $language, country: $country) {\n    menu(handle: $footerMenuHandle) {\n      id\n      items {\n        id\n        title\n        url\n        items {\n          id\n          title\n          url\n        }\n      }\n    }\n    policiesMenu: menu(handle: $policiesMenuHandle) {\n      id\n      items {\n        ...FlatMenuItem\n      }\n    }\n  }\n': {
+    return: FooterMenuQuery;
+    variables: FooterMenuQueryVariables;
+  };
   '#graphql\n  query MenuCollectionImages($ids: [ID!]!, $country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    nodes(ids: $ids) {\n      ... on Collection {\n        id\n        image {\n          url\n          altText\n        }\n      }\n    }\n  }\n': {
     return: MenuCollectionImagesQuery;
     variables: MenuCollectionImagesQueryVariables;
@@ -2147,10 +2151,6 @@ interface GeneratedQueryTypes {
   '#graphql\n  query ProductRecommendations(\n    $productId: ID!\n    $intent: ProductRecommendationIntent\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    productRecommendations(productId: $productId, intent: $intent) {\n      ...ProductCard\n    }\n  }\n  #graphql\n  fragment ProductCard on Product {\n    id\n    handle\n    title\n    vendor\n    featuredImage {\n      id\n      url\n      altText\n      width\n      height\n    }\n    priceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n    compareAtPriceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n    selectedOrFirstAvailableVariant(\n      selectedOptions: []\n      ignoreUnknownOptions: true\n      caseInsensitiveMatch: true\n    ) {\n      id\n      availableForSale\n    }\n    etaText: metafield(namespace: "custom", key: "eta_text") {\n      value\n    }\n    sponsored: metafield(namespace: "custom", key: "sponsored") {\n      value\n    }\n    reviewsRating: metafield(namespace: "reviews", key: "rating") {\n      value\n    }\n    reviewsCount: metafield(namespace: "reviews", key: "rating_count") {\n      value\n    }\n  }\n\n': {
     return: ProductRecommendationsQuery;
     variables: ProductRecommendationsQueryVariables;
-  };
-  '#graphql\n  fragment FlatMenuItem on MenuItem {\n    id\n    title\n    url\n  }\n  query FooterMenu(\n    $country: CountryCode\n    $footerMenuHandle: String!\n    $policiesMenuHandle: String!\n    $language: LanguageCode\n  ) @inContext(language: $language, country: $country) {\n    menu(handle: $footerMenuHandle) {\n      id\n      items {\n        id\n        title\n        url\n        items {\n          id\n          title\n          url\n        }\n      }\n    }\n    policiesMenu: menu(handle: $policiesMenuHandle) {\n      id\n      items {\n        ...FlatMenuItem\n      }\n    }\n  }\n': {
-    return: FooterMenuQuery;
-    variables: FooterMenuQueryVariables;
   };
   '#graphql\n  #graphql\n  fragment CollectionCard on Collection {\n    id\n    handle\n    title\n    image {\n      id\n      url\n      altText\n      width\n      height\n    }\n  }\n\n  query ShopByCategory($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    collections(first: 10, sortKey: TITLE) {\n      nodes {\n        ...CollectionCard\n      }\n    }\n  }\n': {
     return: ShopByCategoryQuery;

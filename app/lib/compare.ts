@@ -2,7 +2,7 @@
 //
 // Shared read/write logic for the compare feature. Extracted from the
 // copies that previously lived independently in ProductCard.tsx,
-// CompareBar.tsx, and templates/compare.tsx — all three had their own
+// CompareBar.tsx, and routes/compare.tsx — all three had their own
 // COMPARE_KEY, COMPARE_MAX, CompareEntry, and get/save functions with
 // nothing enforcing they stayed in sync. This is the single source of
 // truth all three now import from. Mirrors lib/wishlist.ts exactly.

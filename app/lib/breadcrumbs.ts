@@ -1,4 +1,4 @@
-// Ported from snippets/breadcrumbs.liquid — picks a "parent" and
+// Ported from components/breadcrumbs.liquid — picks a "parent" and
 // "child" collection for PDP breadcrumbs by excluding the product's
 // vendor auto-collection, then taking the largest/smallest by size.
 

@@ -4,6 +4,6 @@ import {hydrogenRoutes} from '@shopify/hydrogen';
 
 export default hydrogenRoutes([
   ...(await flatRoutes({
-    rootDirectory: 'templates',
+    rootDirectory: 'routes',
   })),
 ]) satisfies RouteConfig;

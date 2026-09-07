@@ -67,7 +67,7 @@ export default async function handleRequest(
     // + shopify.com + localhost only) — silently blocking any video
     // whose data-src pointed elsewhere, including Shopify CDN-hosted
     // videos served from a different subdomain than cdn.shopify.com.
-    // See app/components/blogs/Video.tsx / Video.md for the marker
+    // See app/components/Video.tsx / Video.md for the marker
     // this unblocks.
     mediaSrc: [
       "'self'",

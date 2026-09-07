@@ -1,0 +1,48 @@
+/*
+ * app/assets/Header.css
+ *
+ * CSS exclusive to app/sections/Header.tsx.
+ *
+ * Deliberately does NOT include:
+ * - .nav-item / .nav-item--highlight / .nav-item__star* — these live in
+ *   highlight.css. They were moved there specifically to stop duplicate
+ *   definitions across files from fighting over load order. Do not
+ *   re-add them here even though Header.tsx uses them directly.
+ * - .sticky-under-header / --header-height fallback — these live in
+ *   sticky-header.css because CollectionToolbar (and possibly future
+ *   components) rely on the same coordination rules, not just Header.
+ * - --content-max-width / --color-* tokens — these live in theme.css as
+ *   shared design tokens used well beyond Header.
+ *
+ * Moved here from:
+ * - search-bar.css (font import, @keyframes blink)
+ * - app.css (.search-bar / .search-title / .search-terms — previously
+ *   empty stubs with comments saying "styled via Tailwind utilities";
+ *   filled in below with the real values those comments described)
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500&display=swap');
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Wrapper for the AiSearchBar + Cancel button row inside SearchPanel. */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* "Popular Search Terms" label above the trending-term pills. */
+.search-title {
+  padding-bottom: 12px;
+}
+
+/* Pill row of trending search terms in PopularSearches. */
+.search-terms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
