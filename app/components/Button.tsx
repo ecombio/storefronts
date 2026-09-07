@@ -50,7 +50,7 @@
 
 import * as React from 'react';
 import {Link} from 'react-router';
-import './Button.css';
+import '../styles/Button.css';
 
 // ---------------------------------------------------------------------------
 // Types

@@ -55,21 +55,21 @@ import RelatedProducts, {
 import LatestBlogs, {getLatestBlogsData} from '~/components/LatestBlogs';
 import type {ProductCardFragment} from 'storefrontapi.generated';
 import articleStyles from '~/styles/article.css?url';
-import articleTocStyles from '~/components/TableOfContents.css?url';
-import authorSectionStyles from '~/components/AuthorSection.css?url';
-import twoColumnContentStyles from '~/components/TwoColumnContent.css?url';
-import videoStyles from '~/components/Video.css?url';
-import galleryStyles from '~/components/ImagesGallery.css?url';
-import blogButtonStyles from '~/components/Button.css?url';
+import articleTocStyles from '~/styles/TableOfContents.css?url';
+import authorSectionStyles from '~/styles/AuthorSection.css?url';
+import twoColumnContentStyles from '~/styles/TwoColumnContent.css?url';
+import videoStyles from '~/styles/Video.css?url';
+import galleryStyles from '~/styles/ImagesGallery.css?url';
+import blogButtonStyles from '~/styles/Button.css?url';
 import quoteStyles from '~/styles/quote.css?url';
-import recipeHeaderStyles from '~/components/RecipeHeader.css?url';
-import newsletterFormStyles from '~/components/NewsletterForm.css?url';
-import relatedBlogPostsStyles from '~/components/RelatedBlogPosts.css?url';
-import blogPostCardStyles from '~/components/BlogPostCard.css?url';
-import relatedProductsStyles from '~/components/RelatedProducts.css?url';
-import latestBlogsStyles from '~/components/LatestBlogs.css?url';
-import summaryStyles from '~/components/Summary.css?url';
-import socialShareStyles from '~/components/SocialShare.css?url';
+import recipeHeaderStyles from '~/styles/RecipeHeader.css?url';
+import newsletterFormStyles from '~/styles/NewsletterForm.css?url';
+import relatedBlogPostsStyles from '~/styles/RelatedBlogPosts.css?url';
+import blogPostCardStyles from '~/styles/BlogPostCard.css?url';
+import relatedProductsStyles from '~/styles/RelatedProducts.css?url';
+import latestBlogsStyles from '~/styles/LatestBlogs.css?url';
+import summaryStyles from '~/styles/Summary.css?url';
+import socialShareStyles from '~/styles/SocialShare.css?url';
 
 export function links() {
   return [
