@@ -10,7 +10,7 @@ import {redirect, useLoaderData} from 'react-router';
 import type {LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';
 import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
 import type {ProductFilter} from '@shopify/hydrogen/storefront-api-types';
-import {ProductItem, PaginatedResourceSection, FilterSort} from '~/components/ui';
+import {ProductItem, PaginatedResourceSection, FilterSort} from '~/components';
 import {
   getAllFiltersFromParams,
   getSortValuesFromParam,

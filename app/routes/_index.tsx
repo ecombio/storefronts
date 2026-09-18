@@ -6,7 +6,7 @@ import type {
   FeaturedCollectionFragment,
   RecommendedProductsQuery,
 } from 'storefrontapi.generated';
-import {MockShopNotice, ProductItem} from '~/components/ui';
+import {MockShopNotice, ProductItem} from '~/components';
 
 export const meta: Route.MetaFunction = () => {
   return [{title: 'Hydrogen | Home'}];

@@ -2,7 +2,7 @@ import {useLoaderData, Link} from 'react-router';
 import type {Route} from './+types/collections._index';
 import {getPaginationVariables, Image} from '@shopify/hydrogen';
 import type {CollectionFragment} from 'storefrontapi.generated';
-import {PaginatedResourceSection} from '~/components/ui';
+import {PaginatedResourceSection} from '~/components';
 
 export async function loader(args: Route.LoaderArgs) {
   // Start fetching non-critical data without blocking time to first byte

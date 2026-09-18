@@ -22,7 +22,7 @@ import type {
   CustomerOrdersFragment,
   OrderItemFragment,
 } from 'customer-accountapi.generated';
-import {PaginatedResourceSection} from '~/components/ui';
+import {PaginatedResourceSection} from '~/components';
 
 type OrdersLoaderData = {
   customer: CustomerOrdersFragment;

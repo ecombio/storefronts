@@ -5,15 +5,16 @@ import type {
   FooterQuery,
   HeaderQuery,
 } from 'storefrontapi.generated';
-import {Aside} from '~/components/ui';
-import {Footer} from './Footer';
-import {Header, HeaderMenu} from './Header';
-import {CartMain} from '~/components/cart';
 import {
+  Aside,
+  CartMain,
+  Footer,
+  Header,
+  HeaderMenu,
   SEARCH_ENDPOINT,
   SearchFormPredictive,
   SearchResultsPredictive,
-} from '~/components/search';
+} from './ui';
 
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;

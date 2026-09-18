@@ -9,12 +9,12 @@ import {
   getAdjacentAndFirstAvailableVariants,
   useSelectedOptionInUrlParam,
 } from '@shopify/hydrogen';
-import {ProductPrice} from '~/components/ui';
+import {ProductPrice} from '~/components';
 import {
   ProductGallery,
   ProductForm,
   ProductAccordion,
-} from '~/components/product-detail';
+} from '~/components';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 
 export const meta: Route.MetaFunction = ({data}) => {

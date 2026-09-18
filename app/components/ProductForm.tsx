@@ -1,10 +1,8 @@
-// app/components/product-detail/ProductForm/ProductForm.tsx
+// app/components/ProductForm.tsx
 import {useNavigate} from 'react-router';
 import {type MappedProductOptions} from '@shopify/hydrogen';
-import {AddToCartButton, useAside} from '~/components/ui';
+import {AddToCartButton, SizeChip, SwatchOption, useAside} from './ui';
 import type {ProductFragment} from 'storefrontapi.generated';
-import {SwatchOption} from './SwatchOption';
-import {SizeChip} from './SizeChip';
 
 export function ProductForm({
   productOptions,

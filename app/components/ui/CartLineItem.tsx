@@ -3,7 +3,8 @@ import type {CartLayout, LineItemChildrenMap} from './CartMain';
 import {CartForm, Image, type OptimisticCartLine} from '@shopify/hydrogen';
 import {useVariantUrl} from '~/lib/variants';
 import {Link} from 'react-router';
-import {ProductPrice, useAside} from '~/components/ui';
+import {ProductPrice} from './ProductPrice';
+import {useAside} from './Aside';
 import type {
   CartApiQueryFragment,
   CartLineFragment,
