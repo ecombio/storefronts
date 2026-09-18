@@ -9,7 +9,7 @@ import {
   getAdjacentAndFirstAvailableVariants,
   useSelectedOptionInUrlParam,
 } from '@shopify/hydrogen';
-import {ProductPrice} from '~/components/ProductPrice';
+import {ProductPrice} from '~/components/ui';
 import {
   ProductGallery,
   ProductForm,

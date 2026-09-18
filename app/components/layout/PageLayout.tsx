@@ -5,7 +5,7 @@ import type {
   FooterQuery,
   HeaderQuery,
 } from 'storefrontapi.generated';
-import {Aside} from '~/components/Aside';
+import {Aside} from '~/components/ui';
 import {Footer} from './Footer';
 import {Header, HeaderMenu} from './Header';
 import {CartMain} from '~/components/cart';
