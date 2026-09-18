@@ -10,9 +10,11 @@ import {
   useSelectedOptionInUrlParam,
 } from '@shopify/hydrogen';
 import {ProductPrice} from '~/components/ProductPrice';
-import {ProductGallery} from '~/components/ProductGallery';
-import {ProductForm} from '~/components/ProductForm';
-import {ProductAccordion} from '~/components/ProductAccordion';
+import {
+  ProductGallery,
+  ProductForm,
+  ProductAccordion,
+} from '~/components/product-detail';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 
 export const meta: Route.MetaFunction = ({data}) => {
