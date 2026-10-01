@@ -58,3 +58,7 @@ tmp/
 *.bak*
 
 /docs/storefronts/blog/seo/
+
+/.data/
+
+/.data/
