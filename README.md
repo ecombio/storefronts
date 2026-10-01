@@ -5,7 +5,7 @@ Headless Shopify storefront for [ecombio.com](https://ecombio.com), built with N
 | Item             | Where                                                   |
 | ---------------- | ------------------------------------------------------- |
 | Live site        | https://ecombio.com (`www` redirects to it)             |
-| GitHub repo      | https://github.com/ecombio/storefront (branch `main`)   |
+| GitHub repo      | https://github.com/ecombio/storefronts (branch `main`)   |
 | Vercel project   | https://vercel.com/ecombiology/storefront               |
 | Shopify store    | `ecombio.myshopify.com`                                 |
 | Checkout         | Hosted by Shopify, currently on `ecombio.myshopify.com` |
@@ -22,7 +22,7 @@ Open PowerShell and paste the whole block. It asks for the commit message. Paste
 & {
   $msg = Read-Host "Commit message"
 
-  Set-Location C:\Users\Admin\Ecombio\Storefront
+  Set-Location C:\Users\Admin\Shopify\Storefronts\Headless
 
   git pull --rebase --autostash origin main
   if ($LASTEXITCODE -ne 0) { Write-Host "STOPPED: pull failed"; return }
