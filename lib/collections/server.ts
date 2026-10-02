@@ -195,8 +195,10 @@ export async function getCollectionDeals(params: { handle: string }): Promise<Pr
   return withProductRatings(await fetchCollectionDeals(params.handle));
 }
 
-const REVIEW_CANDIDATES_LIMIT = 100; // products checked for reviews (each adds a cache tag, keep under ~120)
-const REVIEW_PRODUCTS_LIMIT = 24; // reviewed products used for the section
+const REVIEW_CANDIDATES_LIMIT = 250; // products checked for reviews (each adds a cache tag, keep under ~120)
+const REVIEW_PRODUCTS_LIMIT = 24;
+// Products known to have Yotpo reviews. Temporary: the review webhook will maintain this list.
+const REVIEWED_PRODUCT_IDS = new Set(["9448490696918"]); // reviewed products used for the section
 
 // Yotpo returns reviews one product at a time, so a collection's reviews come from its first products.
 export async function getCollectionReviewProducts(params: {
@@ -206,6 +208,16 @@ export async function getCollectionReviewProducts(params: {
   cacheLife("hours");
   cacheTag("collections", "collection-" + params.handle);
 
+  // Dev only: skip the big Shopify fetch on slow connections.
+  if (process.env.NODE_ENV === "development") {
+    return [
+      {
+        id: "9448490696918",
+        handle: "aventon-level-4-rec-electric-commuter-bike",
+        title: "Aventon Level 4 REC Electric Commuter Bike",
+      },
+    ];
+  }
   const { products } = await fetchCollectionProducts({
     collection: params.handle,
     limit: REVIEW_CANDIDATES_LIMIT,
@@ -214,12 +226,12 @@ export async function getCollectionReviewProducts(params: {
     const id = getNumericShopifyId(product.id);
     return id ? [{ id, handle: product.handle, title: product.title }] : [];
   });
-  // Tag per product so a review webhook for any candidate also refreshes this selection.
-  cacheTag(...candidates.map((candidate) => "yotpo-reviews-" + candidate.id));
+  // One shared tag (not one per product) keeps big collections under the cache tag limit.
+  // The Yotpo webhook revalidates it, so a product's first review reaches the section.
+  cacheTag("yotpo-review-selection");
 
-  // Only products that have reviews go on to the costlier per-product review fetch.
   const ratings = await getProductCardRatings(candidates.map((candidate) => candidate.id));
-  // Throw (never cached) if Yotpo answered for none of them, so an outage isn't remembered.
+  // Throw (never cached) if Yotpo answered for none, so an outage isn't remembered.
   if (candidates.length > 0 && ratings.size === 0) throw new Error("Yotpo ratings unavailable");
   return candidates
     .filter((candidate) => (ratings.get(candidate.id)?.count ?? 0) > 0)

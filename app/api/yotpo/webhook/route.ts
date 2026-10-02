@@ -62,5 +62,6 @@ export async function POST(request: Request) {
   );
 
   revalidateTag(productId ? `yotpo-reviews-${productId}` : "yotpo-reviews", "max");
+  revalidateTag("yotpo-review-selection", "max");
   return NextResponse.json({ ok: true, scope: productId ?? "all" });
 }

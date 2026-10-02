@@ -162,15 +162,15 @@ export function CollectionDetailPage({
               </Suspense>
             </CollectionTabs>
 
-            {afterItemPagePromise ? (
-              <Suspense fallback={null}>
-                <AfterItems pagePromise={afterItemPagePromise} />
-              </Suspense>
-            ) : null}
-
             {reviewProductsPromise ? (
               <Suspense fallback={null}>
                 <Reviews productsPromise={reviewProductsPromise} title={collection.title} />
+              </Suspense>
+            ) : null}
+
+            {afterItemPagePromise ? (
+              <Suspense fallback={null}>
+                <AfterItems pagePromise={afterItemPagePromise} />
               </Suspense>
             ) : null}
           </Sections>
