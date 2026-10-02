@@ -102,7 +102,11 @@ function ProductCardSwatches({
   return (
     <div
       data-slot="product-card-swatches"
-      className={cn("flex min-h-7 items-center justify-center gap-1.5", className)}
+      className={cn(
+        "flex items-center justify-center gap-1.5",
+        visible.length > 0 && "min-h-7",
+        className,
+      )}
     >
       {visible.map((c) => (
         <span
@@ -137,7 +141,7 @@ function ProductCardTitle({ className, children, ...props }: ComponentProps<"h3"
   return (
     <h3
       data-slot="product-card-title"
-      className={cn("text-sm font-medium text-foreground line-clamp-2 min-h-10", className)}
+      className={cn("text-sm font-bold text-foreground line-clamp-2 min-h-10", className)}
       {...props}
     >
       {children}
@@ -200,18 +204,13 @@ function ProductCardPrice({
   className,
 }: ProductCardPriceProps) {
   const isRange = maxAmount != null && maxAmount !== amount;
-  const compareAtNum = compareAtAmount ? parseFloat(compareAtAmount) : 0;
-  // A range's per-variant compare-at prices differ, so a single one would be misleading.
-  const showCompareAt = !isRange && compareAtNum > parseFloat(amount);
+  const showCompareAt =
+    !isRange && compareAtAmount != null && parseFloat(compareAtAmount) > parseFloat(amount);
 
   return (
-    <div data-slot="product-card-price" className={cn("min-h-16", className)}>
+    <div data-slot="product-card-price" className={cn("min-h-12 text-foreground", className)}>
       <div className="h-5 text-sm text-muted-foreground">{isRange ? "Starting at" : null}</div>
-      <MoneyDisplay
-        amount={amount}
-        currencyCode={currencyCode}
-        className="text-xl font-semibold text-foreground"
-      />
+      <MoneyDisplay amount={amount} currencyCode={currencyCode} className="text-2xl font-bold" />
       {showCompareAt && compareAtAmount && (
         <div className="text-sm text-muted-foreground">
           Was{" "}

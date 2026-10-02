@@ -14,6 +14,7 @@ import {
   ProductCardSwatches,
   ProductCardTitle,
 } from "./components";
+import { getSaleInfo, SaleBadge, SaleSavings } from "./sale";
 import { CardStars } from "./stars";
 
 export interface ProductCardProps {
@@ -30,6 +31,14 @@ export function ProductCard({
   className,
 }: ProductCardProps) {
   const isFeatured = variant === "featured";
+  const sale = getSaleInfo(product.price.amount, product.compareAtPrice?.amount);
+  const subtitle =
+    (product.defaultVariantSelectedOptions ?? [])
+      .map((o) => o.value)
+      .filter((v) => v !== "Default Title")
+      .join(" • ") ||
+    product.vendor ||
+    "";
   const href = buildProductUrl(product.handle, product.defaultVariantSelectedOptions ?? []);
 
   return (
@@ -51,9 +60,11 @@ export function ProductCard({
           />
           <ProductCardSwatches colors={product.colors} />
           <ProductCardContent>
+            <SaleBadge price={product.price.amount} compareAt={product.compareAtPrice?.amount} />
             <ProductCardTitle>{product.title}</ProductCardTitle>
+            <div className="min-h-8 line-clamp-2 text-xs text-muted-foreground">{subtitle}</div>
             <ProductCardRating>
-              {product.rating ? (
+              {product.rating && product.rating.count > 0 ? (
                 <CardStars score={product.rating.score} count={product.rating.count} />
               ) : null}
             </ProductCardRating>
@@ -61,11 +72,18 @@ export function ProductCard({
               amount={product.price.amount}
               currencyCode={product.price.currencyCode}
               maxAmount={product.maxPrice.amount}
-              compareAtAmount={product.compareAtPrice?.amount}
-              compareAtCurrencyCode={product.compareAtPrice?.currencyCode}
+              className={sale.onSale ? "text-positive" : undefined}
+            />
+            <SaleSavings
+              price={product.price.amount}
+              compareAt={product.compareAtPrice?.amount}
+              currencyCode={product.price.currencyCode}
             />
           </ProductCardContent>
         </ProductCardImageContainer>
+        <div className="mt-3 flex w-full items-center justify-center gap-2 rounded-sm border border-foreground/70 py-2.5 text-sm font-bold text-foreground transition-colors group-hover/card:bg-foreground/5">
+          <span aria-hidden="true">+</span> View product
+        </div>
       </ProductCardRoot>
     </Link>
   );
