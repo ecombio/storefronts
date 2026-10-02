@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { CollectionViewedTracker } from "@/components/analytics/trackers";
 import { CollectionResultsGrid } from "@/components/collections/results-grid";
 import { BrowseToolbar } from "@/components/collections/toolbar";
+import { ProductCard } from "@/components/product-card/product-card";
 import { ProductsGridSkeleton } from "@/components/product/products-grid";
 import { BreadcrumbSchema } from "@/components/schema/breadcrumb-schema";
 import { CollectionSchema } from "@/components/schema/collection-schema";
@@ -19,11 +20,13 @@ import type {
   CollectionSearchState,
   Collection,
 } from "@/lib/collections/types";
+import type { ProductCard as ProductCardType } from "@/lib/product/types";
 
 import { AfterItemList } from "./after-item-list";
 import { ArticleGrid } from "./article-grid";
 import { CollectionBrowseProvider } from "./collection-browse-provider";
 import { CollectionTabs } from "./collection-tabs";
+import { DealsCarousel } from "./deals-carousel";
 import { FilterPendingScope } from "./filter-pending-context";
 import { FilterSidebarLayout } from "./filter-sidebar-layout";
 import { CollectionFilters } from "./filters";
@@ -41,6 +44,29 @@ async function AfterItems({
   return page ? <AfterItemList page={page} /> : null;
 }
 
+async function Deals({
+  dealsPromise,
+  title,
+}: {
+  dealsPromise: Promise<ProductCardType[]>;
+  title: string;
+}) {
+  const deals = await dealsPromise;
+  if (deals.length === 0) return null;
+  return (
+    <DealsCarousel title={title}>
+      {deals.map((product) => (
+        <ProductCard
+          key={product.id}
+          product={product}
+          outOfStockText="Out of Stock"
+          className="w-60 shrink-0 snap-start"
+        />
+      ))}
+    </DealsCarousel>
+  );
+}
+
 export function CollectionDetailPage({
   afterItemPagePromise,
   articles = [],
@@ -48,6 +74,7 @@ export function CollectionDetailPage({
   subCollections = [],
   collection,
   collectionResultsDataPromise,
+  dealsPromise,
   handle,
   searchStatePromise,
   sortExclude,
@@ -58,6 +85,7 @@ export function CollectionDetailPage({
   subCollections?: CollectionWithThumbnail[];
   collection: Collection;
   collectionResultsDataPromise: Promise<CollectionResultsData>;
+  dealsPromise?: Promise<ProductCardType[]>;
   handle: string;
   searchStatePromise: Promise<CollectionSearchState>;
   sortExclude?: string[];
@@ -103,9 +131,15 @@ export function CollectionDetailPage({
                     }
                   >
                     <SubCollectionTiles collections={subCollections} />
+                    {dealsPromise ? (
+                      <Suspense fallback={null}>
+                        <Deals dealsPromise={dealsPromise} title={collection.title + " deals"} />
+                      </Suspense>
+                    ) : null}
                     <FilterPendingScope>
                       <CollectionResultsGrid
                         collectionResultsDataPromise={collectionResultsDataPromise}
+                        excludeOnSale={Boolean(dealsPromise)}
                       />
                     </FilterPendingScope>
                   </FilterSidebarLayout>

@@ -9,7 +9,9 @@ import type {
 } from "@/lib/collections/types";
 import type { CommerceLocale } from "@/lib/config/types";
 import { withProductRatings } from "@/lib/product/ratings";
+import { isOnSale } from "@/lib/product/sale";
 import { tagProducts } from "@/lib/product/server";
+import type { ProductCard } from "@/lib/product/types";
 import { fetchCollectionSubCollections } from "@/lib/shopify/operations/collections/server";
 import {
   fetchCollection,
@@ -111,12 +113,15 @@ function recordToSearchParams(
 export async function getCollectionResultsData({
   handle,
   searchStatePromise,
+  excludeOnSale = false,
 }: {
   handle: string;
   searchStatePromise: Promise<CollectionSearchState>;
+  excludeOnSale?: boolean;
 }): Promise<CollectionResultsData> {
   const { dataSearch, filters, sort } = await searchStatePromise;
-  const result = await fetchCollectionProducts({
+  const fetchPage = excludeOnSale ? fetchCollectionProductsExcludingSale : fetchCollectionProducts;
+  const result = await fetchPage({
     collection: handle,
     sortKey: sort,
     limit: PRODUCTS_PER_PAGE,
@@ -130,6 +135,62 @@ export async function getCollectionResultsData({
     result: { ...result, products: await withProductRatings(result.products) },
     transformedFilters: { filters: result.filters, priceRange: result.priceRange },
   };
+}
+
+type CollectionProductsParams = Parameters<typeof fetchCollectionProducts>[0];
+type CollectionProductsResult = Awaited<ReturnType<typeof fetchCollectionProducts>>;
+
+// The regular grid holds only full-price products, so one API page can come back short or empty; keep reading until it fills.
+const MAX_FILL_PAGES = 4;
+
+export async function fetchCollectionProductsExcludingSale(
+  params: CollectionProductsParams,
+): Promise<CollectionProductsResult> {
+  const first = await fetchCollectionProducts(params);
+  const products = first.products.filter((product) => !isOnSale(product));
+  let pageInfo = first.pageInfo;
+  for (
+    let page = 1;
+    page < MAX_FILL_PAGES &&
+    products.length < PRODUCTS_PER_PAGE &&
+    pageInfo.hasNextPage &&
+    pageInfo.endCursor;
+    page++
+  ) {
+    const next = await fetchCollectionProducts({ ...params, cursor: pageInfo.endCursor });
+    products.push(...next.products.filter((product) => !isOnSale(product)));
+    pageInfo = next.pageInfo;
+  }
+  return { ...first, products, pageInfo };
+}
+
+const DEALS_PAGE_SIZE = 100;
+const DEALS_MAX_PAGES = 5;
+
+// The Storefront API cannot filter on compare-at price, so deals are found by reading the collection's pages.
+async function fetchCollectionDeals(handle: string): Promise<ProductCard[]> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("collections", "collection-" + handle);
+
+  const deals: ProductCard[] = [];
+  let cursor: string | undefined;
+  for (let page = 0; page < DEALS_MAX_PAGES; page++) {
+    const result = await fetchCollectionProducts({
+      collection: handle,
+      limit: DEALS_PAGE_SIZE,
+      cursor,
+    });
+    deals.push(...result.products.filter(isOnSale));
+    if (!result.pageInfo.hasNextPage || !result.pageInfo.endCursor) break;
+    cursor = result.pageInfo.endCursor;
+  }
+  tagProducts(deals);
+  return deals;
+}
+
+export async function getCollectionDeals(params: { handle: string }): Promise<ProductCard[]> {
+  return withProductRatings(await fetchCollectionDeals(params.handle));
 }
 
 export async function getAllProductsCollection(): Promise<Collection> {

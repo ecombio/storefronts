@@ -1,7 +1,10 @@
 "use server";
 
 import { PRODUCTS_PER_PAGE } from "@/lib/collections";
-import { resolveBrowseParams } from "@/lib/collections/server";
+import {
+  fetchCollectionProductsExcludingSale,
+  resolveBrowseParams,
+} from "@/lib/collections/server";
 import type { PageInfo } from "@/lib/pagination/types";
 import { withProductRatings } from "@/lib/product/ratings";
 import type { ProductCard } from "@/lib/product/types";
@@ -11,9 +14,13 @@ export async function loadMoreCollectionProductsAction(params: {
   collection: string;
   cursor: string;
   search: string;
+  excludeOnSale?: boolean;
 }): Promise<{ products: ProductCard[]; pageInfo: PageInfo }> {
   const { filters, sort } = resolveBrowseParams(params.search);
-  const result = await fetchCollectionProducts({
+  const fetchPage = params.excludeOnSale
+    ? fetchCollectionProductsExcludingSale
+    : fetchCollectionProducts;
+  const result = await fetchPage({
     collection: params.collection,
     cursor: params.cursor,
     sortKey: sort,

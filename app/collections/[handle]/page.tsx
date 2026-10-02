@@ -8,6 +8,7 @@ import { getCollectionResultsData, getCollectionSearchState } from "@/lib/collec
 import {
   getCollection,
   getCollectionAfterItemPage,
+  getCollectionDeals,
   getCollectionProductCount,
   getCollections,
 } from "@/lib/collections/server";
@@ -101,7 +102,10 @@ export default async function CollectionPage({
   const collectionResultsDataPromise = getCollectionResultsData({
     handle,
     searchStatePromise,
+    excludeOnSale: true,
   });
+  // A failed deals lookup should hide the carousel, not break the page.
+  const dealsPromise = getCollectionDeals({ handle }).catch(() => []);
   const [articles, productCount, subCollections] = await Promise.all([
     getCollectionArticles({ handle }),
     getCollectionProductCount({ handle }),
@@ -112,6 +116,7 @@ export default async function CollectionPage({
     <CollectionDetailPage
       collection={collection}
       collectionResultsDataPromise={collectionResultsDataPromise}
+      dealsPromise={dealsPromise}
       afterItemPagePromise={afterItemPagePromise}
       articles={articles}
       productCount={productCount}

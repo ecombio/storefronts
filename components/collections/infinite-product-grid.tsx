@@ -2,10 +2,11 @@
 
 import { useCollection } from "@shopify/hydrogen/react";
 import { LoaderCircleIcon } from "lucide-react";
-import { type ReactNode, useEffect, useEffectEvent, useRef, useState } from "react";
+import { Children, type ReactNode, useEffect, useEffectEvent, useRef, useState } from "react";
 
 import { ProductCard } from "@/components/product-card/product-card";
 import { getBrowseSearch } from "@/lib/collections";
+import type { FeedWidth } from "@/lib/collections/feed-items";
 import type { PageInfo } from "@/lib/pagination/types";
 import type { ProductCard as ProductCardType } from "@/lib/product/types";
 
@@ -26,6 +27,19 @@ const LIST_VIEW_CLASSES = [
   "[&_[data-slot=product-card-swatches]]:hidden",
 ].join(" ");
 
+export interface FeedSlot {
+  id: string;
+  position: number;
+  width: FeedWidth;
+  node: ReactNode;
+}
+
+const FEED_WIDTH_CLASSES: Record<FeedWidth, string> = {
+  1: "",
+  2: "col-span-2",
+  full: "col-span-full",
+};
+
 interface InfiniteProductGridProps<TParams> {
   initialProducts: ProductCardType[];
   initialPageInfo: PageInfo;
@@ -36,6 +50,7 @@ interface InfiniteProductGridProps<TParams> {
   ) => Promise<{ products: ProductCardType[]; pageInfo: PageInfo }>;
   loadMoreParams: TParams;
   gridClassName?: string;
+  feedItems?: FeedSlot[];
   children: ReactNode;
 }
 
@@ -46,6 +61,7 @@ export function InfiniteProductGrid<TParams>({
   loadMore,
   loadMoreParams,
   gridClassName,
+  feedItems = [],
   children,
 }: InfiniteProductGridProps<TParams>) {
   // The store, not a server snapshot, is the single source of truth for filters and sort mid-scroll.
@@ -94,16 +110,33 @@ export function InfiniteProductGrid<TParams>({
   const gridClasses =
     view === "list"
       ? LIST_VIEW_CLASSES
-      : `grid grid-cols-2 gap-5 ${gridClassName ?? "sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"}`;
+      : `grid grid-cols-2 grid-flow-dense gap-5 ${gridClassName ?? "sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"}`;
+
+  const cards: ReactNode[] = [
+    ...Children.toArray(children),
+    ...additionalProducts.map((product) => (
+      <ProductCard key={product.id} product={product} outOfStockText={outOfStockText} />
+    )),
+  ];
+  // Feed items sit between products by absolute position, so they stay put as more pages load.
+  if (view !== "list") {
+    [...feedItems]
+      .filter((slot) => slot.position <= cards.length)
+      .sort((a, b) => b.position - a.position)
+      .forEach((slot) => {
+        cards.splice(
+          slot.position,
+          0,
+          <div key={"feed-" + slot.id} className={FEED_WIDTH_CLASSES[slot.width]}>
+            {slot.node}
+          </div>,
+        );
+      });
+  }
 
   return (
     <>
-      <div className={gridClasses}>
-        {children}
-        {additionalProducts.map((product) => (
-          <ProductCard key={product.id} product={product} outOfStockText={outOfStockText} />
-        ))}
-      </div>
+      <div className={gridClasses}>{cards}</div>
 
       {pageInfo.hasNextPage && (
         <div ref={sentinelRef} className="flex justify-center py-10">

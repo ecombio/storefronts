@@ -221,6 +221,18 @@ export const PRODUCT_CARD_FRAGMENT = gql(
         currencyCode
       }
     }
+    cardSpecs: metafield(namespace: "custom", key: "product_specs") {
+      references(first: 4) {
+        nodes {
+          ... on Metaobject {
+            fields {
+              key
+              value
+            }
+          }
+        }
+      }
+    }
     selectedOrFirstAvailableVariant {
       id
       availableForSale

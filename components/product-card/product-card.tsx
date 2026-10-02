@@ -39,6 +39,10 @@ export function ProductCard({
       .join(" • ") ||
     product.vendor ||
     "";
+  const specLine = (product.cardSpecs ?? []).map((s) =>
+    typeof s === "string" ? s : (s as { text: string }).text,
+  );
+  const subtitleText = [subtitle, ...specLine].filter(Boolean).join(" • ");
   const href = buildProductUrl(product.handle, product.defaultVariantSelectedOptions ?? []);
 
   return (
@@ -62,7 +66,7 @@ export function ProductCard({
           <ProductCardContent>
             <SaleBadge price={product.price.amount} compareAt={product.compareAtPrice?.amount} />
             <ProductCardTitle>{product.title}</ProductCardTitle>
-            <div className="min-h-8 line-clamp-2 text-xs text-muted-foreground">{subtitle}</div>
+            <div className="min-h-8 line-clamp-3 text-xs text-muted-foreground">{subtitleText}</div>
             <ProductCardRating>
               {product.rating && product.rating.count > 0 ? (
                 <CardStars score={product.rating.score} count={product.rating.count} />

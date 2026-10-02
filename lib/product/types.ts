@@ -63,6 +63,7 @@ export interface ProductCardColor {
 export interface ProductCard {
   availableForSale: boolean;
   compareAtPrice?: Money;
+  cardSpecs?: string[];
   colors?: ProductCardColor[];
   defaultVariantSelectedOptions?: SelectedOption[];
   featuredImage: Image | null;

@@ -199,6 +199,9 @@ function transformProductCard(
     isGiftCard: product.isGiftCard,
     colors,
     defaultVariantSelectedOptions: cardVariant?.selectedOptions ?? [],
+    cardSpecs: transformSpecs((product as { cardSpecs?: ShopifySpecsMetafield }).cardSpecs)
+      .slice(0, 3)
+      .map((spec) => spec.value.replace(/\*+$/, "").trim()),
   };
 }
 
