@@ -216,9 +216,8 @@ async function mergeCollectionReviews(
     const batch = await Promise.all(
       products.slice(i, i + concurrency).map(async (product) => ({
         product,
-        data: await getProductReviews(product.id, {
-          perPage: yotpoConfig.collectionReviewsPerProduct,
-        }),
+        // Default page size, trimmed below: Yotpo has returned short lists for per_page=10.
+        data: await getProductReviews(product.id),
       })),
     );
     results.push(...batch);
@@ -236,7 +235,7 @@ async function mergeCollectionReviews(
     total += total_review;
     scoreSum += average_score * total_review;
     for (const star of [1, 2, 3, 4, 5] as const) distribution[star] += star_distribution[star];
-    for (const review of data.reviews) {
+    for (const review of data.reviews.slice(0, yotpoConfig.collectionReviewsPerProduct)) {
       reviews.push({ ...review, product: { handle: product.handle, title: product.title } });
     }
   }

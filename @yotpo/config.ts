@@ -16,7 +16,7 @@ export const yotpoConfig = {
   createReviewUrl: "https://api.yotpo.com/v1/widget/reviews",
   reviewsFetchLimit: 50, // reviews requested from Yotpo per product (filters work on these)
   reviewsPerPage: 5, // reviews shown before "Show more reviews"
-  collectionReviewsPerProduct: 10, // newest reviews requested per product for collection pages
+  collectionReviewsPerProduct: 10, // newest reviews kept per product on collection pages
   collectionRevalidateSeconds: 604800, // merged collection reviews are rebuilt at most this often
   revalidateSeconds: 604800,
   brand: {
