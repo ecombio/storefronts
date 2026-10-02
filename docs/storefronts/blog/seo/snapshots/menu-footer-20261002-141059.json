@@ -1,0 +1,232 @@
+{
+  "data": {
+    "menu": {
+      "id": "gid://shopify/Menu/227397599446",
+      "title": "Footer menu",
+      "handle": "footer",
+      "items": [
+        {
+          "title": "About",
+          "url": "/",
+          "type": "HTTP",
+          "items": [
+            {
+              "title": "Press",
+              "url": "/",
+              "type": "HTTP"
+            },
+            {
+              "title": "Our impact",
+              "url": "/",
+              "type": "HTTP"
+            },
+            {
+              "title": "Accessibility statement",
+              "url": "/search",
+              "type": "HTTP"
+            },
+            {
+              "title": "We're hiring!",
+              "url": "/search",
+              "type": "HTTP"
+            },
+            {
+              "title": "Trustpilot",
+              "url": "/search",
+              "type": "HTTP"
+            }
+          ]
+        },
+        {
+          "title": "Help",
+          "url": "/search",
+          "type": "HTTP",
+          "items": [
+            {
+              "title": "Demo",
+              "url": "/",
+              "type": "HTTP"
+            },
+            {
+              "title": "Contact us",
+              "url": "/",
+              "type": "HTTP"
+            },
+            {
+              "title": "Help Center",
+              "url": "/",
+              "type": "HTTP"
+            },
+            {
+              "title": "Shipping",
+              "url": "/search",
+              "type": "HTTP"
+            },
+            {
+              "title": "Returns and refunds",
+              "url": "/",
+              "type": "HTTP"
+            }
+          ]
+        },
+        {
+          "title": "Services",
+          "url": "/",
+          "type": "HTTP",
+          "items": [
+            {
+              "title": "Track an order",
+              "url": "/apps/parcelpanel",
+              "type": "HTTP"
+            },
+            {
+              "title": "Make a return",
+              "url": "/",
+              "type": "HTTP"
+            },
+            {
+              "title": "Refer a friend",
+              "url": "/",
+              "type": "HTTP"
+            },
+            {
+              "title": "1-year warranty",
+              "url": "/",
+              "type": "HTTP"
+            },
+            {
+              "title": "Protection plan",
+              "url": "/",
+              "type": "HTTP"
+            },
+            {
+              "title": "Trade-in",
+              "url": "/",
+              "type": "HTTP"
+            },
+            {
+              "title": "Campus+ Student and Educator Offer",
+              "url": "/",
+              "type": "HTTP"
+            },
+            {
+              "title": "Military program",
+              "url": "/",
+              "type": "HTTP"
+            },
+            {
+              "title": "Sellers: Register to sell",
+              "url": "/",
+              "type": "HTTP"
+            },
+            {
+              "title": "Seller portal",
+              "url": "/",
+              "type": "HTTP"
+            },
+            {
+              "title": "Back Market for Business",
+              "url": "/",
+              "type": "HTTP"
+            },
+            {
+              "title": "Payments 100% secured",
+              "url": "/",
+              "type": "HTTP"
+            }
+          ]
+        },
+        {
+          "title": "Resources",
+          "url": "/",
+          "type": "HTTP",
+          "items": [
+            {
+              "title": "Contact Information",
+              "url": "/policies/contact-information",
+              "type": "HTTP"
+            },
+            {
+              "title": "Legal Notice",
+              "url": "/policies/legal-notice",
+              "type": "HTTP"
+            },
+            {
+              "title": "Privacy Policy",
+              "url": "/policies/privacy-policy",
+              "type": "HTTP"
+            },
+            {
+              "title": "Refund Policy",
+              "url": "/policies/refund-policy",
+              "type": "HTTP"
+            },
+            {
+              "title": "Shipping Policy",
+              "url": "/policies/shipping-policy",
+              "type": "HTTP"
+            },
+            {
+              "title": "Terms of Service",
+              "url": "/policies/terms-of-service",
+              "type": "HTTP"
+            },
+            {
+              "title": "Your Privacy Choices",
+              "url": "/pages/data-sharing-opt-out",
+              "type": "HTTP"
+            }
+          ]
+        },
+        {
+          "title": "Law and order",
+          "url": "/",
+          "type": "HTTP",
+          "items": [
+            {
+              "title": "Terms of service",
+              "url": "/search",
+              "type": "HTTP"
+            },
+            {
+              "title": "Trade-in Terms and Conditions",
+              "url": "/",
+              "type": "HTTP"
+            },
+            {
+              "title": "Cookies",
+              "url": "/",
+              "type": "HTTP"
+            },
+            {
+              "title": "Don't sell or share my personal information",
+              "url": "/",
+              "type": "HTTP"
+            },
+            {
+              "title": "Privacy Policy",
+              "url": "/",
+              "type": "HTTP"
+            },
+            {
+              "title": "Report illicit content",
+              "url": "/",
+              "type": "HTTP"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "extensions": {
+    "cost": {
+      "requestedQueryCost": 3,
+      "actualQueryCost": 3,
+      "throttleStatus": {
+        "maximumAvailable": 2000.0,
+        "currentlyAvailable": 1997,
+        "restoreRate": 100.0
+      }
+    }
+  }
+}

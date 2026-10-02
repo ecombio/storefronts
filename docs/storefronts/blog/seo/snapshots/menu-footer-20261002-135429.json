@@ -1,0 +1,232 @@
+{
+  "data": {
+    "menu": {
+      "id": "gid://shopify/Menu/227397599446",
+      "title": "Footer menu",
+      "handle": "footer",
+      "items": [
+        {
+          "title": "About",
+          "url": "/",
+          "type": "FRONTPAGE",
+          "items": [
+            {
+              "title": "Press",
+              "url": "/",
+              "type": "FRONTPAGE"
+            },
+            {
+              "title": "Our impact",
+              "url": "/",
+              "type": "FRONTPAGE"
+            },
+            {
+              "title": "Accessibility statement",
+              "url": "/search",
+              "type": "SEARCH"
+            },
+            {
+              "title": "We're hiring!",
+              "url": "/search",
+              "type": "SEARCH"
+            },
+            {
+              "title": "Trustpilot",
+              "url": "/search",
+              "type": "SEARCH"
+            }
+          ]
+        },
+        {
+          "title": "Help",
+          "url": "/search",
+          "type": "SEARCH",
+          "items": [
+            {
+              "title": "Demo",
+              "url": "/",
+              "type": "FRONTPAGE"
+            },
+            {
+              "title": "Contact us",
+              "url": "/",
+              "type": "FRONTPAGE"
+            },
+            {
+              "title": "Help Center",
+              "url": "/",
+              "type": "FRONTPAGE"
+            },
+            {
+              "title": "Shipping",
+              "url": "/search",
+              "type": "SEARCH"
+            },
+            {
+              "title": "Returns and refunds",
+              "url": "/",
+              "type": "FRONTPAGE"
+            }
+          ]
+        },
+        {
+          "title": "Services",
+          "url": "/",
+          "type": "FRONTPAGE",
+          "items": [
+            {
+              "title": "Track an order",
+              "url": "/apps/parcelpanel",
+              "type": "HTTP"
+            },
+            {
+              "title": "Make a return",
+              "url": "/",
+              "type": "FRONTPAGE"
+            },
+            {
+              "title": "Refer a friend",
+              "url": "/",
+              "type": "FRONTPAGE"
+            },
+            {
+              "title": "1-year warranty",
+              "url": "/",
+              "type": "FRONTPAGE"
+            },
+            {
+              "title": "Protection plan",
+              "url": "/",
+              "type": "FRONTPAGE"
+            },
+            {
+              "title": "Trade-in",
+              "url": "/",
+              "type": "FRONTPAGE"
+            },
+            {
+              "title": "Campus+ Student and Educator Offer",
+              "url": "/",
+              "type": "FRONTPAGE"
+            },
+            {
+              "title": "Military program",
+              "url": "/",
+              "type": "FRONTPAGE"
+            },
+            {
+              "title": "Sellers: Register to sell",
+              "url": "/",
+              "type": "FRONTPAGE"
+            },
+            {
+              "title": "Seller portal",
+              "url": "/",
+              "type": "FRONTPAGE"
+            },
+            {
+              "title": "Back Market for Business",
+              "url": "/",
+              "type": "FRONTPAGE"
+            },
+            {
+              "title": "Payments 100% secured",
+              "url": "/",
+              "type": "FRONTPAGE"
+            }
+          ]
+        },
+        {
+          "title": "Resources",
+          "url": "/",
+          "type": "FRONTPAGE",
+          "items": [
+            {
+              "title": "Contact Information",
+              "url": "/policies/contact-information",
+              "type": "SHOP_POLICY"
+            },
+            {
+              "title": "Legal Notice",
+              "url": "/policies/legal-notice",
+              "type": "SHOP_POLICY"
+            },
+            {
+              "title": "Privacy Policy",
+              "url": "/policies/privacy-policy",
+              "type": "SHOP_POLICY"
+            },
+            {
+              "title": "Refund Policy",
+              "url": "/policies/refund-policy",
+              "type": "SHOP_POLICY"
+            },
+            {
+              "title": "Shipping Policy",
+              "url": "/policies/shipping-policy",
+              "type": "SHOP_POLICY"
+            },
+            {
+              "title": "Terms of Service",
+              "url": "/policies/terms-of-service",
+              "type": "SHOP_POLICY"
+            },
+            {
+              "title": "Your Privacy Choices",
+              "url": "/pages/data-sharing-opt-out",
+              "type": "PAGE"
+            }
+          ]
+        },
+        {
+          "title": "Law and order",
+          "url": "/",
+          "type": "FRONTPAGE",
+          "items": [
+            {
+              "title": "Terms of service",
+              "url": "/search",
+              "type": "SEARCH"
+            },
+            {
+              "title": "Trade-in Terms and Conditions",
+              "url": "/",
+              "type": "FRONTPAGE"
+            },
+            {
+              "title": "Cookies",
+              "url": "/",
+              "type": "FRONTPAGE"
+            },
+            {
+              "title": "Don't sell or share my personal information",
+              "url": "/",
+              "type": "FRONTPAGE"
+            },
+            {
+              "title": "Privacy Policy",
+              "url": "/",
+              "type": "FRONTPAGE"
+            },
+            {
+              "title": "Report illicit content",
+              "url": "/",
+              "type": "FRONTPAGE"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "extensions": {
+    "cost": {
+      "requestedQueryCost": 3,
+      "actualQueryCost": 3,
+      "throttleStatus": {
+        "maximumAvailable": 2000.0,
+        "currentlyAvailable": 1997,
+        "restoreRate": 100.0
+      }
+    }
+  }
+}
