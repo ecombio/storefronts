@@ -9,7 +9,6 @@
 // Async Server Component; wrap it in <Suspense> where it's used.
 
 import { getProductRatingSummary } from "../client";
-import { yotpoConfig } from "../config";
 import { StarRow } from "./star";
 
 export async function StarRating({
@@ -45,8 +44,8 @@ export async function StarRating({
       aria-label={label}
       className="inline-flex items-center gap-2.5 font-sans hover:opacity-80"
     >
-      <StarRow score={averageScore} label="" starClassName="h-5 w-5" />
-      <span className="text-base font-bold" style={{ color: yotpoConfig.brand.starsColor }}>
+      <StarRow score={averageScore} label="" starClassName="h-5 w-5" color="#000" />
+      <span className="text-base font-bold text-black">
         {averageScore.toFixed(1)}
       </span>
       <span className="h-4 w-px bg-neutral-400" />

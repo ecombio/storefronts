@@ -54,7 +54,7 @@ function DistributionRow({
     >
       <span className="flex w-6 items-center justify-end gap-0.5 text-black">
         {star}
-        <Star filled className="h-3 w-3" />
+        <Star filled color="#000" className="h-3 w-3" />
       </span>
       <span className="h-1 w-40 overflow-hidden rounded-full bg-neutral-200">
         <span className="block h-full bg-black" style={{ width: `${pct}%` }} />
@@ -75,23 +75,23 @@ function ReviewCard({ review }: { review: YotpoReview }) {
   const name = review.user?.display_name?.trim() || "Anonymous";
 
   return (
-    <div className="flex gap-4 border-t border-neutral-100 py-5">
+    <div className="flex gap-4 rounded-lg border border-neutral-200 bg-white p-5">
       <div className="h-9 w-9 flex-shrink-0 rounded-full bg-[#CBD2E0]" aria-hidden="true" />
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-sm font-bold text-black">{name}</p>
             <div className="my-1.5">
-              <StarRow score={review.score} />
+              <StarRow score={review.score} color="#000" />
             </div>
             {review.title ? (
               <p className="mb-1 text-sm font-bold text-black">{review.title}</p>
             ) : null}
-            <p className="whitespace-pre-line text-sm leading-relaxed text-black">
+            <p className="whitespace-pre-line text-[13px] leading-relaxed text-black">
               {review.content}
             </p>
           </div>
-          <span className="whitespace-nowrap text-xs text-neutral-500">{date}</span>
+          <span className="whitespace-nowrap text-xs text-neutral-700">{date}</span>
         </div>
         {review.votes_up > 0 ? (
           <p className="mt-3 text-xs text-neutral-500">
@@ -159,9 +159,9 @@ export function ReviewsBrowser({
     <>
       <div className="flex flex-wrap items-center justify-center gap-12 pb-6">
         <div className="text-center">
-          <div className="text-3xl font-bold text-black">{bottomline.average_score.toFixed(1)}</div>
+          <div className="text-5xl leading-none font-bold tracking-tight text-black">{bottomline.average_score.toFixed(1)}</div>
           <div className="my-1.5 flex justify-center">
-            <StarRow score={bottomline.average_score} />
+            <StarRow score={bottomline.average_score} color="#000" />
           </div>
           <div className="text-xs text-neutral-500">
             Based on {bottomline.total_review}{" "}
@@ -261,7 +261,7 @@ export function ReviewsBrowser({
         </p>
       ) : null}
 
-      <div className="mt-2">
+      <div className="mt-4 grid gap-4">
         {filtered.length === 0 ? (
           <p className="border-t border-neutral-100 py-10 text-center text-sm text-neutral-500">
             No reviews match your filters.
