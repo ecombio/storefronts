@@ -45,9 +45,7 @@ export async function StarRating({
       className="inline-flex items-center gap-2.5 font-sans hover:opacity-80"
     >
       <StarRow score={averageScore} label="" starClassName="h-5 w-5" color="#000" />
-      <span className="text-base font-bold text-black">
-        {averageScore.toFixed(1)}
-      </span>
+      <span className="text-base font-bold text-black">{averageScore.toFixed(1)}</span>
       <span className="h-4 w-px bg-neutral-400" />
       <span className="text-base font-bold text-black underline-offset-2 hover:underline">
         {totalReviews} {totalReviews === 1 ? "Review" : "Reviews"}

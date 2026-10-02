@@ -138,8 +138,8 @@ function HowReviewsWork({
             and photos. The overall rating is the average of all of those star ratings.
           </p>
           <p>
-            Reviews are collected through Yotpo after an order. Use the star bars, the photo
-            switch and the sort menu to find the reviews that matter most to you.
+            Reviews are collected through Yotpo after an order. Use the star bars, the photo switch
+            and the sort menu to find the reviews that matter most to you.
           </p>
           {showProductNote ? (
             <p>
@@ -466,8 +466,7 @@ export function ReviewsBrowser({
           <div className="mt-5 grid gap-0.5 border-t border-neutral-200 pt-4">
             {([5, 4, 3, 2, 1] as const).map((star) => {
               const count = bottomline.star_distribution[star];
-              const pct =
-                bottomline.total_review > 0 ? (count / bottomline.total_review) * 100 : 0;
+              const pct = bottomline.total_review > 0 ? (count / bottomline.total_review) * 100 : 0;
               return (
                 <button
                   key={star}
@@ -583,9 +582,7 @@ export function ReviewsBrowser({
               No reviews match your {query ? "search or filters" : "filters"}.
             </p>
           ) : (
-            filtered
-              .slice(0, shown)
-              .map((review) => <ReviewCard key={review.id} review={review} />)
+            filtered.slice(0, shown).map((review) => <ReviewCard key={review.id} review={review} />)
           )}
         </div>
 
