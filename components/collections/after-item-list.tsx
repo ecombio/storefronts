@@ -1,13 +1,15 @@
+import { ArticleBody } from "@/components/blog/article-body";
+import { parseBody } from "@/lib/blog/shortcodes";
 import type { CollectionAfterItemPage } from "@/lib/collections/types";
 
 export function AfterItemList({ page }: { page: CollectionAfterItemPage }) {
   if (!page.body.trim()) return null;
+  const segments = parseBody(page.body);
   return (
-    <section aria-label={page.title} className="mt-10 border-t pt-10">
-      <div
-        className="mx-auto max-w-3xl space-y-4 leading-7 [&_a]:underline [&_h2]:text-2xl [&_h3]:text-xl [&_img]:h-auto [&_img]:max-w-full [&_ol]:list-decimal [&_ol]:pl-6 [&_ul]:list-disc [&_ul]:pl-6"
-        dangerouslySetInnerHTML={{ __html: page.body }}
-      />
+    <section aria-label={page.title} className="mt-4 border-t pt-6">
+      <div className="w-full [&>div]:gap-3 [&_h2]:mt-0 [&_h2]:mb-2 [&_h3]:mt-4 [&_h3]:mb-1 [&_p]:my-2 [&_ul]:my-2 [&_li]:my-0.5">
+        <ArticleBody segments={segments} />
+      </div>
     </section>
   );
 }
