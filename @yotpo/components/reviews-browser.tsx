@@ -432,7 +432,7 @@ export function ReviewsBrowser({
 
   return (
     <div className="grid gap-5 lg:grid-cols-[16rem_minmax(0,1fr)] lg:items-start lg:gap-10">
-      <aside className="grid content-start gap-8">
+      <aside className="grid content-start gap-8 lg:sticky lg:top-[calc(var(--header-offset,0px)_+_1rem)] lg:[transition:var(--header-offset-transition,none)]">
         {/* Rating card: the average is the anchor, bars below stay clickable as the rating filter. */}
         <div className="rounded-lg border border-neutral-200 bg-white p-5">
           <p className="text-sm font-semibold text-black">Overall rating</p>
