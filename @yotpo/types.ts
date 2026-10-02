@@ -13,6 +13,9 @@ export type YotpoReview = {
   };
   votes_up: number;
   votes_down: number;
+  // Optional: taken from Yotpo's documented sample, not yet checked against the live account.
+  verified_buyer?: boolean;
+  images_data?: { id?: number; thumb_url?: string; original_url?: string }[];
 };
 
 export type YotpoBottomline = {
@@ -35,4 +38,19 @@ export type YotpoProductReviews = {
 export type YotpoRatingSummary = {
   averageScore: number;
   totalReviews: number;
+};
+
+export type YotpoCollectionReviewProduct = {
+  id: string; // Shopify numeric product ID
+  handle: string;
+  title: string;
+};
+
+export type YotpoCollectionReview = YotpoReview & {
+  product: { handle: string; title: string };
+};
+
+export type YotpoCollectionReviews = {
+  reviews: YotpoCollectionReview[];
+  bottomline: YotpoBottomline;
 };

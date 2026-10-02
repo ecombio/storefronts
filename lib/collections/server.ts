@@ -1,4 +1,5 @@
 import { parseCollectionParams, serializeCollectionParams } from "@shopify/hydrogen";
+import type { YotpoCollectionReviewProduct } from "@yotpo";
 import { cacheLife, cacheTag } from "next/cache";
 
 import { getBrowseSort, PRODUCTS_PER_PAGE } from "@/lib/collections";
@@ -12,6 +13,7 @@ import { withProductRatings } from "@/lib/product/ratings";
 import { isOnSale } from "@/lib/product/sale";
 import { tagProducts } from "@/lib/product/server";
 import type { ProductCard } from "@/lib/product/types";
+import { getNumericShopifyId } from "@/lib/shopify/id/server";
 import { fetchCollectionSubCollections } from "@/lib/shopify/operations/collections/server";
 import {
   fetchCollection,
@@ -191,6 +193,26 @@ async function fetchCollectionDeals(handle: string): Promise<ProductCard[]> {
 
 export async function getCollectionDeals(params: { handle: string }): Promise<ProductCard[]> {
   return withProductRatings(await fetchCollectionDeals(params.handle));
+}
+
+const REVIEW_PRODUCTS_LIMIT = 24;
+
+// Yotpo returns reviews one product at a time, so a collection's reviews come from its first products.
+export async function getCollectionReviewProducts(params: {
+  handle: string;
+}): Promise<YotpoCollectionReviewProduct[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("collections", "collection-" + params.handle);
+
+  const { products } = await fetchCollectionProducts({
+    collection: params.handle,
+    limit: REVIEW_PRODUCTS_LIMIT,
+  });
+  return products.flatMap((product) => {
+    const id = getNumericShopifyId(product.id);
+    return id ? [{ id, handle: product.handle, title: product.title }] : [];
+  });
 }
 
 export async function getAllProductsCollection(): Promise<Collection> {

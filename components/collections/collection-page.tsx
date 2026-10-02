@@ -1,3 +1,4 @@
+import { CollectionReviews, type YotpoCollectionReviewProduct } from "@yotpo";
 import Link from "next/link";
 import { Suspense } from "react";
 
@@ -67,6 +68,18 @@ async function Deals({
   );
 }
 
+async function Reviews({
+  productsPromise,
+  title,
+}: {
+  productsPromise: Promise<YotpoCollectionReviewProduct[]>;
+  title: string;
+}) {
+  const products = await productsPromise;
+  if (products.length === 0) return null;
+  return <CollectionReviews collectionTitle={title} products={products} />;
+}
+
 export function CollectionDetailPage({
   afterItemPagePromise,
   articles = [],
@@ -76,6 +89,7 @@ export function CollectionDetailPage({
   collectionResultsDataPromise,
   dealsPromise,
   handle,
+  reviewProductsPromise,
   searchStatePromise,
   sortExclude,
 }: {
@@ -87,6 +101,7 @@ export function CollectionDetailPage({
   collectionResultsDataPromise: Promise<CollectionResultsData>;
   dealsPromise?: Promise<ProductCardType[]>;
   handle: string;
+  reviewProductsPromise?: Promise<YotpoCollectionReviewProduct[]>;
   searchStatePromise: Promise<CollectionSearchState>;
   sortExclude?: string[];
 }) {
@@ -150,6 +165,12 @@ export function CollectionDetailPage({
             {afterItemPagePromise ? (
               <Suspense fallback={null}>
                 <AfterItems pagePromise={afterItemPagePromise} />
+              </Suspense>
+            ) : null}
+
+            {reviewProductsPromise ? (
+              <Suspense fallback={null}>
+                <Reviews productsPromise={reviewProductsPromise} title={collection.title} />
               </Suspense>
             ) : null}
           </Sections>

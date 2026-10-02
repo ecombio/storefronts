@@ -12,7 +12,13 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 
 import { yotpoConfig } from "./config";
-import type { YotpoProductReviews, YotpoRatingSummary } from "./types";
+import type {
+  YotpoCollectionReview,
+  YotpoCollectionReviewProduct,
+  YotpoCollectionReviews,
+  YotpoProductReviews,
+  YotpoRatingSummary,
+} from "./types";
 
 const REQUEST_TIMEOUT_MS = 5000;
 
@@ -171,4 +177,81 @@ export async function getProductCardRatings(
     }),
   );
   return new Map(entries.filter((entry): entry is NonNullable<typeof entry> => entry !== null));
+}
+
+/**
+ * Reviews of several products merged for a collection page. Bottomlines are summed and each review
+ * carries its product so the page can link to it. Yotpo has no per-collection endpoint, so this is
+ * one call per product. Returns `null` if Yotpo is unavailable or no product has reviews.
+ * @param products - Products with Shopify numeric IDs (not GraphQL GIDs).
+ */
+export async function getCollectionReviews(
+  products: YotpoCollectionReviewProduct[],
+): Promise<YotpoCollectionReviews | null> {
+  if (!yotpoConfig.appKey || products.length === 0) return null;
+  try {
+    return await mergeCollectionReviews(products);
+  } catch (err) {
+    console.error("Yotpo collection reviews failed:", err);
+    return null;
+  }
+}
+
+// Cached per product list. Throws when every product lookup failed, so an outage is never cached.
+async function mergeCollectionReviews(
+  products: YotpoCollectionReviewProduct[],
+): Promise<YotpoCollectionReviews | null> {
+  "use cache";
+  cacheLife({ stale: 300, revalidate: yotpoConfig.collectionRevalidateSeconds, expire: 172800 });
+  cacheTag(
+    "yotpo-reviews",
+    "yotpo-collection-reviews",
+    ...products.map((product) => `yotpo-reviews-${product.id}`),
+  );
+
+  // Six calls at a time: all of them at once overloads slow connections and times out.
+  const concurrency = 6;
+  const results: { product: YotpoCollectionReviewProduct; data: YotpoProductReviews | null }[] = [];
+  for (let i = 0; i < products.length; i += concurrency) {
+    const batch = await Promise.all(
+      products.slice(i, i + concurrency).map(async (product) => ({
+        product,
+        data: await getProductReviews(product.id, {
+          perPage: yotpoConfig.collectionReviewsPerProduct,
+        }),
+      })),
+    );
+    results.push(...batch);
+  }
+  if (results.every(({ data }) => data === null))
+    throw new Error("Yotpo returned nothing for every product");
+
+  const reviews: YotpoCollectionReview[] = [];
+  const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  let total = 0;
+  let scoreSum = 0;
+  for (const { product, data } of results) {
+    if (!data) continue;
+    const { average_score, star_distribution, total_review } = data.bottomline;
+    total += total_review;
+    scoreSum += average_score * total_review;
+    for (const star of [1, 2, 3, 4, 5] as const) distribution[star] += star_distribution[star];
+    for (const review of data.reviews) {
+      reviews.push({ ...review, product: { handle: product.handle, title: product.title } });
+    }
+  }
+  if (total === 0) {
+    if (results.some(({ data }) => data === null))
+      throw new Error("Yotpo lookups failed for some products");
+    return null;
+  }
+
+  return {
+    reviews,
+    bottomline: {
+      total_review: total,
+      average_score: scoreSum / total,
+      star_distribution: distribution,
+    },
+  };
 }

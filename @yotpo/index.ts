@@ -9,6 +9,7 @@
 // WriteReviewButton is used internally by ProductReviews and isn't exported.
 
 export { StarRating } from "./components/star-ratings";
+export { CollectionReviews } from "./components/collection-reviews";
 export { ProductReviews } from "./components/reviews-widget";
 export { getProductCardRatings, submitReview } from "./client";
 export type { SubmitReviewInput } from "./client";
@@ -18,4 +19,5 @@ export type {
   YotpoBottomline,
   YotpoProductReviews,
   YotpoRatingSummary,
+  YotpoCollectionReviewProduct,
 } from "./types";

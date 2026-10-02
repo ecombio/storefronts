@@ -10,6 +10,7 @@ import {
   getCollectionAfterItemPage,
   getCollectionDeals,
   getCollectionProductCount,
+  getCollectionReviewProducts,
   getCollections,
 } from "@/lib/collections/server";
 import { buildAlternates, buildOpenGraph } from "@/lib/seo";
@@ -106,6 +107,8 @@ export default async function CollectionPage({
   });
   // A failed deals lookup should hide the carousel, not break the page.
   const dealsPromise = getCollectionDeals({ handle }).catch(() => []);
+  // A failed lookup should hide the reviews section, not break the page.
+  const reviewProductsPromise = getCollectionReviewProducts({ handle }).catch(() => []);
   const [articles, productCount, subCollections] = await Promise.all([
     getCollectionArticles({ handle }),
     getCollectionProductCount({ handle }),
@@ -117,6 +120,7 @@ export default async function CollectionPage({
       collection={collection}
       collectionResultsDataPromise={collectionResultsDataPromise}
       dealsPromise={dealsPromise}
+      reviewProductsPromise={reviewProductsPromise}
       afterItemPagePromise={afterItemPagePromise}
       articles={articles}
       productCount={productCount}
