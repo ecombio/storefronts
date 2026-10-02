@@ -192,10 +192,6 @@ async function fetchCollectionDeals(handle: string): Promise<ProductCard[]> {
 }
 
 export async function getCollectionDeals(params: { handle: string }): Promise<ProductCard[]> {
-  "use cache";
-  cacheLife("hours");
-  cacheTag("collections", "collection-" + params.handle);
-
   return withProductRatings(await fetchCollectionDeals(params.handle));
 }
 
