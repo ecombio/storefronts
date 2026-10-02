@@ -22,6 +22,7 @@ import { BuyWithShopLogo } from "@/components/product-detail/buy-with-shop-logo"
 import { CompatibleAccessories } from "@/components/product-detail/compatible-accessories";
 import { ExpertReviewsSection } from "@/components/product-detail/expert-reviews-section";
 import { FloatingBuyBlock } from "@/components/product-detail/floating-buy-block";
+import { FrequentlyAskedQuestionsSection } from "@/components/product-detail/frequently-asked-questions-section";
 import { GiftCardPurchaseForm } from "@/components/product-detail/gift-card-purchase-form";
 import { ProductOpenGraph } from "@/components/product-detail/open-graph";
 import {
@@ -138,6 +139,15 @@ export function ProductDetailSection({
                 content: (
                   <Suspense fallback={<div className="min-h-32" aria-hidden />}>
                     <TechnicalSpecsSection handle={product.handle} />
+                  </Suspense>
+                ),
+              },
+              {
+                id: "frequently-asked-questions",
+                label: "Frequently Asked Questions",
+                content: (
+                  <Suspense fallback={<div className="min-h-32" aria-hidden />}>
+                    <FrequentlyAskedQuestionsSection handle={product.handle} />
                   </Suspense>
                 ),
               },

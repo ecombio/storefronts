@@ -2,13 +2,13 @@
 
 Headless Shopify storefront for [ecombio.com](https://ecombio.com), built with Next.js on Vercel. Based on the MIT-licensed [Vercel Shop](https://github.com/vercel/shop) template (see `LICENSE`).
 
-| Item           | Where                                                    |
-| -------------- | -------------------------------------------------------- |
-| Live site      | https://ecombio.com (`www` redirects to it)              |
-| GitHub repo    | https://github.com/ecombio/storefronts                   |
-| Vercel project | https://vercel.com/ecombiology/storefront                |
-| Shopify store  | `ecombio.myshopify.com` (also hosts checkout)            |
-| Template docs  | https://shop-docs.labs.vercel.dev                        |
+| Item           | Where                                         |
+| -------------- | --------------------------------------------- |
+| Live site      | https://ecombio.com (`www` redirects to it)   |
+| GitHub repo    | https://github.com/ecombio/storefronts        |
+| Vercel project | https://vercel.com/ecombiology/storefront     |
+| Shopify store  | `ecombio.myshopify.com` (also hosts checkout) |
+| Template docs  | https://shop-docs.labs.vercel.dev             |
 
 ## Deploying
 
@@ -104,16 +104,16 @@ Feature flags and site identity live in `lib/config/index.ts` (keep keys alphabe
 
 Values live in Vercel (Production and Preview) and `.env.local`, never in git. Mark secrets **Sensitive** in Vercel. Changes apply only to new deployments, so redeploy after editing. Every variable the code reads needs a row in `.env.example`.
 
-| Variable                                      | Purpose                                                           |
-| --------------------------------------------- | ----------------------------------------------------------------- |
-| `NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN`            | Required. Shopify store domain.                                   |
-| `NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN` | Required. Public Storefront API token.                            |
-| `NEXT_PUBLIC_SHOPIFY_STOREFRONT_ID`           | Cart attribution for the Headless storefront.                     |
-| `CUSTOMER_ACCOUNT_SESSION_SECRET`             | Required with customer accounts. Session encryption secret.       |
-| `SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID`      | Required with customer accounts. Confidential client ID.          |
-| `SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_SECRET`  | Required with customer accounts. Confidential client secret.      |
-| `SHOPIFY_WEBHOOK_SECRET`                      | Enables `POST /api/webhooks/shopify` (404 without it).            |
-| `AI_GATEWAY_API_KEY`                          | Only if Shop Agent is enabled.                                    |
+| Variable                                      | Purpose                                                      |
+| --------------------------------------------- | ------------------------------------------------------------ |
+| `NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN`            | Required. Shopify store domain.                              |
+| `NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN` | Required. Public Storefront API token.                       |
+| `NEXT_PUBLIC_SHOPIFY_STOREFRONT_ID`           | Cart attribution for the Headless storefront.                |
+| `CUSTOMER_ACCOUNT_SESSION_SECRET`             | Required with customer accounts. Session encryption secret.  |
+| `SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID`      | Required with customer accounts. Confidential client ID.     |
+| `SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_SECRET`  | Required with customer accounts. Confidential client secret. |
+| `SHOPIFY_WEBHOOK_SECRET`                      | Enables `POST /api/webhooks/shopify` (404 without it).       |
+| `AI_GATEWAY_API_KEY`                          | Only if Shop Agent is enabled.                               |
 
 `pnpm build` fails if any of the three auth variables is missing while customer accounts are enabled, locally and on Vercel.
 
@@ -157,11 +157,11 @@ Data flows from `app/collections/[handle]/page.tsx` into `CollectionDetailPage`.
 
 **Metafields** (Settings, Custom data, Collection metafield definitions). Tick **Storefront API access** on each, or the feature stays hidden.
 
-| Metafield                 | Type                | Used for                                |
-| ------------------------- | ------------------- | --------------------------------------- |
-| `custom.posts`            | List of blog posts  | Expert Advice tab                       |
-| `custom.sub_collections`  | List of collections | Carousel tiles                          |
-| `custom.after_item_lists` | Page reference      | Content below results (template)        |
+| Metafield                 | Type                | Used for                         |
+| ------------------------- | ------------------- | -------------------------------- |
+| `custom.posts`            | List of blog posts  | Expert Advice tab                |
+| `custom.sub_collections`  | List of collections | Carousel tiles                   |
+| `custom.after_item_lists` | Page reference      | Content below results (template) |
 
 Notes:
 

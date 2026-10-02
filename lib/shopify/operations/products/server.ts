@@ -788,3 +788,36 @@ export async function fetchTechnicalSpecs({
   const reference = response.data.product?.technicalSpecs?.reference;
   return reference && "body" in reference ? reference.body : null;
 }
+
+const FREQUENTLY_ASKED_QUESTIONS_QUERY = gql(
+  `#graphql
+  query frequentlyAskedQuestions($handle: String!, $country: CountryCode, $language: LanguageCode) @inContext(country: $country, language: $language) {
+    product(handle: $handle) {
+      frequentlyAskedQuestions: metafield(namespace: "custom", key: "frequently_asked_questions") {
+        reference {
+          ... on Page {
+            body
+          }
+        }
+      }
+    }
+  }
+`,
+);
+
+export async function fetchFrequentlyAskedQuestions({
+  handle,
+  locale = shopConfig.localization,
+}: {
+  handle: string;
+  locale?: CommerceLocale;
+}): Promise<string | null> {
+  const response = await storefront.request(FREQUENTLY_ASKED_QUESTIONS_QUERY, {
+    locale,
+    variables: { handle },
+  });
+  assertStorefrontOk(response, "frequentlyAskedQuestions");
+
+  const reference = response.data.product?.frequentlyAskedQuestions?.reference;
+  return reference && "body" in reference ? reference.body : null;
+}

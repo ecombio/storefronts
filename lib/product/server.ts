@@ -10,7 +10,11 @@ import type {
   SelectedOption,
 } from "@/lib/product/types";
 import { getNumericShopifyId } from "@/lib/shopify/id/server";
-import { fetchExpertReviews, fetchTechnicalSpecs } from "@/lib/shopify/operations/products/server";
+import {
+  fetchExpertReviews,
+  fetchFrequentlyAskedQuestions,
+  fetchTechnicalSpecs,
+} from "@/lib/shopify/operations/products/server";
 import {
   fetchComplementaryProducts,
   fetchProduct,
@@ -141,4 +145,15 @@ export async function getTechnicalSpecs(params: {
   cacheTag("products", `technical-specs-${params.handle}`);
 
   return fetchTechnicalSpecs(params);
+}
+
+export async function getFrequentlyAskedQuestions(params: {
+  handle: string;
+  locale?: CommerceLocale;
+}): Promise<string | null> {
+  "use cache: remote";
+  cacheLife("hours");
+  cacheTag("products", `frequently-asked-questions-${params.handle}`);
+
+  return fetchFrequentlyAskedQuestions(params);
 }
