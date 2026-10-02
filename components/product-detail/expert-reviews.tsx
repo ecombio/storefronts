@@ -1,8 +1,14 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Play, X } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Play, X } from "lucide-react";
+import { useRef, useState } from "react";
 
+import {
+  CarouselArrows,
+  CarouselProgress,
+  carouselTrackClass,
+  useScrollTrack,
+} from "@/components/ui/carousel";
 import { getYouTubeId } from "@/lib/product/expert-reviews";
 import type { ExpertReview } from "@/lib/product/types";
 
@@ -17,35 +23,12 @@ export function ExpertReviews({
   reviews: ExpertReview[];
   title?: string;
 }) {
-  const scroller = useRef<HTMLUListElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
-  const [bar, setBar] = useState({ start: 0, size: 1 });
   const [playing, setPlaying] = useState<Playing | null>(null);
-
-  const update = useCallback(() => {
-    const el = scroller.current;
-    if (!el) return;
-    const size = Math.min(1, el.clientWidth / el.scrollWidth);
-    const max = el.scrollWidth - el.clientWidth;
-    setBar({ size, start: max > 0 ? (el.scrollLeft / max) * (1 - size) : 0 });
-  }, []);
-
-  useEffect(() => {
-    update();
-    const el = scroller.current;
-    if (!el) return;
-    const observer = new ResizeObserver(update);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [update]);
+  const { trackRef, onScroll, atStart, atEnd, scrollByPage, start, size, overflowing } =
+    useScrollTrack<HTMLUListElement>({ pageFraction: 0.8 });
 
   if (reviews.length === 0) return null;
-
-  const scrollBy = (direction: 1 | -1) =>
-    scroller.current?.scrollBy({
-      left: direction * scroller.current.clientWidth * 0.8,
-      behavior: "smooth",
-    });
 
   // Uploaded video wins; then a YouTube link; any other link opens in a new tab.
   const play = (review: ExpertReview) => {
@@ -59,17 +42,11 @@ export function ExpertReviews({
     dialog.current?.showModal();
   };
 
-  const overflowing = bar.size < 1;
-
   return (
     <section className="grid gap-5" data-slot="expert-reviews">
       <h2 className="text-2xl font-semibold">{title}</h2>
 
-      <ul
-        ref={scroller}
-        onScroll={update}
-        className="flex snap-x gap-5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      >
+      <ul ref={trackRef} onScroll={onScroll} className={`${carouselTrackClass} gap-5 pb-1`}>
         {reviews.map((review, index) => {
           const youtubeId = review.videoUrl ? getYouTubeId(review.videoUrl) : undefined;
           const thumbnail =
@@ -126,30 +103,16 @@ export function ExpertReviews({
 
       {overflowing ? (
         <div className="flex items-center gap-6">
-          <div className="relative h-1 flex-1 rounded-full bg-muted">
-            <div
-              className="absolute inset-y-0 rounded-full bg-foreground/70"
-              style={{ left: `${bar.start * 100}%`, width: `${bar.size * 100}%` }}
-            />
-          </div>
-          <div className="flex gap-3">
-            <button
-              type="button"
-              aria-label="Previous reviews"
-              onClick={() => scrollBy(-1)}
-              className="flex size-8 cursor-pointer items-center justify-center rounded-full bg-foreground text-background"
-            >
-              <ChevronLeft className="size-4" />
-            </button>
-            <button
-              type="button"
-              aria-label="Next reviews"
-              onClick={() => scrollBy(1)}
-              className="flex size-8 cursor-pointer items-center justify-center rounded-full bg-foreground text-background"
-            >
-              <ChevronRight className="size-4" />
-            </button>
-          </div>
+          <CarouselProgress start={start} size={size} />
+          <CarouselArrows
+            size="sm"
+            className="gap-3"
+            atStart={atStart}
+            atEnd={atEnd}
+            onScroll={scrollByPage}
+            previousLabel="Previous reviews"
+            nextLabel="Next reviews"
+          />
         </div>
       ) : null}
 

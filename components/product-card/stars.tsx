@@ -1,14 +1,11 @@
 import { ratingLabel, StarRow } from "@/@yotpo/ui";
 
-/** Card rating line: partial-fill stars, "4.4/5", and the review count. Zero reviews shows a prompt. */
+/**
+ * Card rating line: partial-fill stars, "4.4/5", and the review count.
+ * Renders nothing without reviews (the card shows no "Write a review" prompt; the product page does).
+ */
 export function CardStars({ score, count }: { score: number; count: number }) {
-  if (!count) {
-    return (
-      <span className="text-xs font-medium text-foreground underline underline-offset-2 group-hover/card:text-primary">
-        Write a review
-      </span>
-    );
-  }
+  if (!count) return null;
   return (
     <div
       role="img"

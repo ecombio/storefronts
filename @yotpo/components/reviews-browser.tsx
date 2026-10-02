@@ -13,18 +13,12 @@
 // Filtering and sorting run in the browser over the reviews gathered by the server component.
 // Photos use unoptimized next/image so Yotpo's image host needs no entry in next.config.
 
-import {
-  BadgeCheckIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  SearchIcon,
-  ThumbsUpIcon,
-  Trash2Icon,
-  XIcon,
-} from "lucide-react";
+import { BadgeCheckIcon, SearchIcon, ThumbsUpIcon, Trash2Icon, XIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+
+import { CarouselArrows, carouselTrackClass, useScrollTrack } from "@/components/ui/carousel";
 
 import type { YotpoBottomline, YotpoCollectionReview, YotpoReview } from "../types";
 import { WriteReviewButton } from "./review-form";
@@ -153,66 +147,26 @@ function HowReviewsWork({
 }
 
 function TopPhotoReviews({ reviews }: { reviews: BrowserReview[] }) {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [atStart, setAtStart] = useState(true);
-  const [atEnd, setAtEnd] = useState(false);
-
-  function update() {
-    const track = trackRef.current;
-    if (!track) return;
-    setAtStart(track.scrollLeft <= 1);
-    setAtEnd(track.scrollLeft + track.clientWidth >= track.scrollWidth - 1);
-  }
-
-  // Check once on mount and when the reviews change, so "next" is disabled if every tile already fits.
-  useEffect(() => {
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reviews]);
+  const { trackRef, onScroll, atStart, atEnd, scrollByPage } = useScrollTrack();
 
   if (reviews.length === 0) return null;
-
-  function scrollByPage(direction: 1 | -1) {
-    const track = trackRef.current;
-    if (!track) return;
-    track.scrollBy({ left: direction * track.clientWidth * 0.9, behavior: "smooth" });
-  }
-
-  const arrowClass = (disabled: boolean) =>
-    "flex size-9 items-center justify-center rounded-full " +
-    (disabled ? "bg-neutral-200 text-neutral-400" : "bg-black text-white hover:opacity-80");
 
   return (
     <div className="mb-8">
       <div className="mb-3 flex items-center justify-between gap-4">
         <h3 className="text-lg font-semibold text-black">Top reviews with photos</h3>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            aria-label="Previous photos"
-            disabled={atStart}
-            onClick={() => scrollByPage(-1)}
-            className={arrowClass(atStart)}
-          >
-            <ChevronLeftIcon className="size-5" />
-          </button>
-          <button
-            type="button"
-            aria-label="Next photos"
-            disabled={atEnd}
-            onClick={() => scrollByPage(1)}
-            className={arrowClass(atEnd)}
-          >
-            <ChevronRightIcon className="size-5" />
-          </button>
-        </div>
+        <CarouselArrows
+          atStart={atStart}
+          atEnd={atEnd}
+          onScroll={scrollByPage}
+          previousLabel="Previous photos"
+          nextLabel="Next photos"
+        />
       </div>
       <div
         ref={trackRef}
-        onScroll={update}
-        className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        onScroll={onScroll}
+        className={`${carouselTrackClass} snap-mandatory gap-3 pb-2`}
       >
         {reviews.map((review) => {
           const photo = photosOf(review)[0];
