@@ -151,3 +151,24 @@ export async function submitReview(input: SubmitReviewInput): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * Score and count for several products, for listing cards. Fetches one review per product so each
+ * cache entry stays small. Failed lookups are left out; zero-review products have count 0.
+ * @param productIds - Shopify numeric product IDs (not GraphQL GIDs).
+ */
+export async function getProductCardRatings(
+  productIds: string[],
+): Promise<Map<string, { count: number; score: number }>> {
+  const entries = await Promise.all(
+    productIds.map(async (id) => {
+      const data = await getProductReviews(id, { perPage: 1 });
+      if (!data) return null;
+      return [
+        id,
+        { count: data.bottomline.total_review, score: data.bottomline.average_score },
+      ] as const;
+    }),
+  );
+  return new Map(entries.filter((entry): entry is NonNullable<typeof entry> => entry !== null));
+}

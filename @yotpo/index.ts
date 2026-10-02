@@ -10,7 +10,7 @@
 
 export { StarRating } from "./components/star-ratings";
 export { ProductReviews } from "./components/reviews-widget";
-export { submitReview } from "./client";
+export { getProductCardRatings, submitReview } from "./client";
 export type { SubmitReviewInput } from "./client";
 
 export type {

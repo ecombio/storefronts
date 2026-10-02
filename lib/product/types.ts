@@ -54,15 +54,23 @@ export interface OptionGroupState {
   values: OptionValueState[];
 }
 
+export interface ProductCardColor {
+  name: string;
+  color?: string;
+  imageUrl?: string;
+}
+
 export interface ProductCard {
   availableForSale: boolean;
   compareAtPrice?: Money;
+  colors?: ProductCardColor[];
   defaultVariantSelectedOptions?: SelectedOption[];
   featuredImage: Image | null;
   handle: string;
   id: string;
   isGiftCard: boolean;
   maxPrice: Money;
+  rating?: { count: number; score: number };
   price: Money;
   title: string;
   vendor?: string;

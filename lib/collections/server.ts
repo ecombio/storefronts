@@ -8,6 +8,7 @@ import type {
   CollectionWithThumbnail,
 } from "@/lib/collections/types";
 import type { CommerceLocale } from "@/lib/config/types";
+import { withProductRatings } from "@/lib/product/ratings";
 import { tagProducts } from "@/lib/product/server";
 import { fetchCollectionSubCollections } from "@/lib/shopify/operations/collections/server";
 import {
@@ -126,7 +127,7 @@ export async function getCollectionResultsData({
     dataSearch,
     sort,
     filters,
-    result,
+    result: { ...result, products: await withProductRatings(result.products) },
     transformedFilters: { filters: result.filters, priceRange: result.priceRange },
   };
 }
@@ -167,7 +168,7 @@ export async function getAllProductsResultsData({
     sort,
     filters,
     result: {
-      products: products.products,
+      products: await withProductRatings(products.products),
       pageInfo: products.pageInfo,
       filters: facets.filters,
       priceRange: facets.priceRange,

@@ -69,7 +69,7 @@ export function CollectionDetailPage({
       {collection.id ? (
         <CollectionViewedTracker collection={{ handle: collection.handle, id: collection.id }} />
       ) : null}
-      <Page className="pt-2.5 md:pt-10">
+      <Page className="bg-[#f8f9fc] pt-2.5 md:pt-10 pb-10">
         <Container>
           <Sections className="gap-5">
             <CollectionHeader collection={collection} handle={handle} homeLabel="Home" />

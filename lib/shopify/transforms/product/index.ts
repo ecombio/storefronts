@@ -180,6 +180,11 @@ function transformProductCard(
     (value) => value.name.toLowerCase() === selectedOptionValue?.toLowerCase(),
   )?.firstSelectableVariant;
   const cardVariant = matchedVariant ?? defaultVariant;
+  const colors = (colorOption?.optionValues ?? []).map((value) => ({
+    name: value.name,
+    color: value.swatch?.color ?? undefined,
+    imageUrl: value.swatch?.image?.previewImage?.url ?? undefined,
+  }));
 
   return {
     id: product.id,
@@ -192,6 +197,7 @@ function transformProductCard(
     vendor: product.vendor || undefined,
     availableForSale: product.availableForSale,
     isGiftCard: product.isGiftCard,
+    colors,
     defaultVariantSelectedOptions: cardVariant?.selectedOptions ?? [],
   };
 }

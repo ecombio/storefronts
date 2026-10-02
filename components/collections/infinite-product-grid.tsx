@@ -23,6 +23,7 @@ const LIST_VIEW_CLASSES = [
   "sm:[&_[data-slot=product-card-image]]:w-56",
   "[&_[data-slot=product-card-title]]:line-clamp-2",
   "[&_[data-slot=product-card-title]]:text-base",
+  "[&_[data-slot=product-card-swatches]]:hidden",
 ].join(" ");
 
 interface InfiniteProductGridProps<TParams> {

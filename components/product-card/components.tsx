@@ -1,10 +1,11 @@
 import { cn } from "cn";
 import Image from "next/image";
-import type { ComponentProps } from "react";
+import type { ComponentProps, ReactNode } from "react";
 
-import { DiscountBadge } from "@/components/product/discount-badge";
-import { Price } from "@/components/product/price";
 import { ImagePlaceholder } from "@/components/ui/image-placeholder";
+import type { ProductCardColor } from "@/lib/product/types";
+
+const MAX_SWATCHES = 4;
 
 interface ProductCardProps extends ComponentProps<"article"> {
   variant?: "default" | "featured";
@@ -15,7 +16,10 @@ function ProductCard({ variant = "default", className, children, ...props }: Pro
     <article
       data-slot="product-card"
       data-variant={variant}
-      className={cn("flex flex-col h-full overflow-hidden", className)}
+      className={cn(
+        "group/card flex flex-col h-full overflow-hidden rounded-xl bg-background p-4 shadow-sm ring-1 ring-black/5 transition-shadow hover:shadow-md focus-within:shadow-md",
+        className,
+      )}
       {...props}
     >
       {children}
@@ -38,7 +42,7 @@ function ProductCardImageContainer({
       data-slot="product-card-image-container"
       data-variant={variant}
       className={cn(
-        "flex flex-col",
+        "flex flex-col flex-1",
         "data-[variant=featured]:-mt-px data-[variant=featured]:bg-linear-to-b/oklch data-[variant=featured]:from-primary data-[variant=featured]:from-0% data-[variant=featured]:to-45% data-[variant=featured]:to-primary/10",
         className,
       )}
@@ -67,10 +71,10 @@ function ProductCardImage({
   return (
     <div
       data-slot="product-card-image"
-      className={cn("relative aspect-square overflow-hidden", className)}
+      className={cn("relative aspect-square overflow-hidden rounded-lg", className)}
     >
       {src ? (
-        <Image src={src} alt={alt} fill className="object-cover" sizes="100vw" />
+        <Image src={src} alt={alt} fill className="object-contain p-3" sizes="100vw" />
       ) : (
         <ImagePlaceholder className="size-full" />
       )}
@@ -85,11 +89,43 @@ function ProductCardImage({
   );
 }
 
+/** Color dots under the image. The row keeps its height so titles align across cards. */
+function ProductCardSwatches({
+  colors = [],
+  className,
+}: {
+  colors?: ProductCardColor[];
+  className?: string;
+}) {
+  const visible = colors.filter((c) => c.color || c.imageUrl).slice(0, MAX_SWATCHES);
+  const extra = visible.length > 0 ? colors.length - visible.length : 0;
+  return (
+    <div
+      data-slot="product-card-swatches"
+      className={cn("flex min-h-7 items-center justify-center gap-1.5", className)}
+    >
+      {visible.map((c) => (
+        <span
+          key={c.name}
+          title={c.name}
+          className="size-3.5 rounded-full ring-1 ring-black/15"
+          style={
+            c.color
+              ? { backgroundColor: c.color }
+              : { backgroundImage: `url("${c.imageUrl}")`, backgroundSize: "cover" }
+          }
+        />
+      ))}
+      {extra > 0 && <span className="text-xs text-muted-foreground">+{extra}</span>}
+    </div>
+  );
+}
+
 function ProductCardContent({ className, children, ...props }: ComponentProps<"div">) {
   return (
     <div
       data-slot="product-card-content"
-      className={cn("flex flex-col flex-1 py-2.5", className)}
+      className={cn("flex flex-col flex-1 gap-1 pt-1 pb-1", className)}
       {...props}
     >
       {children}
@@ -101,11 +137,48 @@ function ProductCardTitle({ className, children, ...props }: ComponentProps<"h3"
   return (
     <h3
       data-slot="product-card-title"
-      className={cn("text-sm font-medium text-foreground line-clamp-1", className)}
+      className={cn("text-sm font-medium text-foreground line-clamp-2 min-h-10", className)}
       {...props}
     >
       {children}
     </h3>
+  );
+}
+
+function ProductCardRating({ children }: { children?: ReactNode }) {
+  return (
+    <div data-slot="product-card-rating" className="min-h-5 text-sm">
+      {children}
+    </div>
+  );
+}
+
+/** Renders the currency symbol and cents small and raised. */
+function MoneyDisplay({
+  amount,
+  currencyCode,
+  className,
+}: {
+  amount: string;
+  currencyCode: string;
+  className?: string;
+}) {
+  const parts = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: currencyCode,
+  }).formatToParts(parseFloat(amount));
+  return (
+    <span className={cn("tabular-nums", className)}>
+      {parts.map((part, i) =>
+        part.type === "currency" || part.type === "decimal" || part.type === "fraction" ? (
+          <span key={i} className="text-[0.6em] align-super">
+            {part.value}
+          </span>
+        ) : (
+          <span key={i}>{part.value}</span>
+        ),
+      )}
+    </span>
   );
 }
 
@@ -115,13 +188,7 @@ interface ProductCardPriceProps {
   maxAmount?: string;
   compareAtAmount?: string;
   compareAtCurrencyCode?: string;
-  discountVariant?: "green" | "blue";
   className?: string;
-}
-
-function getDiscountPercent(price: number, compareAtPrice: number | undefined): number | null {
-  if (!compareAtPrice || compareAtPrice <= price) return null;
-  return Math.round(((compareAtPrice - price) / compareAtPrice) * 100);
 }
 
 function ProductCardPrice({
@@ -130,41 +197,31 @@ function ProductCardPrice({
   maxAmount,
   compareAtAmount,
   compareAtCurrencyCode,
-  discountVariant = "green",
   className,
 }: ProductCardPriceProps) {
-  const priceNum = parseFloat(amount);
-  const compareAtNum = compareAtAmount ? parseFloat(compareAtAmount) : undefined;
   const isRange = maxAmount != null && maxAmount !== amount;
-  // A range's per-variant discounts differ, so a single compare-at would be misleading.
-  const discountPercent = isRange ? null : getDiscountPercent(priceNum, compareAtNum);
+  const compareAtNum = compareAtAmount ? parseFloat(compareAtAmount) : 0;
+  // A range's per-variant compare-at prices differ, so a single one would be misleading.
+  const showCompareAt = !isRange && compareAtNum > parseFloat(amount);
+
   return (
-    <div data-slot="product-card-price" className={cn(className)}>
-      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <span className="inline-flex items-baseline gap-x-1 text-sm text-foreground">
-          <Price amount={amount} currencyCode={currencyCode} className="text-sm text-foreground" />
-          {isRange && (
-            <>
-              <span>–</span>
-              <Price
-                amount={maxAmount}
-                currencyCode={currencyCode}
-                className="text-sm text-foreground"
-              />
-            </>
-          )}
-        </span>
-        {discountPercent && compareAtAmount && compareAtCurrencyCode && (
-          <>
-            <Price
-              amount={compareAtAmount}
-              currencyCode={compareAtCurrencyCode}
-              className="text-xs text-muted-foreground line-through"
-            />
-            <DiscountBadge percent={discountPercent} variant={discountVariant} />
-          </>
-        )}
-      </div>
+    <div data-slot="product-card-price" className={cn("min-h-16", className)}>
+      <div className="h-5 text-sm text-muted-foreground">{isRange ? "Starting at" : null}</div>
+      <MoneyDisplay
+        amount={amount}
+        currencyCode={currencyCode}
+        className="text-xl font-semibold text-foreground"
+      />
+      {showCompareAt && compareAtAmount && (
+        <div className="text-sm text-muted-foreground">
+          Was{" "}
+          <MoneyDisplay
+            amount={compareAtAmount}
+            currencyCode={compareAtCurrencyCode ?? currencyCode}
+            className="line-through [&>span]:!align-baseline [&>span]:!text-[1em]"
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -176,9 +233,10 @@ function ProductCardSkeleton({ className }: { className?: string }) {
       className={cn("flex flex-col overflow-hidden", className)}
     >
       <ImagePlaceholder className="aspect-square animate-pulse" />
-      <div className="py-2.5 h-12 box-content grid gap-2">
+      <div className="py-2.5 grid gap-2">
         <div className="h-4 w-full bg-accent animate-pulse" />
-        <div className="h-4 w-12 bg-accent animate-pulse" />
+        <div className="h-4 w-2/3 bg-accent animate-pulse" />
+        <div className="h-6 w-24 bg-accent animate-pulse" />
       </div>
     </div>
   );
@@ -190,6 +248,8 @@ export {
   ProductCardImage,
   ProductCardImageContainer,
   ProductCardPrice,
+  ProductCardRating,
   ProductCardSkeleton,
+  ProductCardSwatches,
   ProductCardTitle,
 };

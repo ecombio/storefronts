@@ -3,6 +3,7 @@
 import { PRODUCTS_PER_PAGE } from "@/lib/collections";
 import { resolveBrowseParams } from "@/lib/collections/server";
 import type { PageInfo } from "@/lib/pagination/types";
+import { withProductRatings } from "@/lib/product/ratings";
 import type { ProductCard } from "@/lib/product/types";
 import { fetchCollectionProducts } from "@/lib/shopify/operations/products/server";
 
@@ -20,7 +21,7 @@ export async function loadMoreCollectionProductsAction(params: {
     filters,
   });
   return {
-    products: result.products,
+    products: await withProductRatings(result.products),
     pageInfo: result.pageInfo,
   };
 }

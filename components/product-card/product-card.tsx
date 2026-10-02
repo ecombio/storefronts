@@ -8,10 +8,13 @@ import {
   ProductCardImage,
   ProductCardImageContainer,
   ProductCardPrice,
+  ProductCardRating,
   ProductCard as ProductCardRoot,
   ProductCardSkeleton,
+  ProductCardSwatches,
   ProductCardTitle,
 } from "./components";
+import { CardStars } from "./stars";
 
 export interface ProductCardProps {
   product: ProductCardType;
@@ -28,6 +31,7 @@ export function ProductCard({
 }: ProductCardProps) {
   const isFeatured = variant === "featured";
   const href = buildProductUrl(product.handle, product.defaultVariantSelectedOptions ?? []);
+
   return (
     <Link href={href} className={className}>
       <ProductCardRoot variant={variant}>
@@ -45,15 +49,20 @@ export function ProductCard({
             outOfStock={!product.availableForSale}
             outOfStockText={outOfStockText}
           />
+          <ProductCardSwatches colors={product.colors} />
           <ProductCardContent>
             <ProductCardTitle>{product.title}</ProductCardTitle>
+            <ProductCardRating>
+              {product.rating ? (
+                <CardStars score={product.rating.score} count={product.rating.count} />
+              ) : null}
+            </ProductCardRating>
             <ProductCardPrice
               amount={product.price.amount}
               currencyCode={product.price.currencyCode}
               maxAmount={product.maxPrice.amount}
               compareAtAmount={product.compareAtPrice?.amount}
               compareAtCurrencyCode={product.compareAtPrice?.currencyCode}
-              discountVariant={isFeatured ? "blue" : "green"}
             />
           </ProductCardContent>
         </ProductCardImageContainer>
