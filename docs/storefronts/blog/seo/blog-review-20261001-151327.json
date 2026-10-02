@@ -1,0 +1,2702 @@
+{
+  "app": "Terminal CMS",
+  "scopes": [
+    "read_content",
+    "read_files",
+    "read_legal_policies",
+    "read_locales",
+    "read_markets",
+    "read_metaobject_definitions",
+    "read_metaobjects",
+    "read_online_store_navigation",
+    "read_online_store_pages",
+    "read_products",
+    "read_reports",
+    "read_translations",
+    "write_content",
+    "write_files",
+    "write_legal_policies",
+    "write_metaobjects",
+    "write_online_store_navigation",
+    "write_online_store_pages",
+    "write_translations"
+  ],
+  "blogs": [
+    {
+      "id": "gid://shopify/Blog/105286500566",
+      "title": "Category",
+      "handle": "category",
+      "templateSuffix": null,
+      "articlesCount": {
+        "count": 0
+      }
+    },
+    {
+      "id": "gid://shopify/Blog/105286795478",
+      "title": "Authors",
+      "handle": "authors",
+      "templateSuffix": null,
+      "articlesCount": {
+        "count": 0
+      }
+    },
+    {
+      "id": "gid://shopify/Blog/105286861014",
+      "title": "Articles",
+      "handle": "articles",
+      "templateSuffix": "",
+      "articlesCount": {
+        "count": 0
+      }
+    },
+    {
+      "id": "gid://shopify/Blog/106176446678",
+      "title": "Athletes",
+      "handle": "athletes",
+      "templateSuffix": "athletes",
+      "articlesCount": {
+        "count": 0
+      }
+    },
+    {
+      "id": "gid://shopify/Blog/107541135574",
+      "title": "cycling",
+      "handle": "cycling",
+      "templateSuffix": "",
+      "articlesCount": {
+        "count": 0
+      }
+    },
+    {
+      "id": "gid://shopify/Blog/107570790614",
+      "title": "Electric Bikes",
+      "handle": "electric-bikes",
+      "templateSuffix": null,
+      "articlesCount": {
+        "count": 1
+      }
+    }
+  ],
+  "articleMetafieldDefinitions": [
+    {
+      "namespace": "custom",
+      "key": "author_profile",
+      "type": {
+        "name": "mixed_reference"
+      }
+    }
+  ],
+  "metaobjects": [
+    {
+      "type": "shopify--color-pattern",
+      "handle": "white",
+      "fields": [
+        {
+          "key": "label",
+          "value": "White"
+        },
+        {
+          "key": "color",
+          "value": "#FFFFFF"
+        },
+        {
+          "key": "image",
+          "value": null
+        },
+        {
+          "key": "color_taxonomy_reference",
+          "value": "[\"gid://shopify/TaxonomyValue/3\"]"
+        },
+        {
+          "key": "pattern_taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/2874"
+        }
+      ]
+    },
+    {
+      "type": "shopify--color-pattern",
+      "handle": "black",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Black"
+        },
+        {
+          "key": "color",
+          "value": "#000000"
+        },
+        {
+          "key": "image",
+          "value": null
+        },
+        {
+          "key": "color_taxonomy_reference",
+          "value": "[\"gid://shopify/TaxonomyValue/1\"]"
+        },
+        {
+          "key": "pattern_taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/2874"
+        }
+      ]
+    },
+    {
+      "type": "shopify--color-pattern",
+      "handle": "yellow",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Yellow"
+        },
+        {
+          "key": "color",
+          "value": "#FFE500"
+        },
+        {
+          "key": "image",
+          "value": null
+        },
+        {
+          "key": "color_taxonomy_reference",
+          "value": "[\"gid://shopify/TaxonomyValue/14\"]"
+        },
+        {
+          "key": "pattern_taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/2874"
+        }
+      ]
+    },
+    {
+      "type": "shopify--color-pattern",
+      "handle": "beige",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Beige"
+        },
+        {
+          "key": "color",
+          "value": "#EAD8AB"
+        },
+        {
+          "key": "image",
+          "value": null
+        },
+        {
+          "key": "color_taxonomy_reference",
+          "value": "[\"gid://shopify/TaxonomyValue/6\"]"
+        },
+        {
+          "key": "pattern_taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/2874"
+        }
+      ]
+    },
+    {
+      "type": "shopify--color-pattern",
+      "handle": "brown",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Brown"
+        },
+        {
+          "key": "color",
+          "value": "#9A5630"
+        },
+        {
+          "key": "image",
+          "value": null
+        },
+        {
+          "key": "color_taxonomy_reference",
+          "value": "[\"gid://shopify/TaxonomyValue/7\"]"
+        },
+        {
+          "key": "pattern_taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/2874"
+        }
+      ]
+    },
+    {
+      "type": "shopify--color-pattern",
+      "handle": "geometric",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Geometric"
+        },
+        {
+          "key": "color",
+          "value": null
+        },
+        {
+          "key": "image",
+          "value": null
+        },
+        {
+          "key": "color_taxonomy_reference",
+          "value": "[\"gid://shopify/TaxonomyValue/2865\"]"
+        },
+        {
+          "key": "pattern_taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/1868"
+        }
+      ]
+    },
+    {
+      "type": "shopify--color-pattern",
+      "handle": "gray",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Gray"
+        },
+        {
+          "key": "color",
+          "value": "#808080"
+        },
+        {
+          "key": "image",
+          "value": null
+        },
+        {
+          "key": "color_taxonomy_reference",
+          "value": "[\"gid://shopify/TaxonomyValue/8\"]"
+        },
+        {
+          "key": "pattern_taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/2874"
+        }
+      ]
+    },
+    {
+      "type": "shopify--color-pattern",
+      "handle": "green",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Green"
+        },
+        {
+          "key": "color",
+          "value": "#05AA3D"
+        },
+        {
+          "key": "image",
+          "value": null
+        },
+        {
+          "key": "color_taxonomy_reference",
+          "value": "[\"gid://shopify/TaxonomyValue/9\"]"
+        },
+        {
+          "key": "pattern_taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/2874"
+        }
+      ]
+    },
+    {
+      "type": "shopify--color-pattern",
+      "handle": "navy",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Navy"
+        },
+        {
+          "key": "color",
+          "value": "#282099"
+        },
+        {
+          "key": "image",
+          "value": null
+        },
+        {
+          "key": "color_taxonomy_reference",
+          "value": "[\"gid://shopify/TaxonomyValue/15\"]"
+        },
+        {
+          "key": "pattern_taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/2874"
+        }
+      ]
+    },
+    {
+      "type": "shopify--color-pattern",
+      "handle": "orange",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Orange"
+        },
+        {
+          "key": "color",
+          "value": "#FF8A00"
+        },
+        {
+          "key": "image",
+          "value": null
+        },
+        {
+          "key": "color_taxonomy_reference",
+          "value": "[\"gid://shopify/TaxonomyValue/10\"]"
+        },
+        {
+          "key": "pattern_taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/2874"
+        }
+      ]
+    },
+    {
+      "type": "shopify--color-pattern",
+      "handle": "pink",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Pink"
+        },
+        {
+          "key": "color",
+          "value": "#FFC0CB"
+        },
+        {
+          "key": "image",
+          "value": null
+        },
+        {
+          "key": "color_taxonomy_reference",
+          "value": "[\"gid://shopify/TaxonomyValue/11\"]"
+        },
+        {
+          "key": "pattern_taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/2874"
+        }
+      ]
+    },
+    {
+      "type": "shopify--color-pattern",
+      "handle": "purple",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Purple"
+        },
+        {
+          "key": "color",
+          "value": "#A54DCF"
+        },
+        {
+          "key": "image",
+          "value": null
+        },
+        {
+          "key": "color_taxonomy_reference",
+          "value": "[\"gid://shopify/TaxonomyValue/12\"]"
+        },
+        {
+          "key": "pattern_taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/2874"
+        }
+      ]
+    },
+    {
+      "type": "shopify--color-pattern",
+      "handle": "red",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Red"
+        },
+        {
+          "key": "color",
+          "value": "#F61F1F"
+        },
+        {
+          "key": "image",
+          "value": null
+        },
+        {
+          "key": "color_taxonomy_reference",
+          "value": "[\"gid://shopify/TaxonomyValue/13\"]"
+        },
+        {
+          "key": "pattern_taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/2874"
+        }
+      ]
+    },
+    {
+      "type": "shopify--color-pattern",
+      "handle": "silver",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Silver"
+        },
+        {
+          "key": "color",
+          "value": "#D3D3D3"
+        },
+        {
+          "key": "image",
+          "value": null
+        },
+        {
+          "key": "color_taxonomy_reference",
+          "value": "[\"gid://shopify/TaxonomyValue/5\"]"
+        },
+        {
+          "key": "pattern_taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/2874"
+        }
+      ]
+    },
+    {
+      "type": "shopify--color-pattern",
+      "handle": "striped",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Striped"
+        },
+        {
+          "key": "color",
+          "value": null
+        },
+        {
+          "key": "image",
+          "value": null
+        },
+        {
+          "key": "color_taxonomy_reference",
+          "value": "[\"gid://shopify/TaxonomyValue/2865\"]"
+        },
+        {
+          "key": "pattern_taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/2875"
+        }
+      ]
+    },
+    {
+      "type": "shopify--color-pattern",
+      "handle": "blue",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Blue"
+        },
+        {
+          "key": "color",
+          "value": "#005BD3"
+        },
+        {
+          "key": "image",
+          "value": null
+        },
+        {
+          "key": "color_taxonomy_reference",
+          "value": "[\"gid://shopify/TaxonomyValue/2\"]"
+        },
+        {
+          "key": "pattern_taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/2874"
+        }
+      ]
+    },
+    {
+      "type": "shopify--color-pattern",
+      "handle": "bronze",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Bronze"
+        },
+        {
+          "key": "color",
+          "value": "#CD7F32"
+        },
+        {
+          "key": "image",
+          "value": null
+        },
+        {
+          "key": "color_taxonomy_reference",
+          "value": "[\"gid://shopify/TaxonomyValue/657\"]"
+        },
+        {
+          "key": "pattern_taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/2874"
+        }
+      ]
+    },
+    {
+      "type": "shopify--age-group",
+      "handle": "adults",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Adults"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/2403"
+        }
+      ]
+    },
+    {
+      "type": "shopify--age-group",
+      "handle": "kids",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Kids"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/1515"
+        }
+      ]
+    },
+    {
+      "type": "shopify--gearing-type",
+      "handle": "chain",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Chain"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/7393"
+        }
+      ]
+    },
+    {
+      "type": "shopify--battery-type",
+      "handle": "rechargeable",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Rechargeable"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/19971"
+        }
+      ]
+    },
+    {
+      "type": "shopify--battery-type",
+      "handle": "contained-undetachable",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Contained-undetachable"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/34385"
+        }
+      ]
+    },
+    {
+      "type": "shopify--battery-type",
+      "handle": "contained-detachable",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Contained-detachable"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/34384"
+        }
+      ]
+    },
+    {
+      "type": "shopify--bicycle-features",
+      "handle": "luggage-rack",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Luggage rack"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/24267"
+        }
+      ]
+    },
+    {
+      "type": "shopify--bicycle-features",
+      "handle": "built-in-front-light",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Built-in front light"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/24263"
+        }
+      ]
+    },
+    {
+      "type": "shopify--bicycle-features",
+      "handle": "led-control-panel",
+      "fields": [
+        {
+          "key": "label",
+          "value": "LED control panel"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/24266"
+        }
+      ]
+    },
+    {
+      "type": "shopify--bicycle-features",
+      "handle": "heavy-duty-brakes",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Heavy duty brakes"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/24265"
+        }
+      ]
+    },
+    {
+      "type": "shopify--bicycle-features",
+      "handle": "certified-safety",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Certified safety"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/24264"
+        }
+      ]
+    },
+    {
+      "type": "shopify--bicycle-features",
+      "handle": "adjustable-handlebar",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Adjustable handlebar"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/24261"
+        }
+      ]
+    },
+    {
+      "type": "shopify--bicycle-features",
+      "handle": "built-in-brake-light",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Built-in brake light"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/24262"
+        }
+      ]
+    },
+    {
+      "type": "shopify--bicycle-features",
+      "handle": "telescoping-seat",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Telescoping seat"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/24269"
+        }
+      ]
+    },
+    {
+      "type": "shopify--bicycle-features",
+      "handle": "telescoping-seat-1",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Telescoping seat"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/24269"
+        }
+      ]
+    },
+    {
+      "type": "shopify--battery-size",
+      "handle": "built-in-battery",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Built-in battery"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/14564"
+        }
+      ]
+    },
+    {
+      "type": "shopify--battery-size",
+      "handle": "unknown",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Unknown"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/34322"
+        }
+      ]
+    },
+    {
+      "type": "shopify--target-gender",
+      "handle": "unisex",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Unisex"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/20"
+        }
+      ]
+    },
+    {
+      "type": "shopify--target-gender",
+      "handle": "male",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Male"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/19"
+        }
+      ]
+    },
+    {
+      "type": "shopify--target-gender",
+      "handle": "female",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Female"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/18"
+        }
+      ]
+    },
+    {
+      "type": "shopify--material",
+      "handle": "metal",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Metal"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/601"
+        }
+      ]
+    },
+    {
+      "type": "shopify--material",
+      "handle": "aluminum",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Aluminum"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/1637"
+        }
+      ]
+    },
+    {
+      "type": "product_media",
+      "handle": "product-media-rzimox7e",
+      "fields": [
+        {
+          "key": "file",
+          "value": null
+        },
+        {
+          "key": "image_file",
+          "value": null
+        },
+        {
+          "key": "video_file",
+          "value": "gid://shopify/Video/42579977896150"
+        }
+      ]
+    },
+    {
+      "type": "shopify--wheel-type",
+      "handle": "solid",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Solid"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/21424"
+        }
+      ]
+    },
+    {
+      "type": "shopify--wheel-type",
+      "handle": "inflatable",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Inflatable"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/21423"
+        }
+      ]
+    },
+    {
+      "type": "shopify--features",
+      "handle": "foldable",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Foldable"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/22696"
+        }
+      ]
+    },
+    {
+      "type": "shopify--features",
+      "handle": "lockable",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Lockable"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/22698"
+        }
+      ]
+    },
+    {
+      "type": "shopify--features",
+      "handle": "portable",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Portable"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/22699"
+        }
+      ]
+    },
+    {
+      "type": "shopify--features",
+      "handle": "adjustable-dimensions",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Adjustable dimensions"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/22692"
+        }
+      ]
+    },
+    {
+      "type": "shopify--features",
+      "handle": "carry-bag",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Carry bag"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/22694"
+        }
+      ]
+    },
+    {
+      "type": "shopify--features",
+      "handle": "lightweight",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Lightweight"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/22697"
+        }
+      ]
+    },
+    {
+      "type": "shopify--features",
+      "handle": "storage-options",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Storage options"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/22702"
+        }
+      ]
+    },
+    {
+      "type": "shopify--features",
+      "handle": "weather-resistant",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Weather resistant"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/22703"
+        }
+      ]
+    },
+    {
+      "type": "product_policy",
+      "handle": "aventon",
+      "fields": [
+        {
+          "key": "name",
+          "value": "Aventon"
+        },
+        {
+          "key": "shipping_policy",
+          "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Shipping Policy\"}]},{\"type\":\"list\",\"listType\":\"unordered\",\"children\":[{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"\"}]}]}]}"
+        },
+        {
+          "key": "returns_refunds",
+          "value": "{\"type\":\"root\",\"children\":[{\"type\":\"heading\",\"level\":1,\"children\":[{\"type\":\"text\",\"value\":\"Returns & Refund Policy\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Last Updated: June 2026\",\"italic\":true}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"At ScooterBio, we want you to shop with confidence. If your purchase isn't the right fit, we're here to help make the return process as simple as possible.\"}]},{\"type\":\"heading\",\"level\":2,\"children\":[{\"type\":\"text\",\"value\":\"Return Eligibility\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Most new and unused products may be returned within \"},{\"type\":\"text\",\"value\":\"14 days\",\"bold\":true},{\"type\":\"text\",\"value\":\" of delivery unless otherwise stated on the product page.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"To qualify for a return, items must:\"}]},{\"type\":\"list\",\"listType\":\"unordered\",\"children\":[{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Be in new or like-new condition\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Include all original accessories, manuals, and packaging\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Be free from damage caused by misuse or accidents\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Include proof of purchase\"}]}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Certain products may have manufacturer-specific return policies that supersede this policy. Those exceptions will be clearly noted on the product page.\"}]},{\"type\":\"heading\",\"level\":1,\"children\":[{\"type\":\"text\",\"value\":\"Electric Bikes & Electric Scooters\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Electric bikes, electric scooters, and other large mobility products must be:\"}]},{\"type\":\"list\",\"listType\":\"unordered\",\"children\":[{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Returned within the eligible return period\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"In clean condition\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Free from crash damage or abuse\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Returned with all included accessories and charger\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Packaged securely in the original shipping carton whenever possible\"}]}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Products showing excessive wear, modifications, or damage may not qualify for a full refund.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"If original packaging is unavailable, additional packaging or freight charges may apply.\"}]},{\"type\":\"heading\",\"level\":1,\"children\":[{\"type\":\"text\",\"value\":\"Accessories & Parts\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Unused accessories and replacement parts may be returned if they:\"}]},{\"type\":\"list\",\"listType\":\"unordered\",\"children\":[{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Have not been installed\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Remain in original packaging\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Are complete with all included hardware\"}]}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Installed electrical components, wearable items, and consumable products may not be eligible for return unless defective.\"}]},{\"type\":\"heading\",\"level\":1,\"children\":[{\"type\":\"text\",\"value\":\"Non-Returnable Items\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"The following items cannot be returned:\"}]},{\"type\":\"list\",\"listType\":\"unordered\",\"children\":[{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Gift cards\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Clearance or final sale items\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Promotional or free gift items\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Customized or special-order products\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Products damaged by misuse or unauthorized modifications\"}]}]},{\"type\":\"heading\",\"level\":1,\"children\":[{\"type\":\"text\",\"value\":\"Return Shipping\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Customers are responsible for return shipping costs unless:\"}]},{\"type\":\"list\",\"listType\":\"unordered\",\"children\":[{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"The item arrived damaged\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"The incorrect item was shipped\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"The product is covered under an approved warranty claim\"}]}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"For oversized items such as electric bikes or scooters, prepaid freight labels may be available. Any applicable shipping charges may be deducted from the refund.\"}]},{\"type\":\"heading\",\"level\":1,\"children\":[{\"type\":\"text\",\"value\":\"Damaged or Incorrect Orders\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Please inspect your order immediately upon delivery.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"If your package arrives damaged or you receive the wrong product, contact us within \"},{\"type\":\"text\",\"value\":\"48 hours\",\"bold\":true},{\"type\":\"text\",\"value\":\" and include:\"}]},{\"type\":\"list\",\"listType\":\"unordered\",\"children\":[{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Order number\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Photos of the product\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Photos of the shipping box\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Photos of the shipping label\"}]}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"We will work quickly to resolve the issue.\"}]},{\"type\":\"heading\",\"level\":1,\"children\":[{\"type\":\"text\",\"value\":\"Refunds\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Once your return has been received and inspected, refunds will be issued to the original payment method.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Please allow:\"}]},{\"type\":\"list\",\"listType\":\"unordered\",\"children\":[{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"3–5 business days for inspection\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"An additional 3–10 business days for your financial institution to process the refund\"}]}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Original shipping charges are generally non-refundable unless the return resulted from our error.\"}]},{\"type\":\"heading\",\"level\":1,\"children\":[{\"type\":\"text\",\"value\":\"Manufacturer Warranties\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Many products sold by ScooterBio include manufacturer warranties.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Warranty coverage is separate from our return policy and varies by brand.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"If your product develops a defect after the return window has expired, we'll gladly assist you with the manufacturer's warranty process whenever possible.\"}]},{\"type\":\"heading\",\"level\":1,\"children\":[{\"type\":\"text\",\"value\":\"How to Start a Return\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"To begin a return, please contact our Customer Support team with:\"}]},{\"type\":\"list\",\"listType\":\"unordered\",\"children\":[{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Order number\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Product name\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Reason for return\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Photos (if applicable)\"}]}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Once your request is approved, you'll receive return instructions and, if applicable, a prepaid shipping label.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Please do not return products without prior authorization, as unauthorized returns may be refused.\"}]},{\"type\":\"heading\",\"level\":1,\"children\":[{\"type\":\"text\",\"value\":\"Questions?\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"If you have any questions regarding returns, refunds, warranties, or exchanges, please contact our Customer Support team.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"We're committed to making your shopping experience easy, transparent, and hassle-free.\"}]}]}"
+        },
+        {
+          "key": "warranty_policy",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "product_policy",
+      "handle": "p-51-electric-bike-company",
+      "fields": [
+        {
+          "key": "name",
+          "value": "P-51 Electric Bike Company"
+        },
+        {
+          "key": "shipping_policy",
+          "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"SHIPPING\",\"bold\":true}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"When purchasing a bike be sure to provide a \"},{\"type\":\"text\",\"value\":\"phone number\",\"bold\":true},{\"type\":\"text\",\"value\":\" that you can easily be reached at. Our freight company will use your phone number to call and schedule your delivery. You will receive a shipping email with tracking and updates as soon as the shipment is scheduled. \"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Local Delivery\",\"bold\":true}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"We are currently offering local delivery within 20 miles of our facility in Huntington Beach. When you are checking out if your address is within that area it will be offered and is flat rate of $50. Your bike will be delivered fully assembled and ready to ride! Must be delivered to the name on the order and have a valid drivers license or ID available and time of delivery. \"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Shipping Time\",\"bold\":true}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Bikes: For all bike purchases they are usually shipped within 2-3 days of purchase, not including weekends or holidays.\\n\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Accessories and Tires: These are shipped within 1-2 business days from your purchase not including weekends or holidays. \"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Shipping Methods and Costs:\",\"bold\":true}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Bikes: Bike ship door to door with a logistics company. Shipping is only available in the contiguous United States. We do not ship to Hawaii or Alaska. Delivery time is 3-7 business days depending on location and availability. Our bikes ship nearly completely assembled which makes the last finally assembly a breeze! If you have any questions reach out to us at Team@p-51bikes.com\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Accessories and Tires: These will ship UPS ground and or USPS depending on shipping time and address. For cost see the respective product page\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Batteries: These Ship at a $100 flat rate to any anywhere in the contiguous United States.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Missed Shipment: Your shipment will be scheduled with you through our Provider. If your shipment is scheduled and no one is home to sign then there will be a $100 re-delivery charge in order to have it redelivered. If the logistics company is not able to get a response from you within 24 hours of trying there may also be storage fees assessed. \"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"-International Shipping is currently not available- 3rd party and self shipping is not offered or available\",\"bold\":true}]}]}"
+        },
+        {
+          "key": "returns_refunds",
+          "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"P-51 BIKE COMPANY RETURN AND CANCELLATION POLICY\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Quality is our most important concern for our products and do not accept returns on used or opened items.\",\"italic\":true,\"bold\":true}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"BIKE ORDERS\",\"bold\":true}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Cancellations can be processed within 24 hours from your order. After 24 hours there will be a 15% restocking fee deducted from the refund. Once the bike is shipped then a 15% restocking fee will be deducted as well as the full invoiced shipping costs.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"If Shop Pay Installments is used for the check out/payment method then cancelation at any time will have a 15% restocking fee as they do not return the processing fees. \"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Returns\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Due to the nature of bikes we do not accept returns on any used or bikes.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"All bike orders require a signature at pick up. \",\"bold\":true}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Batteries: Batteries are FINAL sale. We do not accept returns or exchanges on batteries except for what is explicitly covered by our warranty, and only after receiving our approval for the return.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Gift Cards: Gift cards are non-refundable and non-redeemable for cash except where required by law.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Refunds: P-51 will process all refunds to the original form of payment. Please allow up to 7-10 business days for your bank to credit the funds back to your account once authorized.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Accessories, Merchandise and Parts \",\"bold\":true}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Cancelations: If you would like to cancel an order then you will need to contact our support team within 24 hours to have that canceled. If the order has been shipping then you will be responsible for the shipping fees incurred which will be deducted from the refund.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Returns: We accept returns on unused and uninstalled items for 30 days from the delivery confirmation. Once received our team will inspect them and if approved will process the refund for the full price of the product minus the shipping cost. \"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"REFUNDS\",\"bold\":true},{\"type\":\"text\",\"value\":\"\\n\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Refunds can only be issued to the original form of payment. Please allow 7-10 business days for your bank to credit your funds back as they sometimes take longer processing times. \"}]}]}"
+        },
+        {
+          "key": "warranty_policy",
+          "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"P-51 Bike Company provides a \"},{\"type\":\"text\",\"value\":\"1-year limited warranty\",\"bold\":true},{\"type\":\"text\",\"value\":\" for the original purchaser of new \"},{\"type\":\"text\",\"value\":\"Bullet\",\"bold\":true},{\"type\":\"text\",\"value\":\" and \"},{\"type\":\"text\",\"value\":\"Ace\",\"bold\":true},{\"type\":\"text\",\"value\":\" e-bikes purchased directly from P-51 or an authorized dealer in the United States.\"}]},{\"type\":\"heading\",\"level\":3,\"children\":[{\"type\":\"text\",\"value\":\"What's Covered\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"The warranty covers manufacturing defects in materials or workmanship for major components, including:\"}]},{\"type\":\"list\",\"listType\":\"unordered\",\"children\":[{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Frame and fork\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Motor\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Battery\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Controller and wiring\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Display\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Brakes\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Drivetrain components\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Handlebars, stem, wheels, and other original hardware\"}]}]},{\"type\":\"heading\",\"level\":3,\"children\":[{\"type\":\"text\",\"value\":\"What's Not Covered\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"The warranty does not cover:\"}]},{\"type\":\"list\",\"listType\":\"unordered\",\"children\":[{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Normal wear items (tires, tubes, brake pads, chain, grips, cables, spokes, seat, etc.)\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Damage caused by accidents, misuse, neglect, improper assembly, unauthorized modifications, water damage, or off-road/stunt riding\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Damage from unauthorized repairs or non-approved parts\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Battery damage caused by improper charging, power surges, misuse, or water exposure\"}]}]},{\"type\":\"heading\",\"level\":3,\"children\":[{\"type\":\"text\",\"value\":\"Shipping Damage\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Inspect your e-bike upon delivery and report any shipping damage within \"},{\"type\":\"text\",\"value\":\"30 days\",\"bold\":true},{\"type\":\"text\",\"value\":\" with photos and original packaging. Damage during third-party freight forwarding or independent shipping is not covered.\"}]},{\"type\":\"heading\",\"level\":3,\"children\":[{\"type\":\"text\",\"value\":\"Warranty Claims\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"To submit a claim:\"}]},{\"type\":\"list\",\"listType\":\"ordered\",\"children\":[{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Contact P-51 Technical Support.\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Provide photos or videos of the issue.\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Follow P-51's instructions for inspection or replacement.\"}]}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Customers are generally responsible for return shipping unless otherwise approved by P-51.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Note:\",\"bold\":true},{\"type\":\"text\",\"value\":\" The warranty is \"},{\"type\":\"text\",\"value\":\"non-transferable\",\"bold\":true},{\"type\":\"text\",\"value\":\", applies only to the original owner, and is limited to repair or replacement of defective components.\"}]}]}"
+        }
+      ]
+    },
+    {
+      "type": "product_policy",
+      "handle": "letric-e-bikes",
+      "fields": [
+        {
+          "key": "name",
+          "value": "Letric eBikes"
+        },
+        {
+          "key": "shipping_policy",
+          "value": "{\"type\":\"root\",\"children\":[{\"type\":\"heading\",\"level\":3,\"children\":[{\"type\":\"text\",\"value\":\"Shipping Policy\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"We ship to the \"},{\"type\":\"text\",\"value\":\"Continental United States\",\"bold\":true},{\"type\":\"text\",\"value\":\" (48 contiguous states + D.C.) and \"},{\"type\":\"text\",\"value\":\"Canada\",\"bold\":true},{\"type\":\"text\",\"value\":\". Orders totaling $100 USD / $99 CAD or more may qualify for free shipping.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Processing & delivery:\",\"bold\":true},{\"type\":\"text\",\"value\":\" orders typically ship within 2–10 business days via UPS, FedEx, or USPS. If you order an eBike, the battery may ship separately with its own tracking number.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Address restrictions:\",\"bold\":true},{\"type\":\"text\",\"value\":\" we're unable to ship to APO, FPO, DPO, or PO Box addresses.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"International orders:\",\"bold\":true},{\"type\":\"text\",\"value\":\" we don't ship outside the U.S. and Canada. If you arrange international shipping yourself, you're responsible for all duties, taxes, and fees, and your eBike won't be eligible for service or warranty coverage outside the Continental U.S. and Canada.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Shipping damage:\",\"bold\":true},{\"type\":\"text\",\"value\":\" please report any shipping damage within 14 days of delivery so we can make it right.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Questions? Contact us at \"},{\"type\":\"link\",\"url\":\"mailto:support@yourstore.com\",\"title\":null,\"target\":null,\"children\":[{\"type\":\"text\",\"value\":\"support@yourstore.com\"}]},{\"type\":\"text\",\"value\":\".\"}]}]}"
+        },
+        {
+          "key": "returns_refunds",
+          "value": "{\"type\":\"root\",\"children\":[{\"type\":\"heading\",\"level\":3,\"children\":[{\"type\":\"text\",\"value\":\"Refund & Return Policy\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"You may cancel your order for a \"},{\"type\":\"text\",\"value\":\"full refund\",\"bold\":true},{\"type\":\"text\",\"value\":\" any time before you receive your shipment confirmation email. After that, cancellations are treated as returns and are subject to a return shipping fee — the original shipping cost is non-refundable.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Return eligibility:\",\"bold\":true},{\"type\":\"text\",\"value\":\" items must be unused, unridden (for eBikes), in original packaging, and returned within \"},{\"type\":\"text\",\"value\":\"14 days\",\"bold\":true},{\"type\":\"text\",\"value\":\" of receipt. A restocking fee of up to $300 may apply. Proof of purchase is required, and returns must be authorized before shipping anything back to us.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Exchanges:\",\"bold\":true},{\"type\":\"text\",\"value\":\" we only replace items that are severely defective or damaged on arrival.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Not eligible for return:\",\"bold\":true},{\"type\":\"text\",\"value\":\" accessories and apparel.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"To start a return, call us at \"},{\"type\":\"link\",\"url\":\"tel:+16027150907\",\"title\":null,\"target\":null,\"children\":[{\"type\":\"text\",\"value\":\"(602) 715-0907\"}]},{\"type\":\"text\",\"value\":\" for authorization, or email \"},{\"type\":\"link\",\"url\":\"mailto:support@yourstore.com\",\"title\":null,\"target\":null,\"children\":[{\"type\":\"text\",\"value\":\"support@yourstore.com\"}]},{\"type\":\"text\",\"value\":\".\"}]}]}"
+        },
+        {
+          "key": "warranty_policy",
+          "value": "{\"type\":\"root\",\"children\":[{\"type\":\"heading\",\"level\":3,\"children\":[{\"type\":\"text\",\"value\":\"Warranty\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Your eBike is backed by a \"},{\"type\":\"text\",\"value\":\"1-year limited warranty\",\"bold\":true},{\"type\":\"text\",\"value\":\" covering manufacturing defects in the frame, fork, motor, battery, controller, display, brakes, drivetrain components, and other core hardware, starting from your original delivery date.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"What's not covered:\",\"bold\":true},{\"type\":\"text\",\"value\":\" normal wear items (tires, tubes, chains, brake pads/cables, grips), cosmetic wear and tear, damage from improper assembly, misuse, accidents, unauthorized modifications, water damage, or use of incompatible parts/chargers.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Extended coverage:\",\"bold\":true},{\"type\":\"text\",\"value\":\" optional extended warranty plans are available for purchase at checkout, offered in partnership with Extend. These exclude wearable parts and the battery.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"How it works:\",\"bold\":true},{\"type\":\"text\",\"value\":\" if a covered part is found defective within the warranty period, we'll repair or replace it at no cost to you. Contact us to start a claim — we may ask for proof of purchase and photos or video of the issue.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Need help? Reach out to \"},{\"type\":\"link\",\"url\":\"mailto:support@yourstore.com\",\"title\":null,\"target\":null,\"children\":[{\"type\":\"text\",\"value\":\"support@yourstore.com\"}]},{\"type\":\"text\",\"value\":\" or call \"},{\"type\":\"link\",\"url\":\"tel:+16027150907\",\"title\":null,\"target\":null,\"children\":[{\"type\":\"text\",\"value\":\"(602) 715-0907\"}]},{\"type\":\"text\",\"value\":\".\"}]}]}"
+        }
+      ]
+    },
+    {
+      "type": "expert_review",
+      "handle": "run-bike-mike",
+      "fields": [
+        {
+          "key": "reviewer_name",
+          "value": "RunBikeMike"
+        },
+        {
+          "key": "reviewer_avatar",
+          "value": "gid://shopify/MediaImage/42734662025430"
+        },
+        {
+          "key": "title",
+          "value": "e.g. \"The 120Nm Beast: ... Full Review\""
+        },
+        {
+          "key": "video_url",
+          "value": "https://www.youtube.com/watch?v=3ug0e84EwPA&list=RD3ug0e84EwPA&start_radio=1"
+        },
+        {
+          "key": "thumbnail",
+          "value": "gid://shopify/MediaImage/42563415834838"
+        },
+        {
+          "key": "view_count",
+          "value": null
+        },
+        {
+          "key": "rating",
+          "value": null
+        },
+        {
+          "key": "publish_date",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "accordion_item",
+      "handle": "heading",
+      "fields": [
+        {
+          "key": "question",
+          "value": "heading"
+        },
+        {
+          "key": "answer",
+          "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"headingheadingheadingheading\"}]}]}"
+        }
+      ]
+    },
+    {
+      "type": "rich_text_block",
+      "handle": "rich-text-heading",
+      "fields": [
+        {
+          "key": "heading",
+          "value": "rich text heading"
+        },
+        {
+          "key": "content",
+          "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"rich text content\"}]}]}"
+        }
+      ]
+    },
+    {
+      "type": "product_row_block",
+      "handle": "ace",
+      "fields": [
+        {
+          "key": "heading",
+          "value": "ACE"
+        },
+        {
+          "key": "products",
+          "value": null
+        },
+        {
+          "key": "layout",
+          "value": "carousel"
+        }
+      ]
+    },
+    {
+      "type": "promo_card",
+      "handle": "promo-card-okmqk43r",
+      "fields": [
+        {
+          "key": "image",
+          "value": "gid://shopify/MediaImage/43300411932886"
+        },
+        {
+          "key": "mobile_image_optional",
+          "value": null
+        },
+        {
+          "key": "link",
+          "value": "https://ecombio.myshopify.com"
+        },
+        {
+          "key": "heading",
+          "value": "Heading"
+        },
+        {
+          "key": "subheading",
+          "value": "Subheading"
+        },
+        {
+          "key": "price_text",
+          "value": "Price text"
+        },
+        {
+          "key": "button_label",
+          "value": "Button label"
+        }
+      ]
+    },
+    {
+      "type": "promo_card",
+      "handle": "promo-card-qilkgkze",
+      "fields": [
+        {
+          "key": "image",
+          "value": "gid://shopify/MediaImage/43300411932886"
+        },
+        {
+          "key": "mobile_image_optional",
+          "value": "gid://shopify/MediaImage/43300411932886"
+        },
+        {
+          "key": "link",
+          "value": "https://ecombio.myshopify.com"
+        },
+        {
+          "key": "heading",
+          "value": "Apple Watch Series 11"
+        },
+        {
+          "key": "subheading",
+          "value": "The ultimate way to watch your health."
+        },
+        {
+          "key": "price_text",
+          "value": "From $399 or $33.25/mo. per month for 12 mo. months Footnote ±"
+        },
+        {
+          "key": "button_label",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "promo_carousel",
+      "handle": "electric-scooters",
+      "fields": [
+        {
+          "key": "heading",
+          "value": "Shop by category"
+        },
+        {
+          "key": "subheading",
+          "value": "Electric scooters"
+        },
+        {
+          "key": "products",
+          "value": "gid://shopify/Collection/476923494614"
+        },
+        {
+          "key": "promo_card",
+          "value": "gid://shopify/Metaobject/194766962902"
+        },
+        {
+          "key": "grid_position",
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "type": "promo_carousel",
+      "handle": "price-drop",
+      "fields": [
+        {
+          "key": "heading",
+          "value": "Price drop"
+        },
+        {
+          "key": "subheading",
+          "value": "Price drop"
+        },
+        {
+          "key": "products",
+          "value": "gid://shopify/Collection/482004041942"
+        },
+        {
+          "key": "promo_card",
+          "value": null
+        },
+        {
+          "key": "grid_position",
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "type": "nav_link",
+      "handle": "electric-bikes",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Electric Bikes"
+        },
+        {
+          "key": "url",
+          "value": "https://ecombio.myshopify.com/collections/electric-bikes/"
+        },
+        {
+          "key": "open_in_new_tab",
+          "value": "false"
+        }
+      ]
+    },
+    {
+      "type": "menu_item",
+      "handle": "sublink",
+      "fields": [
+        {
+          "key": "label",
+          "value": "sublink"
+        },
+        {
+          "key": "link",
+          "value": "https://ecombio.myshopify.com"
+        },
+        {
+          "key": "sublinks",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "menu_item",
+      "handle": "link",
+      "fields": [
+        {
+          "key": "label",
+          "value": "link"
+        },
+        {
+          "key": "link",
+          "value": "https://ecombio.myshopify.com"
+        },
+        {
+          "key": "sublinks",
+          "value": "[\"gid://shopify/Metaobject/196133650646\"]"
+        }
+      ]
+    },
+    {
+      "type": "feature_item",
+      "handle": "title",
+      "fields": [
+        {
+          "key": "icon",
+          "value": "gid://shopify/MediaImage/42464256426198"
+        },
+        {
+          "key": "label",
+          "value": null
+        },
+        {
+          "key": "description",
+          "value": "description"
+        },
+        {
+          "key": "subtitle",
+          "value": null
+        },
+        {
+          "key": "title",
+          "value": "title"
+        },
+        {
+          "key": "link",
+          "value": "https://ecombio.com"
+        }
+      ]
+    },
+    {
+      "type": "feature_item",
+      "handle": "title-2",
+      "fields": [
+        {
+          "key": "icon",
+          "value": "gid://shopify/MediaImage/42464256426198"
+        },
+        {
+          "key": "label",
+          "value": null
+        },
+        {
+          "key": "description",
+          "value": "descrpition 2"
+        },
+        {
+          "key": "subtitle",
+          "value": null
+        },
+        {
+          "key": "title",
+          "value": "title 2"
+        },
+        {
+          "key": "link",
+          "value": "https://ecombio.com"
+        }
+      ]
+    },
+    {
+      "type": "feature_item",
+      "handle": "icon-1",
+      "fields": [
+        {
+          "key": "icon",
+          "value": "gid://shopify/MediaImage/43529026961622"
+        },
+        {
+          "key": "label",
+          "value": "Top Speed"
+        },
+        {
+          "key": "description",
+          "value": "Max 28 MPH"
+        },
+        {
+          "key": "subtitle",
+          "value": null
+        },
+        {
+          "key": "title",
+          "value": "Class 2 (throttle assist up to 20 mph)"
+        },
+        {
+          "key": "link",
+          "value": "https://ecombio.com"
+        }
+      ]
+    },
+    {
+      "type": "feature_item",
+      "handle": "class-1-pedal-assist-up-to-20-mph",
+      "fields": [
+        {
+          "key": "icon",
+          "value": null
+        },
+        {
+          "key": "label",
+          "value": null
+        },
+        {
+          "key": "description",
+          "value": null
+        },
+        {
+          "key": "subtitle",
+          "value": null
+        },
+        {
+          "key": "title",
+          "value": "Class 1 (pedal assist up to 20 mph)"
+        },
+        {
+          "key": "link",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "feature_item",
+      "handle": "class-3-pedal-assist-up-to-28-mph",
+      "fields": [
+        {
+          "key": "icon",
+          "value": null
+        },
+        {
+          "key": "label",
+          "value": null
+        },
+        {
+          "key": "description",
+          "value": null
+        },
+        {
+          "key": "subtitle",
+          "value": null
+        },
+        {
+          "key": "title",
+          "value": "Class 3 (pedal assist up to 28 mph)"
+        },
+        {
+          "key": "link",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "product_video",
+      "handle": "caption",
+      "fields": [
+        {
+          "key": "video",
+          "value": "gid://shopify/Video/42579977896150"
+        },
+        {
+          "key": "video_url",
+          "value": "https://cdn.shopify.com/videos/c/o/v/e64b076ac88541b697f7b37777a89d4b.mp4"
+        },
+        {
+          "key": "thumbnail",
+          "value": "gid://shopify/MediaImage/43517820207318"
+        },
+        {
+          "key": "caption",
+          "value": "Caption"
+        }
+      ]
+    },
+    {
+      "type": "product_video",
+      "handle": "demo",
+      "fields": [
+        {
+          "key": "video",
+          "value": "gid://shopify/Video/42579982844118"
+        },
+        {
+          "key": "video_url",
+          "value": "https://cdn.shopify.com/videos/c/o/v/aaea60fa37a1450d842e6c5d87593edb.mp4"
+        },
+        {
+          "key": "thumbnail",
+          "value": "gid://shopify/MediaImage/43517819617494"
+        },
+        {
+          "key": "caption",
+          "value": "Demo"
+        }
+      ]
+    },
+    {
+      "type": "product_video",
+      "handle": "demo-1",
+      "fields": [
+        {
+          "key": "video",
+          "value": "gid://shopify/MediaImage/43517819715798"
+        },
+        {
+          "key": "video_url",
+          "value": "https://cdn.shopify.com/videos/c/o/v/aaea60fa37a1450d842e6c5d87593edb.mp4"
+        },
+        {
+          "key": "thumbnail",
+          "value": "gid://shopify/MediaImage/43517819748566"
+        },
+        {
+          "key": "caption",
+          "value": "Demo-1"
+        }
+      ]
+    },
+    {
+      "type": "product_video",
+      "handle": "demo-2",
+      "fields": [
+        {
+          "key": "video",
+          "value": "gid://shopify/MediaImage/43517820141782"
+        },
+        {
+          "key": "video_url",
+          "value": "https://cdn.shopify.com/videos/c/o/v/aaea60fa37a1450d842e6c5d87593edb.mp4"
+        },
+        {
+          "key": "thumbnail",
+          "value": "gid://shopify/MediaImage/43517819715798"
+        },
+        {
+          "key": "caption",
+          "value": "Demo-2"
+        }
+      ]
+    },
+    {
+      "type": "product_video",
+      "handle": "video",
+      "fields": [
+        {
+          "key": "video",
+          "value": "gid://shopify/MediaImage/43517819715798"
+        },
+        {
+          "key": "video_url",
+          "value": "https://cdn.shopify.com/videos/c/o/v/aaea60fa37a1450d842e6c5d87593edb.mp4"
+        },
+        {
+          "key": "thumbnail",
+          "value": "gid://shopify/MediaImage/43517820141782"
+        },
+        {
+          "key": "caption",
+          "value": "Video"
+        }
+      ]
+    },
+    {
+      "type": "specification",
+      "handle": "label",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Label"
+        },
+        {
+          "key": "content",
+          "value": "Content Content"
+        }
+      ]
+    },
+    {
+      "type": "benefits",
+      "handle": "2-year-warranty",
+      "fields": [
+        {
+          "key": "icon",
+          "value": null
+        },
+        {
+          "key": "title",
+          "value": "2 Year Warranty"
+        },
+        {
+          "key": "tooltip",
+          "value": null
+        },
+        {
+          "key": "link",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "benefits",
+      "handle": "2-year-warranty-1",
+      "fields": [
+        {
+          "key": "icon",
+          "value": "gid://shopify/MediaImage/42734662025430"
+        },
+        {
+          "key": "title",
+          "value": "2 Year Warranty"
+        },
+        {
+          "key": "tooltip",
+          "value": "Shown on hover/focus. Leave blank if not needed."
+        },
+        {
+          "key": "link",
+          "value": "{\"text\":\"Anchor text\",\"url\":\"https://ecombio.com\"}"
+        }
+      ]
+    },
+    {
+      "type": "benefits",
+      "handle": "fast-shipping",
+      "fields": [
+        {
+          "key": "icon",
+          "value": "gid://shopify/MediaImage/42734662025430"
+        },
+        {
+          "key": "title",
+          "value": "Fast Shipping"
+        },
+        {
+          "key": "tooltip",
+          "value": null
+        },
+        {
+          "key": "link",
+          "value": "{\"text\":\"\",\"url\":\"https://ecombio.com/pages/shipping\"}"
+        }
+      ]
+    },
+    {
+      "type": "benefits",
+      "handle": "ul-safety-certified",
+      "fields": [
+        {
+          "key": "icon",
+          "value": "gid://shopify/MediaImage/42734662025430"
+        },
+        {
+          "key": "title",
+          "value": "UL Safety Certified"
+        },
+        {
+          "key": "tooltip",
+          "value": "Shown on hover/focus. Leave blank if not needed."
+        },
+        {
+          "key": "link",
+          "value": "{\"text\":\"Anchor text\",\"url\":\"https://ecombio.com\"}"
+        }
+      ]
+    },
+    {
+      "type": "benefits",
+      "handle": "14-day-returns",
+      "fields": [
+        {
+          "key": "icon",
+          "value": "gid://shopify/MediaImage/42734662025430"
+        },
+        {
+          "key": "title",
+          "value": "14-Day Returns"
+        },
+        {
+          "key": "tooltip",
+          "value": "Shown on hover/focus. Leave blank if not needed."
+        },
+        {
+          "key": "link",
+          "value": "{\"text\":\"https://ecombio.com\",\"url\":\"https://ecombio.com\"}"
+        }
+      ]
+    },
+    {
+      "type": "technical_specification",
+      "handle": "gid-shopify-online-store-page-138222534870",
+      "fields": [
+        {
+          "key": "specifications",
+          "value": "gid://shopify/Page/138222502102"
+        },
+        {
+          "key": "size_fit",
+          "value": null
+        },
+        {
+          "key": "geometry",
+          "value": null
+        },
+        {
+          "key": "faqs",
+          "value": "gid://shopify/Page/138222600406"
+        }
+      ]
+    },
+    {
+      "type": "technical_specification",
+      "handle": "technical-specification-ymrd2iwp",
+      "fields": [
+        {
+          "key": "specifications",
+          "value": "gid://shopify/Page/138773397718"
+        },
+        {
+          "key": "size_fit",
+          "value": null
+        },
+        {
+          "key": "geometry",
+          "value": null
+        },
+        {
+          "key": "faqs",
+          "value": "gid://shopify/Page/138773463254"
+        }
+      ]
+    },
+    {
+      "type": "expert_reviews",
+      "handle": "source-name",
+      "fields": [
+        {
+          "key": "video",
+          "value": null
+        },
+        {
+          "key": "video_url",
+          "value": "https://www.youtube.com/watch?v=ZF3b1nK-TjM"
+        },
+        {
+          "key": "thumbnail",
+          "value": null
+        },
+        {
+          "key": "title",
+          "value": "YouTube Video"
+        },
+        {
+          "key": "view_count",
+          "value": "view_count"
+        },
+        {
+          "key": "source_icon",
+          "value": "gid://shopify/MediaImage/42734662025430"
+        },
+        {
+          "key": "source_name",
+          "value": "source_name"
+        }
+      ]
+    },
+    {
+      "type": "expert_reviews",
+      "handle": "source-name-1",
+      "fields": [
+        {
+          "key": "video",
+          "value": "gid://shopify/Video/42579977896150"
+        },
+        {
+          "key": "video_url",
+          "value": null
+        },
+        {
+          "key": "thumbnail",
+          "value": null
+        },
+        {
+          "key": "title",
+          "value": "title"
+        },
+        {
+          "key": "view_count",
+          "value": "view_count"
+        },
+        {
+          "key": "source_icon",
+          "value": "gid://shopify/MediaImage/42734662025430"
+        },
+        {
+          "key": "source_name",
+          "value": "source_name"
+        }
+      ]
+    },
+    {
+      "type": "expert_reviews",
+      "handle": "expert-reviews-xswmhkit",
+      "fields": [
+        {
+          "key": "video",
+          "value": "gid://shopify/Video/42579977896150"
+        },
+        {
+          "key": "video_url",
+          "value": null
+        },
+        {
+          "key": "thumbnail",
+          "value": null
+        },
+        {
+          "key": "title",
+          "value": null
+        },
+        {
+          "key": "view_count",
+          "value": null
+        },
+        {
+          "key": "source_icon",
+          "value": null
+        },
+        {
+          "key": "source_name",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "expert_reviews",
+      "handle": "source-name-2",
+      "fields": [
+        {
+          "key": "video",
+          "value": "gid://shopify/Video/46334256447702"
+        },
+        {
+          "key": "video_url",
+          "value": null
+        },
+        {
+          "key": "thumbnail",
+          "value": null
+        },
+        {
+          "key": "title",
+          "value": "title"
+        },
+        {
+          "key": "view_count",
+          "value": "view_count"
+        },
+        {
+          "key": "source_icon",
+          "value": null
+        },
+        {
+          "key": "source_name",
+          "value": "source_name"
+        }
+      ]
+    },
+    {
+      "type": "expert_reviews",
+      "handle": "source-name-3",
+      "fields": [
+        {
+          "key": "video",
+          "value": "gid://shopify/Video/46334255825110"
+        },
+        {
+          "key": "video_url",
+          "value": null
+        },
+        {
+          "key": "thumbnail",
+          "value": null
+        },
+        {
+          "key": "title",
+          "value": "title"
+        },
+        {
+          "key": "view_count",
+          "value": "view_count"
+        },
+        {
+          "key": "source_icon",
+          "value": null
+        },
+        {
+          "key": "source_name",
+          "value": "source_name"
+        }
+      ]
+    },
+    {
+      "type": "expert_reviews",
+      "handle": "source-name-4",
+      "fields": [
+        {
+          "key": "video",
+          "value": "gid://shopify/Video/46334302879958"
+        },
+        {
+          "key": "video_url",
+          "value": null
+        },
+        {
+          "key": "thumbnail",
+          "value": null
+        },
+        {
+          "key": "title",
+          "value": "title"
+        },
+        {
+          "key": "view_count",
+          "value": "view_count"
+        },
+        {
+          "key": "source_icon",
+          "value": null
+        },
+        {
+          "key": "source_name",
+          "value": "source_name"
+        }
+      ]
+    },
+    {
+      "type": "expert_reviews",
+      "handle": "source-name-5",
+      "fields": [
+        {
+          "key": "video",
+          "value": "gid://shopify/Video/46334301143254"
+        },
+        {
+          "key": "video_url",
+          "value": null
+        },
+        {
+          "key": "thumbnail",
+          "value": null
+        },
+        {
+          "key": "title",
+          "value": "title"
+        },
+        {
+          "key": "view_count",
+          "value": "view_count"
+        },
+        {
+          "key": "source_icon",
+          "value": null
+        },
+        {
+          "key": "source_name",
+          "value": "source_name"
+        }
+      ]
+    },
+    {
+      "type": "featured_highlight",
+      "handle": "sensor-switch",
+      "fields": [
+        {
+          "key": "image",
+          "value": "gid://shopify/MediaImage/43568493560022"
+        },
+        {
+          "key": "heading",
+          "value": "Sensor Switch"
+        },
+        {
+          "key": "description",
+          "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Like two bikes in one, choose between using a Torque or Cadence sensor with Sensor Switch. Whether you want to feel the power on the pedals or just cruise, Aventon’s Sensor Switch gives you the option to optimize your ride.\"}]}]}"
+        },
+        {
+          "key": "link",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "featured_highlight",
+      "handle": "integrated-rear-wheel-lock",
+      "fields": [
+        {
+          "key": "image",
+          "value": "gid://shopify/MediaImage/43568511647958"
+        },
+        {
+          "key": "heading",
+          "value": "Integrated Rear Wheel Lock"
+        },
+        {
+          "key": "description",
+          "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"An integrated rear wheel lock adds an extra layer of security by immobilizing your bike when parked, preventing it from being easily rolled away. Controlled through the Aventon app or directly on the bike display, this lock deters theft and gives you peace of mind when leaving your bike unattended.\\n\\n\"}]}]}"
+        },
+        {
+          "key": "link",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "featured_highlight",
+      "handle": "cruise-control",
+      "fields": [
+        {
+          "key": "image",
+          "value": "gid://shopify/MediaImage/43568514531542"
+        },
+        {
+          "key": "heading",
+          "value": "Cruise Control"
+        },
+        {
+          "key": "description",
+          "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Cruise Control lets you lock in your perfect pace with the push of a button. Whether you're riding down country roads or open trails, it keeps your speed steady so you can focus on the ride—not the pedals.\"}]}]}"
+        },
+        {
+          "key": "link",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "featured_highlight",
+      "handle": "apple-watch-connection",
+      "fields": [
+        {
+          "key": "image",
+          "value": "gid://shopify/MediaImage/43568520331478"
+        },
+        {
+          "key": "heading",
+          "value": "Apple Watch Connection"
+        },
+        {
+          "key": "description",
+          "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Control your Pace 4 right from your wrist! Introducing Apple Watch Connectivity, integrated control right from your wrist. Power your bike off, engage the E-Lock, and track your rides from your Apple Watch.\"}]}]}"
+        },
+        {
+          "key": "link",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "featured_highlight",
+      "handle": "boost-mode",
+      "fields": [
+        {
+          "key": "image",
+          "value": "gid://shopify/MediaImage/43568539599062"
+        },
+        {
+          "key": "heading",
+          "value": "Boost Mode"
+        },
+        {
+          "key": "description",
+          "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Available on all ACU-equipped, hub- driven ebike models, Boost Mode allows the rider to access up to 120% of specced torque and peak power for up to 30 seconds at a time. It turns steep hills into shortcuts and handles heavy hauls hassle-free.\"}]}]}"
+        },
+        {
+          "key": "link",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "featured_highlight",
+      "handle": "hold-mode",
+      "fields": [
+        {
+          "key": "image",
+          "value": "gid://shopify/MediaImage/43568549036246"
+        },
+        {
+          "key": "heading",
+          "value": "Hold Mode"
+        },
+        {
+          "key": "description",
+          "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Keep gravity at bay when you need a break. Hold Mode keeps your bike from rolling backwards when you need a break from walking it up an incline. Release the Walk Mode button to activate Hold Mode for up to 30 seconds at a time.\"}]}]}"
+        },
+        {
+          "key": "link",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "featured_highlight",
+      "handle": "startup-password",
+      "fields": [
+        {
+          "key": "image",
+          "value": "gid://shopify/MediaImage/43568564109526"
+        },
+        {
+          "key": "heading",
+          "value": "Startup Password"
+        },
+        {
+          "key": "description",
+          "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"The optional startup password adds customizable security by allowing you to set a personal code on the bike's display, helping to prevent unauthorized use of your bike.\"}]}]}"
+        },
+        {
+          "key": "link",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "featured_highlight",
+      "handle": "cross-model-keyless-battery-system",
+      "fields": [
+        {
+          "key": "image",
+          "value": "gid://shopify/MediaImage/43568591438038"
+        },
+        {
+          "key": "heading",
+          "value": "Cross-Model Keyless Battery System"
+        },
+        {
+          "key": "description",
+          "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Quickly unlock and remove your battery directly through the bike's display, offering fast, secure, and convenient access without worrying about keeping track of a set of keys. With cross-model compatibility, your Pace 4 battery will also work on the Abound SR, Abound LR, Level 3, and Aventure 3.\"}]}]}"
+        },
+        {
+          "key": "link",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "featured_highlight",
+      "handle": "alarm-and-unusual-activity-detection",
+      "fields": [
+        {
+          "key": "image",
+          "value": "gid://shopify/MediaImage/43568598483158"
+        },
+        {
+          "key": "heading",
+          "value": "Alarm and Unusual Activity Detection"
+        },
+        {
+          "key": "description",
+          "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"The onboard alarm with unusual activity detection provides added theft protection by sounding an alert and sending a notification if unexpected movement is detected, offering peace of mind when the bike is parked.\"}]}]}"
+        },
+        {
+          "key": "link",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "featured_highlight",
+      "handle": "over-the-air-updates",
+      "fields": [
+        {
+          "key": "image",
+          "value": "gid://shopify/MediaImage/43568606970070"
+        },
+        {
+          "key": "heading",
+          "value": "Over the Air Updates"
+        },
+        {
+          "key": "description",
+          "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"The onboard alarm with unusual activity detection provides added theft protection by sounding an alert and sending a notification if unexpected movement is detected, offering peace of mind when the bike is parked.\"}]}]}"
+        },
+        {
+          "key": "link",
+          "value": "{\"text\":\"Learn more\",\"url\":\"https://ecombio.com/pages/electric-bikes\"}"
+        }
+      ]
+    },
+    {
+      "type": "shopify--tricycle-design",
+      "handle": "recumbent",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Recumbent"
+        },
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyValue/7397"
+        }
+      ]
+    },
+    {
+      "type": "shopify--disclosure-us-ca-prop65-alcohol",
+      "handle": "prop-65-alcohol-warning",
+      "fields": [
+        {
+          "key": "taxonomy_reference",
+          "value": "gid://shopify/TaxonomyDisclosure/16"
+        },
+        {
+          "key": "parent_id",
+          "value": null
+        },
+        {
+          "key": "description",
+          "value": null
+        },
+        {
+          "key": "title",
+          "value": "Prop 65 Alcohol Warning"
+        },
+        {
+          "key": "internal_label",
+          "value": "Prop 65 — Alcohol (US-CA)"
+        },
+        {
+          "key": "content",
+          "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"WARNING:\",\"bold\":true},{\"type\":\"text\",\"value\":\" Drinking distilled spirits, beer, coolers, wine and other alcoholic beverages may increase cancer risk, and, during pregnancy, can cause birth defects. For more information go to www.P65Warnings.ca.gov/alcoholic-beverages.\\n\"}]}]}"
+        },
+        {
+          "key": "symbol",
+          "value": "gid://shopify/MediaImage/43971313205462"
+        },
+        {
+          "key": "jurisdictions",
+          "value": "[\"US-CA\"]"
+        },
+        {
+          "key": "legal_citation",
+          "value": null
+        },
+        {
+          "key": "display_requirements",
+          "value": null
+        },
+        {
+          "key": "display_preferences",
+          "value": "{\"surfaces\":[\"product_page\"]}"
+        },
+        {
+          "key": "source",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "shopify--qa-pair",
+      "handle": "question",
+      "fields": [
+        {
+          "key": "question",
+          "value": "Question"
+        },
+        {
+          "key": "answer",
+          "value": "AnswerProvide a brief answer in 1 or 2 sentences."
+        },
+        {
+          "key": "sources",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "slideshow",
+      "handle": "heading",
+      "fields": [
+        {
+          "key": "heading",
+          "value": "Heading"
+        },
+        {
+          "key": "subheading",
+          "value": "Subheading"
+        },
+        {
+          "key": "image",
+          "value": "gid://shopify/MediaImage/43654071419094"
+        },
+        {
+          "key": "cta_text",
+          "value": "CTA Text"
+        },
+        {
+          "key": "cta_link",
+          "value": "https://ecombio.com"
+        }
+      ]
+    },
+    {
+      "type": "promo_banner",
+      "handle": "https-ecombio-com",
+      "fields": [
+        {
+          "key": "image",
+          "value": "gid://shopify/MediaImage/44621444153558"
+        },
+        {
+          "key": "eyebrow",
+          "value": "iPhones"
+        },
+        {
+          "key": "heading",
+          "value": "iPhone 14 review: Is it worth buying in 2026? | Back Market"
+        },
+        {
+          "key": "description",
+          "value": "Our iPhone 14 review covers specs, camera quality, performance, and whether buying refurbished is worth it over a newer model."
+        },
+        {
+          "key": "link_text",
+          "value": "See more"
+        },
+        {
+          "key": "link_url",
+          "value": "https://ecombio.com"
+        },
+        {
+          "key": "grid_position",
+          "value": "8"
+        }
+      ]
+    },
+    {
+      "type": "layout_variant",
+      "handle": "split-left",
+      "fields": [
+        {
+          "key": "variant",
+          "value": "split-left"
+        }
+      ]
+    },
+    {
+      "type": "layout_variant",
+      "handle": "split-right",
+      "fields": [
+        {
+          "key": "variant",
+          "value": "split-right"
+        }
+      ]
+    },
+    {
+      "type": "layout_variant",
+      "handle": "full-bleed",
+      "fields": [
+        {
+          "key": "variant",
+          "value": "full-bleed"
+        }
+      ]
+    },
+    {
+      "type": "layout_variant",
+      "handle": "minimal",
+      "fields": [
+        {
+          "key": "variant",
+          "value": "minimal"
+        }
+      ]
+    },
+    {
+      "type": "trust_badge",
+      "handle": "2-year-warranty",
+      "fields": [
+        {
+          "key": "icon",
+          "value": "gid://shopify/MediaImage/46330799358166"
+        },
+        {
+          "key": "title",
+          "value": "2 Year Warranty"
+        },
+        {
+          "key": "tooltip",
+          "value": null
+        },
+        {
+          "key": "link",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "trust_badge",
+      "handle": "ul-safety-certified",
+      "fields": [
+        {
+          "key": "icon",
+          "value": "gid://shopify/MediaImage/46330804109526"
+        },
+        {
+          "key": "title",
+          "value": "UL Safety Certified"
+        },
+        {
+          "key": "tooltip",
+          "value": null
+        },
+        {
+          "key": "link",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "trust_badge",
+      "handle": "14-day-returns",
+      "fields": [
+        {
+          "key": "icon",
+          "value": "gid://shopify/MediaImage/46330800210134"
+        },
+        {
+          "key": "title",
+          "value": "14-Day Returns"
+        },
+        {
+          "key": "tooltip",
+          "value": null
+        },
+        {
+          "key": "link",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "trust_badge",
+      "handle": "fast-shipping",
+      "fields": [
+        {
+          "key": "icon",
+          "value": "gid://shopify/MediaImage/46330799816918"
+        },
+        {
+          "key": "title",
+          "value": "Fast Shipping"
+        },
+        {
+          "key": "tooltip",
+          "value": null
+        },
+        {
+          "key": "link",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "product_spec",
+      "handle": "top-speed",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Top Speed"
+        },
+        {
+          "key": "value",
+          "value": "Max 28 MPH"
+        },
+        {
+          "key": "icon",
+          "value": "gid://shopify/MediaImage/46331368538326"
+        },
+        {
+          "key": "tooltip",
+          "value": null
+        },
+        {
+          "key": "link",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "product_spec",
+      "handle": "range",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Range"
+        },
+        {
+          "key": "value",
+          "value": "Up to 70 Miles**"
+        },
+        {
+          "key": "icon",
+          "value": "gid://shopify/MediaImage/46331368603862"
+        },
+        {
+          "key": "tooltip",
+          "value": null
+        },
+        {
+          "key": "link",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "product_spec",
+      "handle": "payload-capacity",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Payload Capacity"
+        },
+        {
+          "key": "value",
+          "value": "300 lbs"
+        },
+        {
+          "key": "icon",
+          "value": "gid://shopify/MediaImage/46331368702166"
+        },
+        {
+          "key": "tooltip",
+          "value": null
+        },
+        {
+          "key": "link",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "product_spec",
+      "handle": "motor-power",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Motor Power"
+        },
+        {
+          "key": "value",
+          "value": "500W 864W Peak in Boost*"
+        },
+        {
+          "key": "icon",
+          "value": "gid://shopify/MediaImage/46331368571094"
+        },
+        {
+          "key": "tooltip",
+          "value": null
+        },
+        {
+          "key": "link",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "product_spec",
+      "handle": "wireless-connection",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Wireless Connection"
+        },
+        {
+          "key": "value",
+          "value": "4G†/GPS†"
+        },
+        {
+          "key": "icon",
+          "value": "gid://shopify/MediaImage/46331368669398"
+        },
+        {
+          "key": "tooltip",
+          "value": null
+        },
+        {
+          "key": "link",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "product_spec",
+      "handle": "increased-safety",
+      "fields": [
+        {
+          "key": "label",
+          "value": "Increased Safety"
+        },
+        {
+          "key": "value",
+          "value": "Theft Deterrence†"
+        },
+        {
+          "key": "icon",
+          "value": "gid://shopify/MediaImage/46331368636630"
+        },
+        {
+          "key": "tooltip",
+          "value": null
+        },
+        {
+          "key": "link",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "author",
+      "handle": "lannay-dale-tooze",
+      "fields": [
+        {
+          "key": "name",
+          "value": "Lannay Dale-Tooze"
+        },
+        {
+          "key": "role",
+          "value": "Content Writer"
+        },
+        {
+          "key": "photo",
+          "value": "gid://shopify/MediaImage/46362610827478"
+        },
+        {
+          "key": "bio",
+          "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Meet Lannay Dale-Tooze, our Content Writer with an eye for the next big trend. As Gymshark Central's go-to for style and training, she writes about everything from the latest activewear must-haves to the fitness trends shaping how we move.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"If it’s making waves on your For You Page right now, chances are she was already writing about it. A qualified L3 Personal Trainer, Lannay takes a hybrid approach to fitness, mixing functional strength training, \"},{\"type\":\"link\",\"url\":\"https://www.gymshark.com/blog/article/what-to-wear-to-pilates-or-cute-pilates-outfits\",\"title\":null,\"target\":\"_blank\",\"children\":[{\"type\":\"text\",\"value\":\"Pilates\"}]},{\"type\":\"text\",\"value\":\" and \"},{\"type\":\"link\",\"url\":\"https://www.gymshark.com/blog/article/what-to-wear-for-cold-weather-running\",\"title\":null,\"target\":\"_blank\",\"children\":[{\"type\":\"text\",\"value\":\"running\"}]},{\"type\":\"text\",\"value\":\" with \"},{\"type\":\"link\",\"url\":\"https://www.gymshark.com/blog/article/somatic-exercises-benefits\",\"title\":null,\"target\":\"_blank\",\"children\":[{\"type\":\"text\",\"value\":\"somatic movement\"}]},{\"type\":\"text\",\"value\":\".\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Inspired by all things wellness, she brings a grounded, holistic perspective to her writing—balancing performance with the feel-good side of training.\"}]}]}"
+        }
+      ]
+    }
+  ],
+  "articles": [
+    {
+      "handle": "best-electric-bike-guide",
+      "title": "Best Electric Bike Guide",
+      "blog": "electric-bikes",
+      "author": "Jordan Pham",
+      "tags": [
+        "Buying Guides",
+        "Electric Bikes"
+      ],
+      "summary": "A practical guide to choosing an electric bike, covering motors, batteries, e-bike classes, and the best picks for commuting and trails.",
+      "seoTitle": "Best Electric Bike Guide: How to Choose the Right E-Bike",
+      "seoDescription": "Compare the best electric bikes for commuting, trails, and everyday rides, with buying advice on motors, batteries, and e-bike classes.",
+      "metafields": {
+        "custom.author_profile": "gid://shopify/Metaobject/610756690134",
+        "global.title_tag": "Best Electric Bike Guide: How to Choose the Right E-Bike",
+        "global.description_tag": "Compare the best electric bikes for commuting, trails, and everyday rides, with buying advice on motors, batteries, and e-bike classes."
+      },
+      "liveTitle": "Best Electric Bike Guide: How to Choose the Right E-Bike | Ecombio",
+      "liveDescription": "Compare the best electric bikes for commuting, trails, and everyday rides, with buying advice on motors, batteries, and e-bike classes.",
+      "links": "/collections/all",
+      "products": [
+        "aventon-current-adv-electric-mountain-bike",
+        "aventon-current-exp-electric-mountain-bike",
+        "aventon-level-4-adv-electric-commuter-bike",
+        "aventon-level-4-adv-step-through-electric-commuter-bike",
+        "aventon-level-4-rec-electric-commuter-bike",
+        "aventon-level-4-rec-step-through-electric-commuter-bike",
+        "aventon-pace-5-rec-step-through-electric-cruiser-bike",
+        "aventure-3-ebike",
+        "not-a-real-product"
+      ]
+    }
+  ],
+  "issues": [
+    "best-electric-bike-guide: 843 words (guide standard is 1,000+)",
+    "best-electric-bike-guide: product handles not ACTIVE: ",
+    "best-electric-bike-guide: bad button links: collections/all | Bad link, should not show",
+    "best-electric-bike-guide: only 1 internal links",
+    "best-electric-bike-guide: featured image has no alt text (https://cdn.shopify.com/s/files/1/0726/0641/7110/articles/god_and_adam_5d62d8ef-c6eb-4166-9a20-d1af0e84a23d.jpg)"
+  ]
+}
