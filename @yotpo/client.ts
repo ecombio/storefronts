@@ -20,7 +20,7 @@ import type {
   YotpoRatingSummary,
 } from "./types";
 
-const REQUEST_TIMEOUT_MS = 5000;
+const REQUEST_TIMEOUT_MS = 15000;
 
 async function fetchProductReviews(
   appKey: string,
@@ -29,7 +29,7 @@ async function fetchProductReviews(
   perPage: number,
 ): Promise<YotpoProductReviews> {
   "use cache";
-  cacheLife({ stale: 300, revalidate: yotpoConfig.revalidateSeconds, expire: 86400 });
+  cacheLife({ stale: 300, revalidate: yotpoConfig.revalidateSeconds, expire: 31536000 });
   cacheTag("yotpo-reviews", `yotpo-reviews-${productId}`);
 
   const url =
@@ -202,7 +202,7 @@ async function mergeCollectionReviews(
   products: YotpoCollectionReviewProduct[],
 ): Promise<YotpoCollectionReviews | null> {
   "use cache";
-  cacheLife({ stale: 300, revalidate: yotpoConfig.collectionRevalidateSeconds, expire: 172800 });
+  cacheLife({ stale: 300, revalidate: yotpoConfig.collectionRevalidateSeconds, expire: 31536000 });
   cacheTag(
     "yotpo-reviews",
     "yotpo-collection-reviews",

@@ -1,5 +1,5 @@
 import { parseCollectionParams, serializeCollectionParams } from "@shopify/hydrogen";
-import type { YotpoCollectionReviewProduct } from "@yotpo";
+import { getProductCardRatings, type YotpoCollectionReviewProduct } from "@yotpo";
 import { cacheLife, cacheTag } from "next/cache";
 
 import { getBrowseSort, PRODUCTS_PER_PAGE } from "@/lib/collections";
@@ -195,7 +195,8 @@ export async function getCollectionDeals(params: { handle: string }): Promise<Pr
   return withProductRatings(await fetchCollectionDeals(params.handle));
 }
 
-const REVIEW_PRODUCTS_LIMIT = 24;
+const REVIEW_CANDIDATES_LIMIT = 100; // products checked for reviews (each adds a cache tag, keep under ~120)
+const REVIEW_PRODUCTS_LIMIT = 24; // reviewed products used for the section
 
 // Yotpo returns reviews one product at a time, so a collection's reviews come from its first products.
 export async function getCollectionReviewProducts(params: {
@@ -207,12 +208,22 @@ export async function getCollectionReviewProducts(params: {
 
   const { products } = await fetchCollectionProducts({
     collection: params.handle,
-    limit: REVIEW_PRODUCTS_LIMIT,
+    limit: REVIEW_CANDIDATES_LIMIT,
   });
-  return products.flatMap((product) => {
+  const candidates = products.flatMap((product) => {
     const id = getNumericShopifyId(product.id);
     return id ? [{ id, handle: product.handle, title: product.title }] : [];
   });
+  // Tag per product so a review webhook for any candidate also refreshes this selection.
+  cacheTag(...candidates.map((candidate) => "yotpo-reviews-" + candidate.id));
+
+  // Only products that have reviews go on to the costlier per-product review fetch.
+  const ratings = await getProductCardRatings(candidates.map((candidate) => candidate.id));
+  // Throw (never cached) if Yotpo answered for none of them, so an outage isn't remembered.
+  if (candidates.length > 0 && ratings.size === 0) throw new Error("Yotpo ratings unavailable");
+  return candidates
+    .filter((candidate) => (ratings.get(candidate.id)?.count ?? 0) > 0)
+    .slice(0, REVIEW_PRODUCTS_LIMIT);
 }
 
 export async function getAllProductsCollection(): Promise<Collection> {

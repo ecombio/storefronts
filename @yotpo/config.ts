@@ -17,8 +17,8 @@ export const yotpoConfig = {
   reviewsFetchLimit: 50, // reviews requested from Yotpo per product (filters work on these)
   reviewsPerPage: 5, // reviews shown before "Show more reviews"
   collectionReviewsPerProduct: 10, // newest reviews requested per product for collection pages
-  collectionRevalidateSeconds: 21600, // merged collection reviews are rebuilt at most this often
-  revalidateSeconds: 3600,
+  collectionRevalidateSeconds: 604800, // merged collection reviews are rebuilt at most this often
+  revalidateSeconds: 604800,
   brand: {
     primaryColor: "#000000",
     starsColor: "#FFE000",
