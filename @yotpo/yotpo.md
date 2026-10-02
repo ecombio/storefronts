@@ -61,25 +61,27 @@ Live-tested on Sep 30, 2026: 400 (placeholder handle, short content) and 200 (va
 
 ## 4. Files
 
-| File                                                   | What it does                                                                                                  |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| `@yotpo/config.ts`                                     | App key, shop domain, API URLs, sizes (50 fetched, 5 shown), cache time (3600 s), brand colors.               |
-| `@yotpo/client.ts`                                     | Server-only. `getProductReviews`, `getProductRatingSummary`, `submitReview`. Normalizes Yotpo's response.     |
-| `@yotpo/types.ts`                                      | `YotpoReview`, `YotpoBottomline`, `YotpoProductReviews`, `YotpoRatingSummary`.                                |
-| `@yotpo/index.ts`                                      | The public surface: `StarRating`, `ProductReviews`, `submitReview`, and the types.                            |
-| `@yotpo/yotpo.md`                                      | This file.                                                                                                    |
-| `@yotpo/components/star.tsx`                           | `Star` (one) and `StarRow` (five, rounded to whole stars).                                                    |
-| `@yotpo/components/star-ratings.tsx`                   | `StarRating` badge: stars, score, count, links to `#reviews`. Shows "Write a review" if there are none.       |
-| `@yotpo/components/reviews-widget.tsx`                 | `ProductReviews` server section, plus the empty state.                                                        |
-| `@yotpo/components/reviews-browser.tsx`                | Summary, clickable rating bars, search, rating filter, sort, review cards, "Show more".                       |
-| `@yotpo/components/collection-reviews.tsx`             | `CollectionReviews` server section for a collection page. Renders nothing without reviews.                    |
-| `@yotpo/components/collection-reviews-browser.tsx`     | Summary, rating bars, photo strip, sort, photo filter, review cards with product link.                        |
-| `lib/collections/server.ts`                            | `getCollectionReviewProducts`: the collection's first 24 products for the reviews section. Outside `@yotpo/`. |
-| `components/collections/collection-page.tsx`           | Places the collection reviews section at the bottom of the page. Outside `@yotpo/`.                           |
-| `@yotpo/components/review-form.tsx`                    | `WriteReviewButton`: star picker, fields, honeypot, posts to the route.                                       |
-| `app/api/yotpo/reviews/route.ts`                       | Validates and forwards new reviews. Outside `@yotpo/`.                                                        |
-| `components/product-detail/product-detail-section.tsx` | Places the badge and the reviews section on the product page. Outside `@yotpo/`.                              |
-| `tsconfig.json`                                        | Path aliases `@yotpo` and `@yotpo/*`.                                                                         |
+| File                                                   | What it does                                                                                                                       |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `@yotpo/config.ts`                                     | App key, shop domain, API URLs, sizes (50 fetched, 5 shown), cache time (3600 s), brand colors.                                    |
+| `@yotpo/client.ts`                                     | Server-only. `getProductReviews`, `getProductRatingSummary`, `submitReview`. Normalizes Yotpo's response.                          |
+| `@yotpo/types.ts`                                      | `YotpoReview`, `YotpoBottomline`, `YotpoProductReviews`, `YotpoRatingSummary`.                                                     |
+| `@yotpo/index.ts`                                      | The public surface: `StarRating`, `ProductReviews`, `submitReview`, and the types.                                                 |
+| `@yotpo/ui.ts`                                         | Client-safe entry for `Star`, `StarRow` and `ratingLabel`. Client components import these from `@/@yotpo/ui`, never from `@yotpo`. |
+| `components/ui/carousel.tsx`                           | Shared scroll hook, arrows and progress bar. Used by the review photo strip and expert reviews. Outside `@yotpo/`.                 |
+| `@yotpo/yotpo.md`                                      | This file.                                                                                                                         |
+| `@yotpo/components/star.tsx`                           | `Star` (one, supports partial fill), `StarRow` (five, each filled by how much of the score reaches it) and `ratingLabel()`.        |
+| `@yotpo/components/star-ratings.tsx`                   | `StarRating` badge: stars, score, count, links to `#reviews`. Shows "Write a review" if there are none.                            |
+| `@yotpo/components/reviews-widget.tsx`                 | `ProductReviews` server section, plus the empty state.                                                                             |
+| `@yotpo/components/reviews-browser.tsx`                | Summary, clickable rating bars, search, rating filter, sort, review cards, "Show more".                                            |
+| `@yotpo/components/collection-reviews.tsx`             | `CollectionReviews` server section for a collection page. Renders nothing without reviews.                                         |
+| `@yotpo/components/collection-reviews-browser.tsx`     | Summary, rating bars, photo strip, sort, photo filter, review cards with product link.                                             |
+| `lib/collections/server.ts`                            | `getCollectionReviewProducts`: the collection's first 24 products for the reviews section. Outside `@yotpo/`.                      |
+| `components/collections/collection-page.tsx`           | Places the collection reviews section at the bottom of the page. Outside `@yotpo/`.                                                |
+| `@yotpo/components/review-form.tsx`                    | `WriteReviewButton`: star picker, fields, honeypot, posts to the route.                                                            |
+| `app/api/yotpo/reviews/route.ts`                       | Validates and forwards new reviews. Outside `@yotpo/`.                                                                             |
+| `components/product-detail/product-detail-section.tsx` | Places the badge and the reviews section on the product page. Outside `@yotpo/`.                                                   |
+| `tsconfig.json`                                        | Path aliases `@yotpo` and `@yotpo/*`.                                                                                              |
 
 `types.ts.bak` and `components/reviews-browser.tsx.bak` are local backups. The `*.bak*` rule in `.gitignore` should ignore both. **(verify with `git ls-files '@yotpo'`)** Never commit them.
 
@@ -115,7 +117,7 @@ For a repo-wide check, search for `NEXT_PUBLIC_YOTPO` the same way without the p
 - **Timeouts.** Every Yotpo call aborts after 5 s.
 - **Collection reviews.** One Yotpo call per product (first 24 products, newest 10 reviews each), six calls at a time. The merged result is cached per collection for 6 hours (tags `yotpo-reviews` and `yotpo-collection-reviews`). If every call fails, or some fail and no reviews came back, nothing is cached and the section is hidden. The cache also carries each product's `yotpo-reviews-<id>` tag, so refreshing a product refreshes its collections. `POST /api/yotpo/webhook?secret=...` (env `YOTPO_WEBHOOK_SECRET`) revalidates the tag of the product in a Yotpo `review_create` or `review_updated` payload, or every `yotpo-reviews` entry when the payload has no product ID. Image changes and deletions by Yotpo support send no webhook, so those appear when the cache expires. Bottomlines are summed for the overall rating and rating bars. The section is hidden when no product has reviews or Yotpo fails.
 - **Filters and sort run in the browser** over the 50 fetched reviews. Sort: most recent, highest, lowest, most helpful.
-- **Stars rounded.** `StarRow` rounds the score, so 4.4 shows four full stars.
+- **Partial stars.** `StarRow` fills each star by how much of the score reaches it, so 4.4 shows four full stars and a 40% star.
 - **Empty state.** With no reviews: a "Write a review" link in the badge slot, and a text plus button in the section.
 - **Zero reviews from Yotpo.** `star_distribution` comes back `null`. `client.ts` turns each missing bucket into 0.
 - **Spam defenses:** honeypot field and an in-memory per-IP limiter (5 per 10 minutes). Yotpo moderation adds a layer only when approval is turned on, and it is not on for the current account. The limiter is per serverless instance, so it only slows casual abuse. The route's own comment recommends a Vercel Firewall rule and/or BotID. The README lists bot protection as disabled. **(verify)**
@@ -126,7 +128,7 @@ For a repo-wide check, search for `NEXT_PUBLIC_YOTPO` the same way without the p
 
 1. **Numeric ID, not GID.** Passing the GraphQL GID to Yotpo silently returns 0 reviews. Always use `getNumericShopifyId`. Yotpo's product record carries the Shopify numeric ID as `domain_key`.
 2. **Suspense is required.** `cacheComponents` is on, so async Server Components (`StarRating`, `ProductReviews`) must be wrapped in `<Suspense>` where used.
-3. **`@yotpo` is server-side code in a client-looking package.** `index.ts` re-exports `submitReview` from `client.ts`, which imports `server-only`. Import `@yotpo` only from server components and route handlers. Importing it from a client component breaks the build.
+3. **`@yotpo` is server-side code in a client-looking package.** `index.ts` re-exports `submitReview` from `client.ts`, which imports `server-only`. Import `@yotpo` only from server components and route handlers. Importing it from a client component breaks the build. Client components import the star pieces from `@/@yotpo/ui` instead.
 4. **Two validators.** The form (`review-form.tsx`) and the route (`route.ts`) both enforce limits: title 100, content 10 to 2000, name 60, email 254. Change both together. The route is the one that counts.
 5. **Create-review field names.** The live account accepted the `client.ts` payload on Sep 30, 2026: the review appeared in the Yotpo admin under the right product with the right name, title, text and score. Yotpo's create-review reference page has not been read. The error body is logged on rejection.
 6. **PowerShell and the `@`.** In PowerShell `@` means splatting, so quote the folder: `git add '@yotpo'`, `git ls-files '@yotpo'`.
@@ -142,7 +144,6 @@ For a repo-wide check, search for `NEXT_PUBLIC_YOTPO` the same way without the p
 ## 8. Known limits
 
 - **Only the newest 50 reviews are fetched** (page 1). Search, filters, sort and "Show more" work on those 50. The summary and rating bars count all reviews, so clicking a bar can show fewer reviews than its number.
-- **Whole stars only.**
 - **Collection reviews cover only part of the data.** The list holds the newest 10 reviews of each of the collection's first 24 products. The summary and rating bars count all reviews of those products, so clicking a bar can show fewer reviews than its number. Photos and the verified badge read `images_data` and `verified_buyer`, which come from Yotpo's documented sample **(verify against a real response)**. Product page review cards still show text only.
 - **Text only.** `YotpoReview` has no fields for photos or video, verified-buyer badges, store replies, sentiment or incentivized flags. Yotpo's documented sample response has all of them (section 18). The real response for a product with reviews has not been inspected. The avatar is a plain circle.
 - **Helpful votes are display-only.**
