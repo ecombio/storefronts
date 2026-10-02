@@ -1,0 +1,992 @@
+{
+  "PAGE": [
+    {
+      "id": "gid://shopify/MetafieldDefinition/213982871766",
+      "namespace": "custom",
+      "key": "after_item_lists",
+      "name": "after_item_lists",
+      "description": "",
+      "type": {
+        "name": "page_reference"
+      },
+      "validations": [],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 1
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/213984903382",
+      "namespace": "custom",
+      "key": "collections",
+      "name": "Collections",
+      "description": "",
+      "type": {
+        "name": "list.collection_reference"
+      },
+      "validations": [],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 2
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/226290761942",
+      "namespace": "custom",
+      "key": "layout_blocks",
+      "name": "Layout Blocks",
+      "description": "Dynamic layout blocks for Hydrogen pages.",
+      "type": {
+        "name": "json"
+      },
+      "validations": [],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 3
+    }
+  ],
+  "PRODUCT": [
+    {
+      "id": "gid://shopify/MetafieldDefinition/46016430294",
+      "namespace": "shopify",
+      "key": "color-pattern",
+      "name": "Color",
+      "description": "Defines the primary color or pattern, such as blue or striped",
+      "type": {
+        "name": "list.metaobject_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_id",
+          "value": "gid://shopify/MetaobjectDefinition/3947626710"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": null
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/46016463062",
+      "namespace": "shopify",
+      "key": "age-group",
+      "name": "Age group",
+      "description": "Defines the target age range for a product, such as adults or kids",
+      "type": {
+        "name": "list.metaobject_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_id",
+          "value": "gid://shopify/MetaobjectDefinition/3947659478"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": null
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/46116503766",
+      "namespace": "shopify--discovery--product_search_boost",
+      "key": "queries",
+      "name": "Search product boosts",
+      "description": "List of search queries for which a product gets higher rank in search results",
+      "type": {
+        "name": "list.single_line_text_field"
+      },
+      "validations": [
+        {
+          "name": "max",
+          "value": "100"
+        },
+        {
+          "name": "list.max",
+          "value": "10"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 17
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/46116536534",
+      "namespace": "shopify--discovery--product_recommendation",
+      "key": "related_products",
+      "name": "Related products",
+      "description": "List of related products",
+      "type": {
+        "name": "list.product_reference"
+      },
+      "validations": [
+        {
+          "name": "list.max",
+          "value": "10"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 18
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/46116569302",
+      "namespace": "shopify--discovery--product_recommendation",
+      "key": "related_products_display",
+      "name": "Related products settings",
+      "description": "Determines how related products are displayed along with algorithmic product recommendations",
+      "type": {
+        "name": "single_line_text_field"
+      },
+      "validations": [
+        {
+          "name": "choices",
+          "value": "[\"ahead\",\"only manual\"]"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 16
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/46116602070",
+      "namespace": "shopify--discovery--product_recommendation",
+      "key": "complementary_products",
+      "name": "Complementary products",
+      "description": "List of complementary products",
+      "type": {
+        "name": "list.product_reference"
+      },
+      "validations": [
+        {
+          "name": "list.max",
+          "value": "10"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 15
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/190890901718",
+      "namespace": "shopify",
+      "key": "material",
+      "name": "Material",
+      "description": "Defines a product's primary material, such as cotton or wool",
+      "type": {
+        "name": "list.metaobject_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_id",
+          "value": "gid://shopify/MetaobjectDefinition/17323655382"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": null
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/190890934486",
+      "namespace": "shopify",
+      "key": "target-gender",
+      "name": "Target gender",
+      "description": "Identifies the intended gender for a product, such as female, male or unisex",
+      "type": {
+        "name": "list.metaobject_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_id",
+          "value": "gid://shopify/MetaobjectDefinition/17323622614"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": null
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/190890967254",
+      "namespace": "shopify",
+      "key": "gearing-type",
+      "name": "Gearing type",
+      "description": "Specifies the type of gear system in cycling products, like chain or belt",
+      "type": {
+        "name": "list.metaobject_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_id",
+          "value": "gid://shopify/MetaobjectDefinition/17323491542"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": null
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/190891000022",
+      "namespace": "shopify",
+      "key": "battery-type",
+      "name": "Battery type",
+      "description": "Distinguishes between types of batteries, such as disposable or rechargeable ",
+      "type": {
+        "name": "list.metaobject_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_id",
+          "value": "gid://shopify/MetaobjectDefinition/17323524310"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": null
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/190891032790",
+      "namespace": "shopify",
+      "key": "battery-size",
+      "name": "Battery size",
+      "description": "Indicates the battery compatibility for the product, such as AAA or 9V",
+      "type": {
+        "name": "list.metaobject_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_id",
+          "value": "gid://shopify/MetaobjectDefinition/17323589846"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": null
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/190891065558",
+      "namespace": "shopify",
+      "key": "bicycle-features",
+      "name": "Bicycle features",
+      "description": "Specifies special characteristics of a bike, e.g. puncture resistant tires, luggage rack",
+      "type": {
+        "name": "list.metaobject_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_id",
+          "value": "gid://shopify/MetaobjectDefinition/17323557078"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": null
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/192168657110",
+      "namespace": "shopify",
+      "key": "wheel-type",
+      "name": "Wheel type",
+      "description": "Specifies the kind of wheel for cycling products, such as inflatable or solid",
+      "type": {
+        "name": "list.metaobject_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_id",
+          "value": "gid://shopify/MetaobjectDefinition/17447452886"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": null
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/192168689878",
+      "namespace": "shopify",
+      "key": "features",
+      "name": "Features",
+      "description": "Describes additional qualities or characteristics of a product, such as lightweight or foldable",
+      "type": {
+        "name": "list.metaobject_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_id",
+          "value": "gid://shopify/MetaobjectDefinition/17447485654"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": null
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/201217376470",
+      "namespace": "custom",
+      "key": "product_policy",
+      "name": "Product Policy",
+      "description": "",
+      "type": {
+        "name": "metaobject_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_id",
+          "value": "gid://shopify/MetaobjectDefinition/18124636374"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 14
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/201280159958",
+      "namespace": "custom",
+      "key": "product_bundles",
+      "name": "Product Bundles",
+      "description": "(optional)* \"Products included in this bundle. Order matters — it controls display order on the storefront.",
+      "type": {
+        "name": "list.product_reference"
+      },
+      "validations": [],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 1
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/207813181654",
+      "namespace": "custom",
+      "key": "frequently_bought_together",
+      "name": "Frequently Bought Together",
+      "description": "",
+      "type": {
+        "name": "list.product_reference"
+      },
+      "validations": [],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 2
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/209409081558",
+      "namespace": "custom",
+      "key": "feature_grid",
+      "name": "Feature Grid",
+      "description": "",
+      "type": {
+        "name": "list.metaobject_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_id",
+          "value": "gid://shopify/MetaobjectDefinition/19000164566"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 3
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/209425793238",
+      "namespace": "custom",
+      "key": "product_videos",
+      "name": "Product videos",
+      "description": "",
+      "type": {
+        "name": "list.metaobject_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_id",
+          "value": "gid://shopify/MetaobjectDefinition/19001049302"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 4
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/209426514134",
+      "namespace": "custom",
+      "key": "specifications",
+      "name": "Specifications",
+      "description": "",
+      "type": {
+        "name": "list.metaobject_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_id",
+          "value": "gid://shopify/MetaobjectDefinition/19001114838"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 5
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/209448632534",
+      "namespace": "custom",
+      "key": "benefits_grid",
+      "name": "Benefits Grid",
+      "description": "",
+      "type": {
+        "name": "list.metaobject_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_id",
+          "value": "gid://shopify/MetaobjectDefinition/19002720470"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 6
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/209450402006",
+      "namespace": "shopify",
+      "key": "electric-bike-class",
+      "name": "Electric bike class",
+      "description": "Categorizes the e-bike according to regulatory classes that define speed limits and throttle assistance.",
+      "type": {
+        "name": "list.metaobject_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_id",
+          "value": "gid://shopify/MetaobjectDefinition/19002851542"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": null
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/209450827990",
+      "namespace": "shopify",
+      "key": "disclosure",
+      "name": "Disclosures",
+      "description": "Required safety warnings and regulatory disclosures for this product",
+      "type": {
+        "name": "list.disclosure_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_types",
+          "value": "[\"shopify--disclosure-us-cpsc-choking_small_parts\",\"shopify--disclosure-us-cpsc-choking_balloons\",\"shopify--disclosure-us-cpsc-choking_marbles\",\"shopify--disclosure-us-cpsc-choking_small_balls\",\"shopify--disclosure-us-cpsc-efiling-pga_reference_set\",\"shopify--disclosure-us-ca-prop65-cancer\",\"shopify--disclosure-us-ca-prop65-reproductive\",\"shopify--disclosure-us-ca-prop65-cancer_reproductive\",\"shopify--disclosure-us-ca-prop65-alcohol\",\"shopify--disclosure-custom\",\"shopify--disclosure-eu-toy-safety-small_parts\",\"shopify--disclosure-eu-toy-safety-small_balls\",\"shopify--disclosure-eu-toy-safety-marbles\",\"shopify--disclosure-eu-toy-safety-detachable_small_parts\",\"shopify--disclosure-eu-toy-safety-magnets\",\"shopify--disclosure-eu-toy-safety-button_or_coin_cell_batteries\",\"shopify--disclosure-eu-toy-safety-accessible_battery\",\"shopify--disclosure-eu-toy-safety-long_cord\",\"shopify--disclosure-eu-toy-safety-string\",\"shopify--disclosure-eu-toy-safety-strap\",\"shopify--disclosure-eu-toy-safety-loop\",\"shopify--disclosure-eu-toy-safety-entanglement\",\"shopify--disclosure-eu-toy-safety-sharp_edges_or_points\",\"shopify--disclosure-eu-toy-safety-pinch_crush_or_moving_parts\",\"shopify--disclosure-eu-toy-safety-projectile_or_impact_hazard\"]"
+        },
+        {
+          "name": "metaobject_definition_ids",
+          "value": "[\"gid://shopify/MetaobjectDefinition/19570491606\"]"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 7
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/209451057366",
+      "namespace": "shopify",
+      "key": "bicycle-frame-design",
+      "name": "Bicycle frame design",
+      "description": "Specifies the overall style of a bicycle frame, affecting accessibility, cargo capacity, and storage.",
+      "type": {
+        "name": "list.metaobject_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_id",
+          "value": "gid://shopify/MetaobjectDefinition/19003015382"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": null
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/209451090134",
+      "namespace": "shopify",
+      "key": "bicycle-suspension-type",
+      "name": "Bicycle suspension type",
+      "description": "Identifies the presence and configuration of suspension on the bicycle.",
+      "type": {
+        "name": "list.metaobject_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_id",
+          "value": "gid://shopify/MetaobjectDefinition/19003048150"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": null
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/209451122902",
+      "namespace": "shopify",
+      "key": "motor-position",
+      "name": "Motor position",
+      "description": "Indicates where the motor is located on the electric bike, influencing handling and maintenance.",
+      "type": {
+        "name": "list.metaobject_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_id",
+          "value": "gid://shopify/MetaobjectDefinition/19003080918"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": null
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/209464754390",
+      "namespace": "custom",
+      "key": "technical_specification",
+      "name": "Technical Specification",
+      "description": "",
+      "type": {
+        "name": "metaobject_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_id",
+          "value": "gid://shopify/MetaobjectDefinition/19003965654"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 8
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/210163597526",
+      "namespace": "custom",
+      "key": "expert_reviews",
+      "name": "Expert Reviews",
+      "description": "",
+      "type": {
+        "name": "list.metaobject_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_id",
+          "value": "gid://shopify/MetaobjectDefinition/19061047510"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 9
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/210169954518",
+      "namespace": "custom",
+      "key": "featured_highlights",
+      "name": "Featured highlights",
+      "description": "",
+      "type": {
+        "name": "list.metaobject_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_id",
+          "value": "gid://shopify/MetaobjectDefinition/19061539030"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 10
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/210180210902",
+      "namespace": "reviews",
+      "key": "rating",
+      "name": "Product rating",
+      "description": "Average rating from customers",
+      "type": {
+        "name": "rating"
+      },
+      "validations": [
+        {
+          "name": "scale_min",
+          "value": "1.0"
+        },
+        {
+          "name": "scale_max",
+          "value": "5.0"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 11
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/210180243670",
+      "namespace": "reviews",
+      "key": "rating_count",
+      "name": "Product rating count",
+      "description": "Total number of ratings from customers",
+      "type": {
+        "name": "number_integer"
+      },
+      "validations": [
+        {
+          "name": "min",
+          "value": "0"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 12
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/214597697750",
+      "namespace": "shopify",
+      "key": "tricycle-design",
+      "name": "Tricycle design",
+      "description": "Describes the style of a tricycle, such as upright or recumbent",
+      "type": {
+        "name": "list.metaobject_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_id",
+          "value": "gid://shopify/MetaobjectDefinition/19436962006"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": null
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/215416307926",
+      "namespace": "mm-google-shopping",
+      "key": "custom_product",
+      "name": "Google: Custom Product",
+      "description": "Use to indicate whether or not the unique product identifiers (UPIs) GTIN, MPN, and brand are available for your product.",
+      "type": {
+        "name": "boolean"
+      },
+      "validations": [],
+      "access": {
+        "storefront": "NONE"
+      },
+      "pinnedPosition": 13
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/295298171094",
+      "namespace": "custom",
+      "key": "trust_badges",
+      "name": "Trust Badges",
+      "description": "",
+      "type": {
+        "name": "list.mixed_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_ids",
+          "value": "[\"gid://shopify/MetaobjectDefinition/25135153366\"]"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 19
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/295309803734",
+      "namespace": "custom",
+      "key": "product_specs",
+      "name": "Product Specs",
+      "description": "",
+      "type": {
+        "name": "list.mixed_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_ids",
+          "value": "[\"gid://shopify/MetaobjectDefinition/25136529622\"]"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 20
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/295419379926",
+      "namespace": "custom",
+      "key": "technical_specifications",
+      "name": "Technical Specifications",
+      "description": "",
+      "type": {
+        "name": "page_reference"
+      },
+      "validations": [],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 21
+    }
+  ],
+  "ARTICLE": [
+    {
+      "id": "gid://shopify/MetafieldDefinition/295819575510",
+      "namespace": "custom",
+      "key": "author_profile",
+      "name": "author_profile",
+      "description": "",
+      "type": {
+        "name": "mixed_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_ids",
+          "value": "[\"gid://shopify/MetaobjectDefinition/25180340438\"]"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 2
+    }
+  ],
+  "COLLECTION": [
+    {
+      "id": "gid://shopify/MetafieldDefinition/187575435478",
+      "namespace": "custom",
+      "key": "after_item_lists",
+      "name": "After-Item Lists",
+      "description": "",
+      "type": {
+        "name": "page_reference"
+      },
+      "validations": [],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 1
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/187575763158",
+      "namespace": "custom",
+      "key": "related_articles",
+      "name": "Related Articles",
+      "description": "",
+      "type": {
+        "name": "list.article_reference"
+      },
+      "validations": [],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": null
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/187575795926",
+      "namespace": "custom",
+      "key": "sub_collections",
+      "name": "Sub Collections",
+      "description": "",
+      "type": {
+        "name": "list.collection_reference"
+      },
+      "validations": [],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 2
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/194611675350",
+      "namespace": "custom",
+      "key": "pages",
+      "name": "Pages",
+      "description": "",
+      "type": {
+        "name": "list.page_reference"
+      },
+      "validations": [],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": null
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/194699559126",
+      "namespace": "custom",
+      "key": "posts",
+      "name": "Posts",
+      "description": "",
+      "type": {
+        "name": "list.article_reference"
+      },
+      "validations": [],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 3
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/197618958550",
+      "namespace": "custom",
+      "key": "articles",
+      "name": "Articles",
+      "description": "",
+      "type": {
+        "name": "list.article_reference"
+      },
+      "validations": [],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": null
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/199161020630",
+      "namespace": "custom",
+      "key": "related_posts",
+      "name": "Related Posts",
+      "description": "",
+      "type": {
+        "name": "list.article_reference"
+      },
+      "validations": [],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": null
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/199164985558",
+      "namespace": "custom",
+      "key": "featured_articles",
+      "name": "Featured Articles",
+      "description": "",
+      "type": {
+        "name": "list.article_reference"
+      },
+      "validations": [],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": null
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/199165870294",
+      "namespace": "custom",
+      "key": "related_post_cards",
+      "name": "Related Post Cards",
+      "description": "",
+      "type": {
+        "name": "list.article_reference"
+      },
+      "validations": [],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 4
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/202526425302",
+      "namespace": "custom",
+      "key": "related_products",
+      "name": "Related Products",
+      "description": "Products to display in the Related Products",
+      "type": {
+        "name": "list.product_reference"
+      },
+      "validations": [],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 5
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/223933235414",
+      "namespace": "custom",
+      "key": "promo_banner",
+      "name": "Promo Banner",
+      "description": "",
+      "type": {
+        "name": "metaobject_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_id",
+          "value": "gid://shopify/MetaobjectDefinition/20233322710"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 6
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/226864300246",
+      "namespace": "custom",
+      "key": "sponsored_ads",
+      "name": "Sponsored ads",
+      "description": "",
+      "type": {
+        "name": "list.mixed_reference"
+      },
+      "validations": [
+        {
+          "name": "metaobject_definition_ids",
+          "value": "[\"gid://shopify/MetaobjectDefinition/18702270678\",\"gid://shopify/MetaobjectDefinition/20233322710\"]"
+        }
+      ],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 7
+    },
+    {
+      "id": "gid://shopify/MetafieldDefinition/226890809558",
+      "namespace": "custom",
+      "key": "product_card_style",
+      "name": "Product card style",
+      "description": "available options \"swatches\" leave blank for default",
+      "type": {
+        "name": "single_line_text_field"
+      },
+      "validations": [],
+      "access": {
+        "storefront": "PUBLIC_READ"
+      },
+      "pinnedPosition": 8
+    }
+  ]
+}
